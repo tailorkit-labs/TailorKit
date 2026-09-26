@@ -41,12 +41,12 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@orpc/experimental-ratelimit": "^1.15.3",
+    "@orpc/experimental-ratelimit": "^1.15.4",
     "@orpc/server": "catalog:",
     "@tailorkit/env": "workspace:*",
     "@tailorkit/kv": "workspace:*",
     "@tailorkit/observability": "workspace:*",
-    "@upstash/ratelimit": "^2.1.0",
+    "@upstash/ratelimit": "^2.2.0",
     "@vercel/functions": "^3.9.9",
     "zod": "catalog:"
   },
