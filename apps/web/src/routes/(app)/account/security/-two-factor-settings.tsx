@@ -212,13 +212,7 @@ function TwoFactorSetupDialog({
     );
     action = (
       <>
-        <Button
-          disabled={verifying}
-          onClick={onBackToQr}
-          size="sm"
-          type="button"
-          variant="outline"
-        >
+        <Button disabled={verifying} onClick={onBackToQr} size="sm" type="button" variant="outline">
           Back
         </Button>
         <Button
