@@ -8,839 +8,869 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as appRouteRouteImport } from "./routes/(app)/route";
-import { Route as authRouteRouteImport } from "./routes/(auth)/route";
-import { Route as LogoutRouteImport } from "./routes/logout";
-import { Route as appOrgSlugRouteRouteImport } from "./routes/(app)/$orgSlug/route";
-import { Route as appAccountRouteRouteImport } from "./routes/(app)/account/route";
-import { Route as appOnboardingRouteImport } from "./routes/(app)/onboarding";
-import { Route as authForgotPasswordRouteImport } from "./routes/(auth)/forgot-password";
-import { Route as authLoginRouteImport } from "./routes/(auth)/login";
-import { Route as authSignUpRouteImport } from "./routes/(auth)/sign-up";
-import { Route as authTwoFactorRouteImport } from "./routes/(auth)/two-factor";
-import { Route as authVerifyEmailRouteImport } from "./routes/(auth)/verify-email";
-import { Route as AuthErrorRouteImport } from "./routes/auth/error";
-import { Route as appOrgSlugIndexRouteImport } from "./routes/(app)/$orgSlug/index";
-import { Route as appOrgSlugProjectSlugRouteRouteImport } from "./routes/(app)/$orgSlug/$projectSlug/route";
-import { Route as appAccountInvitesRouteImport } from "./routes/(app)/account/invites";
-import { Route as appAccountOrganizationsRouteImport } from "./routes/(app)/account/organizations";
-import { Route as appAccountProfileRouteRouteImport } from "./routes/(app)/account/profile/route";
-import { Route as appAccountRequestOrganizationRouteImport } from "./routes/(app)/account/request-organization";
-import { Route as ApiAssetsSplatRouteImport } from "./routes/api/assets.$";
-import { Route as ApiAuthSplatRouteImport } from "./routes/api/auth.$";
-import { Route as ApiPlatformSplatRouteImport } from "./routes/api/platform.$";
-import { Route as ApiRpcSplatRouteImport } from "./routes/api/rpc.$";
-import { Route as appOrgSlugProjectSlugIndexRouteImport } from "./routes/(app)/$orgSlug/$projectSlug/index";
-import { Route as appOrgSlugProjectSlugSettingsRouteImport } from "./routes/(app)/$orgSlug/$projectSlug/settings";
-import { Route as appOrgSlugChar126orgRouteRouteImport } from "./routes/(app)/$orgSlug/~/(org)/route";
-import { Route as appAccountProfileIndexRouteImport } from "./routes/(app)/account/profile/index";
-import { Route as appAccountSecurityIndexRouteImport } from "./routes/(app)/account/security/index";
-import { Route as ApiPlatformPreviewWsRouteImport } from "./routes/api/platform.preview.ws";
-import { Route as appOrgSlugProjectSlugAppsIndexRouteImport } from "./routes/(app)/$orgSlug/$projectSlug/apps.index";
-import { Route as appOrgSlugProjectSlugAppsAppIdRouteImport } from "./routes/(app)/$orgSlug/$projectSlug/apps.$appId";
-import { Route as appOrgSlugProjectSlugSettingsIndexRouteImport } from "./routes/(app)/$orgSlug/$projectSlug/settings/index";
-import { Route as appOrgSlugProjectSlugSettingsApiKeysRouteImport } from "./routes/(app)/$orgSlug/$projectSlug/settings/api-keys";
-import { Route as appOrgSlugChar126orgIndexRouteImport } from "./routes/(app)/$orgSlug/~/(org)/index";
-import { Route as appOrgSlugChar126orgProjectsRouteImport } from "./routes/(app)/$orgSlug/~/(org)/projects";
-import { Route as appOrgSlugChar126orgSettingsRouteImport } from "./routes/(app)/$orgSlug/~/(org)/settings";
-import { Route as appOrgSlugChar126orgSettingsIndexRouteImport } from "./routes/(app)/$orgSlug/~/(org)/settings/index";
-import { Route as appOrgSlugChar126orgSettingsMembersRouteImport } from "./routes/(app)/$orgSlug/~/(org)/settings/members";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as appRouteRouteImport } from './routes/(app)/route'
+import { Route as authRouteRouteImport } from './routes/(auth)/route'
+import { Route as LogoutRouteImport } from './routes/logout'
+import { Route as appOrgSlugRouteRouteImport } from './routes/(app)/$orgSlug/route'
+import { Route as appAccountRouteRouteImport } from './routes/(app)/account/route'
+import { Route as appOnboardingRouteImport } from './routes/(app)/onboarding'
+import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
+import { Route as authLoginRouteImport } from './routes/(auth)/login'
+import { Route as authSignUpRouteImport } from './routes/(auth)/sign-up'
+import { Route as authTwoFactorRouteImport } from './routes/(auth)/two-factor'
+import { Route as authVerifyEmailRouteImport } from './routes/(auth)/verify-email'
+import { Route as AuthErrorRouteImport } from './routes/auth/error'
+import { Route as appOrgSlugIndexRouteImport } from './routes/(app)/$orgSlug/index'
+import { Route as appOrgSlugProjectSlugRouteRouteImport } from './routes/(app)/$orgSlug/$projectSlug/route'
+import { Route as appAccountInvitesRouteImport } from './routes/(app)/account/invites'
+import { Route as appAccountOrganizationsRouteImport } from './routes/(app)/account/organizations'
+import { Route as appAccountProfileRouteRouteImport } from './routes/(app)/account/profile/route'
+import { Route as appAccountRequestOrganizationRouteImport } from './routes/(app)/account/request-organization'
+import { Route as ApiAssetsSplatRouteImport } from './routes/api/assets.$'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
+import { Route as ApiPlatformSplatRouteImport } from './routes/api/platform.$'
+import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc.$'
+import { Route as appOrgSlugProjectSlugIndexRouteImport } from './routes/(app)/$orgSlug/$projectSlug/index'
+import { Route as appOrgSlugProjectSlugSettingsRouteImport } from './routes/(app)/$orgSlug/$projectSlug/settings'
+import { Route as appOrgSlugChar126orgRouteRouteImport } from './routes/(app)/$orgSlug/~/(org)/route'
+import { Route as appAccountProfileIndexRouteImport } from './routes/(app)/account/profile/index'
+import { Route as appAccountSecurityIndexRouteImport } from './routes/(app)/account/security/index'
+import { Route as ApiPlatformPreviewWsRouteImport } from './routes/api/platform.preview.ws'
+import { Route as appOrgSlugProjectSlugAppsIndexRouteImport } from './routes/(app)/$orgSlug/$projectSlug/apps.index'
+import { Route as appOrgSlugProjectSlugAppsAppIdRouteImport } from './routes/(app)/$orgSlug/$projectSlug/apps.$appId'
+import { Route as appOrgSlugProjectSlugSettingsIndexRouteImport } from './routes/(app)/$orgSlug/$projectSlug/settings/index'
+import { Route as appOrgSlugProjectSlugSettingsApiKeysRouteImport } from './routes/(app)/$orgSlug/$projectSlug/settings/api-keys'
+import { Route as appOrgSlugChar126orgIndexRouteImport } from './routes/(app)/$orgSlug/~/(org)/index'
+import { Route as appOrgSlugChar126orgProjectsRouteImport } from './routes/(app)/$orgSlug/~/(org)/projects'
+import { Route as appOrgSlugChar126orgSettingsRouteImport } from './routes/(app)/$orgSlug/~/(org)/settings'
+import { Route as appOrgSlugChar126orgSettingsIndexRouteImport } from './routes/(app)/$orgSlug/~/(org)/settings/index'
+import { Route as appOrgSlugChar126orgSettingsMembersRouteImport } from './routes/(app)/$orgSlug/~/(org)/settings/members'
 
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const appRouteRoute = appRouteRouteImport.update({
-  id: "/(app)",
+  id: '/(app)',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const authRouteRoute = authRouteRouteImport.update({
-  id: "/(auth)",
+  id: '/(auth)',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const LogoutRoute = LogoutRouteImport.update({
-  id: "/logout",
-  path: "/logout",
+  id: '/logout',
+  path: '/logout',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const appOrgSlugRouteRoute = appOrgSlugRouteRouteImport.update({
-  id: "/$orgSlug",
-  path: "/$orgSlug",
+  id: '/$orgSlug',
+  path: '/$orgSlug',
   getParentRoute: () => appRouteRoute,
-} as any);
+} as any)
 const appAccountRouteRoute = appAccountRouteRouteImport.update({
-  id: "/account",
-  path: "/account",
+  id: '/account',
+  path: '/account',
   getParentRoute: () => appRouteRoute,
-} as any);
+} as any)
 const appOnboardingRoute = appOnboardingRouteImport.update({
-  id: "/onboarding",
-  path: "/onboarding",
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => appRouteRoute,
-} as any);
+} as any)
 const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
-  id: "/forgot-password",
-  path: "/forgot-password",
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => authRouteRoute,
-} as any);
+} as any)
 const authLoginRoute = authLoginRouteImport.update({
-  id: "/login",
-  path: "/login",
+  id: '/login',
+  path: '/login',
   getParentRoute: () => authRouteRoute,
-} as any);
+} as any)
 const authSignUpRoute = authSignUpRouteImport.update({
-  id: "/sign-up",
-  path: "/sign-up",
+  id: '/sign-up',
+  path: '/sign-up',
   getParentRoute: () => authRouteRoute,
-} as any);
+} as any)
 const authTwoFactorRoute = authTwoFactorRouteImport.update({
-  id: "/two-factor",
-  path: "/two-factor",
+  id: '/two-factor',
+  path: '/two-factor',
   getParentRoute: () => authRouteRoute,
-} as any);
+} as any)
 const authVerifyEmailRoute = authVerifyEmailRouteImport.update({
-  id: "/verify-email",
-  path: "/verify-email",
+  id: '/verify-email',
+  path: '/verify-email',
   getParentRoute: () => authRouteRoute,
-} as any);
+} as any)
 const AuthErrorRoute = AuthErrorRouteImport.update({
-  id: "/auth/error",
-  path: "/auth/error",
+  id: '/auth/error',
+  path: '/auth/error',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const appOrgSlugIndexRoute = appOrgSlugIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => appOrgSlugRouteRoute,
-} as any);
-const appOrgSlugProjectSlugRouteRoute = appOrgSlugProjectSlugRouteRouteImport.update({
-  id: "/$projectSlug",
-  path: "/$projectSlug",
-  getParentRoute: () => appOrgSlugRouteRoute,
-} as any);
+} as any)
+const appOrgSlugProjectSlugRouteRoute =
+  appOrgSlugProjectSlugRouteRouteImport.update({
+    id: '/$projectSlug',
+    path: '/$projectSlug',
+    getParentRoute: () => appOrgSlugRouteRoute,
+  } as any)
 const appAccountInvitesRoute = appAccountInvitesRouteImport.update({
-  id: "/invites",
-  path: "/invites",
+  id: '/invites',
+  path: '/invites',
   getParentRoute: () => appAccountRouteRoute,
-} as any);
+} as any)
 const appAccountOrganizationsRoute = appAccountOrganizationsRouteImport.update({
-  id: "/organizations",
-  path: "/organizations",
+  id: '/organizations',
+  path: '/organizations',
   getParentRoute: () => appAccountRouteRoute,
-} as any);
+} as any)
 const appAccountProfileRouteRoute = appAccountProfileRouteRouteImport.update({
-  id: "/profile",
-  path: "/profile",
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => appAccountRouteRoute,
-} as any);
-const appAccountRequestOrganizationRoute = appAccountRequestOrganizationRouteImport.update({
-  id: "/request-organization",
-  path: "/request-organization",
-  getParentRoute: () => appAccountRouteRoute,
-} as any);
+} as any)
+const appAccountRequestOrganizationRoute =
+  appAccountRequestOrganizationRouteImport.update({
+    id: '/request-organization',
+    path: '/request-organization',
+    getParentRoute: () => appAccountRouteRoute,
+  } as any)
 const ApiAssetsSplatRoute = ApiAssetsSplatRouteImport.update({
-  id: "/api/assets/$",
-  path: "/api/assets/$",
+  id: '/api/assets/$',
+  path: '/api/assets/$',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: "/api/auth/$",
-  path: "/api/auth/$",
+  id: '/api/auth/$',
+  path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiPlatformSplatRoute = ApiPlatformSplatRouteImport.update({
-  id: "/api/platform/$",
-  path: "/api/platform/$",
+  id: '/api/platform/$',
+  path: '/api/platform/$',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
-  id: "/api/rpc/$",
-  path: "/api/rpc/$",
+  id: '/api/rpc/$',
+  path: '/api/rpc/$',
   getParentRoute: () => rootRouteImport,
-} as any);
-const appOrgSlugProjectSlugIndexRoute = appOrgSlugProjectSlugIndexRouteImport.update({
-  id: "/",
-  path: "/",
-  getParentRoute: () => appOrgSlugProjectSlugRouteRoute,
-} as any);
-const appOrgSlugProjectSlugSettingsRoute = appOrgSlugProjectSlugSettingsRouteImport.update({
-  id: "/settings",
-  path: "/settings",
-  getParentRoute: () => appOrgSlugProjectSlugRouteRoute,
-} as any);
-const appOrgSlugChar126orgRouteRoute = appOrgSlugChar126orgRouteRouteImport.update({
-  id: "/~/(org)",
-  path: "/~",
-  getParentRoute: () => appOrgSlugRouteRoute,
-} as any);
+} as any)
+const appOrgSlugProjectSlugIndexRoute =
+  appOrgSlugProjectSlugIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => appOrgSlugProjectSlugRouteRoute,
+  } as any)
+const appOrgSlugProjectSlugSettingsRoute =
+  appOrgSlugProjectSlugSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => appOrgSlugProjectSlugRouteRoute,
+  } as any)
+const appOrgSlugChar126orgRouteRoute =
+  appOrgSlugChar126orgRouteRouteImport.update({
+    id: '/~/(org)',
+    path: '/~',
+    getParentRoute: () => appOrgSlugRouteRoute,
+  } as any)
 const appAccountProfileIndexRoute = appAccountProfileIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => appAccountProfileRouteRoute,
-} as any);
+} as any)
 const appAccountSecurityIndexRoute = appAccountSecurityIndexRouteImport.update({
-  id: "/security/",
-  path: "/security/",
+  id: '/security/',
+  path: '/security/',
   getParentRoute: () => appAccountRouteRoute,
-} as any);
+} as any)
 const ApiPlatformPreviewWsRoute = ApiPlatformPreviewWsRouteImport.update({
-  id: "/api/platform/preview/ws",
-  path: "/api/platform/preview/ws",
+  id: '/api/platform/preview/ws',
+  path: '/api/platform/preview/ws',
   getParentRoute: () => rootRouteImport,
-} as any);
-const appOrgSlugProjectSlugAppsIndexRoute = appOrgSlugProjectSlugAppsIndexRouteImport.update({
-  id: "/apps/",
-  path: "/apps/",
-  getParentRoute: () => appOrgSlugProjectSlugRouteRoute,
-} as any);
-const appOrgSlugProjectSlugAppsAppIdRoute = appOrgSlugProjectSlugAppsAppIdRouteImport.update({
-  id: "/apps/$appId",
-  path: "/apps/$appId",
-  getParentRoute: () => appOrgSlugProjectSlugRouteRoute,
-} as any);
+} as any)
+const appOrgSlugProjectSlugAppsIndexRoute =
+  appOrgSlugProjectSlugAppsIndexRouteImport.update({
+    id: '/apps/',
+    path: '/apps/',
+    getParentRoute: () => appOrgSlugProjectSlugRouteRoute,
+  } as any)
+const appOrgSlugProjectSlugAppsAppIdRoute =
+  appOrgSlugProjectSlugAppsAppIdRouteImport.update({
+    id: '/apps/$appId',
+    path: '/apps/$appId',
+    getParentRoute: () => appOrgSlugProjectSlugRouteRoute,
+  } as any)
 const appOrgSlugProjectSlugSettingsIndexRoute =
   appOrgSlugProjectSlugSettingsIndexRouteImport.update({
-    id: "/",
-    path: "/",
+    id: '/',
+    path: '/',
     getParentRoute: () => appOrgSlugProjectSlugSettingsRoute,
-  } as any);
+  } as any)
 const appOrgSlugProjectSlugSettingsApiKeysRoute =
   appOrgSlugProjectSlugSettingsApiKeysRouteImport.update({
-    id: "/api-keys",
-    path: "/api-keys",
+    id: '/api-keys',
+    path: '/api-keys',
     getParentRoute: () => appOrgSlugProjectSlugSettingsRoute,
-  } as any);
-const appOrgSlugChar126orgIndexRoute = appOrgSlugChar126orgIndexRouteImport.update({
-  id: "/",
-  path: "/",
-  getParentRoute: () => appOrgSlugChar126orgRouteRoute,
-} as any);
-const appOrgSlugChar126orgProjectsRoute = appOrgSlugChar126orgProjectsRouteImport.update({
-  id: "/projects",
-  path: "/projects",
-  getParentRoute: () => appOrgSlugChar126orgRouteRoute,
-} as any);
-const appOrgSlugChar126orgSettingsRoute = appOrgSlugChar126orgSettingsRouteImport.update({
-  id: "/settings",
-  path: "/settings",
-  getParentRoute: () => appOrgSlugChar126orgRouteRoute,
-} as any);
-const appOrgSlugChar126orgSettingsIndexRoute = appOrgSlugChar126orgSettingsIndexRouteImport.update({
-  id: "/",
-  path: "/",
-  getParentRoute: () => appOrgSlugChar126orgSettingsRoute,
-} as any);
+  } as any)
+const appOrgSlugChar126orgIndexRoute =
+  appOrgSlugChar126orgIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => appOrgSlugChar126orgRouteRoute,
+  } as any)
+const appOrgSlugChar126orgProjectsRoute =
+  appOrgSlugChar126orgProjectsRouteImport.update({
+    id: '/projects',
+    path: '/projects',
+    getParentRoute: () => appOrgSlugChar126orgRouteRoute,
+  } as any)
+const appOrgSlugChar126orgSettingsRoute =
+  appOrgSlugChar126orgSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => appOrgSlugChar126orgRouteRoute,
+  } as any)
+const appOrgSlugChar126orgSettingsIndexRoute =
+  appOrgSlugChar126orgSettingsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => appOrgSlugChar126orgSettingsRoute,
+  } as any)
 const appOrgSlugChar126orgSettingsMembersRoute =
   appOrgSlugChar126orgSettingsMembersRouteImport.update({
-    id: "/members",
-    path: "/members",
+    id: '/members',
+    path: '/members',
     getParentRoute: () => appOrgSlugChar126orgSettingsRoute,
-  } as any);
+  } as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/logout": typeof LogoutRoute;
-  "/$orgSlug": typeof appOrgSlugRouteRouteWithChildren;
-  "/account": typeof appAccountRouteRouteWithChildren;
-  "/onboarding": typeof appOnboardingRoute;
-  "/forgot-password": typeof authForgotPasswordRoute;
-  "/login": typeof authLoginRoute;
-  "/sign-up": typeof authSignUpRoute;
-  "/two-factor": typeof authTwoFactorRoute;
-  "/verify-email": typeof authVerifyEmailRoute;
-  "/auth/error": typeof AuthErrorRoute;
-  "/$orgSlug/$projectSlug": typeof appOrgSlugProjectSlugRouteRouteWithChildren;
-  "/account/profile": typeof appAccountProfileRouteRouteWithChildren;
-  "/account/invites": typeof appAccountInvitesRoute;
-  "/account/organizations": typeof appAccountOrganizationsRoute;
-  "/account/request-organization": typeof appAccountRequestOrganizationRoute;
-  "/api/assets/$": typeof ApiAssetsSplatRoute;
-  "/api/auth/$": typeof ApiAuthSplatRoute;
-  "/api/platform/$": typeof ApiPlatformSplatRoute;
-  "/api/rpc/$": typeof ApiRpcSplatRoute;
-  "/$orgSlug/": typeof appOrgSlugIndexRoute;
-  "/$orgSlug/~": typeof appOrgSlugChar126orgRouteRouteWithChildren;
-  "/$orgSlug/$projectSlug/settings": typeof appOrgSlugProjectSlugSettingsRouteWithChildren;
-  "/api/platform/preview/ws": typeof ApiPlatformPreviewWsRoute;
-  "/$orgSlug/$projectSlug/": typeof appOrgSlugProjectSlugIndexRoute;
-  "/account/profile/": typeof appAccountProfileIndexRoute;
-  "/account/security/": typeof appAccountSecurityIndexRoute;
-  "/$orgSlug/$projectSlug/apps/$appId": typeof appOrgSlugProjectSlugAppsAppIdRoute;
-  "/$orgSlug/$projectSlug/settings/api-keys": typeof appOrgSlugProjectSlugSettingsApiKeysRoute;
-  "/$orgSlug/~/projects": typeof appOrgSlugChar126orgProjectsRoute;
-  "/$orgSlug/~/settings": typeof appOrgSlugChar126orgSettingsRouteWithChildren;
-  "/$orgSlug/$projectSlug/apps/": typeof appOrgSlugProjectSlugAppsIndexRoute;
-  "/$orgSlug/$projectSlug/settings/": typeof appOrgSlugProjectSlugSettingsIndexRoute;
-  "/$orgSlug/~/": typeof appOrgSlugChar126orgIndexRoute;
-  "/$orgSlug/~/settings/members": typeof appOrgSlugChar126orgSettingsMembersRoute;
-  "/$orgSlug/~/settings/": typeof appOrgSlugChar126orgSettingsIndexRoute;
+  '/': typeof IndexRoute
+  '/logout': typeof LogoutRoute
+  '/$orgSlug': typeof appOrgSlugRouteRouteWithChildren
+  '/account': typeof appAccountRouteRouteWithChildren
+  '/onboarding': typeof appOnboardingRoute
+  '/forgot-password': typeof authForgotPasswordRoute
+  '/login': typeof authLoginRoute
+  '/sign-up': typeof authSignUpRoute
+  '/two-factor': typeof authTwoFactorRoute
+  '/verify-email': typeof authVerifyEmailRoute
+  '/auth/error': typeof AuthErrorRoute
+  '/$orgSlug/$projectSlug': typeof appOrgSlugProjectSlugRouteRouteWithChildren
+  '/account/profile': typeof appAccountProfileRouteRouteWithChildren
+  '/account/invites': typeof appAccountInvitesRoute
+  '/account/organizations': typeof appAccountOrganizationsRoute
+  '/account/request-organization': typeof appAccountRequestOrganizationRoute
+  '/api/assets/$': typeof ApiAssetsSplatRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/platform/$': typeof ApiPlatformSplatRoute
+  '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/$orgSlug/': typeof appOrgSlugIndexRoute
+  '/$orgSlug/~': typeof appOrgSlugChar126orgRouteRouteWithChildren
+  '/$orgSlug/$projectSlug/settings': typeof appOrgSlugProjectSlugSettingsRouteWithChildren
+  '/api/platform/preview/ws': typeof ApiPlatformPreviewWsRoute
+  '/$orgSlug/$projectSlug/': typeof appOrgSlugProjectSlugIndexRoute
+  '/account/profile/': typeof appAccountProfileIndexRoute
+  '/account/security/': typeof appAccountSecurityIndexRoute
+  '/$orgSlug/$projectSlug/apps/$appId': typeof appOrgSlugProjectSlugAppsAppIdRoute
+  '/$orgSlug/$projectSlug/settings/api-keys': typeof appOrgSlugProjectSlugSettingsApiKeysRoute
+  '/$orgSlug/~/projects': typeof appOrgSlugChar126orgProjectsRoute
+  '/$orgSlug/~/settings': typeof appOrgSlugChar126orgSettingsRouteWithChildren
+  '/$orgSlug/$projectSlug/apps/': typeof appOrgSlugProjectSlugAppsIndexRoute
+  '/$orgSlug/$projectSlug/settings/': typeof appOrgSlugProjectSlugSettingsIndexRoute
+  '/$orgSlug/~/': typeof appOrgSlugChar126orgIndexRoute
+  '/$orgSlug/~/settings/members': typeof appOrgSlugChar126orgSettingsMembersRoute
+  '/$orgSlug/~/settings/': typeof appOrgSlugChar126orgSettingsIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/logout": typeof LogoutRoute;
-  "/account": typeof appAccountRouteRouteWithChildren;
-  "/onboarding": typeof appOnboardingRoute;
-  "/forgot-password": typeof authForgotPasswordRoute;
-  "/login": typeof authLoginRoute;
-  "/sign-up": typeof authSignUpRoute;
-  "/two-factor": typeof authTwoFactorRoute;
-  "/verify-email": typeof authVerifyEmailRoute;
-  "/auth/error": typeof AuthErrorRoute;
-  "/account/invites": typeof appAccountInvitesRoute;
-  "/account/organizations": typeof appAccountOrganizationsRoute;
-  "/account/request-organization": typeof appAccountRequestOrganizationRoute;
-  "/api/assets/$": typeof ApiAssetsSplatRoute;
-  "/api/auth/$": typeof ApiAuthSplatRoute;
-  "/api/platform/$": typeof ApiPlatformSplatRoute;
-  "/api/rpc/$": typeof ApiRpcSplatRoute;
-  "/$orgSlug": typeof appOrgSlugIndexRoute;
-  "/api/platform/preview/ws": typeof ApiPlatformPreviewWsRoute;
-  "/$orgSlug/$projectSlug": typeof appOrgSlugProjectSlugIndexRoute;
-  "/account/profile": typeof appAccountProfileIndexRoute;
-  "/account/security": typeof appAccountSecurityIndexRoute;
-  "/$orgSlug/$projectSlug/apps/$appId": typeof appOrgSlugProjectSlugAppsAppIdRoute;
-  "/$orgSlug/$projectSlug/settings/api-keys": typeof appOrgSlugProjectSlugSettingsApiKeysRoute;
-  "/$orgSlug/~/projects": typeof appOrgSlugChar126orgProjectsRoute;
-  "/$orgSlug/$projectSlug/apps": typeof appOrgSlugProjectSlugAppsIndexRoute;
-  "/$orgSlug/$projectSlug/settings": typeof appOrgSlugProjectSlugSettingsIndexRoute;
-  "/$orgSlug/~": typeof appOrgSlugChar126orgIndexRoute;
-  "/$orgSlug/~/settings/members": typeof appOrgSlugChar126orgSettingsMembersRoute;
-  "/$orgSlug/~/settings": typeof appOrgSlugChar126orgSettingsIndexRoute;
+  '/': typeof IndexRoute
+  '/logout': typeof LogoutRoute
+  '/account': typeof appAccountRouteRouteWithChildren
+  '/onboarding': typeof appOnboardingRoute
+  '/forgot-password': typeof authForgotPasswordRoute
+  '/login': typeof authLoginRoute
+  '/sign-up': typeof authSignUpRoute
+  '/two-factor': typeof authTwoFactorRoute
+  '/verify-email': typeof authVerifyEmailRoute
+  '/auth/error': typeof AuthErrorRoute
+  '/account/invites': typeof appAccountInvitesRoute
+  '/account/organizations': typeof appAccountOrganizationsRoute
+  '/account/request-organization': typeof appAccountRequestOrganizationRoute
+  '/api/assets/$': typeof ApiAssetsSplatRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/platform/$': typeof ApiPlatformSplatRoute
+  '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/$orgSlug': typeof appOrgSlugIndexRoute
+  '/api/platform/preview/ws': typeof ApiPlatformPreviewWsRoute
+  '/$orgSlug/$projectSlug': typeof appOrgSlugProjectSlugIndexRoute
+  '/account/profile': typeof appAccountProfileIndexRoute
+  '/account/security': typeof appAccountSecurityIndexRoute
+  '/$orgSlug/$projectSlug/apps/$appId': typeof appOrgSlugProjectSlugAppsAppIdRoute
+  '/$orgSlug/$projectSlug/settings/api-keys': typeof appOrgSlugProjectSlugSettingsApiKeysRoute
+  '/$orgSlug/~/projects': typeof appOrgSlugChar126orgProjectsRoute
+  '/$orgSlug/$projectSlug/apps': typeof appOrgSlugProjectSlugAppsIndexRoute
+  '/$orgSlug/$projectSlug/settings': typeof appOrgSlugProjectSlugSettingsIndexRoute
+  '/$orgSlug/~': typeof appOrgSlugChar126orgIndexRoute
+  '/$orgSlug/~/settings/members': typeof appOrgSlugChar126orgSettingsMembersRoute
+  '/$orgSlug/~/settings': typeof appOrgSlugChar126orgSettingsIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/(app)": typeof appRouteRouteWithChildren;
-  "/(auth)": typeof authRouteRouteWithChildren;
-  "/logout": typeof LogoutRoute;
-  "/(app)/$orgSlug": typeof appOrgSlugRouteRouteWithChildren;
-  "/(app)/account": typeof appAccountRouteRouteWithChildren;
-  "/(app)/onboarding": typeof appOnboardingRoute;
-  "/(auth)/forgot-password": typeof authForgotPasswordRoute;
-  "/(auth)/login": typeof authLoginRoute;
-  "/(auth)/sign-up": typeof authSignUpRoute;
-  "/(auth)/two-factor": typeof authTwoFactorRoute;
-  "/(auth)/verify-email": typeof authVerifyEmailRoute;
-  "/auth/error": typeof AuthErrorRoute;
-  "/(app)/$orgSlug/$projectSlug": typeof appOrgSlugProjectSlugRouteRouteWithChildren;
-  "/(app)/account/profile": typeof appAccountProfileRouteRouteWithChildren;
-  "/(app)/account/invites": typeof appAccountInvitesRoute;
-  "/(app)/account/organizations": typeof appAccountOrganizationsRoute;
-  "/(app)/account/request-organization": typeof appAccountRequestOrganizationRoute;
-  "/api/assets/$": typeof ApiAssetsSplatRoute;
-  "/api/auth/$": typeof ApiAuthSplatRoute;
-  "/api/platform/$": typeof ApiPlatformSplatRoute;
-  "/api/rpc/$": typeof ApiRpcSplatRoute;
-  "/(app)/$orgSlug/": typeof appOrgSlugIndexRoute;
-  "/(app)/$orgSlug/~/(org)": typeof appOrgSlugChar126orgRouteRouteWithChildren;
-  "/(app)/$orgSlug/$projectSlug/settings": typeof appOrgSlugProjectSlugSettingsRouteWithChildren;
-  "/api/platform/preview/ws": typeof ApiPlatformPreviewWsRoute;
-  "/(app)/$orgSlug/$projectSlug/": typeof appOrgSlugProjectSlugIndexRoute;
-  "/(app)/account/profile/": typeof appAccountProfileIndexRoute;
-  "/(app)/account/security/": typeof appAccountSecurityIndexRoute;
-  "/(app)/$orgSlug/$projectSlug/apps/$appId": typeof appOrgSlugProjectSlugAppsAppIdRoute;
-  "/(app)/$orgSlug/$projectSlug/settings/api-keys": typeof appOrgSlugProjectSlugSettingsApiKeysRoute;
-  "/(app)/$orgSlug/~/(org)/projects": typeof appOrgSlugChar126orgProjectsRoute;
-  "/(app)/$orgSlug/~/(org)/settings": typeof appOrgSlugChar126orgSettingsRouteWithChildren;
-  "/(app)/$orgSlug/$projectSlug/apps/": typeof appOrgSlugProjectSlugAppsIndexRoute;
-  "/(app)/$orgSlug/$projectSlug/settings/": typeof appOrgSlugProjectSlugSettingsIndexRoute;
-  "/(app)/$orgSlug/~/(org)/": typeof appOrgSlugChar126orgIndexRoute;
-  "/(app)/$orgSlug/~/(org)/settings/members": typeof appOrgSlugChar126orgSettingsMembersRoute;
-  "/(app)/$orgSlug/~/(org)/settings/": typeof appOrgSlugChar126orgSettingsIndexRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/(app)': typeof appRouteRouteWithChildren
+  '/(auth)': typeof authRouteRouteWithChildren
+  '/logout': typeof LogoutRoute
+  '/(app)/$orgSlug': typeof appOrgSlugRouteRouteWithChildren
+  '/(app)/account': typeof appAccountRouteRouteWithChildren
+  '/(app)/onboarding': typeof appOnboardingRoute
+  '/(auth)/forgot-password': typeof authForgotPasswordRoute
+  '/(auth)/login': typeof authLoginRoute
+  '/(auth)/sign-up': typeof authSignUpRoute
+  '/(auth)/two-factor': typeof authTwoFactorRoute
+  '/(auth)/verify-email': typeof authVerifyEmailRoute
+  '/auth/error': typeof AuthErrorRoute
+  '/(app)/$orgSlug/$projectSlug': typeof appOrgSlugProjectSlugRouteRouteWithChildren
+  '/(app)/account/profile': typeof appAccountProfileRouteRouteWithChildren
+  '/(app)/account/invites': typeof appAccountInvitesRoute
+  '/(app)/account/organizations': typeof appAccountOrganizationsRoute
+  '/(app)/account/request-organization': typeof appAccountRequestOrganizationRoute
+  '/api/assets/$': typeof ApiAssetsSplatRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/platform/$': typeof ApiPlatformSplatRoute
+  '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/(app)/$orgSlug/': typeof appOrgSlugIndexRoute
+  '/(app)/$orgSlug/~/(org)': typeof appOrgSlugChar126orgRouteRouteWithChildren
+  '/(app)/$orgSlug/$projectSlug/settings': typeof appOrgSlugProjectSlugSettingsRouteWithChildren
+  '/api/platform/preview/ws': typeof ApiPlatformPreviewWsRoute
+  '/(app)/$orgSlug/$projectSlug/': typeof appOrgSlugProjectSlugIndexRoute
+  '/(app)/account/profile/': typeof appAccountProfileIndexRoute
+  '/(app)/account/security/': typeof appAccountSecurityIndexRoute
+  '/(app)/$orgSlug/$projectSlug/apps/$appId': typeof appOrgSlugProjectSlugAppsAppIdRoute
+  '/(app)/$orgSlug/$projectSlug/settings/api-keys': typeof appOrgSlugProjectSlugSettingsApiKeysRoute
+  '/(app)/$orgSlug/~/(org)/projects': typeof appOrgSlugChar126orgProjectsRoute
+  '/(app)/$orgSlug/~/(org)/settings': typeof appOrgSlugChar126orgSettingsRouteWithChildren
+  '/(app)/$orgSlug/$projectSlug/apps/': typeof appOrgSlugProjectSlugAppsIndexRoute
+  '/(app)/$orgSlug/$projectSlug/settings/': typeof appOrgSlugProjectSlugSettingsIndexRoute
+  '/(app)/$orgSlug/~/(org)/': typeof appOrgSlugChar126orgIndexRoute
+  '/(app)/$orgSlug/~/(org)/settings/members': typeof appOrgSlugChar126orgSettingsMembersRoute
+  '/(app)/$orgSlug/~/(org)/settings/': typeof appOrgSlugChar126orgSettingsIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/logout"
-    | "/$orgSlug"
-    | "/account"
-    | "/onboarding"
-    | "/forgot-password"
-    | "/login"
-    | "/sign-up"
-    | "/two-factor"
-    | "/verify-email"
-    | "/auth/error"
-    | "/$orgSlug/$projectSlug"
-    | "/account/profile"
-    | "/account/invites"
-    | "/account/organizations"
-    | "/account/request-organization"
-    | "/api/assets/$"
-    | "/api/auth/$"
-    | "/api/platform/$"
-    | "/api/rpc/$"
-    | "/$orgSlug/"
-    | "/$orgSlug/~"
-    | "/$orgSlug/$projectSlug/settings"
-    | "/api/platform/preview/ws"
-    | "/$orgSlug/$projectSlug/"
-    | "/account/profile/"
-    | "/account/security/"
-    | "/$orgSlug/$projectSlug/apps/$appId"
-    | "/$orgSlug/$projectSlug/settings/api-keys"
-    | "/$orgSlug/~/projects"
-    | "/$orgSlug/~/settings"
-    | "/$orgSlug/$projectSlug/apps/"
-    | "/$orgSlug/$projectSlug/settings/"
-    | "/$orgSlug/~/"
-    | "/$orgSlug/~/settings/members"
-    | "/$orgSlug/~/settings/";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/logout'
+    | '/$orgSlug'
+    | '/account'
+    | '/onboarding'
+    | '/forgot-password'
+    | '/login'
+    | '/sign-up'
+    | '/two-factor'
+    | '/verify-email'
+    | '/auth/error'
+    | '/$orgSlug/$projectSlug'
+    | '/account/profile'
+    | '/account/invites'
+    | '/account/organizations'
+    | '/account/request-organization'
+    | '/api/assets/$'
+    | '/api/auth/$'
+    | '/api/platform/$'
+    | '/api/rpc/$'
+    | '/$orgSlug/'
+    | '/$orgSlug/~'
+    | '/$orgSlug/$projectSlug/settings'
+    | '/api/platform/preview/ws'
+    | '/$orgSlug/$projectSlug/'
+    | '/account/profile/'
+    | '/account/security/'
+    | '/$orgSlug/$projectSlug/apps/$appId'
+    | '/$orgSlug/$projectSlug/settings/api-keys'
+    | '/$orgSlug/~/projects'
+    | '/$orgSlug/~/settings'
+    | '/$orgSlug/$projectSlug/apps/'
+    | '/$orgSlug/$projectSlug/settings/'
+    | '/$orgSlug/~/'
+    | '/$orgSlug/~/settings/members'
+    | '/$orgSlug/~/settings/'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/logout"
-    | "/account"
-    | "/onboarding"
-    | "/forgot-password"
-    | "/login"
-    | "/sign-up"
-    | "/two-factor"
-    | "/verify-email"
-    | "/auth/error"
-    | "/account/invites"
-    | "/account/organizations"
-    | "/account/request-organization"
-    | "/api/assets/$"
-    | "/api/auth/$"
-    | "/api/platform/$"
-    | "/api/rpc/$"
-    | "/$orgSlug"
-    | "/api/platform/preview/ws"
-    | "/$orgSlug/$projectSlug"
-    | "/account/profile"
-    | "/account/security"
-    | "/$orgSlug/$projectSlug/apps/$appId"
-    | "/$orgSlug/$projectSlug/settings/api-keys"
-    | "/$orgSlug/~/projects"
-    | "/$orgSlug/$projectSlug/apps"
-    | "/$orgSlug/$projectSlug/settings"
-    | "/$orgSlug/~"
-    | "/$orgSlug/~/settings/members"
-    | "/$orgSlug/~/settings";
+    | '/'
+    | '/logout'
+    | '/account'
+    | '/onboarding'
+    | '/forgot-password'
+    | '/login'
+    | '/sign-up'
+    | '/two-factor'
+    | '/verify-email'
+    | '/auth/error'
+    | '/account/invites'
+    | '/account/organizations'
+    | '/account/request-organization'
+    | '/api/assets/$'
+    | '/api/auth/$'
+    | '/api/platform/$'
+    | '/api/rpc/$'
+    | '/$orgSlug'
+    | '/api/platform/preview/ws'
+    | '/$orgSlug/$projectSlug'
+    | '/account/profile'
+    | '/account/security'
+    | '/$orgSlug/$projectSlug/apps/$appId'
+    | '/$orgSlug/$projectSlug/settings/api-keys'
+    | '/$orgSlug/~/projects'
+    | '/$orgSlug/$projectSlug/apps'
+    | '/$orgSlug/$projectSlug/settings'
+    | '/$orgSlug/~'
+    | '/$orgSlug/~/settings/members'
+    | '/$orgSlug/~/settings'
   id:
-    | "__root__"
-    | "/"
-    | "/(app)"
-    | "/(auth)"
-    | "/logout"
-    | "/(app)/$orgSlug"
-    | "/(app)/account"
-    | "/(app)/onboarding"
-    | "/(auth)/forgot-password"
-    | "/(auth)/login"
-    | "/(auth)/sign-up"
-    | "/(auth)/two-factor"
-    | "/(auth)/verify-email"
-    | "/auth/error"
-    | "/(app)/$orgSlug/$projectSlug"
-    | "/(app)/account/profile"
-    | "/(app)/account/invites"
-    | "/(app)/account/organizations"
-    | "/(app)/account/request-organization"
-    | "/api/assets/$"
-    | "/api/auth/$"
-    | "/api/platform/$"
-    | "/api/rpc/$"
-    | "/(app)/$orgSlug/"
-    | "/(app)/$orgSlug/~/(org)"
-    | "/(app)/$orgSlug/$projectSlug/settings"
-    | "/api/platform/preview/ws"
-    | "/(app)/$orgSlug/$projectSlug/"
-    | "/(app)/account/profile/"
-    | "/(app)/account/security/"
-    | "/(app)/$orgSlug/$projectSlug/apps/$appId"
-    | "/(app)/$orgSlug/$projectSlug/settings/api-keys"
-    | "/(app)/$orgSlug/~/(org)/projects"
-    | "/(app)/$orgSlug/~/(org)/settings"
-    | "/(app)/$orgSlug/$projectSlug/apps/"
-    | "/(app)/$orgSlug/$projectSlug/settings/"
-    | "/(app)/$orgSlug/~/(org)/"
-    | "/(app)/$orgSlug/~/(org)/settings/members"
-    | "/(app)/$orgSlug/~/(org)/settings/";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/(app)'
+    | '/(auth)'
+    | '/logout'
+    | '/(app)/$orgSlug'
+    | '/(app)/account'
+    | '/(app)/onboarding'
+    | '/(auth)/forgot-password'
+    | '/(auth)/login'
+    | '/(auth)/sign-up'
+    | '/(auth)/two-factor'
+    | '/(auth)/verify-email'
+    | '/auth/error'
+    | '/(app)/$orgSlug/$projectSlug'
+    | '/(app)/account/profile'
+    | '/(app)/account/invites'
+    | '/(app)/account/organizations'
+    | '/(app)/account/request-organization'
+    | '/api/assets/$'
+    | '/api/auth/$'
+    | '/api/platform/$'
+    | '/api/rpc/$'
+    | '/(app)/$orgSlug/'
+    | '/(app)/$orgSlug/~/(org)'
+    | '/(app)/$orgSlug/$projectSlug/settings'
+    | '/api/platform/preview/ws'
+    | '/(app)/$orgSlug/$projectSlug/'
+    | '/(app)/account/profile/'
+    | '/(app)/account/security/'
+    | '/(app)/$orgSlug/$projectSlug/apps/$appId'
+    | '/(app)/$orgSlug/$projectSlug/settings/api-keys'
+    | '/(app)/$orgSlug/~/(org)/projects'
+    | '/(app)/$orgSlug/~/(org)/settings'
+    | '/(app)/$orgSlug/$projectSlug/apps/'
+    | '/(app)/$orgSlug/$projectSlug/settings/'
+    | '/(app)/$orgSlug/~/(org)/'
+    | '/(app)/$orgSlug/~/(org)/settings/members'
+    | '/(app)/$orgSlug/~/(org)/settings/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  appRouteRoute: typeof appRouteRouteWithChildren;
-  authRouteRoute: typeof authRouteRouteWithChildren;
-  LogoutRoute: typeof LogoutRoute;
-  AuthErrorRoute: typeof AuthErrorRoute;
-  ApiAssetsSplatRoute: typeof ApiAssetsSplatRoute;
-  ApiAuthSplatRoute: typeof ApiAuthSplatRoute;
-  ApiPlatformSplatRoute: typeof ApiPlatformSplatRoute;
-  ApiRpcSplatRoute: typeof ApiRpcSplatRoute;
-  ApiPlatformPreviewWsRoute: typeof ApiPlatformPreviewWsRoute;
+  IndexRoute: typeof IndexRoute
+  appRouteRoute: typeof appRouteRouteWithChildren
+  authRouteRoute: typeof authRouteRouteWithChildren
+  LogoutRoute: typeof LogoutRoute
+  AuthErrorRoute: typeof AuthErrorRoute
+  ApiAssetsSplatRoute: typeof ApiAssetsSplatRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiPlatformSplatRoute: typeof ApiPlatformSplatRoute
+  ApiRpcSplatRoute: typeof ApiRpcSplatRoute
+  ApiPlatformPreviewWsRoute: typeof ApiPlatformPreviewWsRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/(app)": {
-      id: "/(app)";
-      path: "";
-      fullPath: "";
-      preLoaderRoute: typeof appRouteRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/(auth)": {
-      id: "/(auth)";
-      path: "";
-      fullPath: "";
-      preLoaderRoute: typeof authRouteRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/logout": {
-      id: "/logout";
-      path: "/logout";
-      fullPath: "/logout";
-      preLoaderRoute: typeof LogoutRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/(app)/$orgSlug": {
-      id: "/(app)/$orgSlug";
-      path: "/$orgSlug";
-      fullPath: "/$orgSlug";
-      preLoaderRoute: typeof appOrgSlugRouteRouteImport;
-      parentRoute: typeof appRouteRoute;
-    };
-    "/(app)/account": {
-      id: "/(app)/account";
-      path: "/account";
-      fullPath: "/account";
-      preLoaderRoute: typeof appAccountRouteRouteImport;
-      parentRoute: typeof appRouteRoute;
-    };
-    "/(app)/onboarding": {
-      id: "/(app)/onboarding";
-      path: "/onboarding";
-      fullPath: "/onboarding";
-      preLoaderRoute: typeof appOnboardingRouteImport;
-      parentRoute: typeof appRouteRoute;
-    };
-    "/(auth)/forgot-password": {
-      id: "/(auth)/forgot-password";
-      path: "/forgot-password";
-      fullPath: "/forgot-password";
-      preLoaderRoute: typeof authForgotPasswordRouteImport;
-      parentRoute: typeof authRouteRoute;
-    };
-    "/(auth)/login": {
-      id: "/(auth)/login";
-      path: "/login";
-      fullPath: "/login";
-      preLoaderRoute: typeof authLoginRouteImport;
-      parentRoute: typeof authRouteRoute;
-    };
-    "/(auth)/sign-up": {
-      id: "/(auth)/sign-up";
-      path: "/sign-up";
-      fullPath: "/sign-up";
-      preLoaderRoute: typeof authSignUpRouteImport;
-      parentRoute: typeof authRouteRoute;
-    };
-    "/(auth)/two-factor": {
-      id: "/(auth)/two-factor";
-      path: "/two-factor";
-      fullPath: "/two-factor";
-      preLoaderRoute: typeof authTwoFactorRouteImport;
-      parentRoute: typeof authRouteRoute;
-    };
-    "/(auth)/verify-email": {
-      id: "/(auth)/verify-email";
-      path: "/verify-email";
-      fullPath: "/verify-email";
-      preLoaderRoute: typeof authVerifyEmailRouteImport;
-      parentRoute: typeof authRouteRoute;
-    };
-    "/auth/error": {
-      id: "/auth/error";
-      path: "/auth/error";
-      fullPath: "/auth/error";
-      preLoaderRoute: typeof AuthErrorRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/(app)/$orgSlug/": {
-      id: "/(app)/$orgSlug/";
-      path: "/";
-      fullPath: "/$orgSlug/";
-      preLoaderRoute: typeof appOrgSlugIndexRouteImport;
-      parentRoute: typeof appOrgSlugRouteRoute;
-    };
-    "/(app)/$orgSlug/$projectSlug": {
-      id: "/(app)/$orgSlug/$projectSlug";
-      path: "/$projectSlug";
-      fullPath: "/$orgSlug/$projectSlug";
-      preLoaderRoute: typeof appOrgSlugProjectSlugRouteRouteImport;
-      parentRoute: typeof appOrgSlugRouteRoute;
-    };
-    "/(app)/account/invites": {
-      id: "/(app)/account/invites";
-      path: "/invites";
-      fullPath: "/account/invites";
-      preLoaderRoute: typeof appAccountInvitesRouteImport;
-      parentRoute: typeof appAccountRouteRoute;
-    };
-    "/(app)/account/organizations": {
-      id: "/(app)/account/organizations";
-      path: "/organizations";
-      fullPath: "/account/organizations";
-      preLoaderRoute: typeof appAccountOrganizationsRouteImport;
-      parentRoute: typeof appAccountRouteRoute;
-    };
-    "/(app)/account/profile": {
-      id: "/(app)/account/profile";
-      path: "/profile";
-      fullPath: "/account/profile";
-      preLoaderRoute: typeof appAccountProfileRouteRouteImport;
-      parentRoute: typeof appAccountRouteRoute;
-    };
-    "/(app)/account/request-organization": {
-      id: "/(app)/account/request-organization";
-      path: "/request-organization";
-      fullPath: "/account/request-organization";
-      preLoaderRoute: typeof appAccountRequestOrganizationRouteImport;
-      parentRoute: typeof appAccountRouteRoute;
-    };
-    "/api/assets/$": {
-      id: "/api/assets/$";
-      path: "/api/assets/$";
-      fullPath: "/api/assets/$";
-      preLoaderRoute: typeof ApiAssetsSplatRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/auth/$": {
-      id: "/api/auth/$";
-      path: "/api/auth/$";
-      fullPath: "/api/auth/$";
-      preLoaderRoute: typeof ApiAuthSplatRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/platform/$": {
-      id: "/api/platform/$";
-      path: "/api/platform/$";
-      fullPath: "/api/platform/$";
-      preLoaderRoute: typeof ApiPlatformSplatRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/rpc/$": {
-      id: "/api/rpc/$";
-      path: "/api/rpc/$";
-      fullPath: "/api/rpc/$";
-      preLoaderRoute: typeof ApiRpcSplatRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/(app)/$orgSlug/$projectSlug/": {
-      id: "/(app)/$orgSlug/$projectSlug/";
-      path: "/";
-      fullPath: "/$orgSlug/$projectSlug/";
-      preLoaderRoute: typeof appOrgSlugProjectSlugIndexRouteImport;
-      parentRoute: typeof appOrgSlugProjectSlugRouteRoute;
-    };
-    "/(app)/$orgSlug/$projectSlug/settings": {
-      id: "/(app)/$orgSlug/$projectSlug/settings";
-      path: "/settings";
-      fullPath: "/$orgSlug/$projectSlug/settings";
-      preLoaderRoute: typeof appOrgSlugProjectSlugSettingsRouteImport;
-      parentRoute: typeof appOrgSlugProjectSlugRouteRoute;
-    };
-    "/(app)/$orgSlug/~/(org)": {
-      id: "/(app)/$orgSlug/~/(org)";
-      path: "/~";
-      fullPath: "/$orgSlug/~";
-      preLoaderRoute: typeof appOrgSlugChar126orgRouteRouteImport;
-      parentRoute: typeof appOrgSlugRouteRoute;
-    };
-    "/(app)/account/profile/": {
-      id: "/(app)/account/profile/";
-      path: "/";
-      fullPath: "/account/profile/";
-      preLoaderRoute: typeof appAccountProfileIndexRouteImport;
-      parentRoute: typeof appAccountProfileRouteRoute;
-    };
-    "/(app)/account/security/": {
-      id: "/(app)/account/security/";
-      path: "/security";
-      fullPath: "/account/security/";
-      preLoaderRoute: typeof appAccountSecurityIndexRouteImport;
-      parentRoute: typeof appAccountRouteRoute;
-    };
-    "/api/platform/preview/ws": {
-      id: "/api/platform/preview/ws";
-      path: "/api/platform/preview/ws";
-      fullPath: "/api/platform/preview/ws";
-      preLoaderRoute: typeof ApiPlatformPreviewWsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/(app)/$orgSlug/$projectSlug/apps/": {
-      id: "/(app)/$orgSlug/$projectSlug/apps/";
-      path: "/apps";
-      fullPath: "/$orgSlug/$projectSlug/apps/";
-      preLoaderRoute: typeof appOrgSlugProjectSlugAppsIndexRouteImport;
-      parentRoute: typeof appOrgSlugProjectSlugRouteRoute;
-    };
-    "/(app)/$orgSlug/$projectSlug/apps/$appId": {
-      id: "/(app)/$orgSlug/$projectSlug/apps/$appId";
-      path: "/apps/$appId";
-      fullPath: "/$orgSlug/$projectSlug/apps/$appId";
-      preLoaderRoute: typeof appOrgSlugProjectSlugAppsAppIdRouteImport;
-      parentRoute: typeof appOrgSlugProjectSlugRouteRoute;
-    };
-    "/(app)/$orgSlug/$projectSlug/settings/": {
-      id: "/(app)/$orgSlug/$projectSlug/settings/";
-      path: "/";
-      fullPath: "/$orgSlug/$projectSlug/settings/";
-      preLoaderRoute: typeof appOrgSlugProjectSlugSettingsIndexRouteImport;
-      parentRoute: typeof appOrgSlugProjectSlugSettingsRoute;
-    };
-    "/(app)/$orgSlug/$projectSlug/settings/api-keys": {
-      id: "/(app)/$orgSlug/$projectSlug/settings/api-keys";
-      path: "/api-keys";
-      fullPath: "/$orgSlug/$projectSlug/settings/api-keys";
-      preLoaderRoute: typeof appOrgSlugProjectSlugSettingsApiKeysRouteImport;
-      parentRoute: typeof appOrgSlugProjectSlugSettingsRoute;
-    };
-    "/(app)/$orgSlug/~/(org)/": {
-      id: "/(app)/$orgSlug/~/(org)/";
-      path: "/";
-      fullPath: "/$orgSlug/~/";
-      preLoaderRoute: typeof appOrgSlugChar126orgIndexRouteImport;
-      parentRoute: typeof appOrgSlugChar126orgRouteRoute;
-    };
-    "/(app)/$orgSlug/~/(org)/projects": {
-      id: "/(app)/$orgSlug/~/(org)/projects";
-      path: "/projects";
-      fullPath: "/$orgSlug/~/projects";
-      preLoaderRoute: typeof appOrgSlugChar126orgProjectsRouteImport;
-      parentRoute: typeof appOrgSlugChar126orgRouteRoute;
-    };
-    "/(app)/$orgSlug/~/(org)/settings": {
-      id: "/(app)/$orgSlug/~/(org)/settings";
-      path: "/settings";
-      fullPath: "/$orgSlug/~/settings";
-      preLoaderRoute: typeof appOrgSlugChar126orgSettingsRouteImport;
-      parentRoute: typeof appOrgSlugChar126orgRouteRoute;
-    };
-    "/(app)/$orgSlug/~/(org)/settings/": {
-      id: "/(app)/$orgSlug/~/(org)/settings/";
-      path: "/";
-      fullPath: "/$orgSlug/~/settings/";
-      preLoaderRoute: typeof appOrgSlugChar126orgSettingsIndexRouteImport;
-      parentRoute: typeof appOrgSlugChar126orgSettingsRoute;
-    };
-    "/(app)/$orgSlug/~/(org)/settings/members": {
-      id: "/(app)/$orgSlug/~/(org)/settings/members";
-      path: "/members";
-      fullPath: "/$orgSlug/~/settings/members";
-      preLoaderRoute: typeof appOrgSlugChar126orgSettingsMembersRouteImport;
-      parentRoute: typeof appOrgSlugChar126orgSettingsRoute;
-    };
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(app)': {
+      id: '/(app)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof appRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)': {
+      id: '/(auth)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof authRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/logout': {
+      id: '/logout'
+      path: '/logout'
+      fullPath: '/logout'
+      preLoaderRoute: typeof LogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(app)/$orgSlug': {
+      id: '/(app)/$orgSlug'
+      path: '/$orgSlug'
+      fullPath: '/$orgSlug'
+      preLoaderRoute: typeof appOrgSlugRouteRouteImport
+      parentRoute: typeof appRouteRoute
+    }
+    '/(app)/account': {
+      id: '/(app)/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof appAccountRouteRouteImport
+      parentRoute: typeof appRouteRoute
+    }
+    '/(app)/onboarding': {
+      id: '/(app)/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof appOnboardingRouteImport
+      parentRoute: typeof appRouteRoute
+    }
+    '/(auth)/forgot-password': {
+      id: '/(auth)/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof authForgotPasswordRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/(auth)/login': {
+      id: '/(auth)/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof authLoginRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/(auth)/sign-up': {
+      id: '/(auth)/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof authSignUpRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/(auth)/two-factor': {
+      id: '/(auth)/two-factor'
+      path: '/two-factor'
+      fullPath: '/two-factor'
+      preLoaderRoute: typeof authTwoFactorRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/(auth)/verify-email': {
+      id: '/(auth)/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof authVerifyEmailRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/auth/error': {
+      id: '/auth/error'
+      path: '/auth/error'
+      fullPath: '/auth/error'
+      preLoaderRoute: typeof AuthErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(app)/$orgSlug/': {
+      id: '/(app)/$orgSlug/'
+      path: '/'
+      fullPath: '/$orgSlug/'
+      preLoaderRoute: typeof appOrgSlugIndexRouteImport
+      parentRoute: typeof appOrgSlugRouteRoute
+    }
+    '/(app)/$orgSlug/$projectSlug': {
+      id: '/(app)/$orgSlug/$projectSlug'
+      path: '/$projectSlug'
+      fullPath: '/$orgSlug/$projectSlug'
+      preLoaderRoute: typeof appOrgSlugProjectSlugRouteRouteImport
+      parentRoute: typeof appOrgSlugRouteRoute
+    }
+    '/(app)/account/invites': {
+      id: '/(app)/account/invites'
+      path: '/invites'
+      fullPath: '/account/invites'
+      preLoaderRoute: typeof appAccountInvitesRouteImport
+      parentRoute: typeof appAccountRouteRoute
+    }
+    '/(app)/account/organizations': {
+      id: '/(app)/account/organizations'
+      path: '/organizations'
+      fullPath: '/account/organizations'
+      preLoaderRoute: typeof appAccountOrganizationsRouteImport
+      parentRoute: typeof appAccountRouteRoute
+    }
+    '/(app)/account/profile': {
+      id: '/(app)/account/profile'
+      path: '/profile'
+      fullPath: '/account/profile'
+      preLoaderRoute: typeof appAccountProfileRouteRouteImport
+      parentRoute: typeof appAccountRouteRoute
+    }
+    '/(app)/account/request-organization': {
+      id: '/(app)/account/request-organization'
+      path: '/request-organization'
+      fullPath: '/account/request-organization'
+      preLoaderRoute: typeof appAccountRequestOrganizationRouteImport
+      parentRoute: typeof appAccountRouteRoute
+    }
+    '/api/assets/$': {
+      id: '/api/assets/$'
+      path: '/api/assets/$'
+      fullPath: '/api/assets/$'
+      preLoaderRoute: typeof ApiAssetsSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/platform/$': {
+      id: '/api/platform/$'
+      path: '/api/platform/$'
+      fullPath: '/api/platform/$'
+      preLoaderRoute: typeof ApiPlatformSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/rpc/$': {
+      id: '/api/rpc/$'
+      path: '/api/rpc/$'
+      fullPath: '/api/rpc/$'
+      preLoaderRoute: typeof ApiRpcSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(app)/$orgSlug/$projectSlug/': {
+      id: '/(app)/$orgSlug/$projectSlug/'
+      path: '/'
+      fullPath: '/$orgSlug/$projectSlug/'
+      preLoaderRoute: typeof appOrgSlugProjectSlugIndexRouteImport
+      parentRoute: typeof appOrgSlugProjectSlugRouteRoute
+    }
+    '/(app)/$orgSlug/$projectSlug/settings': {
+      id: '/(app)/$orgSlug/$projectSlug/settings'
+      path: '/settings'
+      fullPath: '/$orgSlug/$projectSlug/settings'
+      preLoaderRoute: typeof appOrgSlugProjectSlugSettingsRouteImport
+      parentRoute: typeof appOrgSlugProjectSlugRouteRoute
+    }
+    '/(app)/$orgSlug/~/(org)': {
+      id: '/(app)/$orgSlug/~/(org)'
+      path: '/~'
+      fullPath: '/$orgSlug/~'
+      preLoaderRoute: typeof appOrgSlugChar126orgRouteRouteImport
+      parentRoute: typeof appOrgSlugRouteRoute
+    }
+    '/(app)/account/profile/': {
+      id: '/(app)/account/profile/'
+      path: '/'
+      fullPath: '/account/profile/'
+      preLoaderRoute: typeof appAccountProfileIndexRouteImport
+      parentRoute: typeof appAccountProfileRouteRoute
+    }
+    '/(app)/account/security/': {
+      id: '/(app)/account/security/'
+      path: '/security'
+      fullPath: '/account/security/'
+      preLoaderRoute: typeof appAccountSecurityIndexRouteImport
+      parentRoute: typeof appAccountRouteRoute
+    }
+    '/api/platform/preview/ws': {
+      id: '/api/platform/preview/ws'
+      path: '/api/platform/preview/ws'
+      fullPath: '/api/platform/preview/ws'
+      preLoaderRoute: typeof ApiPlatformPreviewWsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(app)/$orgSlug/$projectSlug/apps/': {
+      id: '/(app)/$orgSlug/$projectSlug/apps/'
+      path: '/apps'
+      fullPath: '/$orgSlug/$projectSlug/apps/'
+      preLoaderRoute: typeof appOrgSlugProjectSlugAppsIndexRouteImport
+      parentRoute: typeof appOrgSlugProjectSlugRouteRoute
+    }
+    '/(app)/$orgSlug/$projectSlug/apps/$appId': {
+      id: '/(app)/$orgSlug/$projectSlug/apps/$appId'
+      path: '/apps/$appId'
+      fullPath: '/$orgSlug/$projectSlug/apps/$appId'
+      preLoaderRoute: typeof appOrgSlugProjectSlugAppsAppIdRouteImport
+      parentRoute: typeof appOrgSlugProjectSlugRouteRoute
+    }
+    '/(app)/$orgSlug/$projectSlug/settings/': {
+      id: '/(app)/$orgSlug/$projectSlug/settings/'
+      path: '/'
+      fullPath: '/$orgSlug/$projectSlug/settings/'
+      preLoaderRoute: typeof appOrgSlugProjectSlugSettingsIndexRouteImport
+      parentRoute: typeof appOrgSlugProjectSlugSettingsRoute
+    }
+    '/(app)/$orgSlug/$projectSlug/settings/api-keys': {
+      id: '/(app)/$orgSlug/$projectSlug/settings/api-keys'
+      path: '/api-keys'
+      fullPath: '/$orgSlug/$projectSlug/settings/api-keys'
+      preLoaderRoute: typeof appOrgSlugProjectSlugSettingsApiKeysRouteImport
+      parentRoute: typeof appOrgSlugProjectSlugSettingsRoute
+    }
+    '/(app)/$orgSlug/~/(org)/': {
+      id: '/(app)/$orgSlug/~/(org)/'
+      path: '/'
+      fullPath: '/$orgSlug/~/'
+      preLoaderRoute: typeof appOrgSlugChar126orgIndexRouteImport
+      parentRoute: typeof appOrgSlugChar126orgRouteRoute
+    }
+    '/(app)/$orgSlug/~/(org)/projects': {
+      id: '/(app)/$orgSlug/~/(org)/projects'
+      path: '/projects'
+      fullPath: '/$orgSlug/~/projects'
+      preLoaderRoute: typeof appOrgSlugChar126orgProjectsRouteImport
+      parentRoute: typeof appOrgSlugChar126orgRouteRoute
+    }
+    '/(app)/$orgSlug/~/(org)/settings': {
+      id: '/(app)/$orgSlug/~/(org)/settings'
+      path: '/settings'
+      fullPath: '/$orgSlug/~/settings'
+      preLoaderRoute: typeof appOrgSlugChar126orgSettingsRouteImport
+      parentRoute: typeof appOrgSlugChar126orgRouteRoute
+    }
+    '/(app)/$orgSlug/~/(org)/settings/': {
+      id: '/(app)/$orgSlug/~/(org)/settings/'
+      path: '/'
+      fullPath: '/$orgSlug/~/settings/'
+      preLoaderRoute: typeof appOrgSlugChar126orgSettingsIndexRouteImport
+      parentRoute: typeof appOrgSlugChar126orgSettingsRoute
+    }
+    '/(app)/$orgSlug/~/(org)/settings/members': {
+      id: '/(app)/$orgSlug/~/(org)/settings/members'
+      path: '/members'
+      fullPath: '/$orgSlug/~/settings/members'
+      preLoaderRoute: typeof appOrgSlugChar126orgSettingsMembersRouteImport
+      parentRoute: typeof appOrgSlugChar126orgSettingsRoute
+    }
   }
 }
 
 interface appOrgSlugProjectSlugSettingsRouteChildren {
-  appOrgSlugProjectSlugSettingsApiKeysRoute: typeof appOrgSlugProjectSlugSettingsApiKeysRoute;
-  appOrgSlugProjectSlugSettingsIndexRoute: typeof appOrgSlugProjectSlugSettingsIndexRoute;
+  appOrgSlugProjectSlugSettingsApiKeysRoute: typeof appOrgSlugProjectSlugSettingsApiKeysRoute
+  appOrgSlugProjectSlugSettingsIndexRoute: typeof appOrgSlugProjectSlugSettingsIndexRoute
 }
 
-const appOrgSlugProjectSlugSettingsRouteChildren: appOrgSlugProjectSlugSettingsRouteChildren = {
-  appOrgSlugProjectSlugSettingsApiKeysRoute: appOrgSlugProjectSlugSettingsApiKeysRoute,
-  appOrgSlugProjectSlugSettingsIndexRoute: appOrgSlugProjectSlugSettingsIndexRoute,
-};
+const appOrgSlugProjectSlugSettingsRouteChildren: appOrgSlugProjectSlugSettingsRouteChildren =
+  {
+    appOrgSlugProjectSlugSettingsApiKeysRoute:
+      appOrgSlugProjectSlugSettingsApiKeysRoute,
+    appOrgSlugProjectSlugSettingsIndexRoute:
+      appOrgSlugProjectSlugSettingsIndexRoute,
+  }
 
 const appOrgSlugProjectSlugSettingsRouteWithChildren =
-  appOrgSlugProjectSlugSettingsRoute._addFileChildren(appOrgSlugProjectSlugSettingsRouteChildren);
+  appOrgSlugProjectSlugSettingsRoute._addFileChildren(
+    appOrgSlugProjectSlugSettingsRouteChildren,
+  )
 
 interface appOrgSlugProjectSlugRouteRouteChildren {
-  appOrgSlugProjectSlugSettingsRoute: typeof appOrgSlugProjectSlugSettingsRouteWithChildren;
-  appOrgSlugProjectSlugIndexRoute: typeof appOrgSlugProjectSlugIndexRoute;
-  appOrgSlugProjectSlugAppsAppIdRoute: typeof appOrgSlugProjectSlugAppsAppIdRoute;
-  appOrgSlugProjectSlugAppsIndexRoute: typeof appOrgSlugProjectSlugAppsIndexRoute;
+  appOrgSlugProjectSlugSettingsRoute: typeof appOrgSlugProjectSlugSettingsRouteWithChildren
+  appOrgSlugProjectSlugIndexRoute: typeof appOrgSlugProjectSlugIndexRoute
+  appOrgSlugProjectSlugAppsAppIdRoute: typeof appOrgSlugProjectSlugAppsAppIdRoute
+  appOrgSlugProjectSlugAppsIndexRoute: typeof appOrgSlugProjectSlugAppsIndexRoute
 }
 
-const appOrgSlugProjectSlugRouteRouteChildren: appOrgSlugProjectSlugRouteRouteChildren = {
-  appOrgSlugProjectSlugSettingsRoute: appOrgSlugProjectSlugSettingsRouteWithChildren,
-  appOrgSlugProjectSlugIndexRoute: appOrgSlugProjectSlugIndexRoute,
-  appOrgSlugProjectSlugAppsAppIdRoute: appOrgSlugProjectSlugAppsAppIdRoute,
-  appOrgSlugProjectSlugAppsIndexRoute: appOrgSlugProjectSlugAppsIndexRoute,
-};
+const appOrgSlugProjectSlugRouteRouteChildren: appOrgSlugProjectSlugRouteRouteChildren =
+  {
+    appOrgSlugProjectSlugSettingsRoute:
+      appOrgSlugProjectSlugSettingsRouteWithChildren,
+    appOrgSlugProjectSlugIndexRoute: appOrgSlugProjectSlugIndexRoute,
+    appOrgSlugProjectSlugAppsAppIdRoute: appOrgSlugProjectSlugAppsAppIdRoute,
+    appOrgSlugProjectSlugAppsIndexRoute: appOrgSlugProjectSlugAppsIndexRoute,
+  }
 
 const appOrgSlugProjectSlugRouteRouteWithChildren =
-  appOrgSlugProjectSlugRouteRoute._addFileChildren(appOrgSlugProjectSlugRouteRouteChildren);
+  appOrgSlugProjectSlugRouteRoute._addFileChildren(
+    appOrgSlugProjectSlugRouteRouteChildren,
+  )
 
 interface appOrgSlugChar126orgSettingsRouteChildren {
-  appOrgSlugChar126orgSettingsMembersRoute: typeof appOrgSlugChar126orgSettingsMembersRoute;
-  appOrgSlugChar126orgSettingsIndexRoute: typeof appOrgSlugChar126orgSettingsIndexRoute;
+  appOrgSlugChar126orgSettingsMembersRoute: typeof appOrgSlugChar126orgSettingsMembersRoute
+  appOrgSlugChar126orgSettingsIndexRoute: typeof appOrgSlugChar126orgSettingsIndexRoute
 }
 
-const appOrgSlugChar126orgSettingsRouteChildren: appOrgSlugChar126orgSettingsRouteChildren = {
-  appOrgSlugChar126orgSettingsMembersRoute: appOrgSlugChar126orgSettingsMembersRoute,
-  appOrgSlugChar126orgSettingsIndexRoute: appOrgSlugChar126orgSettingsIndexRoute,
-};
+const appOrgSlugChar126orgSettingsRouteChildren: appOrgSlugChar126orgSettingsRouteChildren =
+  {
+    appOrgSlugChar126orgSettingsMembersRoute:
+      appOrgSlugChar126orgSettingsMembersRoute,
+    appOrgSlugChar126orgSettingsIndexRoute:
+      appOrgSlugChar126orgSettingsIndexRoute,
+  }
 
 const appOrgSlugChar126orgSettingsRouteWithChildren =
-  appOrgSlugChar126orgSettingsRoute._addFileChildren(appOrgSlugChar126orgSettingsRouteChildren);
+  appOrgSlugChar126orgSettingsRoute._addFileChildren(
+    appOrgSlugChar126orgSettingsRouteChildren,
+  )
 
 interface appOrgSlugChar126orgRouteRouteChildren {
-  appOrgSlugChar126orgProjectsRoute: typeof appOrgSlugChar126orgProjectsRoute;
-  appOrgSlugChar126orgSettingsRoute: typeof appOrgSlugChar126orgSettingsRouteWithChildren;
-  appOrgSlugChar126orgIndexRoute: typeof appOrgSlugChar126orgIndexRoute;
+  appOrgSlugChar126orgProjectsRoute: typeof appOrgSlugChar126orgProjectsRoute
+  appOrgSlugChar126orgSettingsRoute: typeof appOrgSlugChar126orgSettingsRouteWithChildren
+  appOrgSlugChar126orgIndexRoute: typeof appOrgSlugChar126orgIndexRoute
 }
 
-const appOrgSlugChar126orgRouteRouteChildren: appOrgSlugChar126orgRouteRouteChildren = {
-  appOrgSlugChar126orgProjectsRoute: appOrgSlugChar126orgProjectsRoute,
-  appOrgSlugChar126orgSettingsRoute: appOrgSlugChar126orgSettingsRouteWithChildren,
-  appOrgSlugChar126orgIndexRoute: appOrgSlugChar126orgIndexRoute,
-};
+const appOrgSlugChar126orgRouteRouteChildren: appOrgSlugChar126orgRouteRouteChildren =
+  {
+    appOrgSlugChar126orgProjectsRoute: appOrgSlugChar126orgProjectsRoute,
+    appOrgSlugChar126orgSettingsRoute:
+      appOrgSlugChar126orgSettingsRouteWithChildren,
+    appOrgSlugChar126orgIndexRoute: appOrgSlugChar126orgIndexRoute,
+  }
 
-const appOrgSlugChar126orgRouteRouteWithChildren = appOrgSlugChar126orgRouteRoute._addFileChildren(
-  appOrgSlugChar126orgRouteRouteChildren,
-);
+const appOrgSlugChar126orgRouteRouteWithChildren =
+  appOrgSlugChar126orgRouteRoute._addFileChildren(
+    appOrgSlugChar126orgRouteRouteChildren,
+  )
 
 interface appOrgSlugRouteRouteChildren {
-  appOrgSlugProjectSlugRouteRoute: typeof appOrgSlugProjectSlugRouteRouteWithChildren;
-  appOrgSlugIndexRoute: typeof appOrgSlugIndexRoute;
-  appOrgSlugChar126orgRouteRoute: typeof appOrgSlugChar126orgRouteRouteWithChildren;
+  appOrgSlugProjectSlugRouteRoute: typeof appOrgSlugProjectSlugRouteRouteWithChildren
+  appOrgSlugIndexRoute: typeof appOrgSlugIndexRoute
+  appOrgSlugChar126orgRouteRoute: typeof appOrgSlugChar126orgRouteRouteWithChildren
 }
 
 const appOrgSlugRouteRouteChildren: appOrgSlugRouteRouteChildren = {
   appOrgSlugProjectSlugRouteRoute: appOrgSlugProjectSlugRouteRouteWithChildren,
   appOrgSlugIndexRoute: appOrgSlugIndexRoute,
   appOrgSlugChar126orgRouteRoute: appOrgSlugChar126orgRouteRouteWithChildren,
-};
+}
 
 const appOrgSlugRouteRouteWithChildren = appOrgSlugRouteRoute._addFileChildren(
   appOrgSlugRouteRouteChildren,
-);
+)
 
 interface appAccountProfileRouteRouteChildren {
-  appAccountProfileIndexRoute: typeof appAccountProfileIndexRoute;
+  appAccountProfileIndexRoute: typeof appAccountProfileIndexRoute
 }
 
-const appAccountProfileRouteRouteChildren: appAccountProfileRouteRouteChildren = {
-  appAccountProfileIndexRoute: appAccountProfileIndexRoute,
-};
+const appAccountProfileRouteRouteChildren: appAccountProfileRouteRouteChildren =
+  {
+    appAccountProfileIndexRoute: appAccountProfileIndexRoute,
+  }
 
-const appAccountProfileRouteRouteWithChildren = appAccountProfileRouteRoute._addFileChildren(
-  appAccountProfileRouteRouteChildren,
-);
+const appAccountProfileRouteRouteWithChildren =
+  appAccountProfileRouteRoute._addFileChildren(
+    appAccountProfileRouteRouteChildren,
+  )
 
 interface appAccountRouteRouteChildren {
-  appAccountProfileRouteRoute: typeof appAccountProfileRouteRouteWithChildren;
-  appAccountInvitesRoute: typeof appAccountInvitesRoute;
-  appAccountOrganizationsRoute: typeof appAccountOrganizationsRoute;
-  appAccountRequestOrganizationRoute: typeof appAccountRequestOrganizationRoute;
-  appAccountSecurityIndexRoute: typeof appAccountSecurityIndexRoute;
+  appAccountProfileRouteRoute: typeof appAccountProfileRouteRouteWithChildren
+  appAccountInvitesRoute: typeof appAccountInvitesRoute
+  appAccountOrganizationsRoute: typeof appAccountOrganizationsRoute
+  appAccountRequestOrganizationRoute: typeof appAccountRequestOrganizationRoute
+  appAccountSecurityIndexRoute: typeof appAccountSecurityIndexRoute
 }
 
 const appAccountRouteRouteChildren: appAccountRouteRouteChildren = {
@@ -849,32 +879,34 @@ const appAccountRouteRouteChildren: appAccountRouteRouteChildren = {
   appAccountOrganizationsRoute: appAccountOrganizationsRoute,
   appAccountRequestOrganizationRoute: appAccountRequestOrganizationRoute,
   appAccountSecurityIndexRoute: appAccountSecurityIndexRoute,
-};
+}
 
 const appAccountRouteRouteWithChildren = appAccountRouteRoute._addFileChildren(
   appAccountRouteRouteChildren,
-);
+)
 
 interface appRouteRouteChildren {
-  appOrgSlugRouteRoute: typeof appOrgSlugRouteRouteWithChildren;
-  appAccountRouteRoute: typeof appAccountRouteRouteWithChildren;
-  appOnboardingRoute: typeof appOnboardingRoute;
+  appOrgSlugRouteRoute: typeof appOrgSlugRouteRouteWithChildren
+  appAccountRouteRoute: typeof appAccountRouteRouteWithChildren
+  appOnboardingRoute: typeof appOnboardingRoute
 }
 
 const appRouteRouteChildren: appRouteRouteChildren = {
   appOrgSlugRouteRoute: appOrgSlugRouteRouteWithChildren,
   appAccountRouteRoute: appAccountRouteRouteWithChildren,
   appOnboardingRoute: appOnboardingRoute,
-};
+}
 
-const appRouteRouteWithChildren = appRouteRoute._addFileChildren(appRouteRouteChildren);
+const appRouteRouteWithChildren = appRouteRoute._addFileChildren(
+  appRouteRouteChildren,
+)
 
 interface authRouteRouteChildren {
-  authForgotPasswordRoute: typeof authForgotPasswordRoute;
-  authLoginRoute: typeof authLoginRoute;
-  authSignUpRoute: typeof authSignUpRoute;
-  authTwoFactorRoute: typeof authTwoFactorRoute;
-  authVerifyEmailRoute: typeof authVerifyEmailRoute;
+  authForgotPasswordRoute: typeof authForgotPasswordRoute
+  authLoginRoute: typeof authLoginRoute
+  authSignUpRoute: typeof authSignUpRoute
+  authTwoFactorRoute: typeof authTwoFactorRoute
+  authVerifyEmailRoute: typeof authVerifyEmailRoute
 }
 
 const authRouteRouteChildren: authRouteRouteChildren = {
@@ -883,9 +915,11 @@ const authRouteRouteChildren: authRouteRouteChildren = {
   authSignUpRoute: authSignUpRoute,
   authTwoFactorRoute: authTwoFactorRoute,
   authVerifyEmailRoute: authVerifyEmailRoute,
-};
+}
 
-const authRouteRouteWithChildren = authRouteRoute._addFileChildren(authRouteRouteChildren);
+const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
+  authRouteRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -898,16 +932,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPlatformSplatRoute: ApiPlatformSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
   ApiPlatformPreviewWsRoute: ApiPlatformPreviewWsRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }
