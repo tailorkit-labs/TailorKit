@@ -344,7 +344,7 @@ function RouteComponent() {
             </div>
           </Card>
 
-          <CardFrameFooter>
+          <CardFrameFooter className="relative">
             {step === "email" ? (
               <Button variant={"link"} render={<Link search={{ email, return_to }} to="/login" />}>
                 <ChevronLeftIcon />

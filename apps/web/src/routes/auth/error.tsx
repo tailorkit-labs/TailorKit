@@ -51,7 +51,7 @@ function AuthErrorPage() {
             </CardPanel>
           </Card>
 
-          <CardFrameFooter>
+          <CardFrameFooter className="relative">
             <p className="text-center text-muted-foreground text-sm">
               If this keeps happening, contact support.
             </p>

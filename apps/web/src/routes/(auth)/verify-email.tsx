@@ -194,7 +194,7 @@ function RouteComponent() {
               </Button>
             </CardFooter>
           </Card>
-          <CardFrameFooter>
+          <CardFrameFooter className="relative">
             <Button variant={"link"} render={<Link search={{ email, return_to }} to="/login" />}>
               <ChevronLeftIcon />
               Back to sign in
