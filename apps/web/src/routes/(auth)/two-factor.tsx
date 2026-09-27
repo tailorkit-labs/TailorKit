@@ -51,19 +51,30 @@ function TwoFactorPage() {
   const [backupCodeOpen, setBackupCodeOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [backupCodeError, setBackupCodeError] = useState<string | null>(null);
-  const [isPending, setIsPending] = useState(false);
-  const verificationInProgressRef = useRef(false);
+  const [isTotpPending, setIsTotpPending] = useState(false);
+  const [isBackupCodePending, setIsBackupCodePending] = useState(false);
+  const totpVerificationInProgressRef = useRef(false);
+  const backupCodeVerificationInProgressRef = useRef(false);
+  const backupCodeDialogSessionRef = useRef(0);
 
   const verify = async (verificationCode: string, useBackupCode = false) => {
     const expectedLength = useBackupCode ? BACKUP_CODE_LENGTH : OTP_LENGTH;
+    const verificationInProgressRef = useBackupCode
+      ? backupCodeVerificationInProgressRef
+      : totpVerificationInProgressRef;
     if (verificationCode.length !== expectedLength || verificationInProgressRef.current) {
       return;
     }
 
     verificationInProgressRef.current = true;
-    setError(null);
-    setBackupCodeError(null);
-    setIsPending(true);
+    const backupCodeDialogSession = backupCodeDialogSessionRef.current;
+    if (useBackupCode) {
+      setBackupCodeError(null);
+      setIsBackupCodePending(true);
+    } else {
+      setError(null);
+      setIsTotpPending(true);
+    }
     try {
       const result = useBackupCode
         ? await authClient.twoFactor.verifyBackupCode({ code: formatBackupCode(verificationCode) })
@@ -75,9 +86,9 @@ function TwoFactorPage() {
           (useBackupCode
             ? "That backup code is not valid."
             : "That verification code is not valid.");
-        if (useBackupCode) {
+        if (useBackupCode && backupCodeDialogSessionRef.current === backupCodeDialogSession) {
           setBackupCodeError(message);
-        } else {
+        } else if (!useBackupCode) {
           setError(message);
         }
         return;
@@ -90,18 +101,27 @@ function TwoFactorPage() {
       window.sessionStorage.removeItem("tailorkit.two-factor-return-to");
       window.location.assign(returnPath ?? "/");
     } catch {
-      if (useBackupCode) {
+      if (useBackupCode && backupCodeDialogSessionRef.current === backupCodeDialogSession) {
         setBackupCodeError("Unable to verify that backup code. Please try again.");
-      } else {
+      } else if (!useBackupCode) {
         setError("Unable to verify that authentication code. Please try again.");
       }
     } finally {
       verificationInProgressRef.current = false;
-      setIsPending(false);
+      if (useBackupCode) {
+        setIsBackupCodePending(false);
+      } else {
+        setIsTotpPending(false);
+      }
     }
   };
 
   const handleBackupCodeOpenChange = (open: boolean) => {
+    if (open === backupCodeOpen) {
+      return;
+    }
+
+    backupCodeDialogSessionRef.current += 1;
     setBackupCodeOpen(open);
     if (!open) {
       setBackupCode("");
@@ -137,7 +157,7 @@ function TwoFactorPage() {
                         void verify(value);
                       }
                     }}
-                    disabled={isPending}
+                    disabled={isTotpPending}
                     size="lg"
                     value={code}
                   >
@@ -157,8 +177,8 @@ function TwoFactorPage() {
                 </Field>
               </div>
               <Button
-                disabled={code.length !== OTP_LENGTH || isPending}
-                loading={isPending}
+                disabled={code.length !== OTP_LENGTH || isTotpPending}
+                loading={isTotpPending}
                 onClick={() => void verify(code)}
                 type="button"
               >
@@ -213,7 +233,7 @@ function TwoFactorPage() {
                     void verify(value, true);
                   }
                 }}
-                disabled={isPending}
+                disabled={isBackupCodePending}
                 size="lg"
                 validationType="alphanumeric"
                 value={backupCode}
@@ -238,8 +258,8 @@ function TwoFactorPage() {
               Cancel
             </DialogClose>
             <Button
-              disabled={backupCode.length !== BACKUP_CODE_LENGTH || isPending}
-              loading={isPending}
+              disabled={backupCode.length !== BACKUP_CODE_LENGTH || isBackupCodePending}
+              loading={isBackupCodePending}
               onClick={() => void verify(backupCode, true)}
               size="sm"
               type="button"

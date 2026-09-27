@@ -212,7 +212,13 @@ function TwoFactorSetupDialog({
     );
     action = (
       <>
-        <Button onClick={onBackToQr} size="sm" type="button" variant="outline">
+        <Button
+          disabled={verifying}
+          onClick={onBackToQr}
+          size="sm"
+          type="button"
+          variant="outline"
+        >
           Back
         </Button>
         <Button
@@ -279,7 +285,7 @@ function TwoFactorSetupDialog({
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogPopup
         className={totpURI || backupCodes.length ? "max-w-2xl" : "max-w-md"}
-        showCloseButton={!backupCodes.length}
+        showCloseButton={!backupCodes.length && !verifying}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -448,6 +454,10 @@ export function TwoFactorSettings({
   };
 
   const handleSetupOpenChange = (open: boolean) => {
+    if (!open && verificationInProgressRef.current) {
+      return;
+    }
+
     if (!open && backupCodes.length > 0 && !backupCodesSaved) {
       return;
     }
@@ -605,7 +615,11 @@ export function TwoFactorSettings({
         enabling={enableMutation.isPending}
         error={error}
         onBackupCodesSavedChange={setBackupCodesSaved}
-        onBackToQr={() => setVerificationStep(false)}
+        onBackToQr={() => {
+          if (!verificationInProgressRef.current) {
+            setVerificationStep(false);
+          }
+        }}
         onCopyBackupCodes={copyBackupCodes}
         onCopyTotpSecret={copyTotpSecret}
         onDownloadBackupCodes={downloadBackupCodes}
