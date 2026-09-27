@@ -29,7 +29,7 @@ import { toastManager } from "@tailorkit/ui/toast";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "@tailorkit/ui/tooltip";
 import { QRCodeSVG } from "qrcode.react";
 import { CopyIcon, DownloadIcon } from "lucide-react";
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { client, orpc } from "#lib/orpc";
@@ -85,7 +85,7 @@ function TwoFactorSetupDialog({
   onEnable: () => void;
   onOpenChange: (open: boolean) => void;
   onPasswordChange: (password: string) => void;
-  onVerify: () => void;
+  onVerify: (code: string) => void;
   onContinueToVerification: () => void;
   open: boolean;
   password: string;
@@ -188,7 +188,13 @@ function TwoFactorSetupDialog({
           autoComplete="one-time-code"
           className="gap-2.5"
           length={OTP_LENGTH}
-          onValueChange={setCode}
+          onValueChange={(value) => {
+            setCode(value);
+            if (value.length === OTP_LENGTH) {
+              onVerify(value);
+            }
+          }}
+          disabled={verifying}
           size="lg"
           value={code}
         >
@@ -210,9 +216,9 @@ function TwoFactorSetupDialog({
           Back
         </Button>
         <Button
-          disabled={code.length !== OTP_LENGTH}
+          disabled={code.length !== OTP_LENGTH || verifying}
           loading={verifying}
-          onClick={() => void onVerify()}
+          onClick={() => onVerify(code)}
           size="sm"
           type="button"
         >
@@ -340,6 +346,7 @@ export function TwoFactorSettings({
   const [regenerateOpen, setRegenerateOpen] = useState(false);
   const [regeneratePassword, setRegeneratePassword] = useState("");
   const [regenerateError, setRegenerateError] = useState<string | null>(null);
+  const verificationInProgressRef = useRef(false);
 
   const isEnabled = sessionUser?.twoFactorEnabled === true;
   const isReady = !isLoading && !sessionError;
@@ -373,7 +380,7 @@ export function TwoFactorSettings({
   });
 
   const verifyMutation = useMutation({
-    mutationFn: () => client.user.verifyTotp({ code }),
+    mutationFn: (verificationCode: string) => client.user.verifyTotp({ code: verificationCode }),
     onError: (requestError) => {
       setError(
         getErrorMessage(
@@ -397,7 +404,19 @@ export function TwoFactorSettings({
       });
       await queryClient.invalidateQueries(orpc.user.getSession.queryOptions());
     },
+    onSettled: () => {
+      verificationInProgressRef.current = false;
+    },
   });
+
+  const verifyCode = (verificationCode: string) => {
+    if (verificationCode.length !== OTP_LENGTH || verificationInProgressRef.current) {
+      return;
+    }
+
+    verificationInProgressRef.current = true;
+    verifyMutation.mutate(verificationCode);
+  };
 
   const disableMutation = useMutation({
     mutationFn: () => client.user.disableTwoFactor({ password }),
@@ -593,10 +612,13 @@ export function TwoFactorSettings({
         onEnable={() => enableMutation.mutate()}
         onOpenChange={handleSetupOpenChange}
         onPasswordChange={setPassword}
-        onVerify={() => verifyMutation.mutate()}
+        onVerify={verifyCode}
         open={setupOpen}
         password={password}
-        setCode={setCode}
+        setCode={(value) => {
+          setCode(value);
+          setError(null);
+        }}
         showVerificationStep={verificationStep}
         onContinueToVerification={() => setVerificationStep(true)}
         totpURI={totpURI}

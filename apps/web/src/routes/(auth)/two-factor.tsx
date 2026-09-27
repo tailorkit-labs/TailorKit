@@ -24,7 +24,7 @@ import {
 import { Field, FieldError, FieldLabel } from "@tailorkit/ui/field";
 import { Logo } from "@tailorkit/ui/logo";
 import { OTPField, OTPFieldInput, OTPFieldSeparator } from "@tailorkit/ui/otp-field";
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 
 import { authClient } from "#lib/auth-client";
 import { getSameOriginPath } from "#lib/safe-return-url";
@@ -52,8 +52,15 @@ function TwoFactorPage() {
   const [error, setError] = useState<string | null>(null);
   const [backupCodeError, setBackupCodeError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
+  const verificationInProgressRef = useRef(false);
 
   const verify = async (verificationCode: string, useBackupCode = false) => {
+    const expectedLength = useBackupCode ? BACKUP_CODE_LENGTH : OTP_LENGTH;
+    if (verificationCode.length !== expectedLength || verificationInProgressRef.current) {
+      return;
+    }
+
+    verificationInProgressRef.current = true;
     setError(null);
     setBackupCodeError(null);
     setIsPending(true);
@@ -89,6 +96,7 @@ function TwoFactorPage() {
         setError("Unable to verify that authentication code. Please try again.");
       }
     } finally {
+      verificationInProgressRef.current = false;
       setIsPending(false);
     }
   };
@@ -125,7 +133,11 @@ function TwoFactorPage() {
                     onValueChange={(value) => {
                       setCode(value);
                       setError(null);
+                      if (value.length === OTP_LENGTH) {
+                        void verify(value);
+                      }
                     }}
+                    disabled={isPending}
                     size="lg"
                     value={code}
                   >
@@ -145,7 +157,7 @@ function TwoFactorPage() {
                 </Field>
               </div>
               <Button
-                disabled={code.length !== OTP_LENGTH}
+                disabled={code.length !== OTP_LENGTH || isPending}
                 loading={isPending}
                 onClick={() => void verify(code)}
                 type="button"
@@ -197,7 +209,11 @@ function TwoFactorPage() {
                 onValueChange={(value) => {
                   setBackupCode(value);
                   setBackupCodeError(null);
+                  if (value.length === BACKUP_CODE_LENGTH) {
+                    void verify(value, true);
+                  }
                 }}
+                disabled={isPending}
                 size="lg"
                 validationType="alphanumeric"
                 value={backupCode}
@@ -222,7 +238,7 @@ function TwoFactorPage() {
               Cancel
             </DialogClose>
             <Button
-              disabled={backupCode.length !== BACKUP_CODE_LENGTH}
+              disabled={backupCode.length !== BACKUP_CODE_LENGTH || isPending}
               loading={isPending}
               onClick={() => void verify(backupCode, true)}
               size="sm"
