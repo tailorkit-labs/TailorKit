@@ -1,0 +1,14 @@
+apps/web/vite.config.ts
+  h_18044dd1b61a81 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "616a284939cc73d0e123f0765b5ef1d7a0c3f574",
+  "prompts": {},
+  "humans": {
+    "h_18044dd1b61a81": {
+      "author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
