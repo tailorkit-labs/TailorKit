@@ -12,5 +12,7 @@ export const env = createEnv({
     VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
     OPENAPI_SERVER_URL: z.url().default("https://tailorkit.dev/api/platform"),
   },
-  required: ["AUTH_SECRET"],
+  warnings: {
+    AUTH_SECRET: "AUTH_SECRET is not set; authenticated platform routes will be unavailable.",
+  },
 });
