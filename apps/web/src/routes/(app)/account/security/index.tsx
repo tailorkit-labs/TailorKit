@@ -54,11 +54,9 @@ import { TwoFactorSettings } from "./-two-factor-settings";
 export const Route = createFileRoute("/(app)/account/security/")({
   component: SecurityPage,
   loader: async ({ context }) => {
-    await Promise.all([
-      context.queryClient.ensureQueryData(context.orpc.user.getSession.queryOptions()),
-      context.queryClient.ensureQueryData(context.orpc.user.listAccounts.queryOptions()),
-      context.queryClient.ensureQueryData(context.orpc.user.listSessions.queryOptions()),
-    ]);
+    void context.queryClient.ensureQueryData(context.orpc.user.getSession.queryOptions());
+    void context.queryClient.ensureQueryData(context.orpc.user.listAccounts.queryOptions());
+    void context.queryClient.ensureQueryData(context.orpc.user.listSessions.queryOptions());
 
     return { locale: getPreferredLocale(), timeZone: getPreferredTimeZone() };
   },
