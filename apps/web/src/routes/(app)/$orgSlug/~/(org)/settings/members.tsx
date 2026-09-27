@@ -17,11 +17,11 @@ export const Route = createFileRoute("/(app)/$orgSlug/~/(org)/settings/members")
   component: OrgSettingsMembers,
   loader: async ({ context, params }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(
+      context.queryClient.query(
         context.orpc.org.getMembers.queryOptions({ input: { orgSlug: params.orgSlug } }),
       ),
       context.queryClient
-        .ensureQueryData(
+        .query(
           context.orpc.org.getOrgInvitations.queryOptions({
             input: { orgSlug: params.orgSlug },
           }),
