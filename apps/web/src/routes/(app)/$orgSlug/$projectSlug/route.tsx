@@ -7,11 +7,11 @@ import { SidebarLayoutHeader } from "#components/sidebar-layout-header";
 
 export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug")({
   loader: ({ context, params }) =>
-    context.queryClient.query({
-      ...context.orpc.project.get.queryOptions({
+    context.queryClient.query(
+      context.orpc.project.get.queryOptions({
         input: { orgSlug: params.orgSlug, projectSlug: params.projectSlug },
       }),
-    }),
+    ),
   component: ProjectLayout,
 });
 

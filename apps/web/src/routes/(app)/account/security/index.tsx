@@ -44,15 +44,9 @@ export const Route = createFileRoute("/(app)/account/security/")({
   component: SecurityPage,
   loader: async ({ context }) => {
     await Promise.all([
-      context.queryClient.query({
-        ...context.orpc.user.getSession.queryOptions(),
-      }),
-      context.queryClient.query({
-        ...context.orpc.user.listAccounts.queryOptions(),
-      }),
-      context.queryClient.query({
-        ...context.orpc.user.listSessions.queryOptions(),
-      }),
+      context.queryClient.query(context.orpc.user.getSession.queryOptions()),
+      context.queryClient.query(context.orpc.user.listAccounts.queryOptions()),
+      context.queryClient.query(context.orpc.user.listSessions.queryOptions()),
     ]);
 
     return { locale: getPreferredLocale(), timeZone: getPreferredTimeZone() };

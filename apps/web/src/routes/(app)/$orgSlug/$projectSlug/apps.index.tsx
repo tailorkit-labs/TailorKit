@@ -47,14 +47,14 @@ function appsListQueryOptions({
 
 export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug/apps/")({
   loader: ({ context, params }) =>
-    context.queryClient.infiniteQuery({
-      ...appsListQueryOptions({
+    context.queryClient.infiniteQuery(
+      appsListQueryOptions({
         appsList: context.orpc.apps.list,
         orgSlug: params.orgSlug,
         projectSlug: params.projectSlug,
         search: "",
       }),
-    }),
+    ),
   component: AppsIndexPage,
 });
 

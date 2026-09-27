@@ -33,11 +33,11 @@ import { getProjectApiKey, setProjectApiKey } from "#utils/project-api-key-memor
 
 export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug/settings/api-keys")({
   loader: ({ context, params }) =>
-    context.queryClient.query({
-      ...context.orpc.project.apiKeys.queryOptions({
+    context.queryClient.query(
+      context.orpc.project.apiKeys.queryOptions({
         input: { orgSlug: params.orgSlug, projectSlug: params.projectSlug },
       }),
-    }),
+    ),
   component: ProjectApiKeysPage,
 });
 
