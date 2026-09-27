@@ -268,7 +268,6 @@ function RouteComponent() {
                           label="Email"
                           type="email"
                           placeholder="you@example.com"
-                          autoFocus
                         />
                       )}
                     </emailForm.AppField>
