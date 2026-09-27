@@ -19,7 +19,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "../components/inpu
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../components/tooltip";
 import { Button } from "../components/button";
 import type { ButtonProps } from "../components/button";
-import { cn } from "@tailorkit/ui";
+import { cn } from "#ui";
 
 export { formOptions };
 export { formatFieldErrors } from "./field-errors";

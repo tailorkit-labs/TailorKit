@@ -2,7 +2,7 @@
 
 import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area";
 import type React from "react";
-import { cn } from "@tailorkit/ui";
+import { cn } from "#ui";
 
 export function ScrollArea({
   className,

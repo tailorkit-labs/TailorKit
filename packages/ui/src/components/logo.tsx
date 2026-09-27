@@ -1,4 +1,4 @@
-import { cn } from "@tailorkit/ui";
+import { cn } from "#ui";
 
 interface LogoProps {
   className?: string;
