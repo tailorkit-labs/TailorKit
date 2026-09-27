@@ -8,5 +8,7 @@ export const env = createEnv({
     TAILORKIT_PROJECT_KEY: z.string().min(1).optional(),
     TAILORKIT_PLATFORM_BASE_URL: z.url().default("http://localhost:3000/api/platform"),
   },
-  required: ["TAILORKIT_PROJECT_KEY"],
+  warnings: {
+    TAILORKIT_PROJECT_KEY: "TAILORKIT_PROJECT_KEY is not set; Tailorkit assets will not load.",
+  },
 });

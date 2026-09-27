@@ -180,6 +180,12 @@ export function BooleanField(props: BooleanFieldProps) {
   );
 }
 
+type SubmitButtonState = {
+  canSubmit: boolean;
+  isSubmitting: boolean;
+  isValidating: boolean;
+};
+
 function SubmitButton({
   children,
   variant,
@@ -188,14 +194,14 @@ function SubmitButton({
 }: Omit<ButtonProps, "type" | "disabled" | "loading">) {
   const form = useFormContext();
   return (
-    <form.Subscribe
+    <form.Subscribe<SubmitButtonState>
       selector={(state) => ({
         canSubmit: state.canSubmit,
         isSubmitting: state.isSubmitting,
         isValidating: state.isValidating,
       })}
     >
-      {({ canSubmit, isSubmitting, isValidating }) => (
+      {({ canSubmit, isSubmitting, isValidating }: SubmitButtonState) => (
         <Button
           variant={variant}
           className={cn("w-min", className)}

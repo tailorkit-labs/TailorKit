@@ -118,6 +118,11 @@ function buildAuth() {
       schema,
       transaction: true,
     }),
+    // Better Auth still resolves the session model through the DB adapter in
+    // some auth flows when secondaryStorage is configured.
+    session: {
+      storeSessionInDatabase: true,
+    },
     secondaryStorage,
     emailAndPassword: {
       enabled: true,

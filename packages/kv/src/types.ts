@@ -5,6 +5,11 @@ export interface SetOptions {
   ttl?: number; // seconds
 }
 
+export interface GetOptions {
+  /** Maximum wait in milliseconds. Defaults to 5 seconds. */
+  timeout?: number;
+}
+
 /** Stops a Redis channel subscription and releases its underlying connection. */
 export type Unsubscribe = () => Promise<void>;
 
@@ -22,7 +27,7 @@ type KVEngine<T extends KVType> = T extends "upstash" ? UpstashRedis : IORedis;
 export interface KV<T extends KVType = KVType> {
   readonly type: T;
   engine: KVEngine<T>;
-  get: (key: string) => Promise<string | null>;
+  get: (key: string, options?: GetOptions) => Promise<string | null>;
   getAndDelete: (key: string) => Promise<string | null>;
   /** Claim or renew an upload marker only if it still matches the observed owner and the session is active. */
   claimUpload: (
