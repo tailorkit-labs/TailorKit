@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "tanstack-start",
   "buildCommand": "TURBO_PLATFORM_ENV_DISABLED=true turbo run build --filter=web...",
-  "installCommand": "PNPM_CONFIG_CACHE_DIR=node_modules/.cache/pnpm pnpm install --filter web...",
+  "installCommand": "pnpm install --filter web...",
   "fluid": true,
   "rewrites": [
     {
