@@ -36,7 +36,7 @@
     "@better-auth/api-key": "1.7.5",
     "@better-auth/core": "1.7.5",
     "@better-auth/drizzle-adapter": "1.7.5",
-    "@better-auth/infra": "^0.4.10",
+    "@better-auth/infra": "^0.4.11",
     "@better-auth/passkey": "1.7.5",
     "@simplewebauthn/server": "^13.3.1",
     "@tailorkit/db": "workspace:*",
