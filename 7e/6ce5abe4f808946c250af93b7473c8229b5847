@@ -1,0 +1,19 @@
+.codex/hooks.json
+  s_93e55ba7a55cf2::t_830ae8165c33e7 6,10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7e6ce5abe4f808946c250af93b7473c8229b5847",
+  "prompts": {},
+  "sessions": {
+    "s_93e55ba7a55cf2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e073-ce7d-78c1-86f3-513e9f0b5028",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
