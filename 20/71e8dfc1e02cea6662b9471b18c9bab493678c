@@ -1,0 +1,34 @@
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/settings/index.tsx
+  h_18044dd1b61a81 170
+apps/web/src/routes/(app)/$orgSlug/~/(org)/settings/index.tsx
+  h_18044dd1b61a81 45
+apps/web/src/routes/(app)/account/profile/index.tsx
+  h_18044dd1b61a81 83
+apps/web/src/routes/(app)/account/security/-two-factor-settings.tsx
+  h_18044dd1b61a81 548,554
+apps/web/src/routes/(app)/account/security/index.tsx
+  h_18044dd1b61a81 546
+apps/web/src/routes/(auth)/forgot-password.tsx
+  h_18044dd1b61a81 347
+apps/web/src/routes/(auth)/login.tsx
+  h_18044dd1b61a81 344
+apps/web/src/routes/(auth)/sign-up.tsx
+  h_18044dd1b61a81 275
+apps/web/src/routes/(auth)/two-factor.tsx
+  h_18044dd1b61a81 166
+apps/web/src/routes/(auth)/verify-email.tsx
+  h_18044dd1b61a81 197
+apps/web/src/routes/auth/error.tsx
+  h_18044dd1b61a81 54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2071e8dfc1e02cea6662b9471b18c9bab493678c",
+  "prompts": {},
+  "humans": {
+    "h_18044dd1b61a81": {
+      "author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
