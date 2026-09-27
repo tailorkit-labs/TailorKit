@@ -5,9 +5,9 @@ import * as React from "react";
 import {
   segmentedControlItemLayoutClassName,
   segmentedControlItemSizeClassNames,
-} from "@tailorkit/ui/lib/segmented-control";
-import type { SegmentedControlSize } from "@tailorkit/ui/lib/segmented-control";
-import { cn } from "@tailorkit/ui";
+} from "#ui/lib/segmented-control";
+import type { SegmentedControlSize } from "#ui/lib/segmented-control";
+import { cn } from "#ui";
 
 type TabsVariant = "default" | "underline";
 type TabsSize = SegmentedControlSize;

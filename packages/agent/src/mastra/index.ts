@@ -1,41 +1,46 @@
-import { Mastra } from '@mastra/core/mastra';
-import { AgentController } from '@mastra/core/agent-controller';
-import { createDurableAgent } from '@mastra/core/agent/durable';
-import { PostgresStore } from '@mastra/pg';
+import { Mastra } from "@mastra/core/mastra";
+import { AgentController } from "@mastra/core/agent-controller";
+import { createDurableAgent } from "@mastra/core/agent/durable";
+import { PostgresStore } from "@mastra/pg";
 import {
   MastraStorageExporter,
   MastraPlatformExporter,
   Observability,
   SensitiveDataFilter,
-} from '@mastra/observability';
-import { env } from '@tailorkit/env/server';
-import { agent, workspace } from './agents/agent';
+} from "@mastra/observability";
+import { env } from "#env";
+import { agent, workspace } from "./agents/agent";
 
 const durableAgent = createDurableAgent({ agent });
-const storage = new PostgresStore({
-  id: 'mastra-storage',
-  connectionString: env.DATABASE_URL,
-  max: 5,
-});
+const storage = env.DATABASE_URL
+  ? new PostgresStore({
+      id: "mastra-storage",
+      connectionString: env.DATABASE_URL,
+      max: 5,
+    })
+  : undefined;
 
 const codingController = new AgentController({
-  id: 'tailorkit-coding-controller',
+  id: "tailorkit-coding-controller",
   agent,
   workspace,
-  storage,
-  modes: [{ id: 'build', name: 'Build', metadata: { default: true } }],
+  ...(storage ? { storage } : {}),
+  modes: [{ id: "build", name: "Build", metadata: { default: true } }],
 });
 
 export const mastra = new Mastra({
   agents: { agent: durableAgent },
   agentControllers: { codingController },
-  recovery: { durableAgents: 'auto' },
-  storage,
+  recovery: { durableAgents: "auto" },
+  ...(storage ? { storage } : {}),
   observability: new Observability({
     configs: {
       default: {
-        serviceName: 'mastra',
-        exporters: [new MastraStorageExporter(), new MastraPlatformExporter()],
+        serviceName: "mastra",
+        exporters: [
+          ...(storage ? [new MastraStorageExporter()] : []),
+          new MastraPlatformExporter(),
+        ],
         spanOutputProcessors: [new SensitiveDataFilter()],
       },
     },

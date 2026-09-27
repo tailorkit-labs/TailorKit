@@ -23,9 +23,8 @@ export interface TailorKitPlatformOptions {
 
 export interface TailorKitServerBaseOptions {
   /**
-   * TailorKit.dev project key
-   *
-   * @default process.env.TAILORKIT_PROJECT_KEY
+   * TailorKit.dev project key. The host application must read its
+   * `TAILORKIT_PROJECT_KEY` environment variable and pass the value here.
    */
   projectKey?: string;
   /** Optional custom asset origin. Hosted apps receive a tenant-viewd clientPath from TailorKit automatically. */

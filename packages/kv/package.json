@@ -5,6 +5,7 @@
   "license": "BUSL-1.1",
   "type": "module",
   "imports": {
+    "#env": "./src/env.ts",
     "#*": [
       "./src/*",
       "./src/*.ts",
@@ -26,9 +27,9 @@
     }
   },
   "scripts": {
-    "build": "tsdown src/index.ts src/kv.ts src/preview-presence.ts src/redis.ts src/upstash.ts src/types.ts --format esm --dts --clean",
+    "build": "vp pack src/index.ts src/kv.ts src/preview-presence.ts src/redis.ts src/upstash.ts src/types.ts --format esm --dts --clean",
     "check-types": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vp test run"
   },
   "dependencies": {
     "@tailorkit/env": "workspace:*",
@@ -38,11 +39,9 @@
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
-    "@upstash/redis": "^1.38.4",
+    "@upstash/redis": "^1.39.0",
     "ioredis": "^6.0.0",
-    "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "@upstash/redis": "^1.34.0",

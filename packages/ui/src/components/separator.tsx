@@ -1,6 +1,6 @@
 import { Separator as SeparatorPrimitive } from "@base-ui/react/separator";
 import type React from "react";
-import { cn } from "@tailorkit/ui";
+import { cn } from "#ui";
 
 export function Separator({
   className,

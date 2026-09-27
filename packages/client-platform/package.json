@@ -34,9 +34,9 @@
   },
   "scripts": {
     "build": "tsup 'src/**/*.ts' --format esm --target node20 --clean && tsc -p tsconfig.build.json",
-    "generate": "openapi-ts && node ./scripts/restore-openapi-params.mjs && node ./scripts/normalize-esm-imports.mjs && oxfmt src/client",
+    "generate": "openapi-ts && node ./scripts/restore-openapi-params.mjs && node ./scripts/normalize-esm-imports.mjs && vp fmt src/client",
     "check-types": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vp test run"
   },
   "dependencies": {
     "@orpc/client": "catalog:",
@@ -48,7 +48,6 @@
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
     "tsup": "^8.5.1",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

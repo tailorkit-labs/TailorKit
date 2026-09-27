@@ -4,7 +4,7 @@ import type * as nodeOs from "node:os";
 import path from "node:path";
 import { loadTailorKitConfig } from "@tailorkit/app/config/loader";
 import { createTailorKitClient } from "@tailorkit/core/server";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("@tailorkit/app/config/loader", () => ({
   loadTailorKitConfig: vi.fn(),

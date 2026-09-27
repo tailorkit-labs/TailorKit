@@ -4,6 +4,7 @@
   "license": "BUSL-1.1",
   "type": "module",
   "imports": {
+    "#env": "./src/env.ts",
     "#*": [
       "./src/*",
       "./src/*.ts",
@@ -14,20 +15,19 @@
   },
   "scripts": {
     "check-types": "tsc --noEmit",
-    "test": "vitest run",
-    "build": "vite build",
-    "preview": "vite preview",
-    "dev": "vite dev --port 3000"
+    "test": "vp test run",
+    "build": "vp build",
+    "preview": "vp preview",
+    "dev": "cross-env VITE_USE_NITRO=true vp dev --port 3000"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
-    "@better-auth/infra": "^0.4.9",
-    "@better-auth/passkey": "1.7.4",
+    "@better-auth/infra": "^0.4.11",
+    "@better-auth/passkey": "1.7.5",
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
-    "@orpc/tanstack-query": "^1.15.0",
-    "@rolldown/plugin-babel": "^0.2.4",
+    "@orpc/tanstack-query": "^1.15.4",
     "@tailorkit/api": "workspace:*",
     "@tailorkit/api-platform": "workspace:*",
     "@tailorkit/api-utils": "workspace:*",
@@ -42,16 +42,17 @@
     "@tailwindcss/vite": "catalog:",
     "@tanstack/devtools-a11y": "^0.2.2",
     "@tanstack/devtools-vite": "^0.8.5",
-    "@tanstack/react-devtools": "^0.10.12",
+    "@tanstack/react-devtools": "^0.10.13",
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-form-devtools": "^0.2.34",
-    "@tanstack/react-query": "^5.102.8",
+    "@tanstack/react-query": "^5.103.2",
     "@tanstack/react-router": "catalog:",
-    "@tanstack/react-router-ssr-query": "^1.167.2",
+    "@tanstack/react-router-ssr-query": "^1.167.3",
     "@tanstack/react-start": "catalog:",
     "@tanstack/react-table": "^9.2.4",
-    "@vercel/functions": "^3.9.7",
+    "@vercel/functions": "^3.9.9",
     "better-auth": "catalog:",
+    "crossws": "0.4.12",
     "drizzle-orm": "catalog:",
     "lucide-react": "catalog:",
     "nitro": "3.0.260903-beta",
@@ -63,14 +64,15 @@
   },
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.102.8",
+    "@tanstack/react-query-devtools": "^5.103.2",
     "@tanstack/react-router-devtools": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "babel-plugin-react-compiler": "^1.0.0",
+    "cross-env": "10.1.0",
+    "oxc-transform-react": "^0.151.0",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vitest": "catalog:"
+    "vite-plus": "catalog:"
   }
 }

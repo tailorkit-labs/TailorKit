@@ -1,4 +1,4 @@
-import { expectTypeOf } from "vitest";
+import { expectTypeOf } from "vite-plus/test";
 import type { z } from "zod";
 import type { InferCallback, InferCallbacks } from "./callbacks";
 

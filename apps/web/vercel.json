@@ -1,6 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "nitro",
+  "framework": "tanstack-start",
+  "buildCommand": "TURBO_PLATFORM_ENV_DISABLED=true turbo run build --filter=web...",
+  "installCommand": "pnpm install --filter web...",
+  "fluid": true,
   "rewrites": [
     {
       "source": "/",

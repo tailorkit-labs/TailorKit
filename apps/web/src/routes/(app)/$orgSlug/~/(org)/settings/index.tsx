@@ -42,7 +42,7 @@ function OrgSettingsGeneral() {
             </Field>
           </CardPanel>
         </Card>
-        <CardFrameFooter className="flex justify-end">
+        <CardFrameFooter className="flex justify-end relative">
           <Button size="sm">Save changes</Button>
         </CardFrameFooter>
       </CardFrame>

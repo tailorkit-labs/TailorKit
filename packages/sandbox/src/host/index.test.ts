@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { createIframeUiHost } from "./index.js";
 
 import { iframeReadyType, sandboxMessageType } from "../bridge";

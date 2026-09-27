@@ -1,15 +1,13 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { withAppAssetUrl } from "./asset-url";
 
 const env = vi.hoisted(() => ({
   ASSET_BASE_URL: undefined as string | undefined,
   ASSET_DOMAIN: "tailorkit.app",
   NODE_ENV: "production" as "development" | "production",
+  PORT: undefined as number | undefined,
 }));
-vi.mock("@tailorkit/env/server", () => ({
-  env,
-  getBaseUrl: () => "http://localhost:3000",
-}));
+vi.mock("../../api-utils/src/env.ts", () => ({ env }));
 
 const projectId = "22222222-2222-4222-8222-222222222222";
 const appId = "33333333-3333-4333-8333-333333333333";

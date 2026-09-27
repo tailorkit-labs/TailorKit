@@ -1,7 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { ORPCError } from "@orpc/server";
 import { db } from "@tailorkit/db";
-import { getBaseUrl } from "@tailorkit/env/server";
+import { getBaseUrl } from "@tailorkit/env";
+import { env } from "#env";
 import { getKV } from "@tailorkit/kv";
 import z from "zod";
 import { withAppAssetUrl } from "../asset-url";
@@ -152,7 +153,7 @@ export const accepted = protectedRouter
       seen.add(session.app.id);
       const websocketUrl = new URL(
         "/api/platform/preview/ws",
-        getBaseUrl().replace(/^http/u, "ws"),
+        getBaseUrl(env).replace(/^http/u, "ws"),
       );
       websocketUrl.searchParams.set("session", session.id);
       websocketUrl.searchParams.set("role", "viewer");

@@ -7,7 +7,7 @@ import { cva } from "class-variance-authority";
 import type { VariantProps } from "class-variance-authority";
 import { ChevronDownIcon, ChevronsUpDownIcon, ChevronUpIcon } from "lucide-react";
 import type * as React from "react";
-import { cn } from "@tailorkit/ui";
+import { cn } from "#ui";
 
 export const Select: typeof SelectPrimitive.Root = SelectPrimitive.Root;
 

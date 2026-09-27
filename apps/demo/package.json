@@ -4,6 +4,7 @@
   "license": "Apache-2.0",
   "type": "module",
   "imports": {
+    "#env": "./src/env.ts",
     "#*": [
       "./src/*",
       "./src/*.ts",
@@ -13,14 +14,15 @@
     ]
   },
   "scripts": {
-    "dev": "npm run build:clients && vite dev --port 3000",
-    "build": "npm run build:clients && vite build",
-    "preview": "vite preview",
+    "dev": "npm run build:clients && vp dev --port 3000",
+    "build": "npm run build:clients && vp build",
+    "preview": "vp preview",
     "check-types": "tsc --noEmit",
     "build:clients": "node clients/build.mjs"
   },
   "dependencies": {
     "@tailorkit/core": "workspace:*",
+    "@tailorkit/env": "workspace:*",
     "@tailorkit/ui": "workspace:*",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/react-router": "catalog:",
@@ -41,6 +43,7 @@
     "@vitejs/plugin-react": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
+    "vite-plus": "catalog:",
     "ws": "^8.21.3"
   }
 }

@@ -13,6 +13,7 @@ import {
   CardPanel,
   CardTitle,
 } from "@tailorkit/ui/card";
+import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@tailorkit/ui/collapsible";
 import {
   Dialog,
   DialogClose,
@@ -28,12 +29,13 @@ import { Input } from "@tailorkit/ui/input";
 import { Skeleton } from "@tailorkit/ui/skeleton";
 import { toastManager } from "@tailorkit/ui/toast";
 import { useAppForm } from "@tailorkit/ui/form";
-import { KeyRoundIcon, LaptopIcon, SmartphoneIcon } from "lucide-react";
+import { ChevronDownIcon, KeyRoundIcon, LaptopIcon, SmartphoneIcon, TrashIcon } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { z } from "zod";
 
 import { AccountLayout } from "#components/account-layout";
+import { GoogleIcon } from "#components/google-icon";
 import { PageLayout } from "#components/page-layout";
 import { authClient } from "#lib/auth-client";
 import { client, orpc } from "#lib/orpc";
@@ -44,9 +46,10 @@ export const Route = createFileRoute("/(app)/account/security/")({
   component: SecurityPage,
   loader: async ({ context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(context.orpc.user.getSession.queryOptions()),
-      context.queryClient.ensureQueryData(context.orpc.user.listAccounts.queryOptions()),
-      context.queryClient.ensureQueryData(context.orpc.user.listSessions.queryOptions()),
+      context.queryClient.query(context.orpc.user.getSession.queryOptions()),
+      context.queryClient.query(context.orpc.user.getSocialProviders.queryOptions()),
+      context.queryClient.query(context.orpc.user.listAccounts.queryOptions()),
+      context.queryClient.query(context.orpc.user.listSessions.queryOptions()),
     ]);
 
     return { locale: getPreferredLocale(), timeZone: getPreferredTimeZone() };
@@ -97,6 +100,18 @@ function formatLastActive(value: Date | string, locale: string, timeZone: string
     timeStyle: "short",
     timeZone,
   }).format(new Date(value));
+}
+
+function formatPasskeyCreated(
+  value: Date | string | null | undefined,
+  locale: string,
+  timeZone: string,
+) {
+  if (!value) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone }).format(new Date(value));
 }
 
 function ActiveSessions({ locale, timeZone }: { locale: string; timeZone: string }) {
@@ -256,6 +271,16 @@ function LinkedAccountsSkeleton() {
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3 rounded-xl border p-4">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
+          <GoogleIcon className="size-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-sm">Google</p>
+          <Skeleton className="mt-1 h-4 w-28" />
+        </div>
+        <Skeleton className="h-7 w-12" />
+      </div>
+      <div className="flex items-center gap-3 rounded-xl border p-4">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
           <GitHubIcon />
         </div>
         <div className="min-w-0 flex-1">
@@ -270,9 +295,11 @@ function LinkedAccountsSkeleton() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-medium text-sm">Passkeys</p>
-          <Skeleton className="mt-1 h-4 w-28" />
+          <div className="mt-1 py-2 sm:py-1.5">
+            <Skeleton className="h-4 w-44" />
+          </div>
         </div>
-        <Skeleton className="h-7 w-12" />
+        <Skeleton className="h-8 w-16 sm:h-7" />
       </div>
     </div>
   );
@@ -292,11 +319,13 @@ function SecurityPage() {
   const { error, error_description } = useSearch({ from: "/(app)/account/security/" });
   const { locale, timeZone } = Route.useLoaderData();
   const queryClient = useQueryClient();
-  const [linkPending, setLinkPending] = useState(false);
-  const [unlinkPending, setUnlinkPending] = useState(false);
+  const [linkPending, setLinkPending] = useState<"github" | "google" | null>(null);
+  const [unlinkPending, setUnlinkPending] = useState<string | null>(null);
   const [passkeyDialogOpen, setPasskeyDialogOpen] = useState(false);
   const [passkeyName, setPasskeyName] = useState("");
+  const [passkeysOpen, setPasskeysOpen] = useState(false);
   const [passkeyPending, setPasskeyPending] = useState<string | null>(null);
+  const socialProvidersQuery = useQuery(orpc.user.getSocialProviders.queryOptions());
   const accountsQuery = useQuery(orpc.user.listAccounts.queryOptions());
   const passkeysQuery = useQuery({
     queryFn: async () => {
@@ -309,49 +338,61 @@ function SecurityPage() {
     queryKey: ["passkeys"],
   });
   const sessionQuery = useQuery(orpc.user.getSession.queryOptions());
+  const googleAccount = accountsQuery.data?.find((account) => account.providerId === "google");
   const githubAccount = accountsQuery.data?.find((account) => account.providerId === "github");
   const hasCredentialAccount = accountsQuery.data?.some(
     (account) => account.providerId === "credential",
   );
   const passkeys = passkeysQuery.data ?? [];
   const signInMethodCount = (accountsQuery.data?.length ?? 0) + passkeys.length;
+  const canUnlinkGoogle = Boolean(googleAccount && signInMethodCount > 1);
   const canUnlinkGitHub = Boolean(githubAccount && signInMethodCount > 1);
+  let githubStatus = "Sign in with GitHub";
 
-  const linkGitHub = async () => {
-    setLinkPending(true);
+  if (githubAccount) {
+    githubStatus = githubAccount.githubUsername
+      ? `@${githubAccount.githubUsername}`
+      : "GitHub account linked";
+  }
+
+  const linkSocial = async (provider: "github" | "google") => {
+    const providerName = provider === "google" ? "Google" : "GitHub";
+    setLinkPending(provider);
     try {
       const result = await client.user.linkSocial({
         callbackURL: "/account/security",
         errorCallbackURL: "/account/security",
-        provider: "github",
+        provider,
       });
       if (result.url) {
         window.location.assign(result.url);
       }
     } catch (requestError) {
-      setLinkPending(false);
+      setLinkPending(null);
       toastManager.add({
-        description: requestError instanceof Error ? requestError.message : "Failed to link GitHub",
+        description:
+          requestError instanceof Error ? requestError.message : `Failed to link ${providerName}`,
         title: "Error",
         type: "error",
       });
     }
   };
 
-  const unlinkGitHub = async () => {
-    if (!githubAccount || !canUnlinkGitHub) {
+  const unlinkSocial = async (accountId: string | undefined, provider: "github" | "google") => {
+    if (!accountId || signInMethodCount <= 1 || unlinkPending !== null) {
       return;
     }
 
-    setUnlinkPending(true);
+    const providerName = provider === "google" ? "Google" : "GitHub";
+    setUnlinkPending(accountId);
     try {
-      await client.user.unlinkAccount({ accountId: githubAccount.id });
-      setUnlinkPending(false);
+      await client.user.unlinkAccount({ accountId });
+      setUnlinkPending(null);
     } catch (requestError) {
-      setUnlinkPending(false);
+      setUnlinkPending(null);
       toastManager.add({
         description:
-          requestError instanceof Error ? requestError.message : "Failed to unlink GitHub",
+          requestError instanceof Error ? requestError.message : `Failed to unlink ${providerName}`,
         title: "Error",
         type: "error",
       });
@@ -360,7 +401,7 @@ function SecurityPage() {
 
     await queryClient.invalidateQueries(orpc.user.listAccounts.queryOptions());
     toastManager.add({
-      description: "GitHub has been unlinked from your account.",
+      description: `${providerName} has been unlinked from your account.`,
       title: "Account unlinked",
       type: "success",
     });
@@ -385,6 +426,7 @@ function SecurityPage() {
         return;
       }
 
+      setPasskeysOpen(true);
       await queryClient.invalidateQueries({ queryKey: ["passkeys"] });
       setPasskeyName("");
       toastManager.add({
@@ -521,7 +563,7 @@ function SecurityPage() {
               </form>
             </Card>
 
-            <CardFrameFooter className="flex justify-end">
+            <CardFrameFooter className="flex justify-end relative">
               <form.AppForm>
                 <form.SubmitButton form="change-password-form" size="sm">
                   Update password
@@ -553,92 +595,170 @@ function SecurityPage() {
                   <LinkedAccountsSkeleton />
                 ) : (
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3 rounded-xl border p-4">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
-                        <GitHubIcon />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm">GitHub</p>
-                        <p className="text-muted-foreground text-sm">
-                          {githubAccount ? "Connected" : "Sign in with GitHub"}
-                        </p>
-                      </div>
+                    {(googleAccount || socialProvidersQuery.data?.google) && (
+                      <div className="flex items-center gap-3 rounded-xl border p-4">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
+                          <GoogleIcon className="size-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm">Google</p>
+                          <p className="text-muted-foreground text-sm">
+                            {googleAccount ? "Connected" : "Sign in with Google"}
+                          </p>
+                        </div>
 
-                      {githubAccount ? (
+                        {googleAccount ? (
+                          <Button
+                            disabled={!canUnlinkGoogle || unlinkPending !== null}
+                            loading={unlinkPending === googleAccount.id}
+                            onClick={() => void unlinkSocial(googleAccount.id, "google")}
+                            size="sm"
+                            title={
+                              canUnlinkGoogle
+                                ? "Unlink Google"
+                                : "Google cannot be unlinked because it is your only sign-in method"
+                            }
+                            variant="destructive-outline"
+                          >
+                            Unlink
+                          </Button>
+                        ) : (
+                          <Button
+                            disabled={linkPending !== null && linkPending !== "google"}
+                            loading={linkPending === "google"}
+                            onClick={() => void linkSocial("google")}
+                            size="sm"
+                            variant="outline"
+                          >
+                            Link
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {(githubAccount || socialProvidersQuery.data?.github) && (
+                      <div className="flex items-center gap-3 rounded-xl border p-4">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
+                          <GitHubIcon />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm">GitHub</p>
+                          <p className="text-muted-foreground text-sm">{githubStatus}</p>
+                        </div>
+
+                        {githubAccount ? (
+                          <Button
+                            disabled={!canUnlinkGitHub || unlinkPending !== null}
+                            loading={unlinkPending === githubAccount.id}
+                            onClick={() => void unlinkSocial(githubAccount.id, "github")}
+                            size="sm"
+                            title={
+                              canUnlinkGitHub
+                                ? "Unlink GitHub"
+                                : "GitHub cannot be unlinked because it is your only sign-in method"
+                            }
+                            variant="destructive-outline"
+                          >
+                            Unlink
+                          </Button>
+                        ) : (
+                          <Button
+                            disabled={linkPending !== null && linkPending !== "github"}
+                            loading={linkPending === "github"}
+                            onClick={() => void linkSocial("github")}
+                            size="sm"
+                            variant="outline"
+                          >
+                            Link
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    <Collapsible
+                      className="rounded-xl border"
+                      onOpenChange={setPasskeysOpen}
+                      open={passkeysOpen}
+                    >
+                      <div className="flex items-center gap-3 p-4">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
+                          <KeyRoundIcon aria-hidden="true" className="size-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm">Passkeys</p>
+                          {passkeys.length ? (
+                            <CollapsibleTrigger
+                              className="justify-start gap-1.5 px-0 py-0 font-normal text-muted-foreground hover:bg-transparent data-panel-open:[&_svg]:rotate-180 data-pressed:bg-transparent"
+                              render={<Button variant="ghost" />}
+                            >
+                              {passkeys.length} passkey{passkeys.length === 1 ? "" : "s"} registered
+                              <ChevronDownIcon
+                                aria-hidden="true"
+                                className="size-4 transition-transform"
+                              />
+                            </CollapsibleTrigger>
+                          ) : (
+                            <p className="text-muted-foreground text-sm">No passkeys registered</p>
+                          )}
+                        </div>
                         <Button
-                          disabled={!canUnlinkGitHub}
-                          loading={unlinkPending}
-                          onClick={() => void unlinkGitHub()}
-                          size="sm"
-                          title={
-                            canUnlinkGitHub
-                              ? "Unlink GitHub"
-                              : "GitHub cannot be unlinked because it is your only sign-in method"
-                          }
-                          variant="destructive-outline"
-                        >
-                          Unlink
-                        </Button>
-                      ) : (
-                        <Button
-                          loading={linkPending}
-                          onClick={() => void linkGitHub()}
+                          disabled={passkeyPending !== null}
+                          loading={passkeyPending === "add"}
+                          onClick={() => setPasskeyDialogOpen(true)}
                           size="sm"
                           variant="outline"
                         >
-                          Link
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-3 rounded-xl border p-4">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
-                        <KeyRoundIcon aria-hidden="true" className="size-5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm">Passkeys</p>
-                        <p className="text-muted-foreground text-sm">
-                          {passkeys.length
-                            ? `${passkeys.length} connected`
-                            : "Sign in with your device"}
-                        </p>
-                      </div>
-                      <Button
-                        disabled={passkeyPending !== null}
-                        loading={passkeyPending === "add"}
-                        onClick={() => setPasskeyDialogOpen(true)}
-                        size="sm"
-                        variant="outline"
-                      >
-                        Add
-                      </Button>
-                    </div>
-
-                    {passkeys.map((passkey) => (
-                      <div
-                        className="ml-5 flex items-center gap-3 rounded-xl border p-4 sm:ml-12"
-                        key={passkey.id}
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium text-sm">{passkey.name || "Passkey"}</p>
-                          <p className="text-muted-foreground text-sm">Available for sign-in</p>
-                        </div>
-                        <Button
-                          disabled={signInMethodCount <= 1 || passkeyPending !== null}
-                          loading={passkeyPending === passkey.id}
-                          onClick={() => void deletePasskey(passkey.id)}
-                          size="sm"
-                          title={
-                            signInMethodCount > 1
-                              ? "Remove passkey"
-                              : "Add another sign-in method before removing this passkey"
-                          }
-                          variant="destructive-outline"
-                        >
-                          Remove
+                          Add
                         </Button>
                       </div>
-                    ))}
+
+                      {passkeys.length ? (
+                        <CollapsiblePanel>
+                          <div className="border-t px-4 pl-16">
+                            {passkeys.map((passkey) => {
+                              const createdAt = formatPasskeyCreated(
+                                passkey.createdAt,
+                                locale,
+                                timeZone,
+                              );
+
+                              return (
+                                <div
+                                  className="flex items-center gap-3 border-b py-4 last:border-b-0"
+                                  key={passkey.id}
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate font-medium text-sm">
+                                      {passkey.name || "Passkey"}
+                                    </p>
+                                    {createdAt ? (
+                                      <p className="text-muted-foreground text-sm">
+                                        Created {createdAt}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                  <Button
+                                    aria-label={`Remove ${passkey.name || "passkey"}`}
+                                    disabled={signInMethodCount <= 1 || passkeyPending !== null}
+                                    loading={passkeyPending === passkey.id}
+                                    onClick={() => void deletePasskey(passkey.id)}
+                                    size="icon-sm"
+                                    title={
+                                      signInMethodCount > 1
+                                        ? "Remove passkey"
+                                        : "Add another sign-in method before removing this passkey"
+                                    }
+                                    variant="ghost"
+                                  >
+                                    <TrashIcon aria-hidden="true" />
+                                  </Button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </CollapsiblePanel>
+                      ) : null}
+                    </Collapsible>
                   </div>
                 )}
               </CardPanel>
@@ -664,6 +784,7 @@ function SecurityPage() {
                 </DialogDescription>
               </DialogHeader>
               <form
+                className="contents"
                 id="add-passkey-form"
                 onSubmit={(event) => {
                   event.preventDefault();

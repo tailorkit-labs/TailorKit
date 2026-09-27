@@ -1,6 +1,6 @@
 import { createActions, createTailorKitSchema } from "./schema";
 import type { ComponentProps, InferActionInput, InferActionOutput } from "./schema";
-import { expectTypeOf } from "vitest";
+import { expectTypeOf } from "vite-plus/test";
 import { z } from "zod";
 
 interface User {

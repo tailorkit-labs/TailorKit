@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth/minimal";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 
 describe("AUTH_TRUSTED_ORIGINS preview pattern", () => {
   it("trusts only previews with the TailorKit project prefix", async () => {

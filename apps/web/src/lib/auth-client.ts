@@ -3,8 +3,10 @@ import { emailOTPClient, organizationClient, twoFactorClient } from "better-auth
 import { ac, roles } from "@tailorkit/auth/lib/permissions";
 import { dashClient } from "@better-auth/infra/client";
 import { passkeyClient } from "@better-auth/passkey/client";
+import { deploymentHeaders } from "./deployment-headers";
 
 export const authClient = createAuthClient({
+  fetchOptions: { headers: typeof window === "undefined" ? {} : deploymentHeaders },
   plugins: [
     dashClient(),
     passkeyClient(),

@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { hashSecret } from "@tailorkit/api-utils/hashing";
-import { env } from "@tailorkit/env/server";
+import { env } from "#env";
 import { z } from "zod";
 
 const viewerTokenLifetimeMs = 5 * 60 * 1000;

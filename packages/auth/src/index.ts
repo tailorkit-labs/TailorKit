@@ -1,7 +1,8 @@
 import { createDb } from "@tailorkit/db";
 import * as schema from "@tailorkit/db/schema/auth";
 import { sendBetterAuthOtpEmail, sendOrganizationInvitationEmail } from "@tailorkit/email";
-import { env, getBaseUrl, getProductionUrl, getTrustedOrigins } from "@tailorkit/env/server";
+import { getBaseUrl, getProductionUrl, getTrustedOrigins } from "@tailorkit/env";
+import { env } from "#env";
 import { getKV } from "@tailorkit/kv";
 import { initializeObservability } from "@tailorkit/observability";
 import type { SecondaryStorage } from "better-auth";
@@ -67,7 +68,7 @@ const enforceTwoFactorAfterSocialSignIn = createAuthMiddleware(async (ctx) => {
     twoFactorCookie.attributes,
   );
 
-  return ctx.redirect(new URL("/two-factor", getBaseUrl()).toString());
+  return ctx.redirect(new URL("/two-factor", getBaseUrl(env)).toString());
 });
 
 const createSecondaryStorage = (): SecondaryStorage | undefined => {
@@ -86,17 +87,47 @@ const createSecondaryStorage = (): SecondaryStorage | undefined => {
   };
 };
 
+const socialProviders = {
+  ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
+    ? {
+        github: {
+          clientId: env.GITHUB_CLIENT_ID,
+          clientSecret: env.GITHUB_CLIENT_SECRET,
+          scope: ["user:email"],
+        },
+      }
+    : {}),
+  ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+    ? {
+        google: {
+          clientId: env.GOOGLE_CLIENT_ID,
+          clientSecret: env.GOOGLE_CLIENT_SECRET,
+        },
+      }
+    : {}),
+};
+
+export function getSocialProviderAvailability() {
+  return {
+    github: "github" in socialProviders,
+    google: "google" in socialProviders,
+  };
+}
+
 function buildAuth() {
   const db = createDb();
 
   const backgroundTaskHandler = env.VERCEL ? vercelWaitUntil : noopWaitUntil;
   const secondaryStorage = createSecondaryStorage();
-  const productionUrl = getProductionUrl();
+  const productionUrl = getProductionUrl(env);
 
   return betterAuth({
     appName: "TailorKit",
     account: {
       encryptOAuthTokens: true,
+      accountLinking: {
+        allowDifferentEmails: true,
+      },
     },
     advanced: {
       backgroundTasks: {
@@ -111,12 +142,17 @@ function buildAuth() {
         ipAddressHeaders: ["x-vercel-forwarded-for", "x-forwarded-for"],
       },
     },
-    baseURL: getBaseUrl(),
+    baseURL: getBaseUrl(env),
     database: drizzleAdapter(db, {
       provider: "pg",
       schema,
       transaction: true,
     }),
+    // Better Auth still resolves the session model through the DB adapter in
+    // some auth flows when secondaryStorage is configured.
+    session: {
+      storeSessionInDatabase: true,
+    },
     secondaryStorage,
     emailAndPassword: {
       enabled: true,
@@ -135,16 +171,7 @@ function buildAuth() {
       // development-oriented default error page.
       errorURL: "/auth/error",
     },
-    socialProviders:
-      env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
-        ? {
-            github: {
-              clientId: env.GITHUB_CLIENT_ID,
-              clientSecret: env.GITHUB_CLIENT_SECRET,
-              scope: ["user:email"],
-            },
-          }
-        : undefined,
+    socialProviders,
     plugins: [
       haveIBeenPwned(),
       passkey({
@@ -234,7 +261,7 @@ function buildAuth() {
       tanstackStartCookies(),
     ],
     secret: env.AUTH_SECRET,
-    trustedOrigins: getTrustedOrigins(),
+    trustedOrigins: getTrustedOrigins(env),
     user: {
       additionalFields: {
         theme: {

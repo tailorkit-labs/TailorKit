@@ -1,10 +1,10 @@
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import viteReact, { reactCompilerPreset } from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
-import babel from "@rolldown/plugin-babel";
+import viteReact from "@vitejs/plugin-react";
+import { defineConfig } from "vite-plus";
 import { nitro } from "nitro/vite";
+import { env } from "#env";
 
 const serverPackages = [
   "@tailorkit/api",
@@ -22,8 +22,10 @@ export default defineConfig(({ mode }) => {
 
   return {
     define: {
-      "import.meta.env.VITE_ORG_CREATION_MANAGED": JSON.stringify(
-        process.env.VERCEL_ENV === "production",
+      "import.meta.env.VITE_ORG_CREATION_MANAGED": JSON.stringify(env.VERCEL_ENV === "production"),
+      "import.meta.env.VITE_VERCEL_DEPLOYMENT_ID": JSON.stringify(env.VERCEL_DEPLOYMENT_ID ?? ""),
+      "import.meta.env.VITE_VERCEL_SKEW_PROTECTION_ENABLED": JSON.stringify(
+        env.VERCEL_SKEW_PROTECTION_ENABLED === "1",
       ),
     },
     plugins: [
@@ -31,7 +33,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       tanstackStart(),
       nitro({
-        serverDir: "./src/nitro",
+        serverDir: false,
         // Preview uploads and viewer revisions share this Nitro deployment.
         // KV leases give the CLI 75 seconds to reconnect after an upgrade.
         features: { websocket: !isTest },
@@ -65,9 +67,8 @@ export default defineConfig(({ mode }) => {
           },
         },
       }),
-      viteReact(),
-      babel({
-        presets: [reactCompilerPreset()],
+      viteReact({
+        compiler: true,
       }),
     ],
     server: {

@@ -1,27 +1,27 @@
-import { pathToFileURL } from 'node:url';
-import { gateway } from '@ai-sdk/gateway';
-import { createCodingAgent } from '@mastra/core/coding-agent';
-import { askUserTool, webFetchTool } from '@mastra/core/tools';
-import { LocalFilesystem, LocalSandbox, WORKSPACE_TOOLS, Workspace } from '@mastra/core/workspace';
-import { Memory } from '@mastra/memory';
-import { VercelSandbox } from '@mastra/vercel';
-import { env } from '@tailorkit/env/server';
+import { pathToFileURL } from "node:url";
+import { gateway } from "@ai-sdk/gateway";
+import { createCodingAgent } from "@mastra/core/coding-agent";
+import { askUserTool, webFetchTool } from "@mastra/core/tools";
+import { LocalFilesystem, LocalSandbox, WORKSPACE_TOOLS, Workspace } from "@mastra/core/workspace";
+import { Memory } from "@mastra/memory";
+import { VercelSandbox } from "@mastra/vercel";
+import { env } from "#env";
 
-const workspacePath = 'workspace';
-const isVercelDeployment = env.VERCEL_ENV === 'production' || env.VERCEL_ENV === 'preview';
+const workspacePath = "workspace";
+const isVercelDeployment = env.VERCEL_ENV === "production" || env.VERCEL_ENV === "preview";
 const sandbox = isVercelDeployment
   ? new VercelSandbox({
-      runtime: 'node24',
+      runtime: "node24",
       timeout: 600_000,
-      workingDirectory: '/vercel/sandbox/workspace',
+      workingDirectory: "/vercel/sandbox/workspace",
     })
   : new LocalSandbox({
       workingDirectory: workspacePath,
     });
 
 export const workspace = new Workspace({
-  id: 'agent-workspace',
-  name: 'Agent Workspace',
+  id: "agent-workspace",
+  name: "Agent Workspace",
   filesystem: new LocalFilesystem({
     basePath: workspacePath,
   }),
@@ -43,14 +43,15 @@ export const workspace = new Workspace({
 });
 
 export const agent = createCodingAgent({
-  id: 'agent',
-  name: 'TailorKit Coding Agent',
-  description: 'A coding agent that builds and iterates on TailorKit apps in an isolated workspace.',
+  id: "agent",
+  name: "TailorKit Coding Agent",
+  description:
+    "A coding agent that builds and iterates on TailorKit apps in an isolated workspace.",
   metadata: {
     suggestedPrompts: [
-      'Build a customer portal with sign-in and a dashboard.',
-      'Improve the layout and accessibility of this TailorKit app.',
-      'Add a responsive pricing page to the current project.',
+      "Build a customer portal with sign-in and a dashboard.",
+      "Improve the layout and accessibility of this TailorKit app.",
+      "Add a responsive pricing page to the current project.",
     ],
   },
   instructions: `You are TailorKit's coding agent. Build and improve web applications from the user's requests by inspecting and editing the local workspace, running commands, and explaining the result. Keep changes scoped to the current project, preserve existing conventions, and ask concise questions only when a decision is needed to make progress.
@@ -63,7 +64,7 @@ Ask concise questions when something is unclear or a good question could surface
 
 For local file changes, end with a plain-text URL using ${pathToFileURL(`${workspacePath}/`).href}; avoid Markdown links, localhost, /workspace, relative paths, and static-file servers.
 `,
-  model: gateway('openai/gpt-6-luna'),
+  model: gateway("openai/gpt-6-luna"),
   defaultOptions: {
     maxSteps: 100,
     autoResumeSuspendedTools: true,
@@ -72,7 +73,7 @@ For local file changes, end with a plain-text URL using ${pathToFileURL(`${works
     options: {
       generateTitle: true,
       observationalMemory: {
-        model: gateway('openai/gpt-6-luna'),
+        model: gateway("openai/gpt-6-luna"),
       },
     },
   }),

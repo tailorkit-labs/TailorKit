@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 
-vi.mock("@tailorkit/env/server", () => ({ env: { AUTH_SECRET: "test-preview-secret" } }));
+vi.mock("#env", () => ({ env: { AUTH_SECRET: "test-preview-secret" } }));
 
 const { createPreviewViewerToken, previewViewerTokenExpiresAt, verifyPreviewViewerToken } =
   await import("./preview-token");

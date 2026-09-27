@@ -19,7 +19,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "../components/inpu
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../components/tooltip";
 import { Button } from "../components/button";
 import type { ButtonProps } from "../components/button";
-import { cn } from "@tailorkit/ui";
+import { cn } from "#ui";
 
 export { formOptions };
 export { formatFieldErrors } from "./field-errors";
@@ -180,6 +180,12 @@ export function BooleanField(props: BooleanFieldProps) {
   );
 }
 
+type SubmitButtonState = {
+  canSubmit: boolean;
+  isSubmitting: boolean;
+  isValidating: boolean;
+};
+
 function SubmitButton({
   children,
   variant,
@@ -188,14 +194,14 @@ function SubmitButton({
 }: Omit<ButtonProps, "type" | "disabled" | "loading">) {
   const form = useFormContext();
   return (
-    <form.Subscribe
+    <form.Subscribe<SubmitButtonState>
       selector={(state) => ({
         canSubmit: state.canSubmit,
         isSubmitting: state.isSubmitting,
         isValidating: state.isValidating,
       })}
     >
-      {({ canSubmit, isSubmitting, isValidating }) => (
+      {({ canSubmit, isSubmitting, isValidating }: SubmitButtonState) => (
         <Button
           variant={variant}
           className={cn("w-min", className)}

@@ -24,3 +24,18 @@ export function getSameOriginUrl(value: string | undefined, currentOrigin: strin
 
   return new URL(path, currentOrigin).href;
 }
+
+export function getAuthErrorCallbackUrl(
+  route: "/login" | "/sign-up",
+  returnTo: string | undefined,
+  currentOrigin: string,
+) {
+  const callbackUrl = new URL(route, currentOrigin);
+  const returnPath = getSameOriginPath(returnTo, currentOrigin);
+
+  if (returnPath) {
+    callbackUrl.searchParams.set("return_to", returnPath);
+  }
+
+  return `${callbackUrl.pathname}${callbackUrl.search}`;
+}

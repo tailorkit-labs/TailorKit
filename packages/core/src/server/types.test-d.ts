@@ -1,6 +1,6 @@
 import { createTailorKitServer } from "./handler";
 import { z } from "zod";
-import { expectTypeOf } from "vitest";
+import { expectTypeOf } from "vite-plus/test";
 import type { TailorKitHandlerOptions, TailorKitHostContext } from "./types";
 
 interface UserContext {

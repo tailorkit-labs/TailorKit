@@ -5,6 +5,7 @@
   "license": "BUSL-1.1",
   "type": "module",
   "imports": {
+    "#env": "./src/env.ts",
     "#*": [
       "./src/*",
       "./src/*.ts",
@@ -36,22 +37,22 @@
     }
   },
   "scripts": {
-    "build": "tsdown src/rate-limiting.ts src/hashing.ts src/dev-delay.ts src/app-asset-url.ts --format esm --dts --clean",
+    "build": "vp pack src/rate-limiting.ts src/hashing.ts src/dev-delay.ts src/app-asset-url.ts --format esm --dts --clean",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@orpc/experimental-ratelimit": "^1.15.0",
+    "@orpc/experimental-ratelimit": "^1.15.4",
     "@orpc/server": "catalog:",
     "@tailorkit/env": "workspace:*",
     "@tailorkit/kv": "workspace:*",
     "@tailorkit/observability": "workspace:*",
-    "@upstash/ratelimit": "^2.0.8",
-    "@vercel/functions": "^3.9.7"
+    "@upstash/ratelimit": "^2.2.0",
+    "@vercel/functions": "^3.9.9",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
-    "tsdown": "catalog:",
     "typescript": "catalog:"
   }
 }

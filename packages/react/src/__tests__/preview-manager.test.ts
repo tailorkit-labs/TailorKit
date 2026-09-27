@@ -1,6 +1,6 @@
 /* oxlint-disable require-await -- transport mocks return the asynchronous client shape. */
 import { createHash } from "node:crypto";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, expect, it, vi } from "vite-plus/test";
 import { createPreviewManager } from "../preview-manager";
 import type { PreviewEvent } from "@tailorkit/client-platform/preview";
 

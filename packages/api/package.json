@@ -5,6 +5,7 @@
   "license": "BUSL-1.1",
   "type": "module",
   "imports": {
+    "#env": "./src/env.ts",
     "#*": [
       "./src/*",
       "./src/*.ts",
@@ -26,9 +27,9 @@
     }
   },
   "scripts": {
-    "build": "tsdown src/index.ts src/context.ts src/procedures.ts src/routers/index.ts src/routers/apps.ts src/routers/org.ts src/routers/project.ts src/routers/user.ts --format esm --dts --clean",
+    "build": "vp pack src/index.ts src/context.ts src/procedures.ts src/routers/index.ts src/routers/apps.ts src/routers/org.ts src/routers/project.ts src/routers/user.ts --format esm --dts --clean",
     "check-types": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vp test run"
   },
   "dependencies": {
     "@orpc/client": "catalog:",
@@ -39,7 +40,7 @@
     "@tailorkit/env": "workspace:*",
     "@tailorkit/kv": "workspace:*",
     "@tailorkit/observability": "workspace:*",
-    "@vercel/functions": "^3.9.7",
+    "@vercel/functions": "^3.9.9",
     "drizzle-orm": "catalog:",
     "nanoid": "^6.0.1",
     "zod": "catalog:"
@@ -48,8 +49,6 @@
     "@electric-sql/pglite": "^0.5.8",
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
-    "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

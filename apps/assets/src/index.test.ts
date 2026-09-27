@@ -1,5 +1,5 @@
 import { assetHeaders } from "@tailorkit/asset-delivery";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import worker from "./index";
 
 const projectId = "22222222-2222-4222-8222-222222222222";

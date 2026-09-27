@@ -1,6 +1,7 @@
 "use client";
 
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@tailorkit/ui/button";
 import {
   Card,
@@ -24,9 +25,10 @@ import {
 import { Field, FieldError, FieldLabel } from "@tailorkit/ui/field";
 import { Logo } from "@tailorkit/ui/logo";
 import { OTPField, OTPFieldInput, OTPFieldSeparator } from "@tailorkit/ui/otp-field";
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 
 import { authClient } from "#lib/auth-client";
+import { orpc } from "#lib/orpc";
 import { getSameOriginPath } from "#lib/safe-return-url";
 
 const OTP_LENGTH = 6;
@@ -46,17 +48,53 @@ export const Route = createFileRoute("/(auth)/two-factor")({
 });
 
 function TwoFactorPage() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [code, setCode] = useState("");
   const [backupCode, setBackupCode] = useState("");
   const [backupCodeOpen, setBackupCodeOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [backupCodeError, setBackupCodeError] = useState<string | null>(null);
-  const [isPending, setIsPending] = useState(false);
+  const [isTotpPending, setIsTotpPending] = useState(false);
+  const [isBackupCodePending, setIsBackupCodePending] = useState(false);
+  const totpVerificationInProgressRef = useRef(false);
+  const backupCodeVerificationInProgressRef = useRef(false);
+  const backupCodeDialogSessionRef = useRef(0);
+
+  const navigateAfterVerification = async (destination: string) => {
+    const currentLocation = window.location.href;
+    try {
+      await queryClient.invalidateQueries(orpc.user.getSession.queryOptions());
+      await router.navigate({ href: destination });
+    } catch {
+      window.location.assign(destination);
+      return;
+    }
+
+    if (window.location.href === currentLocation) {
+      window.location.assign(destination);
+    }
+  };
 
   const verify = async (verificationCode: string, useBackupCode = false) => {
-    setError(null);
-    setBackupCodeError(null);
-    setIsPending(true);
+    const expectedLength = useBackupCode ? BACKUP_CODE_LENGTH : OTP_LENGTH;
+    const verificationInProgressRef = useBackupCode
+      ? backupCodeVerificationInProgressRef
+      : totpVerificationInProgressRef;
+    if (verificationCode.length !== expectedLength || verificationInProgressRef.current) {
+      return;
+    }
+
+    verificationInProgressRef.current = true;
+    const backupCodeDialogSession = backupCodeDialogSessionRef.current;
+    let redirecting = false;
+    if (useBackupCode) {
+      setBackupCodeError(null);
+      setIsBackupCodePending(true);
+    } else {
+      setError(null);
+      setIsTotpPending(true);
+    }
     try {
       const result = useBackupCode
         ? await authClient.twoFactor.verifyBackupCode({ code: formatBackupCode(verificationCode) })
@@ -68,9 +106,9 @@ function TwoFactorPage() {
           (useBackupCode
             ? "That backup code is not valid."
             : "That verification code is not valid.");
-        if (useBackupCode) {
+        if (useBackupCode && backupCodeDialogSessionRef.current === backupCodeDialogSession) {
           setBackupCodeError(message);
-        } else {
+        } else if (!useBackupCode) {
           setError(message);
         }
         return;
@@ -81,19 +119,33 @@ function TwoFactorPage() {
         window.location.origin,
       );
       window.sessionStorage.removeItem("tailorkit.two-factor-return-to");
-      window.location.assign(returnPath ?? "/");
+      const destination = returnPath ?? "/";
+      await navigateAfterVerification(destination);
+      redirecting = true;
     } catch {
-      if (useBackupCode) {
+      if (useBackupCode && backupCodeDialogSessionRef.current === backupCodeDialogSession) {
         setBackupCodeError("Unable to verify that backup code. Please try again.");
-      } else {
+      } else if (!useBackupCode) {
         setError("Unable to verify that authentication code. Please try again.");
       }
     } finally {
-      setIsPending(false);
+      verificationInProgressRef.current = false;
+      if (!redirecting) {
+        if (useBackupCode) {
+          setIsBackupCodePending(false);
+        } else {
+          setIsTotpPending(false);
+        }
+      }
     }
   };
 
   const handleBackupCodeOpenChange = (open: boolean) => {
+    if (open === backupCodeOpen) {
+      return;
+    }
+
+    backupCodeDialogSessionRef.current += 1;
     setBackupCodeOpen(open);
     if (!open) {
       setBackupCode("");
@@ -125,7 +177,11 @@ function TwoFactorPage() {
                     onValueChange={(value) => {
                       setCode(value);
                       setError(null);
+                      if (value.length === OTP_LENGTH) {
+                        void verify(value);
+                      }
                     }}
+                    disabled={isTotpPending}
                     size="lg"
                     value={code}
                   >
@@ -145,8 +201,8 @@ function TwoFactorPage() {
                 </Field>
               </div>
               <Button
-                disabled={code.length !== OTP_LENGTH}
-                loading={isPending}
+                disabled={code.length !== OTP_LENGTH || isTotpPending}
+                loading={isTotpPending}
                 onClick={() => void verify(code)}
                 type="button"
               >
@@ -163,7 +219,7 @@ function TwoFactorPage() {
               </Button>
             </CardPanel>
           </Card>
-          <CardFrameFooter>
+          <CardFrameFooter className="relative">
             <Link
               className="text-muted-foreground text-sm hover:underline"
               search={{
@@ -197,7 +253,11 @@ function TwoFactorPage() {
                 onValueChange={(value) => {
                   setBackupCode(value);
                   setBackupCodeError(null);
+                  if (value.length === BACKUP_CODE_LENGTH) {
+                    void verify(value, true);
+                  }
                 }}
+                disabled={isBackupCodePending}
                 size="lg"
                 validationType="alphanumeric"
                 value={backupCode}
@@ -222,8 +282,8 @@ function TwoFactorPage() {
               Cancel
             </DialogClose>
             <Button
-              disabled={backupCode.length !== BACKUP_CODE_LENGTH}
-              loading={isPending}
+              disabled={backupCode.length !== BACKUP_CODE_LENGTH || isBackupCodePending}
+              loading={isBackupCodePending}
               onClick={() => void verify(backupCode, true)}
               size="sm"
               type="button"

@@ -1,6 +1,7 @@
 import { ORPCError } from "@orpc/server";
 import { hashSecret } from "@tailorkit/api-utils/hashing";
-import { getBaseUrl, env } from "@tailorkit/env/server";
+import { getBaseUrl } from "@tailorkit/env";
+import { env } from "#env";
 import { getKV } from "@tailorkit/kv";
 import { db } from "@tailorkit/db";
 import { previewSession } from "@tailorkit/db/schema/preview-session";
@@ -207,7 +208,7 @@ const startPreview = protectedRouter
       }
     }
 
-    const baseUrl = getBaseUrl().replace(/^http/u, "ws");
+    const baseUrl = getBaseUrl(env).replace(/^http/u, "ws");
     const tunnelUrl = new URL("/api/platform/preview/ws", baseUrl);
     tunnelUrl.searchParams.set("session", started.session.id);
     return {

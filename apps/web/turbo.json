@@ -1,0 +1,9 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "env": ["VERCEL", "VERCEL_ENV", "VERCEL_DEPLOYMENT_ID", "VERCEL_SKEW_PROTECTION_ENABLED"],
+      "inputs": ["$TURBO_EXTENDS$", ".env*", "$TURBO_ROOT$/.env*", "$TURBO_ROOT$/apps/web/.env*"]
+    }
+  }
+}

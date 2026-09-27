@@ -1,14 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createTailorKit } from "tailorkit";
 import { createDemoSchema } from "#lib/tailorkit";
+import { env } from "#env";
 import { defaultTheme } from "#lib/demo-theme";
 
 const tailor = createTailorKit({
   basePath: "/api/tailorkit",
   ...createDemoSchema(defaultTheme),
   $internal: {
-    platformBaseUrl:
-      process.env.TAILORKIT_PLATFORM_BASE_URL ?? "http://localhost:3000/api/platform",
+    platformBaseUrl: env.TAILORKIT_PLATFORM_BASE_URL ?? "http://localhost:3000/api/platform",
   },
 });
 

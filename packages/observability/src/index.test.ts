@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import {
   initializeObservability,
   safeAttributes,
@@ -23,7 +23,7 @@ vi.mock("@vercel/otel", () => ({
   registerOTel,
 }));
 
-vi.mock("@tailorkit/env/server", () => ({
+vi.mock("#env", () => ({
   env: mockEnv,
 }));
 

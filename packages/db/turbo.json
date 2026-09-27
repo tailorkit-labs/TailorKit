@@ -1,0 +1,14 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "db:push": {
+      "env": ["DATABASE_URL"]
+    },
+    "db:migrate": {
+      "env": ["DATABASE_URL"]
+    },
+    "db:studio": {
+      "env": ["DATABASE_URL"]
+    }
+  }
+}

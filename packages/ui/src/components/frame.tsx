@@ -1,5 +1,5 @@
 import type * as React from "react";
-import { cn } from "@tailorkit/ui";
+import { cn } from "#ui";
 
 export function Frame({ className, ...props }: React.ComponentProps<"div">): React.ReactElement {
   return (

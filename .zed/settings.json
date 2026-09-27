@@ -16,7 +16,7 @@
         "settings": {
           "configPath": null,
           "flags": {},
-          "fmt.configPath": null,
+          "fmt.configPath": "./vite.config.ts",
           "fmt.experimental": true,
           "run": "onSave",
           "typeAware": false,
@@ -47,6 +47,32 @@
           "name": "oxfmt"
         }
       }
+    },
+    "JSON": {
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "oxfmt"
+          }
+        }
+      ]
+    },
+    "JSONC": {
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "oxfmt"
+          }
+        }
+      ]
     },
     "TSX": {
       "code_actions_on_format": {

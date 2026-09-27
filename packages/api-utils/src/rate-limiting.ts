@@ -6,7 +6,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { getKV } from "@tailorkit/kv";
 import type { Ratelimiter } from "@orpc/experimental-ratelimit";
 import { waitUntil as vercelWaitUntil } from "@vercel/functions";
-import { env } from "@tailorkit/env/server";
+import { env } from "#env";
 import type { Context, Meta, MiddlewareOptions } from "@orpc/server";
 
 export { RatelimitHandlerPlugin } from "@orpc/experimental-ratelimit";

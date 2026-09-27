@@ -1,19 +1,19 @@
 {
   "name": "@tailorkit/agent",
   "version": "1.0.0",
-  "description": "Mastra coding agent for building TailorKit apps.",
   "private": true,
+  "description": "Mastra coding agent for building TailorKit apps.",
+  "keywords": [],
+  "license": "Apache-2.0",
+  "author": "",
+  "type": "module",
+  "imports": {
+    "#env": "./src/env.ts"
+  },
   "scripts": {
     "dev": "mastra dev",
     "build": "mastra build",
     "start": "mastra start"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "Apache-2.0",
-  "type": "module",
-  "engines": {
-    "node": ">=22.13.0"
   },
   "dependencies": {
     "@ai-sdk/gateway": "4.0.92",
@@ -23,11 +23,14 @@
     "@mastra/pg": "1.22.3",
     "@mastra/vercel": "1.6.0",
     "@tailorkit/env": "workspace:*",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@types/node": "latest",
+    "@types/node": "catalog:",
     "mastra": "1.31.2",
     "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=22.13.0"
   }
 }

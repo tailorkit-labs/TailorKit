@@ -26,8 +26,8 @@
   },
   "scripts": {
     "check-types": "tsc --noEmit",
-    "test": "vitest run",
-    "build": "vite build && tsc -p tsconfig.build.json"
+    "test": "vp test run",
+    "build": "vp build && tsc -p tsconfig.build.json"
   },
   "dependencies": {
     "@tailorkit/core": "workspace:*",
@@ -39,6 +39,6 @@
     "happy-dom": "^20.14.5",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vitest": "catalog:"
+    "vite-plus": "catalog:"
   }
 }

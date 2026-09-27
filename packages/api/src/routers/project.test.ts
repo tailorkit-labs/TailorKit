@@ -3,7 +3,7 @@ import { call } from "@orpc/server";
 import { auth } from "@tailorkit/auth";
 import { organization, member, user } from "@tailorkit/db/schema/auth";
 import { project } from "@tailorkit/db/schema/project";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Context } from "../context";
 import { createTestDb } from "../test/pglite";
 

@@ -2,7 +2,7 @@ import { ORPCError } from "@orpc/server";
 import { hashSecret } from "@tailorkit/api-utils/hashing";
 import { db } from "@tailorkit/db";
 import { cliAuthSession, cliToken } from "@tailorkit/db/schema/cli-auth";
-import { env } from "@tailorkit/env/server";
+import { env } from "#env";
 import { and, eq, gt } from "drizzle-orm";
 import { randomBytes, randomInt } from "node:crypto";
 import z from "zod";

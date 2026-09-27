@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm --target node20 --clean && tsc -p tsconfig.build.json",
     "check-types": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vp test run"
   },
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.9",
@@ -41,8 +41,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "tsup": "^8.5.1",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "react": ">=19.2.6"

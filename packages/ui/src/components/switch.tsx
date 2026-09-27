@@ -2,7 +2,7 @@
 
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch";
 import type React from "react";
-import { cn } from "@tailorkit/ui";
+import { cn } from "#ui";
 
 export function Switch({ className, ...props }: SwitchPrimitive.Root.Props): React.ReactElement {
   return (

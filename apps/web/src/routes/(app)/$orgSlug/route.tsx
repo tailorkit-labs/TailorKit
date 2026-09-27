@@ -9,9 +9,7 @@ export const Route = createFileRoute("/(app)/$orgSlug")({
   errorComponent: NotFound,
   notFoundComponent: NotFound,
   loader: async ({ context, params }) => {
-    const orgs = await context.queryClient.ensureQueryData(
-      context.orpc.user.getOrgs.queryOptions(),
-    );
+    const orgs = await context.queryClient.query(context.orpc.user.getOrgs.queryOptions());
     if (!orgs.some((org) => org.slug === params.orgSlug)) {
       await clearActiveOrg();
       throw redirect({
@@ -22,9 +20,7 @@ export const Route = createFileRoute("/(app)/$orgSlug")({
     }
 
     const org = await context.queryClient
-      .ensureQueryData(
-        context.orpc.user.getOrg.queryOptions({ input: { orgSlug: params.orgSlug } }),
-      )
+      .query(context.orpc.user.getOrg.queryOptions({ input: { orgSlug: params.orgSlug } }))
       .catch(async (error: unknown) => {
         if (
           !(error instanceof ORPCError) ||

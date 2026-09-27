@@ -1,6 +1,6 @@
 import { hashSecret } from "@tailorkit/api-utils/hashing";
 import { db } from "@tailorkit/db";
-import { env } from "@tailorkit/env/server";
+import { env } from "#env";
 import { getKV } from "@tailorkit/kv";
 import { previewViewerTokenExpiresAt } from "./preview-token";
 import { endPreviewSession, ensurePreviewDeveloperGrace } from "./preview-lifecycle";

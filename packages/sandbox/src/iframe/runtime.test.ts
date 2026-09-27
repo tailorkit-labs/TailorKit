@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, expect, it, vi } from "vite-plus/test";
 import { startIframeRuntime } from "./runtime";
 import { sandboxMessageType } from "../bridge";
 import type { AppClient, ViewRequest } from "./resolve-view";

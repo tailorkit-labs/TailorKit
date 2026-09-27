@@ -5,9 +5,9 @@ import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { XIcon } from "lucide-react";
 import type React from "react";
-import { cn } from "@tailorkit/ui";
-import { Button } from "@tailorkit/ui/button";
-import { ScrollArea } from "@tailorkit/ui/scroll-area";
+import { cn } from "#ui";
+import { Button } from "#ui/button";
+import { ScrollArea } from "#ui/scroll-area";
 
 export const Sheet: typeof SheetPrimitive.Root = SheetPrimitive.Root;
 

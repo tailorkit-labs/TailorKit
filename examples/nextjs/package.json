@@ -3,27 +3,39 @@
   "private": true,
   "license": "Apache-2.0",
   "type": "module",
+  "imports": {
+    "#env": "./src/env.ts",
+    "#*": [
+      "./src/*",
+      "./src/*.ts",
+      "./src/*.tsx",
+      "./src/*/index.ts",
+      "./src/*/index.tsx"
+    ]
+  },
   "scripts": {
     "dev": "next dev --webpack --port 5020",
     "build": "next build --webpack",
     "start": "next start --port 5020",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
-    "format": "oxfmt --check",
-    "format:fix": "oxfmt --write",
+    "lint": "vp lint",
+    "lint:fix": "vp lint --fix",
+    "format": "vp fmt --check",
+    "format:fix": "vp fmt --write",
     "check": "pnpm run lint && pnpm run format",
     "fix": "pnpm run lint:fix && pnpm run format:fix",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@examples/shared": "workspace:*",
+    "@tailorkit/env": "workspace:*",
     "@tailorkit/ui": "workspace:*",
     "lucide-react": "catalog:",
-    "next": "16.3.5",
+    "next": "16.3.6",
     "next-themes": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "tailorkit": "workspace:*"
+    "tailorkit": "workspace:*",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.3",

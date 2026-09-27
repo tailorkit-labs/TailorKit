@@ -1,4 +1,4 @@
-import { env } from "@tailorkit/env/server";
+import { env } from "#env";
 import { createS3CompatibleStorage } from "./s3.js";
 import type { Storage } from "./types.js";
 

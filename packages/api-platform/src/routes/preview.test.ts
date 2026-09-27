@@ -5,8 +5,9 @@ import { organization } from "@tailorkit/db/schema/auth";
 import { cliToken } from "@tailorkit/db/schema/cli-auth";
 import { previewSession } from "@tailorkit/db/schema/preview-session";
 import { project as projectTable } from "@tailorkit/db/schema/project";
+import { env } from "#env";
 import { eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Context } from "../context";
 import { createTestDb } from "../test/pglite";
 
@@ -21,6 +22,10 @@ vi.mock("@tailorkit/kv", async (original) => ({ ...(await original()), getKV: ()
 const { previewRouter } = await import("./preview");
 const { authorizePreviewSocket } = await import("../preview-ws-auth");
 const { previewWebSocketRouter } = await import("../preview-ws");
+const authSecret = env.AUTH_SECRET;
+if (!authSecret) {
+  throw new Error("The preview test requires AUTH_SECRET in its Vitest config.");
+}
 const orgId = "11111111-1111-4111-8111-111111111111";
 const projectId = "22222222-2222-4222-8222-222222222222";
 const tokenId = "33333333-3333-4333-8333-333333333333";
@@ -131,7 +136,7 @@ describe("platform preview lifecycle and grants", () => {
       id: tokenId,
       projectId,
       scopeId: "author",
-      tokenHash: hashSecret("deploy-token", process.env.AUTH_SECRET!),
+      tokenHash: hashSecret("deploy-token", authSecret),
       expiresAt: new Date(Date.now() + 60_000),
     });
     await db.insert(appTable).values([
@@ -379,7 +384,7 @@ describe("platform preview lifecycle and grants", () => {
       id: "44444444-4444-4444-8444-444444444444",
       projectId,
       scopeId: "other",
-      tokenHash: hashSecret("other-token", process.env.AUTH_SECRET!),
+      tokenHash: hashSecret("other-token", authSecret),
       expiresAt: new Date(Date.now() + 60_000),
     });
     const otherScope = await call(

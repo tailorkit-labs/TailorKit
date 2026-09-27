@@ -1,5 +1,5 @@
 /* oxlint-disable require-await -- the platform fetch mock has the Fetch promise shape. */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createTailorKitServer } from "./handler";
 import { isActivePreviewConflict } from "./routes/preview";
 

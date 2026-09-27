@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { platform } from "node:os";
 import type * as nodeOs from "node:os";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { openUrlInBrowser } from "./open-browser";
 
 vi.mock("node:child_process", () => ({

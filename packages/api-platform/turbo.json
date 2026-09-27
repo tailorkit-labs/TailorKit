@@ -1,0 +1,11 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "generate:openapi": {
+      "dependsOn": ["^build"],
+      "env": ["OPENAPI_SERVER_URL"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "$TURBO_ROOT$/.env*", "$TURBO_ROOT$/apps/web/.env*"],
+      "outputs": ["openapi.json"]
+    }
+  }
+}

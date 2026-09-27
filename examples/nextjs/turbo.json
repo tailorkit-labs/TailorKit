@@ -1,0 +1,9 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "env": ["TAILORKIT_ASSETS_BASE_URL", "TAILORKIT_PROJECT_KEY", "TAILORKIT_PLATFORM_BASE_URL"],
+      "inputs": ["$TURBO_EXTENDS$", ".env*", "$TURBO_ROOT$/.env*", "$TURBO_ROOT$/apps/web/.env*"]
+    }
+  }
+}

@@ -2,7 +2,8 @@ import { experimental_RPCHandler as RPCHandler } from "@orpc/server/crossws";
 import { authorizePreviewSocket } from "@tailorkit/api-platform/preview-ws-auth";
 import { previewWebSocketRouter } from "@tailorkit/api-platform/preview-ws";
 import type { PreviewWebSocketContext } from "@tailorkit/api-platform/preview-ws";
-import { defineWebSocketHandler } from "nitro/h3";
+import { createFileRoute } from "@tanstack/react-router";
+import { defineHooks } from "crossws";
 import { z } from "zod";
 
 const handler = new RPCHandler(previewWebSocketRouter);
@@ -18,7 +19,7 @@ const upgradeSchema = z.object({
   token: z.string().min(1),
 });
 
-export default defineWebSocketHandler({
+const hooks = defineHooks({
   upgrade(request) {
     const url = new URL(request.url);
     const token = request.headers.get("sec-websocket-protocol")?.split(",")[0]?.trim();
@@ -92,5 +93,16 @@ export default defineWebSocketHandler({
   close(peer) {
     handler.close(peer);
     authorizations.delete(peer);
+  },
+});
+
+export const Route = createFileRoute("/api/platform/preview/ws")({
+  server: {
+    handlers: {
+      GET: () =>
+        Object.assign(new Response("WebSocket upgrade is required.", { status: 426 }), {
+          crossws: hooks,
+        }),
+    },
   },
 });

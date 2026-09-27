@@ -1,7 +1,7 @@
 /* oxlint-disable require-await, require-unicode-regexp, unicorn/no-await-expression-member -- the in-memory KV fake mirrors async adapter methods. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { test } from "vitest";
+import { test } from "vite-plus/test";
 import {
   createPreviewBuildStore,
   previewChunkBytes,

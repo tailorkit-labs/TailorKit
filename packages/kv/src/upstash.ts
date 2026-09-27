@@ -1,7 +1,8 @@
-import { env } from "@tailorkit/env/server";
+import { env } from "#env";
 import { sanitizeErrorForLog, withSpan } from "@tailorkit/observability";
 import { Redis } from "@upstash/redis";
-import type { KV, MessageHandler, SetOptions, Unsubscribe } from "./types.js";
+import type { GetOptions, KV, MessageHandler, SetOptions, Unsubscribe } from "./types.js";
+import { withTimeout } from "./with-timeout.js";
 
 const INCREMENT_WITH_TTL_SCRIPT = `
 local value = redis.call("INCR", KEYS[1])
@@ -112,14 +113,12 @@ export function createUpstashKV(): KV<"upstash"> {
   return {
     type: "upstash",
     engine: redis,
-    get: (key) =>
-      withSpan(
-        "kv.get",
-        { attributes: { "tailorkit.package": "kv", "kv.type": "upstash" } },
-        async () => {
-          const val = await redis.get<string>(key);
-          return val ?? null;
-        },
+    get: (key, options?: GetOptions) =>
+      withSpan("kv.get", { attributes: { "tailorkit.package": "kv", "kv.type": "upstash" } }, () =>
+        withTimeout(
+          redis.get<string>(key).then((value) => value ?? null),
+          options?.timeout,
+        ),
       ),
     getAndDelete: (key) =>
       withSpan(

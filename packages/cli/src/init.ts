@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
-import { cancel, confirm, isCancel, select, spinner, text } from "@clack/prompts";
+import { CANCEL_SYMBOL, cancel, confirm, isCancel, select, spinner, text } from "@clack/prompts";
 import pc from "picocolors";
 import { generateApp, resolveTemplatePackageVersions } from "./generator";
 import { normalizeHostUrl } from "./utils/url";
@@ -32,7 +32,7 @@ const normalizePackageName = (value: string): string =>
     .replaceAll(/[^a-z0-9._/-]+/gu, "-")
     .replaceAll(/^-+|-+$/gu, "");
 
-const abortIfCancelled = <T>(value: T | symbol): T => {
+const abortIfCancelled = <T>(value: T | typeof CANCEL_SYMBOL): T => {
   if (isCancel(value)) {
     cancel("Init cancelled.");
     process.exit(0);

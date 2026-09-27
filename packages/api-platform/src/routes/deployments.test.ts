@@ -2,7 +2,7 @@ import { call } from "@orpc/server";
 import { app as appTable, appDeployment, appDeploymentFile } from "@tailorkit/db/schema/apps";
 import { organization } from "@tailorkit/db/schema/auth";
 import { project as projectTable } from "@tailorkit/db/schema/project";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Context } from "../context";
 import { createTestDb } from "../test/pglite";
 
@@ -395,8 +395,8 @@ describe("platform deployment uploads", () => {
       },
       { context: publishContext("https://uploads.example/logo-dark.svg") },
     );
-    const rejection = expect(publish).rejects.toThrow("Aborted");
-    await vi.advanceTimersByTimeAsync(10_000);
-    await rejection;
+    const advanceTimers = vi.advanceTimersByTimeAsync(10_000);
+    await expect(publish).rejects.toThrow("Aborted");
+    await advanceTimers;
   });
 });

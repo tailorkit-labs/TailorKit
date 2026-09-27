@@ -47,7 +47,7 @@ function appsListQueryOptions({
 
 export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug/apps/")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureInfiniteQueryData(
+    context.queryClient.infiniteQuery(
       appsListQueryOptions({
         appsList: context.orpc.apps.list,
         orgSlug: params.orgSlug,
@@ -215,9 +215,11 @@ function AppsTable({
           ))}
         </TableBody>
       </Table>
-      <div ref={loadMoreRef} className="h-1" />
       {(isFetchingNextPage || hasNextPage) && (
-        <div className="border-t px-4 py-3 text-center text-muted-foreground text-sm">
+        <div
+          ref={loadMoreRef}
+          className="border-t px-4 py-3 text-center text-muted-foreground text-sm"
+        >
           {isFetchingNextPage ? "Loading more apps..." : "Scroll for more apps"}
         </div>
       )}

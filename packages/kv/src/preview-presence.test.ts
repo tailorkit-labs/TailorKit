@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { createPreviewPresence, previewLeaseSeconds } from "./preview-presence.js";
 import type { KV } from "./types.js";
 

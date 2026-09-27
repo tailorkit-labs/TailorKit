@@ -49,6 +49,7 @@ lerna-debug.log*
 # Turbo
 .turbo
 .nx
+.vite-hooks/_/
 
 # Better-T-Stack
 .alchemy

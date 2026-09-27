@@ -1,6 +1,6 @@
 import { Loader2Icon } from "lucide-react";
 import type React from "react";
-import { cn } from "@tailorkit/ui";
+import { cn } from "#ui";
 
 export function Spinner({
   className,

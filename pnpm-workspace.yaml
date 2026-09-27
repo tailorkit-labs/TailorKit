@@ -1,4 +1,8 @@
 minimumReleaseAge: 4320
+virtualStoreType: global
+
+overrides:
+  vite@*: "catalog:"
 
 packages:
   - apps/*
@@ -6,24 +10,13 @@ packages:
   - examples/apps/*
   - packages/*
 
-packageExtensions:
-  "@better-auth/infra@0.4.9":
-    dependencies:
-      "@better-auth/scim": 1.7.4
-      "@better-auth/sso": 1.7.4
-
-overrides:
-  "@better-auth/core": 1.7.4
-  "@better-auth/infra@0.4.9>@better-auth/utils": 0.4.3
-  "@better-auth/infra@0.4.9>better-call": 1.4.0
-
 catalog:
   "@ai-sdk/react": ^3.0.192
-  "@orpc/client": ^1.15.0
-  "@orpc/otel": ^1.15.0
-  "@orpc/openapi": 1.15.0
-  "@orpc/server": 1.15.0
-  "@orpc/zod": ^1.15.0
+  "@orpc/client": ^1.15.4
+  "@orpc/otel": ^1.15.4
+  "@orpc/openapi": 1.15.4
+  "@orpc/server": 1.15.4
+  "@orpc/zod": ^1.15.4
   "@opentelemetry/api": ^1.9.1
   "@opentelemetry/exporter-trace-otlp-http": ^0.218.0
   "@opentelemetry/instrumentation-http": ^0.222.0
@@ -33,32 +26,34 @@ catalog:
   "@opentelemetry/sdk-node": ^0.218.0
   "@opentelemetry/sdk-trace-base": ^2.11.0
   "@tailwindcss/vite": ^4.3.3
-  "@tanstack/react-router": 1.170.35
-  "@tanstack/react-router-devtools": 1.167.1
-  "@tanstack/react-start": 1.168.52
-  "@types/node": 26.2.0
+  "@tanstack/react-router": 1.170.39
+  "@tanstack/react-router-devtools": 1.167.2
+  "@tanstack/react-start": 1.168.58
+  "@types/node": 26.6.2
   "@types/pg": ^8.23.1
   "@types/react": ^19.3.0
   "@types/react-dom": ^19.3.0
   "@vitejs/plugin-react": ^6.1.1
   "@vercel/otel": ^2.1.3
   ai: ^6.0.190
-  better-auth: 1.7.4
+  better-auth: 1.7.5
   class-variance-authority: ^0.7.1
-  dotenv: ^17.4.2
+  dotenv: ^18.0.3
   drizzle-orm: 1.0.0-rc.4-5d5b77c
-  lucide-react: 1.45.0
+  lucide-react: 1.47.0
   next-themes: 0.4.6
   react: ^19.3.0
   react-dom: ^19.3.0
   tailwindcss: ^4.3.3
-  tsdown: ^0.23.0
-  tsx: ^4.23.13
+  tsx: ^4.23.15
   typescript: ^7.0.2
-  vite: ^8.3.0
+  vite: npm:@voidzero-dev/vite-plus-core@1.0.0-rc.1
   vite-imagetools: ^12.0.1
-  vitest: ^5.0.0
-  zod: ^4.6.2
+  zod: ^4.6.5
+  vite-plus: 1.0.0-rc.1
+
+# Helps speed up vercel deployments
+cacheDir: node_modules/.cache/pnpm
 
 allowBuilds:
   workerd: true
@@ -69,3 +64,25 @@ allowBuilds:
   msw: false
   protobufjs: false
   sharp: false
+peerDependencyRules:
+  allowAny:
+    - vite
+  allowedVersions:
+    vite: "*"
+minimumReleaseAgeExclude:
+  - vite-plus
+  - "@voidzero-dev/*"
+  - oxlint
+  - "@oxlint/*"
+  - oxlint-tsgolint
+  - "@oxlint-tsgolint/*"
+  - oxfmt
+  - "@oxfmt/*"
+  - vitest
+  - "@vitest/*"
+  - "@ai-sdk/gateway@4.0.92"
+  - "@mastra/core@1.70.0"
+  - "@mastra/deployer@1.70.0"
+  - "@mastra/memory@1.32.0"
+  - "@mastra/server@1.70.0"
+  - mastra@1.31.2

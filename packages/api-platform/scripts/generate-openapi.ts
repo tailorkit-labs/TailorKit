@@ -2,17 +2,10 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { OpenAPIGenerator } from "@orpc/openapi";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
+import { env } from "#env";
 
 const outputPath = resolve(process.cwd(), process.argv[2] ?? "openapi.json");
-const serverUrl = process.env.OPENAPI_SERVER_URL ?? "https://tailorkit.dev/api/platform";
-
-Object.assign(process.env, {
-  DATABASE_URL: process.env.DATABASE_URL ?? "postgres://openapi:openapi@localhost:5432/openapi",
-  EMAIL_FROM: process.env.EMAIL_FROM ?? "openapi@example.com",
-  EMAIL_PROVIDER: process.env.EMAIL_PROVIDER ?? "smtp",
-  EMAIL_SMTP_URL: process.env.EMAIL_SMTP_URL ?? "smtp://localhost:1025",
-  NODE_ENV: process.env.NODE_ENV ?? "development",
-});
+const serverUrl = env.OPENAPI_SERVER_URL ?? "https://tailorkit.dev/api/platform";
 
 const generator = new OpenAPIGenerator({
   schemaConverters: [new ZodToJsonSchemaConverter()],

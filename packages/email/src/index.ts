@@ -1,6 +1,7 @@
 import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import { render } from "@react-email/render";
-import { env, getBaseUrl } from "@tailorkit/env/server";
+import { getBaseUrl } from "@tailorkit/env";
+import { env } from "#env";
 import { withSpan } from "@tailorkit/observability";
 import { createTransport } from "nodemailer";
 import type Mail from "nodemailer/lib/mailer";
@@ -103,7 +104,7 @@ const renderBetterAuthOtpEmail = async ({
   otp,
   type,
 }: Pick<SendBetterAuthOtpInput, "otp" | "type">) => {
-  const component = BetterAuthOtpTemplate({ logoBaseUrl: getBaseUrl(), otp, type });
+  const component = BetterAuthOtpTemplate({ logoBaseUrl: getBaseUrl(env), otp, type });
 
   return {
     html: await render(component),
@@ -164,13 +165,13 @@ export const sendOrganizationInvitationEmail = async ({
   organizationName,
   role,
 }: SendOrganizationInvitationEmailInput) => {
-  const acceptUrl = new URL("/account/invites", getBaseUrl());
+  const acceptUrl = new URL("/account/invites", getBaseUrl(env));
   acceptUrl.searchParams.set("invitationId", invitationId);
 
   const component = InvitationTemplate({
     acceptUrl: acceptUrl.toString(),
     inviterName,
-    logoBaseUrl: getBaseUrl(),
+    logoBaseUrl: getBaseUrl(env),
     organizationName,
     role: role ?? "member",
   });
