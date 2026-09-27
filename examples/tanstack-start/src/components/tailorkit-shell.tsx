@@ -1,13 +1,13 @@
-import { AppView, Root, useApps, useView } from "tailorkit/react";
 import type { DemoUser } from "@examples/shared";
 import { Button } from "@tailorkit/ui/button";
 import { SidebarInset, SidebarProvider } from "@tailorkit/ui/sidebar";
 import { XIcon } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode } from "react";
+import { Root } from "tailorkit/react";
 import type { TailorKitApp } from "tailorkit/react";
 import { AppSidebar } from "#components/app-sidebar";
-import tailor from "#lib/tailorkit-client";
+import tailor, { AppView, useApps, useView } from "#lib/tailorkit-client";
 
 type Apps = NonNullable<ReturnType<typeof useApps>["data"]>;
 

@@ -2,8 +2,9 @@ import { useStableContext } from "./use-stable-context";
 import { useEffect, useMemo } from "react";
 import type { StandardJSONSchemaV1 } from "@standard-schema/spec";
 import type { ViewDefinition } from "@tailorkit/core/schema";
-import type { RegisteredViews } from "../tailor-kit";
 import { useTailorRootContext } from "../components/context";
+
+type DefaultViews = Record<`/${string}`, ViewDefinition>;
 
 export type ViewName<TViews extends Record<string, ViewDefinition>> = keyof TViews & string;
 
@@ -33,7 +34,7 @@ interface ErrorViewOptions<TView extends string> {
 }
 
 export type ViewOptions<
-  TViews extends Record<string, ViewDefinition> = RegisteredViews,
+  TViews extends Record<string, ViewDefinition> = DefaultViews,
   TView extends ViewName<TViews> = ViewName<TViews>,
 > =
   TView extends ViewName<TViews>
@@ -41,16 +42,23 @@ export type ViewOptions<
     : never;
 
 export type ViewState<
-  TViews extends Record<string, ViewDefinition> = RegisteredViews,
+  TViews extends Record<string, ViewDefinition> = DefaultViews,
   TView extends ViewName<TViews> = ViewName<TViews>,
 > =
   | Omit<ReadyViewOptions<TViews, TView>, "view">
   | Omit<LoadingViewOptions<TView>, "view">
   | Omit<ErrorViewOptions<TView>, "view">;
 
-export function useView<TView extends ViewName<RegisteredViews>>(
+export type UseView<TViews extends Record<string, ViewDefinition>> = <
+  TView extends ViewName<TViews>,
+>(
   view: TView,
-  options: ViewState<RegisteredViews, NoInfer<TView>>,
+  options: ViewState<TViews, NoInfer<TView>>,
+) => void;
+
+export function useView<TView extends ViewName<DefaultViews>>(
+  view: TView,
+  options: ViewState<DefaultViews, NoInfer<TView>>,
 ): void {
   const { store } = useTailorRootContext("useView");
   const id = useMemo(() => Symbol("tailorkit-current-view"), []);

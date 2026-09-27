@@ -1,4 +1,3 @@
-import { AppView, useView } from "../index";
 import { createTailorKitServer } from "@tailorkit/core/server";
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from "@standard-schema/spec";
 import type { ReactNode } from "react";
@@ -37,6 +36,7 @@ const server = createTailorKitServer({
 });
 
 const tailor = createTailorKitClient<typeof server>({ baseUrl: "http://runtime.test" });
+const { AppView, useView } = tailor;
 const app = { clientPath: "/apps/todo.js", id: "todo" };
 
 const childrenServer = createTailorKitServer({
@@ -145,12 +145,6 @@ useView("/user", { status: "loading", context: { userId: "user_1" } });
 
 // @ts-expect-error loading app views cannot expose context
 <AppView slot="panel" app={app} view="/user" status="loading" context={{ userId: "user_1" }} />;
-
-declare module "../tailor-kit" {
-  interface Register {
-    client: typeof tailor;
-  }
-}
 
 // @ts-expect-error Unknown host slot.
 <AppView app={app} slot="missing" />;

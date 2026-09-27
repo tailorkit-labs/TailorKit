@@ -34,10 +34,6 @@ export const tailor = createTailorKitClient<typeof tailorKit>({
   },
 });
 
-export default tailor;
+export const { AppView, useApps, useView } = tailor;
 
-declare module "tailorkit/react" {
-  interface Register {
-    client: typeof tailor;
-  }
-}
+export default tailor;

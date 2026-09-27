@@ -232,6 +232,8 @@ export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
     ),
   },
 });
+
+export const { AppView, useApps, useView } = tailorKitClient;
 ```
 
 When a remote app renders `Button`, TailorKit looks up the registered host
