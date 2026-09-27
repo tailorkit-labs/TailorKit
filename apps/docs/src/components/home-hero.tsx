@@ -1,4 +1,5 @@
 import { Button } from "@tailorkit/ui/button";
+import { cn } from "@tailorkit/ui";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import type RiveDefault from "@rive-app/react-webgl2";
@@ -49,12 +50,12 @@ export function HomeHero() {
       {Rive ? (
         <>
           <Rive
-            className={`${riveClass} opacity-100 dark:opacity-0`}
+            className={cn(riveClass, "opacity-100 dark:opacity-0")}
             src="/docs/factory-light.riv"
             layout={rive.layout}
           />
           <Rive
-            className={`${riveClass} opacity-0 dark:opacity-100`}
+            className={cn(riveClass, "opacity-0 dark:opacity-100")}
             src="/docs/factory-dark.riv"
             layout={rive.layout}
           />

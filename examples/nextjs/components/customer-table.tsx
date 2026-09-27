@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@tailorkit/ui/table";
+import { cn } from "@tailorkit/ui";
 import { formatCurrencyTotal } from "@/components/crm-ui";
 import { customers } from "@/lib/crm-data";
 
@@ -39,7 +40,10 @@ export function CustomerTable({ limit }: { limit?: number }) {
                 <Badge variant="outline">
                   <span
                     aria-hidden="true"
-                    className={`size-1.5 rounded-full ${getStatusIndicatorClassName(customer.status)}`}
+                    className={cn(
+                      "size-1.5 rounded-full",
+                      getStatusIndicatorClassName(customer.status),
+                    )}
                   />
                   {customer.status}
                 </Badge>

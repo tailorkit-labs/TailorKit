@@ -1,4 +1,4 @@
-import { auth } from "@tailorkit/auth";
+import { auth, getSocialProviderAvailability } from "@tailorkit/auth";
 import { db } from "@tailorkit/db";
 import { account } from "@tailorkit/db/schema/auth";
 import { getKV } from "@tailorkit/kv";
@@ -62,6 +62,8 @@ async function getGitHubUsername(accountId: string, getAccessToken: () => Promis
 }
 
 export const userRouter = {
+  getSocialProviders: publicProcedure.handler(() => getSocialProviderAvailability()),
+
   getSession: publicProcedure.handler(({ context }) => ({
     session: context.session,
     user: context.user,
@@ -95,7 +97,7 @@ export const userRouter = {
       z.object({
         callbackURL: z.string().optional(),
         errorCallbackURL: z.string().optional(),
-        provider: z.literal("github"),
+        provider: z.enum(["github", "google"]),
       }),
     )
     .handler(({ input, context }) =>
