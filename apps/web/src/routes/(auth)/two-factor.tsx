@@ -1,6 +1,6 @@
 "use client";
 
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@tailorkit/ui/button";
 import {
@@ -48,7 +48,7 @@ export const Route = createFileRoute("/(auth)/two-factor")({
 });
 
 function TwoFactorPage() {
-  const navigate = Route.useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [code, setCode] = useState("");
   const [backupCode, setBackupCode] = useState("");
@@ -107,7 +107,7 @@ function TwoFactorPage() {
       const destination = returnPath ?? "/";
       try {
         await queryClient.invalidateQueries(orpc.user.getSession.queryOptions());
-        await navigate({ href: destination });
+        await router.navigate({ href: destination });
       } catch {
         window.location.assign(destination);
       }
