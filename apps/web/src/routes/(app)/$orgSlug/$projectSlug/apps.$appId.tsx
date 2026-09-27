@@ -24,7 +24,7 @@ import { dataTableFeatures } from "#lib/table";
 
 export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug/apps/$appId")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(
+    context.queryClient.query(
       context.orpc.apps.get.queryOptions({
         input: {
           appId: params.appId,
