@@ -129,6 +129,7 @@ export const createDemoSchema = (theme: TailorKitTheme = defaultTheme) => {
   const primitiveTheme = withPrimitiveThemeTokens(theme);
 
   return {
+    scopeSchema: z.object({ demoId: z.string().min(1) }),
     components: {
       ...primitives(primitiveTheme),
       Badge: BadgeComponent,

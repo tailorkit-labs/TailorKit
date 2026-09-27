@@ -62,7 +62,7 @@ interface AppRow {
   id: string;
   publicId: string;
   name: string;
-  scopeId: string;
+  scope: Record<string, string>;
   createdAt: Date | string;
   currentDeployment: { status: string } | null;
   deploymentCount: number;
@@ -123,10 +123,17 @@ function AppsTable({
         ),
       },
       {
-        accessorKey: "scopeId",
+        accessorFn: (row) => JSON.stringify(row.scope),
+        id: "scope",
         header: "Scope",
-        size: 160,
-        cell: ({ row }) => <span className="text-sm">{row.original.scopeId}</span>,
+        size: 220,
+        cell: ({ row }) => (
+          <span className="block truncate text-sm" title={JSON.stringify(row.original.scope)}>
+            {Object.entries(row.original.scope)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(", ")}
+          </span>
+        ),
       },
       {
         accessorKey: "deploymentCount",

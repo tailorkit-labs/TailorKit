@@ -57,6 +57,8 @@ const action = createActions().context<{
 
 export const tailorKit = createTailorKit({
   projectKey: process.env.TAILORKIT_PROJECT_KEY,
+  // Describe the stable identity fields used to group app installations.
+  scopeSchema: z.object({ userId: z.string().min(1) }),
 
   components: {
     // These provide basic layout and styling abilities.
@@ -128,7 +130,7 @@ async function handleRequest(request: Request) {
       return {
         actionContext: { user: session.user },
         // Used to separate installed apps for each user, team, or project.
-        scopeId: session.user.id,
+        scope: { userId: session.user.id },
       };
     },
   });
@@ -165,7 +167,7 @@ async function handleRequest({ request }: { request: Request }) {
       return {
         actionContext: { user: session.user },
         // Used to separate installed apps for each user, team, or project.
-        scopeId: session.user.id,
+        scope: { userId: session.user.id },
       };
     },
   });
@@ -190,7 +192,7 @@ async function handleRequest(request: Request) {
       return {
         actionContext: { user: session.user },
         // Used to separate installed apps for each user, team, or project.
-        scopeId: session.user.id,
+        scope: { userId: session.user.id },
       };
     },
   });
@@ -224,7 +226,7 @@ export default defineEventHandler(async (event) => {
       return {
         actionContext: { user: session.user },
         // Used to separate installed apps for each user, team, or project.
-        scopeId: session.user.id,
+        scope: { userId: session.user.id },
       };
     },
   });
@@ -251,7 +253,7 @@ app.on(["GET", "POST"], "/api/tailorkit/*", async (c) => {
       return {
         actionContext: { user: session.user },
         // Used to separate installed apps for each user, team, or project.
-        scopeId: session.user.id,
+        scope: { userId: session.user.id },
       };
     },
   });
@@ -319,7 +321,7 @@ GET /api/tailorkit/apps
 
 The schema and metadata endpoints describe your public app contract. The apps
 endpoint requires a valid host session and returns the apps installed for the
-authenticated `scopeId`.
+authenticated scope object.
 
 🎉 TailorKit is installed.
 

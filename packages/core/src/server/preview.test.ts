@@ -1,15 +1,18 @@
 /* oxlint-disable require-await -- the platform fetch mock has the Fetch promise shape. */
 import { describe, expect, it } from "vite-plus/test";
+import { z } from "zod";
 import { createTailorKitServer } from "./handler";
 import { isActivePreviewConflict } from "./routes/preview";
 
 const shareId = "s".repeat(43);
+const testScopeSchema = z.record(z.string(), z.string().min(1));
 const grantId = "g".repeat(43);
 const basePath = "/custom/tailorkit";
 const baseUrl = `https://host.test${basePath}`;
 
 function server(requests: string[], previewError?: unknown) {
   return createTailorKitServer({
+    scopeSchema: testScopeSchema,
     basePath,
     components: {},
     cliAuth: { signInPath: "/sign-in" },
@@ -290,7 +293,11 @@ describe("preview host flow", () => {
 
   it("rejects a return path that could leave the host origin", () => {
     expect(() =>
-      createTailorKitServer({ components: {}, preview: { returnPath: "//evil.test" } }),
+      createTailorKitServer({
+        scopeSchema: testScopeSchema,
+        components: {},
+        preview: { returnPath: "//evil.test" },
+      }),
     ).toThrow("same-origin root-relative");
   });
 

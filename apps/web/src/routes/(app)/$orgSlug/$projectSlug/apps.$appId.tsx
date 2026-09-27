@@ -166,7 +166,7 @@ function AppPage() {
           Back to apps
         </Button>
       }
-      description={app.description || `Scope: ${app.scopeId}`}
+      description={app.description || "App and deployment details."}
       title={
         <span className="flex items-center gap-3">
           <AppLogo className="size-11" logoPaths={app.logoPaths} name={app.name} />
@@ -174,7 +174,22 @@ function AppPage() {
         </span>
       }
     >
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <CardFrame>
+          <CardFrameHeader>
+            <CardFrameTitle>Installation scope</CardFrameTitle>
+            <CardFrameDescription>
+              <div className="grid gap-1">
+                {Object.entries(app.scope).map(([key, value]) => (
+                  <div className="flex justify-between gap-3" key={key}>
+                    <span className="text-muted-foreground">{key}</span>
+                    <span className="break-all text-right">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </CardFrameDescription>
+          </CardFrameHeader>
+        </CardFrame>
         <CardFrame>
           <CardFrameHeader>
             <CardFrameTitle>Current deployment</CardFrameTitle>

@@ -1,8 +1,18 @@
 import { sql } from "drizzle-orm";
-import { index, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+  index,
+  jsonb,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-orm/zod";
 import z from "zod";
 import { project } from "./project";
+import { type Scope, scopeValueSchema } from "./scope";
 
 export const cliAuthSessionStatus = pgEnum("cli_auth_session_status", [
   "pending",
@@ -21,7 +31,8 @@ export const cliToken = pgTable(
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
 
-    scopeId: text("scope_id").notNull(),
+    scopeKey: text("scope_key").notNull(),
+    scope: jsonb("scope_json").$type<Scope>().notNull(),
 
     tokenHash: text("token_hash").notNull(),
 
@@ -36,7 +47,7 @@ export const cliToken = pgTable(
       .notNull(),
   },
   (table) => [
-    index("cli_token_project_id_scope_id_idx").on(table.projectId, table.scopeId),
+    index("cli_token_project_scope_key_idx").on(table.projectId, table.scopeKey),
     index("cli_token_expires_at_idx").on(table.expiresAt),
     index("cli_token_revoked_at_idx").on(table.revokedAt),
     uniqueIndex("cli_token_token_hash_unique").on(table.tokenHash),
@@ -54,7 +65,8 @@ export const cliAuthSession = pgTable(
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
 
-    scopeId: text("scope_id"),
+    scopeKey: text("scope_key"),
+    scope: jsonb("scope_json").$type<Scope>(),
 
     deviceCodeHash: text("device_code_hash").notNull(),
     userCodeHash: text("user_code_hash").notNull(),
@@ -73,6 +85,7 @@ export const cliAuthSession = pgTable(
   },
   (table) => [
     index("cli_auth_session_project_id_status_idx").on(table.projectId, table.status),
+    index("cli_auth_session_project_scope_key_idx").on(table.projectId, table.scopeKey),
     index("cli_auth_session_expires_at_idx").on(table.expiresAt),
 
     uniqueIndex("cli_auth_session_device_code_hash_unique").on(table.deviceCodeHash),
@@ -81,13 +94,18 @@ export const cliAuthSession = pgTable(
 );
 
 export const CliToken = createSelectSchema(cliToken, {
-  scopeId: z.string().max(255),
+  scopeKey: z.string().regex(/^[a-f0-9]{64}$/u),
+  scope: scopeValueSchema,
 });
 
 export type CliToken = z.output<typeof CliToken>;
 
 export const CliAuthSession = createSelectSchema(cliAuthSession, {
-  scopeId: z.string().max(255).nullable(),
+  scopeKey: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/u)
+    .nullable(),
+  scope: scopeValueSchema.nullable(),
 });
 
 export type CliAuthSession = z.output<typeof CliAuthSession>;

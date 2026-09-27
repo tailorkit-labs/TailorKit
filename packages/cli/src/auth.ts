@@ -17,7 +17,7 @@ interface LoginOptions extends AuthOptions {
 
 interface StoredHostAuth {
   deployToken: string;
-  scopeId?: string;
+  scope?: Record<string, string>;
 }
 
 interface AuthStore {
@@ -34,10 +34,10 @@ type CliAuthPollResult =
   | { status: "pending" }
   | { status: "denied" }
   | { status: "expired" }
-  | { deployToken: string; scopeId: string; status: "approved" };
+  | { deployToken: string; scope: Record<string, string>; status: "approved" };
 
 interface CliAuthVerifyResult {
-  scopeId: string;
+  scope: Record<string, string>;
 }
 
 const authStorePath = path.join(homedir(), ".tailorkit", "auth.json");
@@ -46,7 +46,7 @@ const pollIntervalMs = 2000;
 
 const storedHostAuthSchema = z.object({
   deployToken: z.string().min(1),
-  scopeId: z.string().min(1).optional(),
+  scope: z.record(z.string(), z.string()).optional(),
 });
 
 const authStoreSchema = z
@@ -151,7 +151,7 @@ export const getDeployToken = async (hostUrl: string): Promise<StoredHostAuth | 
 export const runLogin = async (
   options: LoginOptions,
   onUserCode: (details: { expiresAt: Date; hostUrl: string; userCode: string }) => void,
-): Promise<{ hostUrl: string; scopeId: string }> => {
+): Promise<{ hostUrl: string; scope: Record<string, string> }> => {
   const hostUrl = await resolveHostUrl(options);
   const client = createTailorKitClient({ url: hostUrl });
   const startResult = await client.cliAuth.start({});
@@ -183,12 +183,12 @@ export const runLogin = async (
       case "approved": {
         await saveDeployToken(hostUrl, {
           deployToken: result.deployToken,
-          scopeId: result.scopeId,
+          scope: result.scope,
         });
 
         return {
           hostUrl,
-          scopeId: result.scopeId,
+          scope: result.scope,
         };
       }
       default: {
@@ -202,7 +202,7 @@ export const runLogin = async (
 
 export const runWhoami = async (
   options: AuthOptions,
-): Promise<{ hostUrl: string; scopeId: string }> => {
+): Promise<{ hostUrl: string; scope: Record<string, string> }> => {
   const hostUrl = await resolveHostUrl(options);
   const auth = await getDeployToken(hostUrl);
 
@@ -226,12 +226,12 @@ export const runWhoami = async (
 
   await saveDeployToken(hostUrl, {
     deployToken: auth.deployToken,
-    scopeId: result.scopeId,
+    scope: result.scope,
   });
 
   return {
     hostUrl,
-    scopeId: result.scopeId,
+    scope: result.scope,
   };
 };
 

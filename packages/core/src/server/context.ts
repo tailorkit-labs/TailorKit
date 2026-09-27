@@ -1,10 +1,10 @@
 import type { Client as PlatformClient } from "@tailorkit/client-platform/client/client/index";
 import type { ImplementedAction, TailorKitSchema } from "../schema/index";
-import type { TailorKitPlatformOptions } from "./types";
+import type { TailorKitPlatformOptions, TailorKitScope } from "./types";
 
 export interface TailorKitRuntimeContext {
   actionContext?: unknown;
-  scopeId: string;
+  scope: TailorKitScope;
 }
 
 export interface Context {

@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -14,6 +15,7 @@ import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { project } from "./project";
 import { createSelectSchema } from "drizzle-orm/zod";
 import z from "zod";
+import { scopeValueSchema, type Scope } from "./scope";
 
 export const app = pgTable(
   "app",
@@ -26,7 +28,8 @@ export const app = pgTable(
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
 
-    scopeId: text("scope_id").notNull(),
+    scopeKey: text("scope_key").notNull(),
+    scope: jsonb("scope_json").$type<Scope>().notNull(),
 
     name: text("name").notNull(),
     description: text("description"),
@@ -43,7 +46,7 @@ export const app = pgTable(
       .notNull(),
   },
   (table) => [
-    index("app_projectId_scopeId_idx").on(table.projectId, table.scopeId),
+    index("app_project_scope_key_idx").on(table.projectId, table.scopeKey),
     uniqueIndex("app_project_id_public_id_unique").on(table.projectId, table.publicId),
   ],
 );
@@ -51,7 +54,8 @@ export const app = pgTable(
 export const App = createSelectSchema(app, {
   name: z.string().max(127),
   description: z.string().max(255).nullable(),
-  scopeId: z.string().max(255),
+  scopeKey: z.string().regex(/^[a-f0-9]{64}$/u),
+  scope: scopeValueSchema,
 });
 export type App = z.output<typeof App>;
 

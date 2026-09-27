@@ -4,6 +4,7 @@ import { createRatelimiter, ratelimitMiddleware } from "@tailorkit/api-utils/rat
 import { setSpanAttributes } from "@tailorkit/observability";
 import type { Context } from "./context";
 import { db } from "@tailorkit/db";
+import { canonicalizeScope } from "./scope";
 
 const rateLimiter = createRatelimiter({ maxRequests: 100, window: 1000 });
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
@@ -18,19 +19,21 @@ export const protectedRouter = o
   .use(ratelimitMiddleware(rateLimiter, ({ context }) => context.organization.id));
 
 export const requireApp = o.middleware(
-  async ({ context, next }, input: { appId: string; scopeId: string }) => {
+  async ({ context, next }, input: { appId: string; scope: Record<string, string> }) => {
     setSpanAttributes({
       "tailorkit.middleware": "require_app",
       "tailorkit.package": "api-platform",
       "tailorkit.resource_type": "app",
     });
 
+    const { scope, scopeKey } = canonicalizeScope(input.scope);
     const appById = uuidPattern.test(input.appId)
       ? await db.query.app.findFirst({
           where: {
             id: input.appId,
             projectId: context.project.id,
-            scopeId: input.scopeId,
+            scopeKey,
+            scope,
           },
           with: { currentDeployment: { where: { status: "published" } } },
         })
@@ -41,7 +44,8 @@ export const requireApp = o.middleware(
         where: {
           projectId: context.project.id,
           publicId: input.appId,
-          scopeId: input.scopeId,
+          scopeKey,
+          scope,
         },
         with: { currentDeployment: { where: { status: "published" } } },
       }));

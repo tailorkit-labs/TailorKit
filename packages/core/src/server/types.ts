@@ -1,3 +1,6 @@
+import type { StandardSchemaV1 } from "@standard-schema/spec";
+import type { ClientOptions as PlatformClientOptions } from "@tailorkit/client-platform/client/types.gen";
+import type { TailorKitRouter } from "./router";
 import type {
   ActionTree,
   ActionDefinitions,
@@ -10,8 +13,6 @@ import type {
   SlotDefinitions,
   TailorKitSchema,
 } from "../schema/index";
-import type { ClientOptions as PlatformClientOptions } from "@tailorkit/client-platform/client/types.gen";
-import type { TailorKitRouter } from "./router";
 
 type HeaderInput = ConstructorParameters<typeof Headers>[0];
 
@@ -27,6 +28,8 @@ export interface TailorKitServerBaseOptions {
    * `TAILORKIT_PROJECT_KEY` environment variable and pass the value here.
    */
   projectKey?: string;
+  /** Required Standard Schema for the structured identity returned by authenticate().scope. */
+  scopeSchema: StandardSchemaV1;
   /** Optional custom asset origin. Hosted apps receive a tenant-viewd clientPath from TailorKit automatically. */
   assetsBaseUrl?: string;
   basePath?: string;
@@ -96,6 +99,13 @@ export type InferTailorKitServerContexts<TOptions extends TailorKitServerInputOp
 export type InferTailorKitServerActions<TOptions extends TailorKitServerInputOptions> =
   TOptions extends { actions: infer TActions } ? TActions : Record<never, never>;
 
+export type TailorKitScope = Record<string, string>;
+
+export type InferTailorKitServerScope<TOptions extends TailorKitServerInputOptions> =
+  TOptions extends { scopeSchema: infer TSchema extends StandardSchemaV1 }
+    ? StandardSchemaV1.InferInput<TSchema>
+    : TailorKitScope;
+
 export interface TailorKitServerOptions<
   TComponents extends ComponentDefinitions,
   TContexts extends ContextDefinitions,
@@ -105,32 +115,36 @@ export interface TailorKitServerOptions<
     TailorKitServerBaseOptions,
     TailorKitServerSchemaOptions<TComponents, TContexts, TActions> {}
 
-export type TailorKitHostContext<TActionContext = never> = {
-  scopeId: string;
+export type TailorKitHostContext<TActionContext = never, TScope = TailorKitScope> = {
+  scope: TScope;
 } & ([TActionContext] extends [never]
   ? { actionContext?: never }
   : { actionContext: TActionContext });
 
-export interface TailorKitHandlerOptions<TActionContext = never> {
+export interface TailorKitHandlerOptions<TActionContext = never, TScope = TailorKitScope> {
   authenticate: (ctx: {
     request: Request;
   }) =>
-    | TailorKitHostContext<TActionContext>
+    | TailorKitHostContext<TActionContext, TScope>
     | null
-    | Promise<TailorKitHostContext<TActionContext> | null>;
+    | Promise<TailorKitHostContext<TActionContext, TScope> | null>;
 }
 
-export type TailorKitHandlerContext<TActionContext = never> = TailorKitHostContext<TActionContext>;
+export type TailorKitHandlerContext<
+  TActionContext = never,
+  TScope = TailorKitScope,
+> = TailorKitHostContext<TActionContext, TScope>;
 
 export interface TailorKitServer<
   TComponents extends ComponentDefinitions,
   TContexts extends ContextDefinitions,
   TActions extends ActionTree = Record<never, never>,
   TActionContext = ResolveActionTreeContext<TActions>,
+  TScope = TailorKitScope,
 > {
   handler: (
     request: Request,
-    options: TailorKitHandlerOptions<TActionContext>,
+    options: TailorKitHandlerOptions<TActionContext, TScope>,
   ) => Response | Promise<Response>;
   /**
    * Internal TailorKit implementation details.

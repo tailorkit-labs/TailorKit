@@ -41,6 +41,7 @@ const action = createActions().context<{
 
 export const tailorKit = createTailorKit({
   components: {},
+  scopeSchema: z.object({ userId: z.string().min(1) }),
 
   actions: {
     echo: action
@@ -119,7 +120,7 @@ async function handleRequest(request: Request) {
             name: session.user.name,
           },
         },
-        scopeId: session.user.id,
+        scope: { userId: session.user.id },
       };
     },
   });
@@ -129,8 +130,10 @@ export const GET = handleRequest;
 export const POST = handleRequest;
 ```
 
-`actionContext` is passed to your action handlers. `scopeId` separates installed
-apps by user, team, project, or whatever boundary makes sense for your product.
+`actionContext` is passed to your action handlers. The structured `scope`
+identifies where apps are installed. Define its fields with `scopeSchema`, then
+return the matching values from the authenticated session. For example, use
+`{ orgId, userId }` when apps belong to a user within an organization.
 Return `null` when the request is not authenticated; TailorKit will reject host
 authenticated routes while still allowing TailorKit-managed deploy-token routes
 to use their own authentication.
@@ -205,9 +208,11 @@ clear path to call.
 ```ts title="./src/lib/tailorkit.ts"
 import { createTailorKit } from "tailorkit";
 import { messageActions, projectActions } from "./tailorkit/actions";
+import { z } from "zod";
 
 export const tailorKit = createTailorKit({
   components: {},
+  scopeSchema: z.object({ userId: z.string().min(1) }),
 
   actions: {
     messages: messageActions,
@@ -259,6 +264,6 @@ const message = await actions.messages.send({
 - Use narrow input schemas with required fields, enums, and bounded values.
 - Return only the data the TailorKit app needs.
 - Use `context` for identity, permissions, and tenant-aware queries.
-- Use `scopeId` to match the boundary where apps are installed.
+- Use `scope` fields to match the boundary where apps are installed.
 - Do not return secrets, tokens, internal IDs, or sensitive metadata unless the
   app truly needs them.

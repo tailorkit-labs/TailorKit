@@ -12,7 +12,7 @@ const handle = (request: Request) =>
 
       return {
         actionContext: { user },
-        scopeId: user.id,
+        scope: { userId: user.id },
       };
     },
   });

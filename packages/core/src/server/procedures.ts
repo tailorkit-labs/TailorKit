@@ -1,6 +1,8 @@
 import { ORPCError, os } from "@orpc/server";
 import { cliAuthVerifyToken } from "@tailorkit/client-platform/client";
 import type { Context } from "./context";
+import { normalizeTailorKitScope } from "./scope";
+import type { TailorKitScope } from "./types";
 
 export const o = os.$context<Context>();
 
@@ -12,8 +14,8 @@ export function getTailorKitContext(context: Context) {
   return context.tailorkit;
 }
 
-export function getTailorKitScopeId(context: Context): string {
-  return getTailorKitContext(context).scopeId;
+export function getTailorKitScope(context: Context): TailorKitScope {
+  return getTailorKitContext(context).scope;
 }
 
 export function getCliDeployToken(request: Request): string {
@@ -37,11 +39,11 @@ export const requireCliDeployToken = o.middleware(async ({ context, next }) => {
 
   const token = "data" in result ? result.data : result;
 
-  if (!token?.scopeId) {
+  if (!token?.scope) {
     throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
   }
 
-  return next({ context: { tailorkit: { scopeId: token.scopeId } } });
+  return next({ context: { tailorkit: { scope: normalizeTailorKitScope(token.scope) } } });
 });
 
 export const requireHostAuth = o.middleware(async ({ context, next }) => {

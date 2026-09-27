@@ -14,11 +14,13 @@ import { normalizeBasePath } from "./apps";
 import { handleCliAuthApprovalPage } from "./cli-auth-page";
 import { handlePreviewConsent, readPreviewGrantIds } from "./preview-consent";
 import { createContext } from "./context";
+import { validateTailorKitScope } from "./scope";
 import { tailorkitRouter } from "./router";
 import type {
   InferTailorKitServerActions,
   InferTailorKitServerComponents,
   InferTailorKitServerContexts,
+  InferTailorKitServerScope,
   TailorKitHandlerOptions,
   TailorKitServer,
   TailorKitServerInputOptions,
@@ -41,7 +43,9 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
 ): TailorKitServer<
   InferTailorKitServerComponents<TOptions>,
   InferTailorKitServerContexts<TOptions>,
-  InferTailorKitServerActions<TOptions>
+  InferTailorKitServerActions<TOptions>,
+  ResolveActionTreeContext<InferTailorKitServerActions<TOptions>>,
+  InferTailorKitServerScope<TOptions>
 > & {
   readonly $slots?: TOptions extends { slots: infer V } ? V : Record<never, never>;
 } {
@@ -86,9 +90,21 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
   const handler = async (
     request: Request,
     handlerOptions: TailorKitHandlerOptions<
-      ResolveActionTreeContext<InferTailorKitServerActions<TOptions>>
+      ResolveActionTreeContext<InferTailorKitServerActions<TOptions>>,
+      InferTailorKitServerScope<TOptions>
     >,
   ) => {
+    const authenticate = async ({ request }: { request: Request }) => {
+      const hostContext = await handlerOptions.authenticate({ request });
+      if (!hostContext) {
+        return null;
+      }
+
+      return {
+        ...hostContext,
+        scope: await validateTailorKitScope(options.scopeSchema, hostContext.scope),
+      };
+    };
     const url = new URL(request.url);
     const previewPrefix = `${basePath}/preview/`;
     if (url.pathname === `${basePath}/schema`) {
@@ -115,7 +131,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
-        authenticate: handlerOptions.authenticate,
+        authenticate,
       });
       return handlePreviewConsent({
         request,
@@ -136,7 +152,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
-        authenticate: handlerOptions.authenticate,
+        authenticate,
       });
       const viewer = await context.authenticate({ request });
       if (!viewer) {
@@ -167,7 +183,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
-        authenticate: handlerOptions.authenticate,
+        authenticate,
       });
       const tailorkit = await context.authenticate({ request });
 
@@ -221,7 +237,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
-        authenticate: handlerOptions.authenticate,
+        authenticate,
       });
 
       return handleCliAuthApprovalPage({
@@ -240,7 +256,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
-        authenticate: handlerOptions.authenticate,
+        authenticate,
       }),
       prefix: basePath as AbsolutePath,
     });
