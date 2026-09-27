@@ -264,11 +264,7 @@ function RouteComponent() {
 
                     <emailForm.AppField name="email">
                       {(field) => (
-                        <field.TextField
-                          label="Email"
-                          type="email"
-                          placeholder="you@example.com"
-                        />
+                        <field.TextField label="Email" type="email" placeholder="you@example.com" />
                       )}
                     </emailForm.AppField>
 
