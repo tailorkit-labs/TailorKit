@@ -5,6 +5,16 @@
   "license": "Apache-2.0",
   "type": "module",
   "imports": {
+    "#ui": "./src/index.ts",
+    "#ui/form": "./src/forms/form.tsx",
+    "#ui/hooks/*": "./src/hooks/*.ts",
+    "#ui/lib/*": "./src/lib/*.ts",
+    "#ui/forms/*": [
+      "./src/forms/*.ts",
+      "./src/forms/*.tsx"
+    ],
+    "#ui/components/*": "./src/components/*.tsx",
+    "#ui/*": "./src/components/*.tsx",
     "#*": [
       "./src/*",
       "./src/*.ts",
@@ -80,6 +90,8 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "oxc-transform-react": "^0.151.0",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }

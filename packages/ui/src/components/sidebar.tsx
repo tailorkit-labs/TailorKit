@@ -4,12 +4,12 @@ import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { ChevronLeftIcon, ChevronRightIcon, PanelLeftIcon } from "lucide-react";
 import * as React from "react";
-import { useMediaQuery } from "@tailorkit/ui/hooks/use-media-query";
-import { cn } from "@tailorkit/ui";
-import { Button } from "@tailorkit/ui/button";
-import { ScrollArea } from "@tailorkit/ui/scroll-area";
-import { Separator } from "@tailorkit/ui/separator";
-import { Sheet, SheetDescription, SheetHeader, SheetPopup, SheetTitle } from "@tailorkit/ui/sheet";
+import { useMediaQuery } from "#ui/hooks/use-media-query";
+import { cn } from "#ui";
+import { Button } from "#ui/button";
+import { ScrollArea } from "#ui/scroll-area";
+import { Separator } from "#ui/separator";
+import { Sheet, SheetDescription, SheetHeader, SheetPopup, SheetTitle } from "#ui/sheet";
 
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
