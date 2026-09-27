@@ -14,6 +14,11 @@ import {
   CardTitle,
 } from "@tailorkit/ui/card";
 import {
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
+} from "@tailorkit/ui/collapsible";
+import {
   Dialog,
   DialogClose,
   DialogDescription,
@@ -28,7 +33,13 @@ import { Input } from "@tailorkit/ui/input";
 import { Skeleton } from "@tailorkit/ui/skeleton";
 import { toastManager } from "@tailorkit/ui/toast";
 import { useAppForm } from "@tailorkit/ui/form";
-import { KeyRoundIcon, LaptopIcon, SmartphoneIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  KeyRoundIcon,
+  LaptopIcon,
+  SmartphoneIcon,
+  TrashIcon,
+} from "lucide-react";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { z } from "zod";
@@ -97,6 +108,18 @@ function formatLastActive(value: Date | string, locale: string, timeZone: string
     timeStyle: "short",
     timeZone,
   }).format(new Date(value));
+}
+
+function formatPasskeyCreated(
+  value: Date | string | null | undefined,
+  locale: string,
+  timeZone: string,
+) {
+  if (!value) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone }).format(new Date(value));
 }
 
 function ActiveSessions({ locale, timeZone }: { locale: string; timeZone: string }) {
@@ -591,54 +614,89 @@ function SecurityPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-3 rounded-xl border p-4">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
-                        <KeyRoundIcon aria-hidden="true" className="size-5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm">Passkeys</p>
-                        <p className="text-muted-foreground text-sm">
-                          {passkeys.length
-                            ? `${passkeys.length} connected`
-                            : "Sign in with your device"}
-                        </p>
-                      </div>
-                      <Button
-                        disabled={passkeyPending !== null}
-                        loading={passkeyPending === "add"}
-                        onClick={() => setPasskeyDialogOpen(true)}
-                        size="sm"
-                        variant="outline"
-                      >
-                        Add
-                      </Button>
-                    </div>
-
-                    {passkeys.map((passkey) => (
-                      <div
-                        className="ml-5 flex items-center gap-3 rounded-xl border p-4 sm:ml-12"
-                        key={passkey.id}
-                      >
+                    <Collapsible
+                      className="rounded-xl border"
+                      key={passkeys.length === 0 ? "empty" : "non-empty"}
+                    >
+                      <div className="flex items-center gap-3 p-4">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
+                          <KeyRoundIcon aria-hidden="true" className="size-5" />
+                        </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-sm">{passkey.name || "Passkey"}</p>
-                          <p className="text-muted-foreground text-sm">Available for sign-in</p>
+                          <p className="font-medium text-sm">Passkeys</p>
+                          {passkeys.length ? (
+                            <CollapsibleTrigger
+                              className="justify-start gap-1.5 px-0 py-0 font-normal text-muted-foreground hover:bg-transparent data-panel-open:[&_svg]:rotate-180 data-pressed:bg-transparent"
+                              render={<Button variant="ghost" />}
+                            >
+                              {passkeys.length} passkey{passkeys.length === 1 ? "" : "s"} registered
+                              <ChevronDownIcon
+                                aria-hidden="true"
+                                className="size-4 transition-transform"
+                              />
+                            </CollapsibleTrigger>
+                          ) : (
+                            <p className="text-muted-foreground text-sm">No passkeys registered</p>
+                          )}
                         </div>
                         <Button
-                          disabled={signInMethodCount <= 1 || passkeyPending !== null}
-                          loading={passkeyPending === passkey.id}
-                          onClick={() => void deletePasskey(passkey.id)}
+                          disabled={passkeyPending !== null}
+                          loading={passkeyPending === "add"}
+                          onClick={() => setPasskeyDialogOpen(true)}
                           size="sm"
-                          title={
-                            signInMethodCount > 1
-                              ? "Remove passkey"
-                              : "Add another sign-in method before removing this passkey"
-                          }
-                          variant="destructive-outline"
+                          variant="outline"
                         >
-                          Remove
+                          Add
                         </Button>
                       </div>
-                    ))}
+
+                      {passkeys.length ? (
+                        <CollapsiblePanel>
+                          <div className="border-t px-4 pl-16">
+                            {passkeys.map((passkey) => {
+                              const createdAt = formatPasskeyCreated(
+                                passkey.createdAt,
+                                locale,
+                                timeZone,
+                              );
+
+                              return (
+                                <div
+                                  className="flex items-center gap-3 border-b py-4 last:border-b-0"
+                                  key={passkey.id}
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate font-medium text-sm">
+                                      {passkey.name || "Passkey"}
+                                    </p>
+                                    {createdAt ? (
+                                      <p className="text-muted-foreground text-sm">
+                                        Created {createdAt}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                  <Button
+                                    aria-label={`Remove ${passkey.name || "passkey"}`}
+                                    disabled={signInMethodCount <= 1 || passkeyPending !== null}
+                                    loading={passkeyPending === passkey.id}
+                                    onClick={() => void deletePasskey(passkey.id)}
+                                    size="icon-sm"
+                                    title={
+                                      signInMethodCount > 1
+                                        ? "Remove passkey"
+                                        : "Add another sign-in method before removing this passkey"
+                                    }
+                                    variant="ghost"
+                                  >
+                                    <TrashIcon aria-hidden="true" />
+                                  </Button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </CollapsiblePanel>
+                      ) : null}
+                    </Collapsible>
                   </div>
                 )}
               </CardPanel>
