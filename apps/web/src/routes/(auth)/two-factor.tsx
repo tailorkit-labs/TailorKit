@@ -61,6 +61,21 @@ function TwoFactorPage() {
   const backupCodeVerificationInProgressRef = useRef(false);
   const backupCodeDialogSessionRef = useRef(0);
 
+  const navigateAfterVerification = async (destination: string) => {
+    const currentLocation = window.location.href;
+    try {
+      await queryClient.invalidateQueries(orpc.user.getSession.queryOptions());
+      await router.navigate({ href: destination });
+    } catch {
+      window.location.assign(destination);
+      return;
+    }
+
+    if (window.location.href === currentLocation) {
+      window.location.assign(destination);
+    }
+  };
+
   const verify = async (verificationCode: string, useBackupCode = false) => {
     const expectedLength = useBackupCode ? BACKUP_CODE_LENGTH : OTP_LENGTH;
     const verificationInProgressRef = useBackupCode
@@ -105,16 +120,7 @@ function TwoFactorPage() {
       );
       window.sessionStorage.removeItem("tailorkit.two-factor-return-to");
       const destination = returnPath ?? "/";
-      const currentLocation = window.location.href;
-      try {
-        await queryClient.invalidateQueries(orpc.user.getSession.queryOptions());
-        await router.navigate({ href: destination });
-        if (window.location.href === currentLocation) {
-          window.location.assign(destination);
-        }
-      } catch {
-        window.location.assign(destination);
-      }
+      await navigateAfterVerification(destination);
       redirecting = true;
     } catch {
       if (useBackupCode && backupCodeDialogSessionRef.current === backupCodeDialogSession) {
