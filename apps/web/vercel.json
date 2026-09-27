@@ -3,6 +3,7 @@
   "framework": "tanstack-start",
   "buildCommand": "TURBO_PLATFORM_ENV_DISABLED=true turbo run build --filter=web...",
   "installCommand": "pnpm install --filter web...",
+  "fluid": true,
   "rewrites": [
     {
       "source": "/",
