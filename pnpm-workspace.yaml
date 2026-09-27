@@ -2,7 +2,6 @@ minimumReleaseAge: 4320
 virtualStoreType: global
 
 overrides:
-  "@better-fetch/fetch": 1.3.2
   vite@*: "catalog:"
 
 packages:

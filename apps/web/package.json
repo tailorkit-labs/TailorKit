@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
-    "@better-auth/infra": "^0.4.10",
+    "@better-auth/infra": "^0.4.11",
     "@better-auth/passkey": "1.7.5",
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
@@ -69,7 +69,6 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "babel-plugin-react-compiler": "^1.0.0",
     "cross-env": "10.1.0",
     "oxc-transform-react": "^0.151.0",
     "typescript": "catalog:",
