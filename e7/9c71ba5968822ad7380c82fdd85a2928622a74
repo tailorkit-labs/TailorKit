@@ -1,0 +1,147 @@
+packages/ui/src/components/meter.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/fieldset.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/toggle.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 7
+packages/ui/src/components/button.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 8-9
+packages/ui/src/components/group.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 8-9
+packages/ui/src/components/popover.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/toast.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 12-13
+packages/ui/src/components/progress.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/dropdown-menu.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6
+packages/ui/src/components/dialog.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 8-10
+packages/ui/src/components/drawer.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 12-14
+packages/ui/src/components/switch.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/vite.config.ts
+  s_605b8ccd8c6b18::t_405edb5f84515a 1,6
+packages/ui/components.json
+  s_605b8ccd8c6b18::t_a9a913558dcc58 17-21
+packages/ui/src/components/logo.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 1
+packages/ui/src/components/alert-dialog.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/context-menu.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6
+packages/ui/src/components/preview-card.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/autocomplete.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6-8
+packages/ui/src/components/spinner.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 3
+packages/ui/src/components/checkbox.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/forms/form.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 22
+packages/ui/src/components/sheet.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 8-10
+packages/ui/src/components/otp-field.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5-6
+packages/ui/src/components/badge.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 8
+packages/ui/src/components/separator.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 3
+packages/ui/src/components/label.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6
+packages/ui/src/components/field.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/frame.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 2
+packages/ui/src/components/input-group.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6-10
+packages/ui/src/components/accordion.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6
+packages/ui/src/components/tooltip.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/avatar.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/table.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6
+packages/ui/src/components/sidebar.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 7-12
+packages/ui/src/components/checkbox-group.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/slider.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/input.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/kbd.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 2
+packages/ui/package.json
+  s_605b8ccd8c6b18::t_405edb5f84515a 94
+  s_605b8ccd8c6b18::t_294958e4e826c4 93
+  s_605b8ccd8c6b18::t_cd6c1d72da070e 8-17
+packages/ui/src/components/scroll-area.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/toggle-group.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 7-10
+packages/ui/src/components/empty.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 4
+packages/ui/src/components/card.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6
+packages/ui/src/components/toolbar.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/alert.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 4
+packages/ui/src/components/calendar.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6
+packages/ui/src/components/combobox.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6-8
+packages/ui/src/components/menu.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6
+packages/ui/src/components/pagination.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 7-9
+packages/ui/src/components/radio-group.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6
+packages/ui/src/components/number-field.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6-7
+packages/ui/src/components/collapsible.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 5
+packages/ui/src/components/command.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6,17
+packages/ui/src/components/tabs.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 8-10
+packages/ui/src/components/textarea.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 6
+packages/ui/src/components/skeleton.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 2
+packages/ui/src/components/breadcrumb.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 7
+packages/ui/src/components/select.tsx
+  s_605b8ccd8c6b18::t_d386787a7e4229 10
+pnpm-lock.yaml
+  s_0a462de1f34d55::t_15ecaad1bcfbb6 1613-1618,14929-14937
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e79c71ba5968822ad7380c82fdd85a2928622a74",
+  "prompts": {},
+  "sessions": {
+    "s_0a462de1f34d55": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e06e-f25e-7f23-9432-fb485284b35e",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_605b8ccd8c6b18": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e145-e60f-7782-8a7b-e103e158c86d",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
