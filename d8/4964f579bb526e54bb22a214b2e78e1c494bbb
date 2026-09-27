@@ -1,0 +1,29 @@
+examples/nextjs/components/crm-ui.tsx
+  s_0a462de1f34d55::t_288c00b2ae0568 20,78
+apps/docs/src/components/home-hero.tsx
+  s_0a462de1f34d55::t_288c00b2ae0568 2,53,58
+examples/tanstack-start/src/components/crm-ui.tsx
+  s_0a462de1f34d55::t_288c00b2ae0568 19,73
+examples/nextjs/components/customer-table.tsx
+  s_0a462de1f34d55::t_288c00b2ae0568 13
+  s_0a462de1f34d55::t_a58b62d8d76e7d 43-46
+examples/tanstack-start/src/components/customer-table.tsx
+  s_0a462de1f34d55::t_288c00b2ae0568 12
+  s_0a462de1f34d55::t_a58b62d8d76e7d 38-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d84964f579bb526e54bb22a214b2e78e1c494bbb",
+  "prompts": {},
+  "sessions": {
+    "s_0a462de1f34d55": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e06e-f25e-7f23-9432-fb485284b35e",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
