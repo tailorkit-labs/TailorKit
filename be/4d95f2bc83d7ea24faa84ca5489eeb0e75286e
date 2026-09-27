@@ -3,6 +3,7 @@ apps/web/src/routes/(auth)/login.tsx
   s_0a462de1f34d55::t_352db4820695c0 25
 apps/web/src/routes/(auth)/route.tsx
   s_0a462de1f34d55::t_45c9664f55d10b 8,11
+  s_0a462de1f34d55::t_6ee590fc3301eb 9-10
 packages/api/src/routers/user.ts
   s_0a462de1f34d55::t_45c9664f55d10b 1,65-66
 apps/web/src/lib/safe-return-url.ts
@@ -12,6 +13,9 @@ apps/web/src/components/google-icon.tsx
 apps/web/src/routes/(app)/account/security/index.tsx
   s_0a462de1f34d55::t_352db4820695c0 598,600-633,639-643,645-672
   s_0a462de1f34d55::t_14fb1374712233 38,274,326,596-597,599,635,637-638,674
+  s_0a462de1f34d55::t_6ee590fc3301eb 50
+  s_0a462de1f34d55::t_d3151730e921ad 673
+  s_0a462de1f34d55::t_0b65595d684391 644
 apps/web/src/routes/(auth)/sign-up.tsx
   s_0a462de1f34d55::t_9c8baead0f03cb 18,23-25,53,118,177-219
 packages/auth/src/index.ts
