@@ -1,0 +1,125 @@
+apps/docs/content/docs/(guides)/components.mdx
+  s_f3e800461aea44::t_9bb3197b3288a2 161,166,193
+packages/api-platform/src/routes/cli-auth.ts
+  s_f3e800461aea44::t_602535e73d9ab8 5
+  s_f3e800461aea44::t_9ebeb1a33a5266 11,100,107,111-112,173,211,213,235,237,244-245,249,259,271,284-288,291
+packages/api-platform/src/scope.ts
+  s_f3e800461aea44::t_dac469e7cb13df 1,3,5-13,15-20
+  s_f3e800461aea44::t_62d157b1e5c5ae 4,14
+  s_f3e800461aea44::t_7974601d9658c5 21-29
+  s_f3e800461aea44::t_602535e73d9ab8 2
+packages/core/src/server/types.ts
+  s_f3e800461aea44::t_2719bec2622649 102-108,118-119,124,128,130,133-134
+  s_f3e800461aea44::t_25cc8628d67828 1-3
+  s_f3e800461aea44::t_e130a4352e3dd0 32
+  s_f3e800461aea44::t_6c4f609b820be7 31
+  s_f3e800461aea44::t_0797a30c433398 135-136,143,147
+packages/core/src/server/handler.ts
+  s_f3e800461aea44::t_5d249c0f2e4685 17,23,46-48,93-94,97-107,134,155,186,240,259
+apps/docs/content/docs/(guides)/views.mdx
+  s_f3e800461aea44::t_03cbdfc1365323 17-19,22
+packages/cli/src/index.ts
+  s_f3e800461aea44::t_cf77504e6aaa5d 136
+packages/core/src/server/types.test-d.ts
+  s_f3e800461aea44::t_0122fef01e4685 5,11,13,18,21,25,27,31,38,43,49,55-83
+packages/api-platform/package.json
+  s_f3e800461aea44::t_dac469e7cb13df 43
+packages/api-platform/src/routes/apps.ts
+  s_f3e800461aea44::t_9cb6ffb517cadd 11,13,40,43-44,48-49,88,93,105,110,118-119,143,147,163,167,200,204
+  s_f3e800461aea44::t_602535e73d9ab8 4
+packages/core/src/server/scope.ts
+  s_f3e800461aea44::t_28def5c15d9166 1-8,10-11,17-18,20-62
+  s_f3e800461aea44::t_b33b921ea3ac49 9,12-16,19
+apps/docs/content/docs/(guides)/actions.mdx
+  s_f3e800461aea44::t_9bb3197b3288a2 44,123,133-136,267
+  s_f3e800461aea44::t_03cbdfc1365323 211,215
+apps/docs/content/docs/(guides)/layouts-and-styles.mdx
+  s_f3e800461aea44::t_03cbdfc1365323 20,23,33,36,46,49,149,167,177,195,205,223
+packages/db/src/schema/apps.ts
+  s_f3e800461aea44::t_66e6f15c9c14c6 5,31-32,49,57
+  s_f3e800461aea44::t_8f6e19e92e6917 18
+  s_f3e800461aea44::t_62d157b1e5c5ae 58
+examples/nextjs/app/api/tailorkit/[[...path]]/route.ts
+  s_f3e800461aea44::t_f22ad4437d65ce 15
+examples/nextjs/lib/tailorkit.ts
+  s_f3e800461aea44::t_f22ad4437d65ce 4,9
+apps/docs/content/docs/(getting-started)/installation.mdx
+  s_f3e800461aea44::t_27f75cc4b2bd0f 60-61,133,170,195,229,256,324
+packages/cli/src/auth.test.ts
+  s_f3e800461aea44::t_31133763d69af3 66,71,97,108,120,135,192-215
+  s_f3e800461aea44::t_671636f753f160 216
+examples/tanstack-start/src/lib/tailorkit.ts
+  s_f3e800461aea44::t_f22ad4437d65ce 4,9
+examples/tanstack-start/src/routes/api/tailorkit.$.ts
+  s_f3e800461aea44::t_f22ad4437d65ce 16
+packages/core/src/server/handler.test.ts
+  s_f3e800461aea44::t_c77531bcde48dc 10,13,30,41,69,255,274,289,320,358,389,419
+  s_f3e800461aea44::t_84ebe83b7f7716 480
+  s_f3e800461aea44::t_39f36b6c49aecb 302-316
+  s_f3e800461aea44::t_7acc7406409393 57,80,96,123,143,183,203,228,243,280,342,381,403
+packages/api-platform/src/procedures.ts
+  s_f3e800461aea44::t_9cb6ffb517cadd 7,22,29,35-36,47-48
+packages/api-platform/src/scope.test.ts
+  s_f3e800461aea44::t_eed114afa2b86b 1-28
+packages/db/src/schema/preview-session.ts
+  s_f3e800461aea44::t_66e6f15c9c14c6 37,44-45,63,65,75-76,78
+  s_f3e800461aea44::t_8f6e19e92e6917 17
+  s_f3e800461aea44::t_602535e73d9ab8 2-11
+  s_f3e800461aea44::t_62d157b1e5c5ae 77
+packages/db/src/schema/cli-auth.ts
+  s_f3e800461aea44::t_8f6e19e92e6917 6
+  s_f3e800461aea44::t_66e6f15c9c14c6 2,88
+  s_f3e800461aea44::t_ae057484b0b6e5 3-5,7-11,15,34-35,50,68-69,97-98,104-108
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.index.tsx
+  s_f3e800461aea44::t_cf77504e6aaa5d 65,126-127,129-136
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.$appId.tsx
+  s_f3e800461aea44::t_cf77504e6aaa5d 169,177-192
+apps/demo/src/routes/api/tailorkit.$.ts
+  s_f3e800461aea44::t_f22ad4437d65ce 20,24
+packages/db/src/schema/scope.ts
+  s_f3e800461aea44::t_8f6e19e92e6917 1-33
+packages/core/src/server/procedures.ts
+  s_f3e800461aea44::t_8b5a5be5096766 4-5,17-18,42,46
+packages/core/src/server/scope.test.ts
+  s_f3e800461aea44::t_647ec84b5b80cf 2,25-42
+  s_f3e800461aea44::t_00186cd0332167 1,3-24,43-44,46-61
+  s_f3e800461aea44::t_a645a3415a0c79 45
+packages/core/src/server/context.ts
+  s_f3e800461aea44::t_58552ddb746aec 3,7
+packages/db/src/schema/index.ts
+  s_f3e800461aea44::t_8f6e19e92e6917 2
+packages/db/package.json
+  s_f3e800461aea44::t_8f6e19e92e6917 30
+apps/demo/src/lib/tailorkit.tsx
+  s_f3e800461aea44::t_03cbdfc1365323 132
+packages/core/src/server/preview.test.ts
+  s_f3e800461aea44::t_84ebe83b7f7716 3,8,15,296-300
+apps/docs/content/docs/(guides)/deploying-to-production.mdx
+  s_f3e800461aea44::t_9bb3197b3288a2 108-110,170
+packages/cli/src/auth.ts
+  s_f3e800461aea44::t_d2c49c17817515 20,37,40,49,154,186,191,205,229,234
+packages/db/src/migrations/20260927115217_lyrical_black_widow/migration.sql
+  s_f3e800461aea44::t_03f145bfffa762 1-18
+packages/db/src/migrations/20260927115217_lyrical_black_widow/snapshot.json
+  s_f3e800461aea44::t_cba23bf2d497ab 1-3548
+packages/db/src/migrations/20260927115354_cynical_boomer/migration.sql
+  s_f3e800461aea44::t_70f517552522f2 1
+packages/db/src/migrations/20260927115354_cynical_boomer/snapshot.json
+  s_f3e800461aea44::t_6a08b405cb4fcd 1-3576
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "38d25314c19ab401df14f22b1a7d6759f5959b7a",
+  "prompts": {},
+  "sessions": {
+    "s_f3e800461aea44": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e28e-78c9-72e0-90fd-5c6df82f980b",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
