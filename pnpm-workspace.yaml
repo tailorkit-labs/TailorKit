@@ -52,8 +52,6 @@ catalog:
   zod: ^4.6.5
   vite-plus: 1.0.0-rc.1
 
-cacheDir: node_modules/.cache/pnpm
-
 allowBuilds:
   workerd: true
   "@prisma/client": false
