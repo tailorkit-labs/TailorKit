@@ -2,9 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/(app)")({
   loader: async ({ context, location }) => {
-    const session = await context.queryClient.ensureQueryData(
-      context.orpc.user.getSession.queryOptions(),
-    );
+    const session = await context.queryClient.query(context.orpc.user.getSession.queryOptions());
 
     if (!session.session) {
       throw redirect({
@@ -13,6 +11,6 @@ export const Route = createFileRoute("/(app)")({
       });
     }
 
-    void context.queryClient.ensureQueryData(context.orpc.user.getOrgs.queryOptions());
+    void context.queryClient.query(context.orpc.user.getOrgs.queryOptions());
   },
 });
