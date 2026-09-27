@@ -1,0 +1,22 @@
+packages/ui/src/forms/form.tsx
+  s_904c22dc094ce5::t_6b599360412f45 198-206
+examples/nextjs/components/theme-provider.tsx
+  s_904c22dc094ce5::t_32a1be2c37fc3e 3,6
+  s_904c22dc094ce5::t_cacfd57561ca59 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e2271934d59dbd5351f11b9373bb62060afb4348",
+  "prompts": {},
+  "sessions": {
+    "s_904c22dc094ce5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e090-1026-7ea3-a135-c8ebdffc9128",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
