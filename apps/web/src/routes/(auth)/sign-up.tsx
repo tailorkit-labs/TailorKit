@@ -159,6 +159,50 @@ function RouteComponent() {
                   }}
                 >
                   <CardPanel className="flex flex-col gap-4">
+                    {(socialError || error_description || error) && (
+                      <p className="text-destructive text-sm" role="alert">
+                        {socialError || error_description || error}
+                      </p>
+                    )}
+                    {(socialProvidersQuery.data?.google || socialProvidersQuery.data?.github) && (
+                      <>
+                        <div className="flex flex-col gap-2">
+                          {socialProvidersQuery.data.github && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full"
+                              disabled={socialPending !== null && socialPending !== "github"}
+                              loading={socialPending === "github"}
+                              onClick={() => void signUpWithSocial("github")}
+                            >
+                              <GitHubIcon />
+                              Continue with GitHub
+                            </Button>
+                          )}
+                          {socialProvidersQuery.data.google && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full"
+                              disabled={socialPending !== null && socialPending !== "google"}
+                              loading={socialPending === "google"}
+                              onClick={() => void signUpWithSocial("google")}
+                            >
+                              <GoogleIcon className="size-4 shrink-0" />
+                              Continue with Google
+                            </Button>
+                          )}
+                        </div>
+
+                        <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                          <span className="bg-card text-muted-foreground relative z-10 px-2 text-xs">
+                            OR
+                          </span>
+                        </div>
+                      </>
+                    )}
+
                     <emailForm.AppField name="email">
                       {(field) => (
                         <field.TextField
@@ -173,50 +217,6 @@ function RouteComponent() {
                     <emailForm.AppForm>
                       <emailForm.SubmitButton className="w-full">Continue</emailForm.SubmitButton>
                     </emailForm.AppForm>
-
-                    {(socialError || error_description || error) && (
-                      <p className="text-destructive text-sm" role="alert">
-                        {socialError || error_description || error}
-                      </p>
-                    )}
-                    {(socialProvidersQuery.data?.google || socialProvidersQuery.data?.github) && (
-                      <>
-                        <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                          <span className="bg-card text-muted-foreground relative z-10 px-2 text-xs">
-                            OR
-                          </span>
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                          {socialProvidersQuery.data.google && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="w-full"
-                              disabled={socialPending !== null && socialPending !== "google"}
-                              loading={socialPending === "google"}
-                              onClick={() => void signUpWithSocial("google")}
-                            >
-                              <GoogleIcon className="size-4 shrink-0" />
-                              Continue with Google
-                            </Button>
-                          )}
-                          {socialProvidersQuery.data.github && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="w-full"
-                              disabled={socialPending !== null && socialPending !== "github"}
-                              loading={socialPending === "github"}
-                              onClick={() => void signUpWithSocial("github")}
-                            >
-                              <GitHubIcon />
-                              Continue with GitHub
-                            </Button>
-                          )}
-                        </div>
-                      </>
-                    )}
                   </CardPanel>
                 </form>
               ) : (

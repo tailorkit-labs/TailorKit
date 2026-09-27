@@ -212,27 +212,6 @@ function RouteComponent() {
                   }}
                 >
                   <CardPanel className="flex flex-col gap-4">
-                    <emailForm.AppField name="email">
-                      {(field) => (
-                        <field.TextField
-                          label="Email"
-                          type="email"
-                          placeholder="you@example.com"
-                          autoFocus
-                        />
-                      )}
-                    </emailForm.AppField>
-
-                    <emailForm.AppForm>
-                      <emailForm.SubmitButton className="w-full">Continue</emailForm.SubmitButton>
-                    </emailForm.AppForm>
-
-                    <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                      <span className="bg-card text-muted-foreground relative z-10 px-2 text-xs">
-                        OR
-                      </span>
-                    </div>
-
                     <div className="flex flex-col gap-2">
                       {(passkeyError || socialError || error_description || error) && (
                         <p className="text-destructive text-sm" role="alert">
@@ -249,19 +228,6 @@ function RouteComponent() {
                         <KeyRoundIcon aria-hidden="true" className="size-4 shrink-0" />
                         Continue with a passkey
                       </Button>
-                      {socialProvidersQuery.data?.google && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="w-full"
-                          disabled={socialPending !== null && socialPending !== "google"}
-                          loading={socialPending === "google"}
-                          onClick={() => void signInWithSocial("google")}
-                        >
-                          <GoogleIcon className="size-4 shrink-0" />
-                          Continue with Google
-                        </Button>
-                      )}
                       {socialProvidersQuery.data?.github && (
                         <Button
                           type="button"
@@ -275,7 +241,41 @@ function RouteComponent() {
                           Continue with GitHub
                         </Button>
                       )}
+                      {socialProvidersQuery.data?.google && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full"
+                          disabled={socialPending !== null && socialPending !== "google"}
+                          loading={socialPending === "google"}
+                          onClick={() => void signInWithSocial("google")}
+                        >
+                          <GoogleIcon className="size-4 shrink-0" />
+                          Continue with Google
+                        </Button>
+                      )}
                     </div>
+
+                    <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                      <span className="bg-card text-muted-foreground relative z-10 px-2 text-xs">
+                        OR
+                      </span>
+                    </div>
+
+                    <emailForm.AppField name="email">
+                      {(field) => (
+                        <field.TextField
+                          label="Email"
+                          type="email"
+                          placeholder="you@example.com"
+                          autoFocus
+                        />
+                      )}
+                    </emailForm.AppField>
+
+                    <emailForm.AppForm>
+                      <emailForm.SubmitButton className="w-full">Continue</emailForm.SubmitButton>
+                    </emailForm.AppForm>
                   </CardPanel>
                 </form>
               ) : (
