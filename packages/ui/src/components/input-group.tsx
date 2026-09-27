@@ -3,11 +3,11 @@
 import { cva } from "class-variance-authority";
 import type { VariantProps } from "class-variance-authority";
 import type * as React from "react";
-import { cn } from "@tailorkit/ui";
-import { Input } from "@tailorkit/ui/input";
-import type { InputProps } from "@tailorkit/ui/input";
-import { Textarea } from "@tailorkit/ui/textarea";
-import type { TextareaProps } from "@tailorkit/ui/textarea";
+import { cn } from "#ui";
+import { Input } from "#ui/input";
+import type { InputProps } from "#ui/input";
+import { Textarea } from "#ui/textarea";
+import type { TextareaProps } from "#ui/textarea";
 
 const inputGroupAddonVariants = cva(
   "flex h-auto cursor-text select-none items-center justify-center gap-2 [&>kbd]:rounded-[calc(var(--radius)-5px)] in-[[data-slot=input-group]:has([data-slot=input-control],[data-slot=textarea-control])]:[&_svg:not([class*='size-'])]:size-4.5 sm:in-[[data-slot=input-group]:has([data-slot=input-control],[data-slot=textarea-control])]:[&_svg:not([class*='size-'])]:size-4 [&_svg]:-mx-0.5 not-has-[button]:**:[svg:not([class*='opacity-'])]:opacity-80",

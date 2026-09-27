@@ -1,5 +1,5 @@
 import type * as React from "react";
-import { cn } from "@tailorkit/ui";
+import { cn } from "#ui";
 
 export function Kbd({ className, ...props }: React.ComponentProps<"kbd">): React.ReactElement {
   return (

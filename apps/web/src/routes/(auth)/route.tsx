@@ -5,7 +5,10 @@ export const Route = createFileRoute("/(auth)")({
     return_to: search.return_to as string | undefined,
   }),
   loader: async ({ context, location }) => {
-    const session = await context.queryClient.query(context.orpc.user.getSession.queryOptions());
+    const [session] = await Promise.all([
+      context.queryClient.query(context.orpc.user.getSession.queryOptions()),
+      context.queryClient.query(context.orpc.user.getSocialProviders.queryOptions()),
+    ]);
 
     if (session.session || session.user) {
       const returnTo = (location.search as { return_to?: string }).return_to;

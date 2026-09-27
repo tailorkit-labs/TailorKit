@@ -3,7 +3,7 @@
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu";
 import { ChevronRightIcon } from "lucide-react";
 import type * as React from "react";
-import { cn } from "@tailorkit/ui";
+import { cn } from "#ui";
 
 export const ContextMenu: typeof ContextMenuPrimitive.Root = ContextMenuPrimitive.Root;
 
