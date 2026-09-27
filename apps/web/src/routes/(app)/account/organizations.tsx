@@ -25,8 +25,14 @@ export const Route = createFileRoute("/(app)/account/organizations")({
   component: OrganizationsPage,
   loader: async ({ context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(context.orpc.user.getOrgs.queryOptions()),
-      context.queryClient.ensureQueryData(context.orpc.user.getPendingInvitations.queryOptions()),
+      context.queryClient.query({
+        ...context.orpc.user.getOrgs.queryOptions(),
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...context.orpc.user.getPendingInvitations.queryOptions(),
+        staleTime: "static",
+      }),
     ]);
   },
 });

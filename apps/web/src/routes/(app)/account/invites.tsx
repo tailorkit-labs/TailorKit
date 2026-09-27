@@ -22,9 +22,10 @@ import { toastManager } from "@tailorkit/ui/toast";
 export const Route = createFileRoute("/(app)/account/invites")({
   component: InvitesPage,
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(
-      context.orpc.user.getPendingInvitations.queryOptions(),
-    );
+    await context.queryClient.query({
+      ...context.orpc.user.getPendingInvitations.queryOptions(),
+      staleTime: "static",
+    });
   },
 });
 

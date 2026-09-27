@@ -34,9 +34,10 @@ import { setProjectApiKey } from "#utils/project-api-key-memory";
 
 export const Route = createFileRoute("/(app)/$orgSlug/~/(org)/projects")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(
-      context.orpc.project.list.queryOptions({ input: { orgSlug: params.orgSlug } }),
-    ),
+    context.queryClient.query({
+      ...context.orpc.project.list.queryOptions({ input: { orgSlug: params.orgSlug } }),
+      staleTime: "static",
+    }),
   component: ProjectsPage,
 });
 
