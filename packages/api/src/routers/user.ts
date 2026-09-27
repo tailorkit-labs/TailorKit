@@ -11,28 +11,13 @@ import { validateOrgSlug } from "@tailorkit/db/validate-org-slug";
 const MANUAL_ORG_ONBOARDING_MESSAGE =
   "We're currently onboarding users manually. Contact us to create an organisation for your account.";
 
-async function withTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`KV read timed out after ${timeout}ms.`)), timeout);
-  });
-
-  try {
-    return await Promise.race([promise, timeoutPromise]);
-  } finally {
-    if (timer) {
-      clearTimeout(timer);
-    }
-  }
-}
-
 async function getGitHubUsername(accountId: string, getAccessToken: () => Promise<string | null>) {
   const key = `tailorkit:github-username:${accountId}`;
   let kv: ReturnType<typeof getKV> = null;
 
   try {
     kv = getKV();
-    const cachedUsername = kv ? await withTimeout(kv.get(key), 1000) : null;
+    const cachedUsername = kv ? await kv.get(key, { timeout: 1000 }) : null;
     if (cachedUsername) {
       return cachedUsername;
     }

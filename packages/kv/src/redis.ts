@@ -1,6 +1,7 @@
 import IORedis from "ioredis";
 import { withSpan } from "@tailorkit/observability";
-import type { KV, MessageHandler, SetOptions, Unsubscribe } from "./types.js";
+import type { GetOptions, KV, MessageHandler, SetOptions, Unsubscribe } from "./types.js";
+import { withTimeout } from "./with-timeout.js";
 
 const INCREMENT_WITH_TTL_SCRIPT = `
 local value = redis.call("INCR", KEYS[1])
@@ -93,9 +94,11 @@ export function createRedisKV(url: string): KV<"redis"> {
   return {
     type: "redis",
     engine: redis,
-    get: (key) =>
-      withSpan("kv.get", { attributes: { "tailorkit.package": "kv", "kv.type": "redis" } }, () =>
-        redis.get(key),
+    get: (key, options?: GetOptions) =>
+      withSpan(
+        "kv.get",
+        { attributes: { "tailorkit.package": "kv", "kv.type": "redis" } },
+        () => withTimeout(redis.get(key), options?.timeout),
       ),
     getAndDelete: (key) =>
       withSpan(
