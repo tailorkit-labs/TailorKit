@@ -18,7 +18,10 @@ export const env = createEnv({
     VERCEL_URL: z.string().optional(),
     VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
   },
-  required: ["EMAIL_FROM", "EMAIL_PROVIDER"],
+  warnings: {
+    EMAIL_FROM: "EMAIL_FROM is not set; outgoing email needs a sender address.",
+    EMAIL_PROVIDER: "EMAIL_PROVIDER is not set; choose 'ses' or 'smtp' to enable email delivery.",
+  },
 });
 
 if (env.EMAIL_PROVIDER === "smtp") {

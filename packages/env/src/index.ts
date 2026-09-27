@@ -65,23 +65,23 @@ function warn(scope: string, message: string): void {
 export function createEnv<const T extends EnvShape>({
   scope,
   schema: schemaShape,
-  required = [],
+  warnings = {},
 }: {
   scope: string;
   schema: T;
-  required?: readonly (keyof T & string)[];
+  warnings?: Partial<Record<keyof T & string, string>>;
 }): Partial<z.output<z.ZodObject<T>>> {
   const schema = z.object(schemaShape);
   const source = readEnvironment();
-  const requiredNames = new Set<string>(required);
+  const missingWarnings = warnings as Record<string, string | undefined>;
   const parsedValues: Record<string, unknown> = {};
 
   for (const [name, validator] of Object.entries(schema.shape) as [string, EnvValidator][]) {
     const rawValue = source[name] === "" ? undefined : source[name];
     const parsed = validator.safeParse(rawValue);
 
-    if (rawValue === undefined && requiredNames.has(name)) {
-      warn(scope, `Missing ${name}. Add it to a local .env file or the deployment environment.`);
+    if (rawValue === undefined && missingWarnings[name]) {
+      warn(scope, missingWarnings[name]);
     }
 
     if (!parsed.success) {
