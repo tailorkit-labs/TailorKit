@@ -25,7 +25,7 @@ export const userRouter = {
       z.object({
         callbackURL: z.string().optional(),
         errorCallbackURL: z.string().optional(),
-        provider: z.literal("github"),
+        provider: z.enum(["github", "google"]),
       }),
     )
     .handler(({ input, context }) =>

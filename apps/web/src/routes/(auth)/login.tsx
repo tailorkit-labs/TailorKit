@@ -13,7 +13,6 @@ import {
 } from "@tailorkit/ui/card";
 import { Logo } from "@tailorkit/ui/logo";
 import { cn } from "@tailorkit/ui";
-import { Tooltip, TooltipPopup, TooltipTrigger } from "@tailorkit/ui/tooltip";
 import { useAppForm } from "@tailorkit/ui/form";
 import { ArrowLeftIcon, KeyRoundIcon } from "lucide-react";
 import { useState } from "react";
@@ -74,8 +73,8 @@ function RouteComponent() {
   const [visible, setVisible] = useState(true);
   const [email, setEmail] = useState(emailFromSearch || "");
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [githubError, setGithubError] = useState<string | null>(null);
-  const [githubPending, setGithubPending] = useState(false);
+  const [socialError, setSocialError] = useState<string | null>(null);
+  const [socialPending, setSocialPending] = useState<"github" | "google" | null>(null);
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
   const [passkeyPending, setPasskeyPending] = useState(false);
 
@@ -104,10 +103,11 @@ function RouteComponent() {
 
   const queryClient = useQueryClient();
 
-  const signInWithGitHub = async () => {
-    setGithubError(null);
+  const signInWithSocial = async (provider: "github" | "google") => {
+    const providerName = provider === "google" ? "Google" : "GitHub";
+    setSocialError(null);
     setPasskeyError(null);
-    setGithubPending(true);
+    setSocialPending(provider);
 
     try {
       const returnPath = getSameOriginPath(return_to, window.location.origin);
@@ -121,22 +121,24 @@ function RouteComponent() {
       const result = await authClient.signIn.social({
         callbackURL,
         errorCallbackURL: "/login",
-        provider: "github",
+        provider,
       });
 
       if (result.error) {
-        setGithubError(result.error.message || result.error.statusText || "GitHub sign in failed");
-        setGithubPending(false);
+        setSocialError(
+          result.error.message || result.error.statusText || `${providerName} sign in failed`,
+        );
+        setSocialPending(null);
       }
     } catch {
-      setGithubError("GitHub sign in failed");
-      setGithubPending(false);
+      setSocialError(`${providerName} sign in failed`);
+      setSocialPending(null);
     }
   };
 
   const signInWithPasskey = async () => {
     setPasskeyError(null);
-    setGithubError(null);
+    setSocialError(null);
     setPasskeyPending(true);
 
     try {
@@ -250,9 +252,9 @@ function RouteComponent() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      {(passkeyError || githubError || error_description || error) && (
+                      {(passkeyError || socialError || error_description || error) && (
                         <p className="text-destructive text-sm" role="alert">
-                          {passkeyError || githubError || error_description || error}
+                          {passkeyError || socialError || error_description || error}
                         </p>
                       )}
                       <Button
@@ -265,21 +267,24 @@ function RouteComponent() {
                         <KeyRoundIcon aria-hidden="true" className="size-4 shrink-0" />
                         Continue with a passkey
                       </Button>
-                      <Tooltip>
-                        <TooltipTrigger
-                          render={<Button variant="outline" className="w-full" disabled />}
-                        >
-                          <GoogleIcon />
-                          Continue with Google
-                        </TooltipTrigger>
-                        <TooltipPopup>Coming soon</TooltipPopup>
-                      </Tooltip>
                       <Button
                         type="button"
                         variant="outline"
                         className="w-full"
-                        loading={githubPending}
-                        onClick={() => void signInWithGitHub()}
+                        disabled={socialPending !== null && socialPending !== "google"}
+                        loading={socialPending === "google"}
+                        onClick={() => void signInWithSocial("google")}
+                      >
+                        <GoogleIcon />
+                        Continue with Google
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        disabled={socialPending !== null && socialPending !== "github"}
+                        loading={socialPending === "github"}
+                        onClick={() => void signInWithSocial("github")}
                       >
                         <GitHubIcon />
                         Continue with GitHub

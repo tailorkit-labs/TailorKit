@@ -141,8 +141,8 @@ function buildAuth() {
       // development-oriented default error page.
       errorURL: "/auth/error",
     },
-    socialProviders:
-      env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
+    socialProviders: {
+      ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
         ? {
             github: {
               clientId: env.GITHUB_CLIENT_ID,
@@ -150,7 +150,16 @@ function buildAuth() {
               scope: ["user:email"],
             },
           }
-        : undefined,
+        : {}),
+      ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+        ? {
+            google: {
+              clientId: env.GOOGLE_CLIENT_ID,
+              clientSecret: env.GOOGLE_CLIENT_SECRET,
+            },
+          }
+        : {}),
+    },
     plugins: [
       haveIBeenPwned(),
       passkey({

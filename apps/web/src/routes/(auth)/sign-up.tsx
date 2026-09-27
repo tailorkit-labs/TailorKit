@@ -13,7 +13,6 @@ import {
 } from "@tailorkit/ui/card";
 import { Logo } from "@tailorkit/ui/logo";
 import { cn } from "@tailorkit/ui";
-import { Tooltip, TooltipPopup, TooltipTrigger } from "@tailorkit/ui/tooltip";
 import { useAppForm } from "@tailorkit/ui/form";
 import { ArrowLeftIcon } from "lucide-react";
 import { useState } from "react";
@@ -73,8 +72,8 @@ function RouteComponent() {
   const [visible, setVisible] = useState(true);
   const [email, setEmail] = useState(emailFromSearch || "");
   const [detailsError, setDetailsError] = useState<string | null>(null);
-  const [githubError, setGithubError] = useState<string | null>(null);
-  const [githubPending, setGithubPending] = useState(false);
+  const [socialError, setSocialError] = useState<string | null>(null);
+  const [socialPending, setSocialPending] = useState<"github" | "google" | null>(null);
 
   const transition = (nextStep: Step, nextEmail?: string) => {
     setVisible(false);
@@ -123,9 +122,10 @@ function RouteComponent() {
     },
   });
 
-  const signUpWithGitHub = async () => {
-    setGithubError(null);
-    setGithubPending(true);
+  const signUpWithSocial = async (provider: "github" | "google") => {
+    const providerName = provider === "google" ? "Google" : "GitHub";
+    setSocialError(null);
+    setSocialPending(provider);
 
     try {
       const callbackURL =
@@ -133,16 +133,18 @@ function RouteComponent() {
       const result = await authClient.signIn.social({
         callbackURL,
         errorCallbackURL: "/sign-up",
-        provider: "github",
+        provider,
       });
 
       if (result.error) {
-        setGithubError(result.error.message || result.error.statusText || "GitHub sign up failed");
-        setGithubPending(false);
+        setSocialError(
+          result.error.message || result.error.statusText || `${providerName} sign up failed`,
+        );
+        setSocialPending(null);
       }
     } catch {
-      setGithubError("GitHub sign up failed");
-      setGithubPending(false);
+      setSocialError(`${providerName} sign up failed`);
+      setSocialPending(null);
     }
   };
 
@@ -196,26 +198,29 @@ function RouteComponent() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      {(githubError || error_description || error) && (
+                      {(socialError || error_description || error) && (
                         <p className="text-destructive text-sm" role="alert">
-                          {githubError || error_description || error}
+                          {socialError || error_description || error}
                         </p>
                       )}
-                      <Tooltip>
-                        <TooltipTrigger
-                          render={<Button variant="outline" className="w-full" disabled />}
-                        >
-                          <GoogleIcon />
-                          Continue with Google
-                        </TooltipTrigger>
-                        <TooltipPopup>Coming soon</TooltipPopup>
-                      </Tooltip>
                       <Button
                         type="button"
                         variant="outline"
                         className="w-full"
-                        loading={githubPending}
-                        onClick={() => void signUpWithGitHub()}
+                        disabled={socialPending !== null && socialPending !== "google"}
+                        loading={socialPending === "google"}
+                        onClick={() => void signUpWithSocial("google")}
+                      >
+                        <GoogleIcon />
+                        Continue with Google
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        disabled={socialPending !== null && socialPending !== "github"}
+                        loading={socialPending === "github"}
+                        onClick={() => void signUpWithSocial("github")}
                       >
                         <GitHubIcon />
                         Continue with GitHub
