@@ -283,7 +283,7 @@ function LinkedAccountsSkeleton() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-medium text-sm">Passkeys</p>
-          <Skeleton className="h-9 w-44 sm:h-8" />
+          <Skeleton className="mt-1 h-4 w-44" />
         </div>
         <Skeleton className="h-8 w-16 sm:h-7" />
       </div>
