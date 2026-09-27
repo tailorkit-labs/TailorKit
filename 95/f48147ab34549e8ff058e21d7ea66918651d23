@@ -1,0 +1,14 @@
+apps/web/vercel.json
+  h_18044dd1b61a81 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "95f48147ab34549e8ff058e21d7ea66918651d23",
+  "prompts": {},
+  "humans": {
+    "h_18044dd1b61a81": {
+      "author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
