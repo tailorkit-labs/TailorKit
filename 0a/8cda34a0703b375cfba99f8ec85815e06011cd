@@ -1,0 +1,19 @@
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.index.tsx
+  s_e9ed427972b6b7::t_b3c8aa43db158c 219-222
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0a8cda34a0703b375cfba99f8ec85815e06011cd",
+  "prompts": {},
+  "sessions": {
+    "s_e9ed427972b6b7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e0d4-0d55-7fd2-b91c-9bf106a00e90",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
