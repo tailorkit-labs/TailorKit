@@ -1,0 +1,24 @@
+.codex/environments/environment.toml
+  s_a6fa8534aa32ec::t_d1cf79da032c9c 1-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a4352f3840ad6a89e94fb053fa222170f9bc75d8",
+  "prompts": {},
+  "humans": {
+    "h_18044dd1b61a81": {
+      "author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  },
+  "sessions": {
+    "s_a6fa8534aa32ec": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e05f-6b27-79c1-9f01-eed8a599e013",
+        "model": "unknown"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
