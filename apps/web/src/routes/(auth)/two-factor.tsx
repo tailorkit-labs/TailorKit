@@ -105,9 +105,13 @@ function TwoFactorPage() {
       );
       window.sessionStorage.removeItem("tailorkit.two-factor-return-to");
       const destination = returnPath ?? "/";
+      const currentLocation = window.location.href;
       try {
         await queryClient.invalidateQueries(orpc.user.getSession.queryOptions());
         await router.navigate({ href: destination });
+        if (window.location.href === currentLocation) {
+          window.location.assign(destination);
+        }
       } catch {
         window.location.assign(destination);
       }
