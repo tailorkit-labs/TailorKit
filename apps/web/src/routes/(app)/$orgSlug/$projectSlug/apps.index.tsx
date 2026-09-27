@@ -47,7 +47,7 @@ function appsListQueryOptions({
 
 export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug/apps/")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureInfiniteQueryData(
+    context.queryClient.infiniteQuery(
       appsListQueryOptions({
         appsList: context.orpc.apps.list,
         orgSlug: params.orgSlug,

@@ -19,7 +19,9 @@ export const env = createEnv({
     VERCEL_BRANCH_URL: z.string().optional(),
     VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
   },
-  required: ["AUTH_SECRET"],
+  warnings: {
+    AUTH_SECRET: "AUTH_SECRET is not set; authentication will not work.",
+  },
 });
 
 if (Boolean(env.GITHUB_CLIENT_ID) !== Boolean(env.GITHUB_CLIENT_SECRET)) {
