@@ -87,6 +87,33 @@ const createSecondaryStorage = (): SecondaryStorage | undefined => {
   };
 };
 
+const socialProviders = {
+  ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
+    ? {
+        github: {
+          clientId: env.GITHUB_CLIENT_ID,
+          clientSecret: env.GITHUB_CLIENT_SECRET,
+          scope: ["user:email"],
+        },
+      }
+    : {}),
+  ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+    ? {
+        google: {
+          clientId: env.GOOGLE_CLIENT_ID,
+          clientSecret: env.GOOGLE_CLIENT_SECRET,
+        },
+      }
+    : {}),
+};
+
+export function getSocialProviderAvailability() {
+  return {
+    github: "github" in socialProviders,
+    google: "google" in socialProviders,
+  };
+}
+
 function buildAuth() {
   const db = createDb();
 
@@ -141,25 +168,7 @@ function buildAuth() {
       // development-oriented default error page.
       errorURL: "/auth/error",
     },
-    socialProviders: {
-      ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
-        ? {
-            github: {
-              clientId: env.GITHUB_CLIENT_ID,
-              clientSecret: env.GITHUB_CLIENT_SECRET,
-              scope: ["user:email"],
-            },
-          }
-        : {}),
-      ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
-        ? {
-            google: {
-              clientId: env.GOOGLE_CLIENT_ID,
-              clientSecret: env.GOOGLE_CLIENT_SECRET,
-            },
-          }
-        : {}),
-    },
+    socialProviders,
     plugins: [
       haveIBeenPwned(),
       passkey({

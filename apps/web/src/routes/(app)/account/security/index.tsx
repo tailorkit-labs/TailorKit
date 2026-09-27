@@ -35,6 +35,7 @@ import type { ReactNode } from "react";
 import { z } from "zod";
 
 import { AccountLayout } from "#components/account-layout";
+import { GoogleIcon } from "#components/google-icon";
 import { PageLayout } from "#components/page-layout";
 import { authClient } from "#lib/auth-client";
 import { client, orpc } from "#lib/orpc";
@@ -46,6 +47,7 @@ export const Route = createFileRoute("/(app)/account/security/")({
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.query(context.orpc.user.getSession.queryOptions()),
+      context.queryClient.query(context.orpc.user.getSocialProviders.queryOptions()),
       context.queryClient.query(context.orpc.user.listAccounts.queryOptions()),
       context.queryClient.query(context.orpc.user.listSessions.queryOptions()),
     ]);
@@ -269,7 +271,7 @@ function LinkedAccountsSkeleton() {
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3 rounded-xl border p-4">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
-          <GoogleIcon />
+          <GoogleIcon className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-medium text-sm">Google</p>
@@ -301,27 +303,6 @@ function LinkedAccountsSkeleton() {
   );
 }
 
-const GoogleIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5">
-    <path
-      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-      fill="#4285F4"
-    />
-    <path
-      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-      fill="#34A853"
-    />
-    <path
-      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-      fill="#FBBC05"
-    />
-    <path
-      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-      fill="#EA4335"
-    />
-  </svg>
-);
-
 const GitHubIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5">
     <path
@@ -342,6 +323,7 @@ function SecurityPage() {
   const [passkeyName, setPasskeyName] = useState("");
   const [passkeysOpen, setPasskeysOpen] = useState(false);
   const [passkeyPending, setPasskeyPending] = useState<string | null>(null);
+  const socialProvidersQuery = useQuery(orpc.user.getSocialProviders.queryOptions());
   const accountsQuery = useQuery(orpc.user.listAccounts.queryOptions());
   const passkeysQuery = useQuery({
     queryFn: async () => {
@@ -611,81 +593,85 @@ function SecurityPage() {
                   <LinkedAccountsSkeleton />
                 ) : (
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3 rounded-xl border p-4">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
-                        <GoogleIcon />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm">Google</p>
-                        <p className="text-muted-foreground text-sm">
-                          {googleAccount ? "Connected" : "Sign in with Google"}
-                        </p>
-                      </div>
+                    {(googleAccount || socialProvidersQuery.data?.google) && (
+                      <div className="flex items-center gap-3 rounded-xl border p-4">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
+                          <GoogleIcon className="size-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm">Google</p>
+                          <p className="text-muted-foreground text-sm">
+                            {googleAccount ? "Connected" : "Sign in with Google"}
+                          </p>
+                        </div>
 
-                      {googleAccount ? (
-                        <Button
-                          disabled={!canUnlinkGoogle || unlinkPending !== null}
-                          loading={unlinkPending === googleAccount.id}
-                          onClick={() => void unlinkSocial(googleAccount.id, "google")}
-                          size="sm"
-                          title={
-                            canUnlinkGoogle
-                              ? "Unlink Google"
-                              : "Google cannot be unlinked because it is your only sign-in method"
-                          }
-                          variant="destructive-outline"
-                        >
-                          Unlink
-                        </Button>
-                      ) : (
-                        <Button
-                          disabled={linkPending !== null && linkPending !== "google"}
-                          loading={linkPending === "google"}
-                          onClick={() => void linkSocial("google")}
-                          size="sm"
-                          variant="outline"
-                        >
-                          Link
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-3 rounded-xl border p-4">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
-                        <GitHubIcon />
+                        {googleAccount ? (
+                          <Button
+                            disabled={!canUnlinkGoogle || unlinkPending !== null}
+                            loading={unlinkPending === googleAccount.id}
+                            onClick={() => void unlinkSocial(googleAccount.id, "google")}
+                            size="sm"
+                            title={
+                              canUnlinkGoogle
+                                ? "Unlink Google"
+                                : "Google cannot be unlinked because it is your only sign-in method"
+                            }
+                            variant="destructive-outline"
+                          >
+                            Unlink
+                          </Button>
+                        ) : (
+                          <Button
+                            disabled={linkPending !== null && linkPending !== "google"}
+                            loading={linkPending === "google"}
+                            onClick={() => void linkSocial("google")}
+                            size="sm"
+                            variant="outline"
+                          >
+                            Link
+                          </Button>
+                        )}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm">GitHub</p>
-                        <p className="text-muted-foreground text-sm">{githubStatus}</p>
-                      </div>
+                    )}
 
-                      {githubAccount ? (
-                        <Button
-                          disabled={!canUnlinkGitHub || unlinkPending !== null}
-                          loading={unlinkPending === githubAccount.id}
-                          onClick={() => void unlinkSocial(githubAccount.id, "github")}
-                          size="sm"
-                          title={
-                            canUnlinkGitHub
-                              ? "Unlink GitHub"
-                              : "GitHub cannot be unlinked because it is your only sign-in method"
-                          }
-                          variant="destructive-outline"
-                        >
-                          Unlink
-                        </Button>
-                      ) : (
-                        <Button
-                          disabled={linkPending !== null && linkPending !== "github"}
-                          loading={linkPending === "github"}
-                          onClick={() => void linkSocial("github")}
-                          size="sm"
-                          variant="outline"
-                        >
-                          Link
-                        </Button>
-                      )}
-                    </div>
+                    {(githubAccount || socialProvidersQuery.data?.github) && (
+                      <div className="flex items-center gap-3 rounded-xl border p-4">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
+                          <GitHubIcon />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm">GitHub</p>
+                          <p className="text-muted-foreground text-sm">{githubStatus}</p>
+                        </div>
+
+                        {githubAccount ? (
+                          <Button
+                            disabled={!canUnlinkGitHub || unlinkPending !== null}
+                            loading={unlinkPending === githubAccount.id}
+                            onClick={() => void unlinkSocial(githubAccount.id, "github")}
+                            size="sm"
+                            title={
+                              canUnlinkGitHub
+                                ? "Unlink GitHub"
+                                : "GitHub cannot be unlinked because it is your only sign-in method"
+                            }
+                            variant="destructive-outline"
+                          >
+                            Unlink
+                          </Button>
+                        ) : (
+                          <Button
+                            disabled={linkPending !== null && linkPending !== "github"}
+                            loading={linkPending === "github"}
+                            onClick={() => void linkSocial("github")}
+                            size="sm"
+                            variant="outline"
+                          >
+                            Link
+                          </Button>
+                        )}
+                      </div>
+                    )}
 
                     <Collapsible
                       className="rounded-xl border"
