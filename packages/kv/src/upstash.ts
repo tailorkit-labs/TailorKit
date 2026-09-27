@@ -114,14 +114,11 @@ export function createUpstashKV(): KV<"upstash"> {
     type: "upstash",
     engine: redis,
     get: (key, options?: GetOptions) =>
-      withSpan(
-        "kv.get",
-        { attributes: { "tailorkit.package": "kv", "kv.type": "upstash" } },
-        () =>
-          withTimeout(
-            redis.get<string>(key).then((value) => value ?? null),
-            options?.timeout,
-          ),
+      withSpan("kv.get", { attributes: { "tailorkit.package": "kv", "kv.type": "upstash" } }, () =>
+        withTimeout(
+          redis.get<string>(key).then((value) => value ?? null),
+          options?.timeout,
+        ),
       ),
     getAndDelete: (key) =>
       withSpan(

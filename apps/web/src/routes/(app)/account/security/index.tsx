@@ -13,11 +13,7 @@ import {
   CardPanel,
   CardTitle,
 } from "@tailorkit/ui/card";
-import {
-  Collapsible,
-  CollapsiblePanel,
-  CollapsibleTrigger,
-} from "@tailorkit/ui/collapsible";
+import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@tailorkit/ui/collapsible";
 import {
   Dialog,
   DialogClose,
@@ -33,13 +29,7 @@ import { Input } from "@tailorkit/ui/input";
 import { Skeleton } from "@tailorkit/ui/skeleton";
 import { toastManager } from "@tailorkit/ui/toast";
 import { useAppForm } from "@tailorkit/ui/form";
-import {
-  ChevronDownIcon,
-  KeyRoundIcon,
-  LaptopIcon,
-  SmartphoneIcon,
-  TrashIcon,
-} from "lucide-react";
+import { ChevronDownIcon, KeyRoundIcon, LaptopIcon, SmartphoneIcon, TrashIcon } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { z } from "zod";

@@ -95,10 +95,8 @@ export function createRedisKV(url: string): KV<"redis"> {
     type: "redis",
     engine: redis,
     get: (key, options?: GetOptions) =>
-      withSpan(
-        "kv.get",
-        { attributes: { "tailorkit.package": "kv", "kv.type": "redis" } },
-        () => withTimeout(redis.get(key), options?.timeout),
+      withSpan("kv.get", { attributes: { "tailorkit.package": "kv", "kv.type": "redis" } }, () =>
+        withTimeout(redis.get(key), options?.timeout),
       ),
     getAndDelete: (key) =>
       withSpan(
