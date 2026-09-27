@@ -1,0 +1,27 @@
+packages/db/AGENTS.md
+  s_c3c9b5aeacf9c2::t_79577a2d4df9db 3,6
+  s_c3c9b5aeacf9c2::t_570707d730147a 4-5
+packages/db/src/relations.ts
+  s_c3c9b5aeacf9c2::t_79577a2d4df9db 2
+  s_c3c9b5aeacf9c2::t_570707d730147a 1,5,89,91-96,100-105
+packages/auth/package.json
+  s_c3c9b5aeacf9c2::t_79577a2d4df9db 32
+packages/db/src/schema/auth.generated.ts
+  s_c3c9b5aeacf9c2::t_ac4d15f4c780fd 1,224-320
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0d4d91d8dfcb72ea917193c76fb6f7038c4c7eea",
+  "prompts": {},
+  "sessions": {
+    "s_c3c9b5aeacf9c2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0db8b-38fe-7583-a646-a969c61f451c",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
