@@ -138,7 +138,6 @@
 :root {
   --radius: 0.625rem;
   --background: hsl(0, 0%, 96%);
-  --skeleton-background: color-mix(in srgb, var(--background) 96%, var(--foreground) 4%);
   --foreground: hsl(0, 0%, 3.9%);
   --card: hsl(0, 0%, 94.7%);
   --card-foreground: hsl(0, 0%, 3.9%);
@@ -149,7 +148,7 @@
   --primary-foreground: #ffffff;
   --secondary: hsl(0, 0%, 93.1%);
   --secondary-foreground: hsl(0, 0%, 9%);
-  --muted: hsl(0, 0%, 96.1%);
+  --muted: --alpha(var(--color-black) / 4%);
   --muted-foreground: hsl(0, 0%, 45.1%);
   --accent: hsla(0, 0%, 82%, 50%);
   --accent-foreground: hsl(0, 0%, 9%);
@@ -176,7 +175,6 @@
 
 .dark {
   --background: #111111;
-  --skeleton-background: var(--muted);
   --foreground: hsl(0, 0%, 92%);
   --card: #141414;
   --card-foreground: hsl(0, 0%, 98%);
