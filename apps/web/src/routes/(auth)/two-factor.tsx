@@ -1,6 +1,7 @@
 "use client";
 
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@tailorkit/ui/button";
 import {
   Card,
@@ -27,6 +28,7 @@ import { OTPField, OTPFieldInput, OTPFieldSeparator } from "@tailorkit/ui/otp-fi
 import { Fragment, useRef, useState } from "react";
 
 import { authClient } from "#lib/auth-client";
+import { orpc } from "#lib/orpc";
 import { getSameOriginPath } from "#lib/safe-return-url";
 
 const OTP_LENGTH = 6;
@@ -46,6 +48,8 @@ export const Route = createFileRoute("/(auth)/two-factor")({
 });
 
 function TwoFactorPage() {
+  const navigate = Route.useNavigate();
+  const queryClient = useQueryClient();
   const [code, setCode] = useState("");
   const [backupCode, setBackupCode] = useState("");
   const [backupCodeOpen, setBackupCodeOpen] = useState(false);
@@ -68,6 +72,7 @@ function TwoFactorPage() {
 
     verificationInProgressRef.current = true;
     const backupCodeDialogSession = backupCodeDialogSessionRef.current;
+    let redirecting = false;
     if (useBackupCode) {
       setBackupCodeError(null);
       setIsBackupCodePending(true);
@@ -99,7 +104,14 @@ function TwoFactorPage() {
         window.location.origin,
       );
       window.sessionStorage.removeItem("tailorkit.two-factor-return-to");
-      window.location.assign(returnPath ?? "/");
+      const destination = returnPath ?? "/";
+      try {
+        await queryClient.invalidateQueries(orpc.user.getSession.queryOptions());
+        await navigate({ href: destination });
+      } catch {
+        window.location.assign(destination);
+      }
+      redirecting = true;
     } catch {
       if (useBackupCode && backupCodeDialogSessionRef.current === backupCodeDialogSession) {
         setBackupCodeError("Unable to verify that backup code. Please try again.");
@@ -108,10 +120,12 @@ function TwoFactorPage() {
       }
     } finally {
       verificationInProgressRef.current = false;
-      if (useBackupCode) {
-        setIsBackupCodePending(false);
-      } else {
-        setIsTotpPending(false);
+      if (!redirecting) {
+        if (useBackupCode) {
+          setIsBackupCodePending(false);
+        } else {
+          setIsTotpPending(false);
+        }
       }
     }
   };
