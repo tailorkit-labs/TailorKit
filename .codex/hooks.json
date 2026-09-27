@@ -1,0 +1,17 @@
+{
+  "description": "Format files after Codex edits.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm fix",
+            "statusMessage": "Formatting edited files"
+          }
+        ]
+      }
+    ]
+  }
+}
