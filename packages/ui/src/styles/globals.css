@@ -138,6 +138,7 @@
 :root {
   --radius: 0.625rem;
   --background: hsl(0, 0%, 96%);
+  --skeleton-background: color-mix(in srgb, var(--background) 96%, var(--foreground) 4%);
   --foreground: hsl(0, 0%, 3.9%);
   --card: hsl(0, 0%, 94.7%);
   --card-foreground: hsl(0, 0%, 3.9%);
@@ -175,6 +176,7 @@
 
 .dark {
   --background: #111111;
+  --skeleton-background: var(--muted);
   --foreground: hsl(0, 0%, 92%);
   --card: #141414;
   --card-foreground: hsl(0, 0%, 98%);
