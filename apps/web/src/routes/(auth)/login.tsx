@@ -218,16 +218,6 @@ function RouteComponent() {
                           {passkeyError || socialError || error_description || error}
                         </p>
                       )}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full"
-                        loading={passkeyPending}
-                        onClick={() => void signInWithPasskey()}
-                      >
-                        <KeyRoundIcon aria-hidden="true" className="size-4 shrink-0" />
-                        Continue with a passkey
-                      </Button>
                       {socialProvidersQuery.data?.github && (
                         <Button
                           type="button"
@@ -254,6 +244,16 @@ function RouteComponent() {
                           Continue with Google
                         </Button>
                       )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        loading={passkeyPending}
+                        onClick={() => void signInWithPasskey()}
+                      >
+                        <KeyRoundIcon aria-hidden="true" className="size-4 shrink-0" />
+                        Continue with a passkey
+                      </Button>
                     </div>
 
                     <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
