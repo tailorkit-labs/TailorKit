@@ -339,6 +339,13 @@ function SecurityPage() {
   const passkeys = passkeysQuery.data ?? [];
   const signInMethodCount = (accountsQuery.data?.length ?? 0) + passkeys.length;
   const canUnlinkGitHub = Boolean(githubAccount && signInMethodCount > 1);
+  let githubStatus = "Sign in with GitHub";
+
+  if (githubAccount) {
+    githubStatus = githubAccount.githubUsername
+      ? `@${githubAccount.githubUsername}`
+      : "GitHub account linked";
+  }
 
   const linkGitHub = async () => {
     setLinkPending(true);
@@ -582,9 +589,7 @@ function SecurityPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-sm">GitHub</p>
-                        <p className="text-muted-foreground text-sm">
-                          {githubAccount ? "Connected" : "Sign in with GitHub"}
-                        </p>
+                        <p className="text-muted-foreground text-sm">{githubStatus}</p>
                       </div>
 
                       {githubAccount ? (
