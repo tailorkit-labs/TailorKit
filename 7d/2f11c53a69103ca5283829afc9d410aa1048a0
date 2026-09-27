@@ -1,0 +1,45 @@
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/settings/api-keys.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 36-37,40
+apps/web/src/routes/(app)/$orgSlug/~/(org)/projects.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 37-39
+apps/web/src/routes/(app)/account/organizations.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 28-29
+apps/web/src/routes/(app)/account/invites.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 25
+apps/web/src/routes/(app)/account/security/index.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 47-49
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.index.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 50-51,57
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.$appId.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 27-28,35
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/route.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 10-11,14
+apps/web/src/routes/(app)/onboarding.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 6
+apps/web/src/routes/(app)/route.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 5,14
+apps/web/src/routes/(auth)/route.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 8
+apps/web/src/routes/(app)/$orgSlug/~/(org)/settings/members.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 20-22,24-25,28
+apps/web/src/routes/index.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 6,19
+apps/web/src/routes/(app)/$orgSlug/route.tsx
+  s_904c22dc094ce5::t_0f8fc32e0ff2cf 12,23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7d2f11c53a69103ca5283829afc9d410aa1048a0",
+  "prompts": {},
+  "sessions": {
+    "s_904c22dc094ce5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e090-1026-7ea3-a135-c8ebdffc9128",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
