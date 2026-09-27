@@ -270,7 +270,7 @@ function TwoFactorSetupDialog({
     );
     action = (
       <DialogClose render={<Button disabled={!backupCodesSaved} size="sm" type="button" />}>
-        I’ve saved these codes
+        Done
       </DialogClose>
     );
   }
