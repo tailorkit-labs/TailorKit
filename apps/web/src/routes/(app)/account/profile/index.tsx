@@ -80,7 +80,7 @@ function ProfilePage() {
           </form>
         </Card>
 
-        <CardFrameFooter className="flex justify-end">
+        <CardFrameFooter className="flex justify-end relative">
           <form.AppForm>
             <form.SubmitButton form="profile-form" size="sm">
               Save changes

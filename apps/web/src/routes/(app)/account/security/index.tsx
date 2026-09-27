@@ -543,7 +543,7 @@ function SecurityPage() {
               </form>
             </Card>
 
-            <CardFrameFooter className="flex justify-end">
+            <CardFrameFooter className="flex justify-end relative">
               <form.AppForm>
                 <form.SubmitButton form="change-password-form" size="sm">
                   Update password

@@ -341,7 +341,7 @@ function RouteComponent() {
             </div>
           </Card>
 
-          <CardFrameFooter>
+          <CardFrameFooter className="relative">
             <p className="text-muted-foreground text-sm">
               Don't have an account?{" "}
               <Link

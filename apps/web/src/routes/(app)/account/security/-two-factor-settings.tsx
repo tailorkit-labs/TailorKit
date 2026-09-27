@@ -545,13 +545,13 @@ export function TwoFactorSettings({
       </Card>
 
       {isLoading ? (
-        <CardFrameFooter className="flex justify-end">
+        <CardFrameFooter className="flex justify-end relative">
           <Skeleton className="h-7 w-24" />
         </CardFrameFooter>
       ) : null}
 
       {isReady && hasCredentialAccount && (
-        <CardFrameFooter className="flex flex-wrap justify-end gap-2">
+        <CardFrameFooter className="flex flex-wrap justify-end gap-2 relative">
           {isEnabled ? (
             <>
               <Button
