@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@tailorkit/ui/table";
+import { cn } from "@tailorkit/ui";
 import { deals } from "#lib/crm-data";
 
 export function PageHeader({ description, title }: { description?: string; title: string }) {
@@ -69,7 +70,7 @@ export function DealTable() {
                 <Badge variant="outline">
                   <span
                     aria-hidden="true"
-                    className={`size-1.5 rounded-full ${getStageIndicatorClassName(deal.stage)}`}
+                    className={cn("size-1.5 rounded-full", getStageIndicatorClassName(deal.stage))}
                   />
                   {deal.stage}
                 </Badge>
