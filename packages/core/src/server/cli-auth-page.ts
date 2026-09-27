@@ -1,10 +1,11 @@
 import { cliAuthApprove, cliAuthDeny } from "@tailorkit/client-platform/client";
 import type { Client as PlatformClient } from "@tailorkit/client-platform/client/client/index";
+import type { TailorKitScope } from "./types";
 
 type HeaderInput = ConstructorParameters<typeof Headers>[0];
 
 interface TailorKitRuntimeContext {
-  scopeId: string;
+  scope: TailorKitScope;
 }
 
 export interface CliAuthApprovalPageOptions {
@@ -71,7 +72,7 @@ export async function handleCliAuthApprovalPage({
     if (intent === "approve") {
       await cliAuthApprove({
         body: {
-          scopeId: tailorkit.scopeId,
+          scope: tailorkit.scope,
           userCode,
         },
         client: platform,

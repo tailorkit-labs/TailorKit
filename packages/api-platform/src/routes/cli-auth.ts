@@ -213,6 +213,12 @@ const pollCliAuth = protectedRouter
         message: "Approved CLI auth session is missing scope.",
       });
     }
+    const sessionScope = canonicalizeScope(session.scope);
+    if (sessionScope.scopeKey !== session.scopeKey) {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "Approved CLI auth session has an invalid scope.",
+      });
+    }
 
     const deployToken = generateSecret(deployTokenBytes);
     const deletedSession = await db.transaction(async (tx) => {
@@ -237,16 +243,22 @@ const pollCliAuth = protectedRouter
           message: "Approved CLI auth session is missing scope.",
         });
       }
+      const consumedScope = canonicalizeScope(consumedSession.scope);
+      if (consumedScope.scopeKey !== consumedSession.scopeKey) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Approved CLI auth session has an invalid scope.",
+        });
+      }
 
       await tx.insert(cliToken).values({
         expiresAt: new Date(now.getTime() + tokenExpiresInMilliseconds),
         projectId: context.project.id,
-        scope: consumedSession.scope,
-        scopeKey: consumedSession.scopeKey,
+        scope: consumedScope.scope,
+        scopeKey: consumedScope.scopeKey,
         tokenHash: hashCliSecret(deployToken),
       });
 
-      return consumedSession;
+      return { ...consumedSession, scope: consumedScope.scope };
     });
 
     if (!deletedSession) {

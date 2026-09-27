@@ -7,7 +7,7 @@ import {
   appsUpdate,
 } from "@tailorkit/client-platform/client";
 import { z } from "zod";
-import { getTailorKitScopeId, o, requireCliDeployToken } from "../procedures";
+import { getTailorKitScope, o, requireCliDeployToken } from "../procedures";
 
 const paginationInput = z.object({
   page: z.number().int().min(1).optional(),
@@ -26,7 +26,7 @@ export const appRouter = {
     .handler(
       async ({ context, input }) =>
         await appsCreate({
-          body: { ...input, scopeId: getTailorKitScopeId(context) },
+          body: { ...input, scope: getTailorKitScope(context) },
           client: context.platform,
           headers: context.platformHeaders,
         }),
@@ -40,7 +40,7 @@ export const appRouter = {
           client: context.platform,
           headers: context.platformHeaders,
           path: { appId: input.appId },
-          query: { scopeId: getTailorKitScopeId(context) },
+          query: { scope: getTailorKitScope(context) },
         }),
     ),
   deploy: o
@@ -53,7 +53,7 @@ export const appRouter = {
           client: context.platform,
           headers: context.platformHeaders,
           path: { appId: input.appId },
-          query: { scopeId: getTailorKitScopeId(context) },
+          query: { scope: getTailorKitScope(context) },
         }),
     ),
   get: o
@@ -65,7 +65,7 @@ export const appRouter = {
           client: context.platform,
           headers: context.platformHeaders,
           path: { appId: input.appId },
-          query: { scopeId: getTailorKitScopeId(context) },
+          query: { scope: getTailorKitScope(context) },
         }),
     ),
   list: o
@@ -79,7 +79,7 @@ export const appRouter = {
           query: {
             page: input?.page,
             pageSize: input?.pageSize,
-            scopeId: getTailorKitScopeId(context),
+            scope: getTailorKitScope(context),
           },
         }),
     ),
@@ -96,7 +96,7 @@ export const appRouter = {
           client: context.platform,
           headers: context.platformHeaders,
           path: { appId: input.appId },
-          query: { scopeId: getTailorKitScopeId(context) },
+          query: { scope: getTailorKitScope(context) },
         }),
     ),
 };

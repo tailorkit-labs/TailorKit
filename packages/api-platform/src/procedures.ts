@@ -30,10 +30,13 @@ export const requireApp = o.middleware(
     const appById = uuidPattern.test(input.appId)
       ? await db.query.app.findFirst({
           where: {
-            id: input.appId,
-            projectId: context.project.id,
-            scopeKey,
-            scope,
+            RAW: (fields, { and, eq }) =>
+              and(
+                eq(fields.id, input.appId),
+                eq(fields.projectId, context.project.id),
+                eq(fields.scopeKey, scopeKey),
+                eq(fields.scope, scope),
+              )!,
           },
           with: { currentDeployment: { where: { status: "published" } } },
         })
@@ -42,10 +45,13 @@ export const requireApp = o.middleware(
       appById ??
       (await db.query.app.findFirst({
         where: {
-          projectId: context.project.id,
-          publicId: input.appId,
-          scopeKey,
-          scope,
+          RAW: (fields, { and, eq }) =>
+            and(
+              eq(fields.projectId, context.project.id),
+              eq(fields.publicId, input.appId),
+              eq(fields.scopeKey, scopeKey),
+              eq(fields.scope, scope),
+            )!,
         },
         with: { currentDeployment: { where: { status: "published" } } },
       }));

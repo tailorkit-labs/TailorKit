@@ -14,6 +14,7 @@ import {
   AppDeploymentFile,
   appDeploymentFile,
 } from "@tailorkit/db/schema/apps";
+import { scopeValueSchema } from "@tailorkit/db/schema/scope";
 import { and, eq } from "drizzle-orm";
 import z from "zod";
 import { paginatedOutput, paginationQuery } from "../pagination";
@@ -21,6 +22,7 @@ import { o, protectedRouter, requireApp } from "../procedures";
 import { setSpanAttributes } from "@tailorkit/observability";
 import { createPublicId } from "../public-id";
 import type { Context } from "../context";
+import { scopeMatches } from "../scope";
 
 const uploadUrlExpiresInSeconds = 15 * 60;
 const logoInspectionTimeoutMs = 10_000;
@@ -62,7 +64,7 @@ const createDeploymentInput = z
         light: createDeploymentLogoInput.optional(),
       })
       .optional(),
-    scopeId: z.string(),
+    scope: scopeValueSchema,
   })
   .refine(
     ({ assets }) =>
@@ -137,7 +139,7 @@ export function mapReturnedFilesByAssetPath<
 }
 
 const requireDeployment = o.middleware(
-  async ({ next, context }, input: { deploymentId: string; scopeId: string }) => {
+  async ({ next, context }, input: { deploymentId: string; scope: Record<string, string> }) => {
     setSpanAttributes({
       "tailorkit.middleware": "require_deployment",
       "tailorkit.package": "api-platform",
@@ -157,7 +159,7 @@ const requireDeployment = o.middleware(
       !deploymentWithApp ||
       !deploymentWithApp.app ||
       deploymentWithApp.app.projectId !== context.project.id ||
-      deploymentWithApp.app.scopeId !== input.scopeId
+      !scopeMatches(deploymentWithApp.app.scope, input.scope)
     ) {
       throw new ORPCError("NOT_FOUND", { message: "Deployment not found." });
     }
@@ -185,11 +187,11 @@ const listAppDeployments = protectedRouter
   })
   .input(
     z.object({
-      query: paginationQuery.extend({ appId: z.string(), scopeId: z.string() }),
+      query: paginationQuery.extend({ appId: z.string(), scope: scopeValueSchema }),
     }),
   )
   .output(paginatedOutput(AppDeployment))
-  .use(requireApp, ({ query: { appId, scopeId } }) => ({ appId, scopeId }))
+  .use(requireApp, ({ query: { appId, scope } }) => ({ appId, scope }))
   .handler(async ({ context, input }) => {
     const { page, pageSize } = input.query;
     const deployments = await db.query.appDeployment.findMany({
@@ -223,13 +225,13 @@ const getAppDeployment = protectedRouter
   .input(
     z.object({
       params: z.object({ deploymentId: z.string() }),
-      query: z.object({ scopeId: z.string() }),
+      query: z.object({ scope: scopeValueSchema }),
     }),
   )
   .output(z.object({ body: AppDeployment }))
-  .use(requireDeployment, ({ params: { deploymentId }, query: { scopeId } }) => ({
+  .use(requireDeployment, ({ params: { deploymentId }, query: { scope } }) => ({
     deploymentId,
-    scopeId,
+    scope,
   }))
   .handler(({ context }) => ({ body: context.deployment }));
 
@@ -252,7 +254,7 @@ const createAppDeployment = protectedRouter
       }),
     }),
   )
-  .use(requireApp, ({ body: { appId, scopeId } }) => ({ appId, scopeId }))
+  .use(requireApp, ({ body: { appId, scope } }) => ({ appId, scope }))
   .handler(async ({ context, input }) => {
     const deploymentId = crypto.randomUUID();
     const deploymentPublicId = createPublicId();
@@ -407,16 +409,16 @@ const publishAppDeployment = protectedRouter
   .input(
     z.object({
       body: z.object({
-        scopeId: z.string(),
+        scope: scopeValueSchema,
         rollout: z.boolean().optional().default(true),
       }),
       params: z.object({ deploymentId: z.string() }),
     }),
   )
   .output(z.object({ body: AppDeployment }))
-  .use(requireDeployment, ({ body: { scopeId }, params: { deploymentId } }) => ({
+  .use(requireDeployment, ({ body: { scope }, params: { deploymentId } }) => ({
     deploymentId,
-    scopeId,
+    scope,
   }))
   .handler(async ({ context, input }) => {
     const { deployment } = context;

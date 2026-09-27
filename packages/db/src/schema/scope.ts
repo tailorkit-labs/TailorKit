@@ -2,32 +2,14 @@ import z from "zod";
 
 export type Scope = Record<string, string>;
 
-export const scopeValueSchema = z.custom<Scope>((value): value is Scope => {
-  if (
-    !value ||
-    typeof value !== "object" ||
-    Array.isArray(value) ||
-    (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null)
-  ) {
-    return false;
-  }
-
-  const keys = Object.keys(value);
-  return (
-    keys.length > 0 &&
-    keys.length <= 32 &&
-    Object.getOwnPropertySymbols(value).length === 0 &&
-    keys.every((key) => {
-      const descriptor = Object.getOwnPropertyDescriptor(value, key);
-      return (
-        key.length > 0 &&
-        key.length <= 64 &&
-        !!descriptor &&
-        "value" in descriptor &&
-        typeof descriptor.value === "string" &&
-        descriptor.value.length > 0 &&
-        descriptor.value.length <= 255
-      );
-    })
-  );
-}, "Scope must be a flat record with 1–32 nonempty string entries.");
+export const scopeValueSchema = z
+  .record(z.string().min(1).max(64), z.string().min(1).max(255))
+  .superRefine((scope, context) => {
+    const keys = Object.keys(scope);
+    if (keys.length === 0 || keys.length > 32) {
+      context.addIssue({ code: "custom", message: "Scope must contain 1–32 entries." });
+    }
+    if (Object.getOwnPropertySymbols(scope).length > 0) {
+      context.addIssue({ code: "custom", message: "Scope entries must use string keys." });
+    }
+  });

@@ -16,11 +16,13 @@ vi.mock("@tailorkit/db", () => ({
 }));
 
 const { deploymentRouter, mapReturnedFilesByAssetPath } = await import("./deployments");
+const { canonicalizeScope } = await import("../scope");
 
 const organizationId = "11111111-1111-4111-8111-111111111111";
 const projectId = "22222222-2222-4222-8222-222222222222";
 const logoChecksum = "b".repeat(64);
 const logoChecksumBase64 = Buffer.from(logoChecksum, "hex").toString("base64");
+const productionScope = { environment: "production" };
 
 describe("platform deployment uploads", () => {
   let client: Awaited<ReturnType<typeof createTestDb>>["client"];
@@ -51,7 +53,7 @@ describe("platform deployment uploads", () => {
       name: "Inbox",
       projectId,
       publicId: "app000000001",
-      scopeId: "production",
+      ...canonicalizeScope(productionScope),
     });
   });
 
@@ -197,7 +199,7 @@ describe("platform deployment uploads", () => {
               contentType: "image/svg+xml",
             },
           },
-          scopeId: "production",
+          scope: productionScope,
         },
       },
       { context },
@@ -280,7 +282,7 @@ describe("platform deployment uploads", () => {
               contentType: "image/svg+xml",
             },
           },
-          scopeId: "production",
+          scope: productionScope,
         },
       },
       { context },
@@ -342,7 +344,7 @@ describe("platform deployment uploads", () => {
                 objectKey: "client.js",
               },
             ],
-            scopeId: "production",
+            scope: productionScope,
           },
         },
         { context },
@@ -360,7 +362,7 @@ describe("platform deployment uploads", () => {
       call(
         deploymentRouter.publish,
         {
-          body: { rollout: true, scopeId: "production" },
+          body: { rollout: true, scope: productionScope },
           params: { deploymentId: deployment.id },
         },
         { context: publishContext("http://uploads.example/logo-dark.svg") },
@@ -390,7 +392,7 @@ describe("platform deployment uploads", () => {
     const publish = call(
       deploymentRouter.publish,
       {
-        body: { rollout: true, scopeId: "production" },
+        body: { rollout: true, scope: productionScope },
         params: { deploymentId: deployment.id },
       },
       { context: publishContext("https://uploads.example/logo-dark.svg") },

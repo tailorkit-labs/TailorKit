@@ -2,6 +2,7 @@ import { previewAccept, previewInvitation } from "@tailorkit/client-platform/cli
 import type { Client as PlatformClient } from "@tailorkit/client-platform/client/client/index";
 import { z } from "zod";
 import { approvalStyles, escapeHtml } from "./cli-auth-page";
+import type { TailorKitScope } from "./types";
 
 export const previewCookieName = "tailorkit_preview_grants";
 const grantIdSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/u);
@@ -36,7 +37,7 @@ interface ConsentOptions {
   platformHeaders: Record<string, string>;
   authenticate: (ctx: {
     request: Request;
-  }) => Promise<{ scopeId: string } | null> | { scopeId: string } | null;
+  }) => Promise<{ scope: TailorKitScope } | null> | { scope: TailorKitScope } | null;
 }
 
 // Strip share IDs from Referer while preserving Origin on same-origin form submissions.
@@ -99,7 +100,7 @@ export async function handlePreviewConsent(options: ConsentOptions): Promise<Res
   if (request.method === "POST") {
     try {
       const result = await previewAccept({
-        body: { scopeId: viewer.scopeId },
+        body: { scope: viewer.scope },
         path: { shareId },
         client: platform,
         headers: platformHeaders,

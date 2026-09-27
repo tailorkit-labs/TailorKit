@@ -20,11 +20,14 @@ vi.mock("@tailorkit/db", () => ({
 }));
 
 const { appRouter } = await import("./apps");
+const { canonicalizeScope } = await import("../scope");
 
 const orgId = "11111111-1111-4111-8111-111111111111";
 const projectId = "22222222-2222-4222-8222-222222222222";
 const otherProjectId = "33333333-3333-4333-8333-333333333333";
 const userId = "44444444-4444-4444-8444-444444444444";
+const productionScope = { environment: "production" };
+const stagingScope = { environment: "staging" };
 
 function createContext(overrides: Partial<Context> = {}): Context {
   return {
@@ -117,7 +120,7 @@ describe("platform appRouter", () => {
         body: {
           description: " Embedded inbox ",
           name: " Inbox ",
-          scopeId: "production",
+          scope: productionScope,
         },
       },
       { context },
@@ -129,7 +132,7 @@ describe("platform appRouter", () => {
         name: "Inbox",
         projectId,
         publicId: expect.stringMatching(/^[0-9a-z]{12}$/u),
-        scopeId: "production",
+        scope: productionScope,
       }),
     );
 
@@ -137,12 +140,12 @@ describe("platform appRouter", () => {
       name: "Staging app",
       projectId,
       publicId: "staging001",
-      scopeId: "staging",
+      ...canonicalizeScope(stagingScope),
     });
 
     const result = await call(
       appRouter.list,
-      { query: { page: 1, pageSize: 10, scopeId: "production" } },
+      { query: { page: 1, pageSize: 10, scope: productionScope } },
       { context },
     );
 
@@ -158,7 +161,7 @@ describe("platform appRouter", () => {
         name: "Notes",
         projectId,
         publicId: "notes00001",
-        scopeId: "production",
+        ...canonicalizeScope(productionScope),
       })
       .returning();
 
@@ -208,7 +211,7 @@ describe("platform appRouter", () => {
 
     const result = await call(
       appRouter.list,
-      { query: { page: 1, pageSize: 10, scopeId: "production" } },
+      { query: { page: 1, pageSize: 10, scope: productionScope } },
       { context },
     );
 
@@ -225,7 +228,7 @@ describe("platform appRouter", () => {
         name: "Other project app",
         projectId: otherProjectId,
         publicId: "other00001",
-        scopeId: "production",
+        ...canonicalizeScope(productionScope),
       })
       .returning();
 
@@ -236,7 +239,7 @@ describe("platform appRouter", () => {
     await expect(
       call(
         appRouter.get,
-        { params: { appId: created.id }, query: { scopeId: "production" } },
+        { params: { appId: created.id }, query: { scope: productionScope } },
         { context: createContext() },
       ),
     ).rejects.toEqual(

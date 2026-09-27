@@ -347,7 +347,7 @@ describe("createTailorKitServer", () => {
     expect(requests[0]?.url).toBe("http://localhost:3000/api/platform/cli-auth/approve");
     expect(requests[0]?.headers.get("authorization")).toBe("Bearer host-token");
     await expect(requests[0]?.json()).resolves.toEqual({
-      scopeId: "org:org_1",
+      scope: { orgId: "org_1" },
       userCode: "ABC-123-XYZ",
     });
   });
@@ -424,7 +424,7 @@ describe("createTailorKitServer", () => {
           requests.push(platformRequest);
 
           if (platformRequest.url.endsWith("/cli-auth/verify-token")) {
-            return Promise.resolve(Response.json({ scopeId: "org:org_1" }));
+            return Promise.resolve(Response.json({ scope: { orgId: "org_1" } }));
           }
 
           return Promise.resolve(
@@ -460,6 +460,7 @@ describe("createTailorKitServer", () => {
       url: "https://example.com/api/tailorkit",
     });
 
+    await expect(client.cliAuth.verifyToken({})).resolves.toEqual({ scope: { orgId: "org_1" } });
     await expect(client.apps.list({ page: 1 })).resolves.toEqual({
       items: [],
       pagination: { hasMore: false, page: 1, pageSize: 20 },
@@ -467,13 +468,14 @@ describe("createTailorKitServer", () => {
     expect(hostRequests[0]?.method).toBe("POST");
     expect(requests[0]?.url).toBe("http://localhost:3000/api/platform/cli-auth/verify-token");
     expect(requests[0]?.headers.get("authorization")).toBe("Bearer host-token");
-    expect(requests[1]?.url).toBe(
-      "http://localhost:3000/api/platform/apps?page=1&scopeId=org%3Aorg_1",
+    expect(requests[1]?.url).toBe("http://localhost:3000/api/platform/cli-auth/verify-token");
+    expect(requests[2]?.url).toBe(
+      "http://localhost:3000/api/platform/apps?page=1&scope[orgId]=org_1",
     );
-    expect(requests[1]?.headers.get("authorization")).toBe("Bearer host-token");
+    expect(requests[2]?.headers.get("authorization")).toBe("Bearer host-token");
   });
 
-  it("attaches the handler scope id when creating platform apps", async () => {
+  it("attaches the validated handler scope when creating platform apps", async () => {
     const requests: Request[] = [];
     const hostRequests: Request[] = [];
     const server = createTailorKitServer({
@@ -485,7 +487,7 @@ describe("createTailorKitServer", () => {
           requests.push(platformRequest);
 
           if (platformRequest.url.endsWith("/cli-auth/verify-token")) {
-            return Promise.resolve(Response.json({ scopeId: "org:org_1" }));
+            return Promise.resolve(Response.json({ scope: { orgId: "org_1" } }));
           }
 
           return Promise.resolve(Response.json({ id: "app_1" }));
@@ -523,7 +525,7 @@ describe("createTailorKitServer", () => {
     await expect(requests[1]?.json()).resolves.toEqual({
       description: null,
       name: "Calendar",
-      scopeId: "org:org_1",
+      scope: { orgId: "org_1" },
     });
   });
 });

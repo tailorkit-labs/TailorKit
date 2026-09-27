@@ -44,9 +44,12 @@ const listApps = protectedRouter
     const scope = canonicalizeScope(input.query.scope);
     const apps = await db.query.app.findMany({
       where: {
-        projectId: context.project.id,
-        scopeKey: scope.scopeKey,
-        scope: scope.scope,
+        RAW: (fields, { and, eq }) =>
+          and(
+            eq(fields.projectId, context.project.id),
+            eq(fields.scopeKey, scope.scopeKey),
+            eq(fields.scope, scope.scope),
+          )!,
       },
       orderBy: {
         createdAt: "desc",

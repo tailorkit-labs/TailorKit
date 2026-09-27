@@ -6,7 +6,7 @@ import {
   cliAuthStart,
 } from "@tailorkit/client-platform/client";
 import { z } from "zod";
-import { getTailorKitScopeId, o, requireCliDeployToken, requireHostAuth } from "../procedures";
+import { getTailorKitScope, o, requireCliDeployToken, requireHostAuth } from "../procedures";
 
 const runPlatformCliAuthRequest = async <T>(request: Promise<T>): Promise<T> => {
   try {
@@ -31,7 +31,7 @@ export const cliAuthRouter = {
         await runPlatformCliAuthRequest(
           cliAuthApprove({
             body: {
-              scopeId: getTailorKitScopeId(context),
+              scope: getTailorKitScope(context),
               userCode: input.userCode,
             },
             client: context.platform,
@@ -79,5 +79,5 @@ export const cliAuthRouter = {
   verifyToken: o
     .input(z.object({}))
     .use(requireCliDeployToken)
-    .handler(({ context }) => ({ scopeId: getTailorKitScopeId(context) })),
+    .handler(({ context }) => ({ scope: getTailorKitScope(context) })),
 };

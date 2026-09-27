@@ -73,6 +73,7 @@ const emptySchema: StandardSchemaV1<unknown, Record<never, never>> &
 } as const;
 
 const server = createTailorKitServer({
+  scopeSchema: emptySchema,
   slots: {
     panel: { views: ["/", "/home", "/home/detail", "/user"] },
     navbar: { views: ["/"] },

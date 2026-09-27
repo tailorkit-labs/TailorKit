@@ -159,7 +159,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         return new Response("Unauthorized", { status: 401 });
       }
       const result = await previewAccepted({
-        body: { grantIds: readPreviewGrantIds(request), scopeId: viewer.scopeId },
+        body: { grantIds: readPreviewGrantIds(request), scope: viewer.scope },
         client: context.platform,
         headers: context.platformHeaders,
         throwOnError: true,
@@ -197,7 +197,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         const result = await appsList({
           client: context.platform,
           headers: context.platformHeaders,
-          query: { page, pageSize: 100, scopeId: tailorkit.scopeId },
+          query: { page, pageSize: 100, scope: tailorkit.scope },
           throwOnError: true,
         });
         const data = "data" in result ? result.data : result;
@@ -210,7 +210,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
       const grantIds = readPreviewGrantIds(request);
       if (grantIds.length) {
         const result = await previewAccepted({
-          body: { grantIds, scopeId: tailorkit.scopeId },
+          body: { grantIds, scope: tailorkit.scope },
           client: context.platform,
           headers: context.platformHeaders,
           throwOnError: true,

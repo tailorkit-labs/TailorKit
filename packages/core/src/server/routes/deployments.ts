@@ -6,7 +6,7 @@ import {
 } from "@tailorkit/client-platform/client";
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
-import { getTailorKitScopeId, o, requireCliDeployToken } from "../procedures";
+import { getTailorKitScope, o, requireCliDeployToken } from "../procedures";
 
 const paginationInput = z.object({
   page: z.number().int().min(1).optional(),
@@ -76,7 +76,7 @@ export const deploymentRouter = {
             appId: input.appId,
             assets: input.assets,
             logos: input.logos,
-            scopeId: getTailorKitScopeId(context),
+            scope: getTailorKitScope(context),
           },
           client: context.platform,
           headers: context.platformHeaders,
@@ -94,7 +94,7 @@ export const deploymentRouter = {
           client: context.platform,
           headers: context.platformHeaders,
           path: { deploymentId: input.deploymentId },
-          query: { scopeId: getTailorKitScopeId(context) },
+          query: { scope: getTailorKitScope(context) },
         }),
     ),
   list: o
@@ -109,7 +109,7 @@ export const deploymentRouter = {
             appId: input.appId,
             page: input.page,
             pageSize: input.pageSize,
-            scopeId: getTailorKitScopeId(context),
+            scope: getTailorKitScope(context),
           },
         }),
     ),
@@ -124,7 +124,7 @@ export const deploymentRouter = {
     .handler(
       async ({ context, input }) =>
         await deploymentsPublish({
-          body: { scopeId: getTailorKitScopeId(context), rollout: input.rollout },
+          body: { scope: getTailorKitScope(context), rollout: input.rollout },
           client: context.platform,
           headers: context.platformHeaders,
           path: { deploymentId: input.deploymentId },

@@ -13,6 +13,7 @@ import { createPreviewBuildStore } from "../preview-build-store";
 import { ensurePreviewDeveloperGrace } from "../preview-lifecycle";
 import { o, protectedRouter } from "../procedures";
 import { previewGrantRoutes } from "./preview-grants";
+import { canonicalizeScope } from "../scope";
 
 const previewSessionLifetimeMs = 8 * 60 * 60 * 1000;
 const firstConnectionGraceMs = 2 * 60 * 1000;
@@ -41,7 +42,11 @@ async function getValidCliToken(projectId: string, deployToken: string) {
   if (!token || token.revokedAt || token.expiresAt <= new Date()) {
     throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
   }
-  return token;
+  const scope = canonicalizeScope(token.scope);
+  if (scope.scopeKey !== token.scopeKey) {
+    throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
+  }
+  return { ...token, scope: scope.scope, scopeKey: scope.scopeKey };
 }
 
 const startPreview = protectedRouter
@@ -78,11 +83,15 @@ const startPreview = protectedRouter
 
     const previewApp = await db.query.app.findFirst({
       where: {
-        projectId: context.project.id,
-        scopeId: token.scopeId,
-        ...(uuidPattern.test(input.body.appId)
-          ? { id: input.body.appId }
-          : { publicId: input.body.appId }),
+        RAW: (fields, { and, eq }) =>
+          and(
+            eq(fields.projectId, context.project.id),
+            eq(fields.scopeKey, token.scopeKey),
+            eq(fields.scope, token.scope),
+            uuidPattern.test(input.body.appId)
+              ? eq(fields.id, input.body.appId)
+              : eq(fields.publicId, input.body.appId),
+          )!,
       },
     });
     if (!previewApp) {
@@ -91,9 +100,13 @@ const startPreview = protectedRouter
 
     const activeSessions = await db.query.previewSession.findMany({
       where: {
-        projectId: context.project.id,
-        scopeId: token.scopeId,
-        status: "active",
+        RAW: (fields, { and, eq }) =>
+          and(
+            eq(fields.projectId, context.project.id),
+            eq(fields.scopeKey, token.scopeKey),
+            eq(fields.scope, token.scope),
+            eq(fields.status, "active"),
+          )!,
       },
     });
     for (const activeSession of activeSessions) {
@@ -123,7 +136,8 @@ const startPreview = protectedRouter
           .where(
             and(
               eq(previewSession.projectId, context.project.id),
-              eq(previewSession.scopeId, token.scopeId),
+              eq(previewSession.scopeKey, token.scopeKey),
+              eq(previewSession.scope, token.scope),
               eq(previewSession.status, "active"),
               lt(previewSession.expiresAt, now),
             ),
@@ -154,7 +168,8 @@ const startPreview = protectedRouter
           .where(
             and(
               eq(previewSession.projectId, context.project.id),
-              eq(previewSession.scopeId, token.scopeId),
+              eq(previewSession.scopeKey, token.scopeKey),
+              eq(previewSession.scope, token.scope),
               eq(previewSession.status, "active"),
             ),
           );
@@ -170,7 +185,8 @@ const startPreview = protectedRouter
             cliTokenId: token.id,
             expiresAt,
             projectId: context.project.id,
-            scopeId: token.scopeId,
+            scopeKey: token.scopeKey,
+            scope: token.scope,
             shareId,
             tunnelTokenHash: hash(tunnelToken),
           })
@@ -242,6 +258,8 @@ const stopPreview = protectedRouter
           eq(previewSession.id, input.params.sessionId),
           eq(previewSession.projectId, context.project.id),
           eq(previewSession.cliTokenId, token.id),
+          eq(previewSession.scopeKey, token.scopeKey),
+          eq(previewSession.scope, token.scope),
           eq(previewSession.status, "active"),
         ),
       )
@@ -250,10 +268,15 @@ const stopPreview = protectedRouter
       ? null
       : await db.query.previewSession.findFirst({
           where: {
-            id: input.params.sessionId,
-            projectId: context.project.id,
-            cliTokenId: token.id,
-            status: "ended",
+            RAW: (fields, { and, eq }) =>
+              and(
+                eq(fields.id, input.params.sessionId),
+                eq(fields.projectId, context.project.id),
+                eq(fields.cliTokenId, token.id),
+                eq(fields.scopeKey, token.scopeKey),
+                eq(fields.scope, token.scope),
+                eq(fields.status, "ended"),
+              )!,
           },
         });
     const sessionId = endedSession?.id ?? alreadyEnded?.id;
