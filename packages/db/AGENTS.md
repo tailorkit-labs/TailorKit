@@ -1,5 +1,6 @@
 # Database schema relations
 
-- Define all Drizzle relations, including Better Auth relations, in `src/relations.ts`.
-- Keep `src/schema/auth.generated.ts` limited to generated table definitions. Do not add or restore relation definitions there; the auth generator strips its generated relations after generation.
-- If Better Auth relations change, update `src/relations.ts` and regenerate the auth table schema with `pnpm --filter @tailorkit/auth generate` when its tables or fields change.
+- Keep app-specific Drizzle relations in `src/relations.ts`.
+- Keep Better Auth's generated relations in `src/schema/auth.generated.ts` and compose them into the shared config in `src/relations.ts` with `defineRelationsPart`; spread the main relations first, then relation parts.
+- If a relation part overlaps an existing table entry, ensure the later part preserves any relations already defined for that table.
+- After changing Better Auth plugins or schema fields, run `pnpm --filter @tailorkit/auth generate` so the generated tables and relations stay in sync.
