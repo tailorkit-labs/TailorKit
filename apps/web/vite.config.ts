@@ -74,14 +74,6 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
     },
-    build: {
-      rolldownOptions: {
-        onLog(level, log, defaultHandler) {
-          if (level === "warn" && log.code === "MODULE_LEVEL_DIRECTIVE") return;
-          defaultHandler(level, log);
-        },
-      },
-    },
     ssr: isDev ? undefined : { external: serverPackages },
   };
 });
