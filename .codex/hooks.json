@@ -3,11 +3,11 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Bash|apply_patch|Edit|Write",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$(git rev-parse --show-toplevel)/.codex/format-after-edit.mjs\"",
+            "command": "pnpm fix",
             "statusMessage": "Formatting edited files"
           }
         ]
