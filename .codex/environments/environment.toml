@@ -3,4 +3,4 @@ version = 1
 name = "tailorkit"
 
 [setup]
-script = "pnpm i"
+script = "pnpm install --frozen-lockfile"
