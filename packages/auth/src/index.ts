@@ -98,6 +98,9 @@ function buildAuth() {
     appName: "TailorKit",
     account: {
       encryptOAuthTokens: true,
+      accountLinking: {
+        allowDifferentEmails: true,
+      },
     },
     advanced: {
       backgroundTasks: {
