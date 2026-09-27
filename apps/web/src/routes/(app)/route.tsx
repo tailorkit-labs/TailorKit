@@ -4,7 +4,6 @@ export const Route = createFileRoute("/(app)")({
   loader: async ({ context, location }) => {
     const session = await context.queryClient.query({
       ...context.orpc.user.getSession.queryOptions(),
-      staleTime: "static",
     });
 
     if (!session.session) {
@@ -16,7 +15,6 @@ export const Route = createFileRoute("/(app)")({
 
     void context.queryClient.query({
       ...context.orpc.user.getOrgs.queryOptions(),
-      staleTime: "static",
     });
   },
 });

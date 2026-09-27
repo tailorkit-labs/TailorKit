@@ -11,7 +11,6 @@ export const Route = createFileRoute("/(app)/$orgSlug")({
   loader: async ({ context, params }) => {
     const orgs = await context.queryClient.query({
       ...context.orpc.user.getOrgs.queryOptions(),
-      staleTime: "static",
     });
     if (!orgs.some((org) => org.slug === params.orgSlug)) {
       await clearActiveOrg();
@@ -25,7 +24,6 @@ export const Route = createFileRoute("/(app)/$orgSlug")({
     const org = await context.queryClient
       .query({
         ...context.orpc.user.getOrg.queryOptions({ input: { orgSlug: params.orgSlug } }),
-        staleTime: "static",
       })
       .catch(async (error: unknown) => {
         if (

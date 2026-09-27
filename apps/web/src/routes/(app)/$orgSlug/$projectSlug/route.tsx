@@ -11,7 +11,6 @@ export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug")({
       ...context.orpc.project.get.queryOptions({
         input: { orgSlug: params.orgSlug, projectSlug: params.projectSlug },
       }),
-      staleTime: "static",
     }),
   component: ProjectLayout,
 });

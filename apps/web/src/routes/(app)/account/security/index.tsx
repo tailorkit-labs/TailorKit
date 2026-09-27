@@ -46,15 +46,12 @@ export const Route = createFileRoute("/(app)/account/security/")({
     await Promise.all([
       context.queryClient.query({
         ...context.orpc.user.getSession.queryOptions(),
-        staleTime: "static",
       }),
       context.queryClient.query({
         ...context.orpc.user.listAccounts.queryOptions(),
-        staleTime: "static",
       }),
       context.queryClient.query({
         ...context.orpc.user.listSessions.queryOptions(),
-        staleTime: "static",
       }),
     ]);
 

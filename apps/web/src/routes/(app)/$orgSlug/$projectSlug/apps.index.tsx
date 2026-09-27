@@ -54,7 +54,6 @@ export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug/apps/")({
         projectSlug: params.projectSlug,
         search: "",
       }),
-      staleTime: "static",
     }),
   component: AppsIndexPage,
 });

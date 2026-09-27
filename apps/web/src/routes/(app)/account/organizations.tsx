@@ -27,11 +27,9 @@ export const Route = createFileRoute("/(app)/account/organizations")({
     await Promise.all([
       context.queryClient.query({
         ...context.orpc.user.getOrgs.queryOptions(),
-        staleTime: "static",
       }),
       context.queryClient.query({
         ...context.orpc.user.getPendingInvitations.queryOptions(),
-        staleTime: "static",
       }),
     ]);
   },

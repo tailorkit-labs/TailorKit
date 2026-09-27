@@ -5,7 +5,6 @@ export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
     const session = await context.queryClient.query({
       ...context.orpc.user.getSession.queryOptions(),
-      staleTime: "static",
     });
 
     if (!session.session) {
@@ -21,7 +20,6 @@ export const Route = createFileRoute("/")({
     // that the selection is invalid. Only clear it after a successful lookup.
     const orgs = await context.queryClient.query({
       ...context.orpc.user.getOrgs.queryOptions(),
-      staleTime: "static",
     });
 
     // The cookie stores a slug; accept IDs saved by older clients as well.

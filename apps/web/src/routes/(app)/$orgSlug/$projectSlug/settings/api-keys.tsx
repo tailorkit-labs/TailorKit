@@ -37,7 +37,6 @@ export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug/settings/api-
       ...context.orpc.project.apiKeys.queryOptions({
         input: { orgSlug: params.orgSlug, projectSlug: params.projectSlug },
       }),
-      staleTime: "static",
     }),
   component: ProjectApiKeysPage,
 });

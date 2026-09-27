@@ -5,7 +5,6 @@ export const Route = createFileRoute("/(app)/onboarding")({
   loader: async ({ context }) => {
     const orgs = await context.queryClient.query({
       ...context.orpc.user.getOrgs.queryOptions(),
-      staleTime: "static",
     });
 
     if (orgs.length > 0) {

@@ -32,7 +32,6 @@ export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug/apps/$appId")
           projectSlug: params.projectSlug,
         },
       }),
-      staleTime: "static",
     }),
   component: AppPage,
 });

@@ -7,7 +7,6 @@ export const Route = createFileRoute("/(auth)")({
   loader: async ({ context, location }) => {
     const session = await context.queryClient.query({
       ...context.orpc.user.getSession.queryOptions(),
-      staleTime: "static",
     });
 
     if (session.session || session.user) {

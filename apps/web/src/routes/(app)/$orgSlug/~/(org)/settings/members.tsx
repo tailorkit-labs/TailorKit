@@ -19,14 +19,12 @@ export const Route = createFileRoute("/(app)/$orgSlug/~/(org)/settings/members")
     await Promise.all([
       context.queryClient.query({
         ...context.orpc.org.getMembers.queryOptions({ input: { orgSlug: params.orgSlug } }),
-        staleTime: "static",
       }),
       context.queryClient
         .query({
           ...context.orpc.org.getOrgInvitations.queryOptions({
             input: { orgSlug: params.orgSlug },
           }),
-          staleTime: "static",
         })
         .catch(() => null),
     ]);
