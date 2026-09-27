@@ -4,7 +4,7 @@ export function withTimeout<T>(
   promise: Promise<T>,
   timeout: number | undefined = DEFAULT_GET_TIMEOUT_MS,
 ): Promise<T> {
-  if (!Number.isSafeInteger(timeout) || timeout <= 0) {
+  if (!Number.isSafeInteger(timeout) || timeout <= 0 || timeout > 2_147_483_647) {
     return Promise.reject(new TypeError("KV timeout must be a positive integer."));
   }
 
