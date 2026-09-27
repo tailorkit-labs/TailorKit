@@ -195,7 +195,15 @@ function SubmitButton({
         isValidating: state.isValidating,
       })}
     >
-      {({ canSubmit, isSubmitting, isValidating }) => (
+      {({
+        canSubmit,
+        isSubmitting,
+        isValidating,
+      }: {
+        canSubmit: boolean;
+        isSubmitting: boolean;
+        isValidating: boolean;
+      }) => (
         <Button
           variant={variant}
           className={cn("w-min", className)}
