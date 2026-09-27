@@ -13,14 +13,16 @@ import {
 } from "@tailorkit/ui/card";
 import { Logo } from "@tailorkit/ui/logo";
 import { cn } from "@tailorkit/ui";
-import { Tooltip, TooltipPopup, TooltipTrigger } from "@tailorkit/ui/tooltip";
 import { useAppForm } from "@tailorkit/ui/form";
 import { ArrowLeftIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
 
 import { authClient } from "#lib/auth-client";
-import { getSameOriginUrl } from "#lib/safe-return-url";
+import { GoogleIcon } from "#components/google-icon";
+import { orpc } from "#lib/orpc";
+import { getAuthErrorCallbackUrl, getSameOriginUrl } from "#lib/safe-return-url";
 
 export const Route = createFileRoute("/(auth)/sign-up")({
   validateSearch: z.object({
@@ -31,27 +33,6 @@ export const Route = createFileRoute("/(auth)/sign-up")({
   }),
   component: RouteComponent,
 });
-
-const GoogleIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" className="size-4 shrink-0">
-    <path
-      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-      fill="#4285F4"
-    />
-    <path
-      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-      fill="#34A853"
-    />
-    <path
-      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-      fill="#FBBC05"
-    />
-    <path
-      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-      fill="#EA4335"
-    />
-  </svg>
-);
 
 const GitHubIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true" className="size-4 shrink-0 fill-current">
@@ -69,12 +50,13 @@ function RouteComponent() {
     return_to,
   } = useSearch({ from: "/(auth)/sign-up" });
   const navigate = Route.useNavigate();
+  const socialProvidersQuery = useQuery(orpc.user.getSocialProviders.queryOptions());
   const [step, setStep] = useState<Step>("email");
   const [visible, setVisible] = useState(true);
   const [email, setEmail] = useState(emailFromSearch || "");
   const [detailsError, setDetailsError] = useState<string | null>(null);
-  const [githubError, setGithubError] = useState<string | null>(null);
-  const [githubPending, setGithubPending] = useState(false);
+  const [socialError, setSocialError] = useState<string | null>(null);
+  const [socialPending, setSocialPending] = useState<"github" | "google" | null>(null);
 
   const transition = (nextStep: Step, nextEmail?: string) => {
     setVisible(false);
@@ -123,26 +105,29 @@ function RouteComponent() {
     },
   });
 
-  const signUpWithGitHub = async () => {
-    setGithubError(null);
-    setGithubPending(true);
+  const signUpWithSocial = async (provider: "github" | "google") => {
+    const providerName = provider === "google" ? "Google" : "GitHub";
+    setSocialError(null);
+    setSocialPending(provider);
 
     try {
       const callbackURL =
         getSameOriginUrl(return_to, window.location.origin) ?? window.location.origin;
       const result = await authClient.signIn.social({
         callbackURL,
-        errorCallbackURL: "/sign-up",
-        provider: "github",
+        errorCallbackURL: getAuthErrorCallbackUrl("/sign-up", return_to, window.location.origin),
+        provider,
       });
 
       if (result.error) {
-        setGithubError(result.error.message || result.error.statusText || "GitHub sign up failed");
-        setGithubPending(false);
+        setSocialError(
+          result.error.message || result.error.statusText || `${providerName} sign up failed`,
+        );
+        setSocialPending(null);
       }
     } catch {
-      setGithubError("GitHub sign up failed");
-      setGithubPending(false);
+      setSocialError(`${providerName} sign up failed`);
+      setSocialPending(null);
     }
   };
 
@@ -174,6 +159,50 @@ function RouteComponent() {
                   }}
                 >
                   <CardPanel className="flex flex-col gap-4">
+                    {(socialError || error_description || error) && (
+                      <p className="text-destructive text-sm" role="alert">
+                        {socialError || error_description || error}
+                      </p>
+                    )}
+                    {(socialProvidersQuery.data?.google || socialProvidersQuery.data?.github) && (
+                      <>
+                        <div className="flex flex-col gap-2">
+                          {socialProvidersQuery.data.github && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full"
+                              disabled={socialPending !== null && socialPending !== "github"}
+                              loading={socialPending === "github"}
+                              onClick={() => void signUpWithSocial("github")}
+                            >
+                              <GitHubIcon />
+                              Continue with GitHub
+                            </Button>
+                          )}
+                          {socialProvidersQuery.data.google && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full"
+                              disabled={socialPending !== null && socialPending !== "google"}
+                              loading={socialPending === "google"}
+                              onClick={() => void signUpWithSocial("google")}
+                            >
+                              <GoogleIcon className="size-4 shrink-0" />
+                              Continue with Google
+                            </Button>
+                          )}
+                        </div>
+
+                        <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                          <span className="bg-card text-muted-foreground relative z-10 px-2 text-xs">
+                            OR
+                          </span>
+                        </div>
+                      </>
+                    )}
+
                     <emailForm.AppField name="email">
                       {(field) => (
                         <field.TextField
@@ -188,39 +217,6 @@ function RouteComponent() {
                     <emailForm.AppForm>
                       <emailForm.SubmitButton className="w-full">Continue</emailForm.SubmitButton>
                     </emailForm.AppForm>
-
-                    <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                      <span className="bg-card text-muted-foreground relative z-10 px-2 text-xs">
-                        OR
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      {(githubError || error_description || error) && (
-                        <p className="text-destructive text-sm" role="alert">
-                          {githubError || error_description || error}
-                        </p>
-                      )}
-                      <Tooltip>
-                        <TooltipTrigger
-                          render={<Button variant="outline" className="w-full" disabled />}
-                        >
-                          <GoogleIcon />
-                          Continue with Google
-                        </TooltipTrigger>
-                        <TooltipPopup>Coming soon</TooltipPopup>
-                      </Tooltip>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full"
-                        loading={githubPending}
-                        onClick={() => void signUpWithGitHub()}
-                      >
-                        <GitHubIcon />
-                        Continue with GitHub
-                      </Button>
-                    </div>
                   </CardPanel>
                 </form>
               ) : (
@@ -272,7 +268,7 @@ function RouteComponent() {
             </div>
           </Card>
 
-          <CardFrameFooter>
+          <CardFrameFooter className="relative">
             <p className="text-muted-foreground text-sm">
               Already have an account?{" "}
               <Link

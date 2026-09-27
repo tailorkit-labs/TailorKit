@@ -219,7 +219,7 @@ function TwoFactorPage() {
               </Button>
             </CardPanel>
           </Card>
-          <CardFrameFooter>
+          <CardFrameFooter className="relative">
             <Link
               className="text-muted-foreground text-sm hover:underline"
               search={{
