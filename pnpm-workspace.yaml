@@ -2,7 +2,6 @@ minimumReleaseAge: 4320
 virtualStoreType: global
 
 overrides:
-  "@better-fetch/fetch": 1.3.2
   vite@*: "catalog:"
 
 packages:
@@ -52,6 +51,9 @@ catalog:
   vite-imagetools: ^12.0.1
   zod: ^4.6.5
   vite-plus: 1.0.0-rc.1
+
+# Helps speed up vercel deployments
+cacheDir: node_modules/.cache/pnpm
 
 allowBuilds:
   workerd: true

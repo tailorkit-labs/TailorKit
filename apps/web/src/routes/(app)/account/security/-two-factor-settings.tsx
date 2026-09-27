@@ -29,7 +29,7 @@ import { toastManager } from "@tailorkit/ui/toast";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "@tailorkit/ui/tooltip";
 import { QRCodeSVG } from "qrcode.react";
 import { CopyIcon, DownloadIcon } from "lucide-react";
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { client, orpc } from "#lib/orpc";
@@ -85,7 +85,7 @@ function TwoFactorSetupDialog({
   onEnable: () => void;
   onOpenChange: (open: boolean) => void;
   onPasswordChange: (password: string) => void;
-  onVerify: () => void;
+  onVerify: (code: string) => void;
   onContinueToVerification: () => void;
   open: boolean;
   password: string;
@@ -188,7 +188,13 @@ function TwoFactorSetupDialog({
           autoComplete="one-time-code"
           className="gap-2.5"
           length={OTP_LENGTH}
-          onValueChange={setCode}
+          onValueChange={(value) => {
+            setCode(value);
+            if (value.length === OTP_LENGTH) {
+              onVerify(value);
+            }
+          }}
+          disabled={verifying}
           size="lg"
           value={code}
         >
@@ -206,13 +212,13 @@ function TwoFactorSetupDialog({
     );
     action = (
       <>
-        <Button onClick={onBackToQr} size="sm" type="button" variant="outline">
+        <Button disabled={verifying} onClick={onBackToQr} size="sm" type="button" variant="outline">
           Back
         </Button>
         <Button
-          disabled={code.length !== OTP_LENGTH}
+          disabled={code.length !== OTP_LENGTH || verifying}
           loading={verifying}
-          onClick={() => void onVerify()}
+          onClick={() => onVerify(code)}
           size="sm"
           type="button"
         >
@@ -264,7 +270,7 @@ function TwoFactorSetupDialog({
     );
     action = (
       <DialogClose render={<Button disabled={!backupCodesSaved} size="sm" type="button" />}>
-        I’ve saved these codes
+        Done
       </DialogClose>
     );
   }
@@ -273,7 +279,7 @@ function TwoFactorSetupDialog({
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogPopup
         className={totpURI || backupCodes.length ? "max-w-2xl" : "max-w-md"}
-        showCloseButton={!backupCodes.length}
+        showCloseButton={!backupCodes.length && !verifying}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -340,6 +346,7 @@ export function TwoFactorSettings({
   const [regenerateOpen, setRegenerateOpen] = useState(false);
   const [regeneratePassword, setRegeneratePassword] = useState("");
   const [regenerateError, setRegenerateError] = useState<string | null>(null);
+  const verificationInProgressRef = useRef(false);
 
   const isEnabled = sessionUser?.twoFactorEnabled === true;
   const isReady = !isLoading && !sessionError;
@@ -373,7 +380,7 @@ export function TwoFactorSettings({
   });
 
   const verifyMutation = useMutation({
-    mutationFn: () => client.user.verifyTotp({ code }),
+    mutationFn: (verificationCode: string) => client.user.verifyTotp({ code: verificationCode }),
     onError: (requestError) => {
       setError(
         getErrorMessage(
@@ -397,7 +404,19 @@ export function TwoFactorSettings({
       });
       await queryClient.invalidateQueries(orpc.user.getSession.queryOptions());
     },
+    onSettled: () => {
+      verificationInProgressRef.current = false;
+    },
   });
+
+  const verifyCode = (verificationCode: string) => {
+    if (verificationCode.length !== OTP_LENGTH || verificationInProgressRef.current) {
+      return;
+    }
+
+    verificationInProgressRef.current = true;
+    verifyMutation.mutate(verificationCode);
+  };
 
   const disableMutation = useMutation({
     mutationFn: () => client.user.disableTwoFactor({ password }),
@@ -429,6 +448,10 @@ export function TwoFactorSettings({
   };
 
   const handleSetupOpenChange = (open: boolean) => {
+    if (!open && verificationInProgressRef.current) {
+      return;
+    }
+
     if (!open && backupCodes.length > 0 && !backupCodesSaved) {
       return;
     }
@@ -586,17 +609,24 @@ export function TwoFactorSettings({
         enabling={enableMutation.isPending}
         error={error}
         onBackupCodesSavedChange={setBackupCodesSaved}
-        onBackToQr={() => setVerificationStep(false)}
+        onBackToQr={() => {
+          if (!verificationInProgressRef.current) {
+            setVerificationStep(false);
+          }
+        }}
         onCopyBackupCodes={copyBackupCodes}
         onCopyTotpSecret={copyTotpSecret}
         onDownloadBackupCodes={downloadBackupCodes}
         onEnable={() => enableMutation.mutate()}
         onOpenChange={handleSetupOpenChange}
         onPasswordChange={setPassword}
-        onVerify={() => verifyMutation.mutate()}
+        onVerify={verifyCode}
         open={setupOpen}
         password={password}
-        setCode={setCode}
+        setCode={(value) => {
+          setCode(value);
+          setError(null);
+        }}
         showVerificationStep={verificationStep}
         onContinueToVerification={() => setVerificationStep(true)}
         totpURI={totpURI}
