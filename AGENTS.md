@@ -5,6 +5,7 @@ Generate migrations with the Drizzle CLI. Do not hand-write migration SQL unless
 # UI components
 
 Before adding UI, check `packages/ui` and use existing components wherever possible.
+Use `cn` from `@tailorkit/ui` to compose class names; do not use template literals.
 
 # Package release age
 
