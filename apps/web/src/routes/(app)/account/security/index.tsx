@@ -317,6 +317,7 @@ function SecurityPage() {
   const [unlinkPending, setUnlinkPending] = useState(false);
   const [passkeyDialogOpen, setPasskeyDialogOpen] = useState(false);
   const [passkeyName, setPasskeyName] = useState("");
+  const [passkeysOpen, setPasskeysOpen] = useState(false);
   const [passkeyPending, setPasskeyPending] = useState<string | null>(null);
   const accountsQuery = useQuery(orpc.user.listAccounts.queryOptions());
   const passkeysQuery = useQuery({
@@ -413,6 +414,7 @@ function SecurityPage() {
         return;
       }
 
+      setPasskeysOpen(true);
       await queryClient.invalidateQueries({ queryKey: ["passkeys"] });
       setPasskeyName("");
       toastManager.add({
@@ -619,7 +621,8 @@ function SecurityPage() {
 
                     <Collapsible
                       className="rounded-xl border"
-                      key={passkeys.length === 0 ? "empty" : "non-empty"}
+                      onOpenChange={setPasskeysOpen}
+                      open={passkeysOpen}
                     >
                       <div className="flex items-center gap-3 p-4">
                         <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
