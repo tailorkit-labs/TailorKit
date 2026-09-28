@@ -1,0 +1,35 @@
+packages/react/src/preview-manager.ts
+  s_c45799f166e49a::t_c0764acc71f088 6
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_c45799f166e49a::t_c0764acc71f088 10,12
+packages/react/src/components/context.ts
+  s_c45799f166e49a::t_c0764acc71f088 4
+packages/react/src/components/app-view.tsx
+  s_c45799f166e49a::t_c0764acc71f088 9
+packages/react/src/components/root.tsx
+  s_c45799f166e49a::t_c0764acc71f088 4
+packages/react/src/hooks/use-apps.ts
+  s_c45799f166e49a::t_c0764acc71f088 3
+packages/react/src/store.ts
+  s_c45799f166e49a::t_c0764acc71f088 2
+packages/react/src/index.ts
+  s_c45799f166e49a::t_c0764acc71f088 2-3
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_c45799f166e49a::t_c0764acc71f088 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8c8db46af9d34a65380babe7a1696a97d73a52f4",
+  "prompts": {},
+  "sessions": {
+    "s_c45799f166e49a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e2b3-d11b-7801-8685-979768c2de0d",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
