@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useStore } from "@tanstack/react-form";
-import { FolderIcon, FolderPlusIcon } from "lucide-react";
+import { FolderIcon, FolderPlusIcon, PlusIcon } from "lucide-react";
 import { Button } from "@tailorkit/ui/button";
 import {
   Empty,
@@ -244,9 +244,8 @@ function ProjectsPage() {
     <PageLayout
       actions={
         <CreateProjectDialog existingProjectSlugs={existingProjectSlugs} orgSlug={orgSlug}>
-          <Button size="sm">
-            <FolderPlusIcon />
-            New project
+          <Button aria-label="Create project" size="icon-xl" title="Create project">
+            <PlusIcon />
           </Button>
         </CreateProjectDialog>
       }
