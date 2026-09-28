@@ -62,7 +62,7 @@ describe("platform deployment uploads", () => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
     await client.close();
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   const createLogoDeployment = async () => {
@@ -137,6 +137,22 @@ describe("platform deployment uploads", () => {
       "Deployment app has an invalid stored scope.",
       expect.objectContaining({ appId: deployment.appId, deploymentId: deployment.id }),
     );
+  });
+
+  it("hides a deployment when its stored scope key does not match its scope", async () => {
+    const deployment = await createLogoDeployment();
+    await db
+      .update(appTable)
+      .set({ scopeKey: "0".repeat(32) })
+      .where(eq(appTable.id, deployment.appId));
+
+    await expect(
+      call(
+        deploymentRouter.get,
+        { params: { deploymentId: deployment.id }, body: { scopes: [productionScope] } },
+        { context: publishContext("https://uploads.example/logo-dark.svg") },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("maps reordered returned files using their generated file IDs", () => {

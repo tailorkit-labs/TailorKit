@@ -171,10 +171,14 @@ const requireDeployment = o.middleware(
       throw new ORPCError("BAD_REQUEST", { message: "Invalid deployment scope." });
     }
 
-    let storedScope: Scope | null = null;
+    let storedScope: ReturnType<typeof canonicalizeScope> | null = null;
     if (deploymentApp) {
       try {
-        storedScope = canonicalizeScope(deploymentApp.scope).scope;
+        const canonicalScope = canonicalizeScope(deploymentApp.scope);
+        if (canonicalScope.scopeKey !== deploymentApp.scopeKey) {
+          throw new TypeError("Deployment app scope key does not match its stored scope.");
+        }
+        storedScope = canonicalScope;
       } catch (error) {
         console.warn("Deployment app has an invalid stored scope.", {
           appId: deploymentApp.id,
@@ -184,7 +188,8 @@ const requireDeployment = o.middleware(
       }
     }
     const scopeMatchesApp =
-      storedScope !== null && requestedScopes.some((scope) => scopeMatches(storedScope, scope));
+      storedScope !== null &&
+      requestedScopes.some((scope) => scopeMatches(storedScope.scope, scope));
 
     if (
       !deploymentWithApp ||
