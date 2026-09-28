@@ -143,11 +143,11 @@ const deleteApp = protectedRouter
   .input(
     z.object({
       params: z.object({ appId: z.string() }),
-      query: z.object({ scope: scopeSchema }),
+      body: z.object({ scope: scopeSchema }),
     }),
   )
   .output(z.object({ body: z.object({ id: z.uuid({ version: "v7" }) }) }))
-  .use(requireApp, ({ params: { appId }, query: { scope } }) => ({ appId, scope }))
+  .use(requireApp, ({ params: { appId }, body: { scope } }) => ({ appId, scope }))
   .handler(async ({ context }) => {
     await db.delete(app).where(eq(app.id, context.app.id));
 
@@ -161,13 +161,12 @@ const updateApp = protectedRouter
   })
   .input(
     z.object({
-      body: App.pick({ name: true, description: true }),
+      body: App.pick({ name: true, description: true }).extend({ scope: scopeSchema }),
       params: z.object({ appId: z.string() }),
-      query: z.object({ scope: scopeSchema }),
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))
-  .use(requireApp, ({ params: { appId }, query: { scope } }) => ({ appId, scope }))
+  .use(requireApp, ({ params: { appId }, body: { scope } }) => ({ appId, scope }))
   .handler(async ({ context, input }) => {
     const [updatedApp] = await db
       .update(app)
@@ -198,13 +197,12 @@ const deploy = protectedRouter
   })
   .input(
     z.object({
-      body: z.object({ deploymentId: z.string() }),
+      body: z.object({ deploymentId: z.string(), scope: scopeSchema }),
       params: z.object({ appId: z.string() }),
-      query: z.object({ scope: scopeSchema }),
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))
-  .use(requireApp, ({ params: { appId }, query: { scope } }) => ({ appId, scope }))
+  .use(requireApp, ({ params: { appId }, body: { scope } }) => ({ appId, scope }))
   .handler(async ({ context, input }) => {
     const deploymentByPublicId = await db.query.appDeployment.findFirst({
       where: {

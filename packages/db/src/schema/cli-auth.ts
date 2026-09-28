@@ -12,7 +12,7 @@ import {
 import { createSelectSchema } from "drizzle-orm/zod";
 import z from "zod";
 import { project } from "./project";
-import { scopeSchema, type Scope } from "./scope";
+import { scopeKeySchema, scopeSchema, type Scope } from "./scope";
 
 export const cliAuthSessionStatus = pgEnum("cli_auth_session_status", [
   "pending",
@@ -94,17 +94,14 @@ export const cliAuthSession = pgTable(
 );
 
 export const CliToken = createSelectSchema(cliToken, {
-  scopeKey: z.string().regex(/^[a-f0-9]{32}$/u),
+  scopeKey: scopeKeySchema,
   scope: scopeSchema,
 });
 
 export type CliToken = z.output<typeof CliToken>;
 
 export const CliAuthSession = createSelectSchema(cliAuthSession, {
-  scopeKey: z
-    .string()
-    .regex(/^[a-f0-9]{32}$/u)
-    .nullable(),
+  scopeKey: scopeKeySchema.nullable(),
   scope: scopeSchema.nullable(),
 });
 

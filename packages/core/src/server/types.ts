@@ -121,7 +121,15 @@ export type TailorKitScopes = Record<string, TailorKitScope>;
 
 export type InferTailorKitServerScopes<TOptions extends TailorKitServerInputOptions> =
   TOptions extends { scopes: infer TSchemas extends Record<string, StandardSchemaV1> }
-    ? { [TName in keyof TSchemas]?: StandardSchemaV1.InferInput<TSchemas[TName]> }
+    ? {
+        [TName in keyof TSchemas]: Pick<
+          { [TKey in keyof TSchemas]: StandardSchemaV1.InferInput<TSchemas[TKey]> },
+          TName
+        > &
+          Partial<{
+            [TKey in Exclude<keyof TSchemas, TName>]: StandardSchemaV1.InferInput<TSchemas[TKey]>;
+          }>;
+      }[keyof TSchemas]
     : Record<never, never>;
 
 export interface TailorKitServerOptions<

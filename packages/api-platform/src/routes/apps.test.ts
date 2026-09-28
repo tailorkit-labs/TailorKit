@@ -317,4 +317,63 @@ describe("platform appRouter", () => {
       ),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
+
+  it("uses the JSON body scope for app mutations", async () => {
+    const context = createContext();
+    const [created] = await db
+      .insert(appTable)
+      .values({
+        id: "55555555-5555-7555-8555-555555555555",
+        name: "Inbox",
+        projectId,
+        publicId: "inbox0000001",
+        ...canonicalizeScope(productionScope),
+      })
+      .returning();
+    if (!created) throw new Error("Expected test app to be created.");
+
+    await expect(
+      call(
+        appRouter.update,
+        {
+          params: { appId: created.publicId },
+          body: { name: "Wrong scope", description: null, scope: stagingScope },
+        },
+        { context },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+    const updated = await call(
+      appRouter.update,
+      {
+        params: { appId: created.publicId },
+        body: { name: "Updated inbox", description: null, scope: productionScope },
+      },
+      { context },
+    );
+    expect(updated.body.name).toBe("Updated inbox");
+
+    const [deployment] = await db
+      .insert(appDeployment)
+      .values({ appId: created.id, publicId: "deploy0002", status: "published" })
+      .returning();
+    if (!deployment) throw new Error("Expected test deployment to be created.");
+
+    const deployed = await call(
+      appRouter.deploy,
+      {
+        params: { appId: created.publicId },
+        body: { deploymentId: deployment.publicId, scope: productionScope },
+      },
+      { context },
+    );
+    expect(deployed.body.currentDeployment?.id).toBe(deployment.id);
+
+    const deleted = await call(
+      appRouter.delete,
+      { params: { appId: created.publicId }, body: { scope: productionScope } },
+      { context },
+    );
+    expect(deleted.body.id).toBe(created.id);
+  });
 });

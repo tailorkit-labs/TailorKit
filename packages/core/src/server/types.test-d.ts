@@ -89,6 +89,10 @@ scopedServer.handler(new Request("https://example.com/api/tailorkit/apps"), {
   authenticate: () => ({ scopes: { org: { orgId: "org_1" } } }),
 });
 scopedServer.handler(new Request("https://example.com/api/tailorkit/apps"), {
+  // @ts-expect-error authenticate must provide at least one declared scope
+  authenticate: () => ({ scopes: {} }),
+});
+scopedServer.handler(new Request("https://example.com/api/tailorkit/apps"), {
   authenticate: () => ({
     scopes: {
       // @ts-expect-error org is inferred from its schema and requires orgId

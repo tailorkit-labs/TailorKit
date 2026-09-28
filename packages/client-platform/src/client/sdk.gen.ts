@@ -111,6 +111,10 @@ export const appsDelete = <ThrowOnError extends boolean = false>(
   (options.client ?? client).delete<AppsDeleteResponses, unknown, ThrowOnError>({
     url: "/apps/{appId}",
     ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 export const appsUpdate = <ThrowOnError extends boolean = false>(

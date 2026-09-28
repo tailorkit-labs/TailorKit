@@ -65,16 +65,17 @@ export async function handleCliAuthApprovalPage({
   const selectedScopeName =
     typeof form.get("scope") === "string" ? String(form.get("scope")) : undefined;
 
+  const tailorkit = await authenticate({ request });
   if (!userCode) {
     return renderCliAuthApprovalPage({
       code: userCode,
       error: "Enter the code shown in your terminal.",
+      scopes: tailorkit?.scopes,
       selectedScopeName,
       status: "idle",
     });
   }
 
-  const tailorkit = await authenticate({ request });
   if (!tailorkit) {
     return renderCliAuthApprovalPage({
       code: userCode,
@@ -86,7 +87,11 @@ export async function handleCliAuthApprovalPage({
 
   try {
     if (intent === "approve") {
-      const scope = selectOneScope(tailorkit.scopes, selectedScopeName);
+      const scope = selectOneScope(
+        tailorkit.scopes,
+        selectedScopeName,
+        "Choose one scope for this CLI login.",
+      );
       await cliAuthApprove({
         body: {
           scope,
@@ -129,11 +134,15 @@ export async function handleCliAuthApprovalPage({
   });
 }
 
-function selectOneScope(scopes: TailorKitScopes, selectedName?: string): TailorKitNamedScope {
+export function selectOneScope(
+  scopes: TailorKitScopes,
+  selectedName: string | undefined,
+  errorMessage: string,
+): TailorKitNamedScope {
   const availableNames = Object.keys(scopes);
   const name = selectedName ?? (availableNames.length === 1 ? availableNames[0]! : undefined);
   if (name === undefined) {
-    throw new TypeError("Choose one scope for this CLI login.");
+    throw new TypeError(errorMessage);
   }
   return selectTailorKitScopes(scopes, [name])[0]!;
 }
@@ -222,7 +231,7 @@ function renderCard(state: ApprovalPageState): string {
           <input id="fallback-code" class="fallback-input" name="userCode" value="${escapeHtml(formatCode(code))}" autocomplete="one-time-code">
         </noscript>
       </fieldset>
-      ${renderScopeControl(state.scopes, state.selectedScopeName)}
+      ${renderScopeControl(state.scopes, state.selectedScopeName, "cli-scope", "Use this scope")}
       <div class="actions">
         <button class="button primary" name="intent" value="approve" type="submit">Approve</button>
         <button class="button secondary" name="intent" value="deny" type="submit" formnovalidate>Deny</button>
@@ -235,7 +244,12 @@ function renderCard(state: ApprovalPageState): string {
   </section>`;
 }
 
-function renderScopeControl(scopes: TailorKitScopes | undefined, selectedName?: string): string {
+export function renderScopeControl(
+  scopes: TailorKitScopes | undefined,
+  selectedName: string | undefined,
+  controlId: string,
+  label: string,
+): string {
   const names = Object.keys(scopes ?? {});
   if (names.length === 0) {
     return "";
@@ -250,7 +264,7 @@ function renderScopeControl(scopes: TailorKitScopes | undefined, selectedName?: 
     )
     .join("");
   const placeholder = `<option value="" disabled${selectedName ? "" : " selected"}>Choose a scope</option>`;
-  return `<label for="cli-scope">Use this scope</label><select id="cli-scope" name="scope" required>${placeholder}${options}</select>`;
+  return `<label for="${controlId}">${label}</label><select id="${controlId}" name="scope" required>${placeholder}${options}</select>`;
 }
 
 function renderOtpInputs(code: string): string {
@@ -676,6 +690,12 @@ for (const [index, input] of inputs.entries()) {
 form?.addEventListener("submit", (event) => {
   const submitter = event.submitter;
   const intent = submitter instanceof HTMLButtonElement ? submitter.value : "";
+  const scope = form.querySelector('select[name="scope"]');
+  if (intent === "approve" && scope instanceof HTMLSelectElement && !scope.value) {
+    event.preventDefault();
+    scope.focus();
+    return;
+  }
   const message = intent === "deny" ? "Denying login..." : "Approving login...";
   let intentInput = form.querySelector('input[name="intent"][type="hidden"]');
 

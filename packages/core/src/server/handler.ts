@@ -170,6 +170,12 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
       if (scopes instanceof Response) {
         return scopes;
       }
+      if (scopes.length === 0) {
+        return new Response("Preview unavailable", {
+          status: 404,
+          headers: { "cache-control": "no-store" },
+        });
+      }
       const result = await previewAccepted({
         body: { grantIds: readPreviewGrantIds(request), scopes },
         client: context.platform,
@@ -207,6 +213,9 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
       const scopes = resolveReadScopes(url, tailorkit.scopes);
       if (scopes instanceof Response) {
         return scopes;
+      }
+      if (scopes.length === 0) {
+        return Response.json([], { headers: { "cache-control": "no-store" } });
       }
 
       const items: Record<string, unknown>[] = [];
@@ -297,6 +306,9 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
 function resolveReadScopes(url: URL, availableScopes: TailorKitScopes) {
   try {
     const names = url.searchParams.getAll("scopes");
+    if (names.length === 1 && names[0] === "") {
+      return [];
+    }
     return selectTailorKitScopes(availableScopes, names.length ? names : undefined);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Invalid scope selection.";

@@ -42,14 +42,16 @@ keys from `authenticate()`, then select the identities for each app read:
 
 ```ts
 import { createTailorKit } from "tailorkit";
+import { auth } from "#lib/auth";
 import { z } from "zod";
 
 export const tailorKit = createTailorKit({
+  components: {},
   scopes: {
     org: z.object({ orgId: z.string() }),
     userOrg: z.object({ orgId: z.string(), userId: z.string() }),
   },
-  // components, contexts, and slots...
+  // contexts and slots can be added here.
 });
 
 async function handleRequest(request: Request) {
@@ -70,7 +72,7 @@ async function handleRequest(request: Request) {
 ```
 
 ```tsx
-import { createTailorKitClient } from "tailorkit/react";
+import { createTailorKitClient, Root } from "tailorkit/react";
 import type { tailorKit } from "./tailorkit";
 
 export const client = createTailorKitClient<typeof tailorKit>({
@@ -88,6 +90,14 @@ function InstalledApps() {
         <li key={app.id}>{app.name}</li>
       ))}
     </ul>
+  );
+}
+
+export function InstalledAppsRoot() {
+  return (
+    <Root client={client}>
+      <InstalledApps />
+    </Root>
   );
 }
 ```
@@ -118,7 +128,8 @@ share a client. Separate clients can expose different view and slot contracts
 in the same TypeScript project.
 The bound `useApps` also types `scopes` from the server schema. Pass names to
 select which authenticated identities to list. Calling `useApps()` with no
-options loads every scope returned by `authenticate()`.
+options loads every scope returned by `authenticate()`. Passing `scopes: []`
+loads no apps.
 
 ```tsx
 import { Root } from "tailorkit/react";

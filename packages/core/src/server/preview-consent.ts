@@ -1,9 +1,8 @@
 import { previewAccept, previewInvitation } from "@tailorkit/client-platform/client";
 import type { Client as PlatformClient } from "@tailorkit/client-platform/client/client/index";
 import { z } from "zod";
-import { approvalStyles, escapeHtml } from "./cli-auth-page";
-import { selectTailorKitScopes } from "./scope";
-import type { TailorKitNamedScope, TailorKitScopes } from "./types";
+import { approvalStyles, escapeHtml, renderScopeControl, selectOneScope } from "./cli-auth-page";
+import type { TailorKitScopes } from "./types";
 
 export const previewCookieName = "tailorkit_preview_grants";
 const grantIdSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/u);
@@ -102,9 +101,13 @@ export async function handlePreviewConsent(options: ConsentOptions): Promise<Res
     );
   }
   if (request.method === "POST") {
-    let scope: TailorKitNamedScope;
+    let scope;
     try {
-      scope = selectWriteScope(viewer.scopes, selectedScopeName);
+      scope = selectOneScope(
+        viewer.scopes,
+        selectedScopeName,
+        "Choose one scope to accept this preview.",
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Choose one scope to accept this preview.";
@@ -138,7 +141,12 @@ export async function handlePreviewConsent(options: ConsentOptions): Promise<Res
     });
     const data = "data" in result ? result.data : result;
     const appName = escapeHtml(data.appName);
-    const scopeControl = renderScopeControl(viewer.scopes, selectedScopeName);
+    const scopeControl = renderScopeControl(
+      viewer.scopes,
+      selectedScopeName,
+      "preview-scope",
+      "Save this preview under",
+    );
     return html(
       `Preview ${appName}`,
       "After you accept, this preview is available only in this browser.",
@@ -147,33 +155,6 @@ export async function handlePreviewConsent(options: ConsentOptions): Promise<Res
   } catch (error) {
     return previewErrorResponse(error);
   }
-}
-
-function selectWriteScope(
-  scopes: TailorKitScopes,
-  selectedName: string | undefined,
-): TailorKitNamedScope {
-  const availableNames = Object.keys(scopes);
-  const name = selectedName ?? (availableNames.length === 1 ? availableNames[0]! : undefined);
-  if (name === undefined) {
-    throw new TypeError("Choose one scope to accept this preview.");
-  }
-  return selectTailorKitScopes(scopes, [name])[0]!;
-}
-
-function renderScopeControl(scopes: TailorKitScopes, selectedName?: string): string {
-  const names = Object.keys(scopes);
-  if (names.length === 1) {
-    return `<input type="hidden" name="scope" value="${escapeHtml(names[0]!)}">`;
-  }
-  const options = names
-    .map(
-      (name) =>
-        `<option value="${escapeHtml(name)}"${name === selectedName ? " selected" : ""}>${escapeHtml(name)}</option>`,
-    )
-    .join("");
-  const placeholder = `<option value="" disabled${selectedName ? "" : " selected"}>Choose a scope</option>`;
-  return `<label for="preview-scope">Save this preview under</label><select id="preview-scope" name="scope" required>${placeholder}${options}</select>`;
 }
 
 function previewErrorResponse(error: unknown): Response {

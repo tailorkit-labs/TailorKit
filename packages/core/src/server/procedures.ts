@@ -1,11 +1,7 @@
 import { ORPCError, os } from "@orpc/server";
 import { cliAuthVerifyToken } from "@tailorkit/client-platform/client";
 import type { Context } from "./context";
-import {
-  normalizeTailorKitNamedScope,
-  selectTailorKitScopes,
-  validateTailorKitScopes,
-} from "./scope";
+import { normalizeTailorKitNamedScope, selectTailorKitScopes } from "./scope";
 import type { TailorKitNamedScope, TailorKitScopes } from "./types";
 
 export const o = os.$context<Context>();
@@ -73,9 +69,10 @@ export const requireCliDeployToken = o.middleware(async ({ context, next }) => {
   let scopes: TailorKitScopes;
   try {
     const scope = normalizeTailorKitNamedScope(token.scope);
-    scopes = await validateTailorKitScopes(context.scopeSchemas, {
-      [scope.name]: scope.value,
-    });
+    if (!Object.hasOwn(context.scopeSchemas, scope.name)) {
+      throw new TypeError("CLI token uses an undeclared scope.");
+    }
+    scopes = Object.freeze({ [scope.name]: scope.value });
   } catch {
     throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
   }

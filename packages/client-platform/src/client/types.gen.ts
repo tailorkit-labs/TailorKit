@@ -336,11 +336,7 @@ export type AppsCreateResponses = {
 export type AppsCreateResponse = AppsCreateResponses[keyof AppsCreateResponses];
 
 export type AppsDeleteData = {
-  body?: never;
-  path: {
-    appId: string;
-  };
-  query: {
+  body: {
     scope: {
       name: string;
       value: {
@@ -373,6 +369,10 @@ export type AppsDeleteData = {
       };
     };
   };
+  path: {
+    appId: string;
+  };
+  query?: never;
   url: "/apps/{appId}";
 };
 
@@ -391,11 +391,6 @@ export type AppsUpdateData = {
   body: {
     name: string;
     description: string | null;
-  };
-  path: {
-    appId: string;
-  };
-  query: {
     scope: {
       name: string;
       value: {
@@ -428,6 +423,10 @@ export type AppsUpdateData = {
       };
     };
   };
+  path: {
+    appId: string;
+  };
+  query?: never;
   url: "/apps/{appId}";
 };
 
@@ -501,11 +500,6 @@ export type AppsUpdateResponse = AppsUpdateResponses[keyof AppsUpdateResponses];
 export type AppsDeployData = {
   body: {
     deploymentId: string;
-  };
-  path: {
-    appId: string;
-  };
-  query: {
     scope: {
       name: string;
       value: {
@@ -538,6 +532,10 @@ export type AppsDeployData = {
       };
     };
   };
+  path: {
+    appId: string;
+  };
+  query?: never;
   url: "/apps/{appId}/deploy";
 };
 

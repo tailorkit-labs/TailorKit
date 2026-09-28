@@ -14,7 +14,7 @@ import z from "zod";
 import { app } from "./apps";
 import { cliToken } from "./cli-auth";
 import { project } from "./project";
-import { scopeSchema, type Scope } from "./scope";
+import { scopeKeySchema, scopeSchema, type Scope } from "./scope";
 
 /** The durable lifecycle of a local-development preview. */
 export const previewSessionStatus = pgEnum("preview_session_status", ["active", "ended"]);
@@ -73,7 +73,7 @@ export const previewSession = pgTable(
 );
 
 export const PreviewSession = createSelectSchema(previewSession, {
-  scopeKey: z.string().regex(/^[a-f0-9]{32}$/u),
+  scopeKey: scopeKeySchema,
   scope: scopeSchema,
 });
 export type PreviewSession = z.output<typeof PreviewSession>;

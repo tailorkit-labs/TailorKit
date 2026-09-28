@@ -103,6 +103,34 @@ describe("createTailorKitServer", () => {
     expect(platformBodies).toHaveLength(1);
   });
 
+  it("treats scopes= as an empty app and preview selection", async () => {
+    let platformCalls = 0;
+    const server = createTailorKitServer({
+      scopes: { org: testScopeSchema },
+      components: {},
+      $internal: {
+        platformFetch: () => {
+          platformCalls += 1;
+          return Promise.resolve(Response.json({ items: [] }));
+        },
+      },
+    });
+    const authenticate = () => ({ scopes: { org: { tenant: "workspace" } } });
+    const apps = await server.handler(
+      new Request("https://example.com/api/tailorkit/apps?scopes="),
+      { authenticate },
+    );
+    expect(apps.status).toBe(200);
+    await expect(apps.json()).resolves.toEqual([]);
+
+    const metadata = await server.handler(
+      new Request("https://example.com/api/tailorkit/preview/metadata?sessionId=test&scopes="),
+      { authenticate },
+    );
+    expect(metadata.status).toBe(404);
+    expect(platformCalls).toBe(0);
+  });
+
   it("preserves hosted bundle URLs without an assetsBaseUrl override", async () => {
     const app = {
       id: "app",
@@ -575,5 +603,43 @@ describe("createTailorKitServer", () => {
       name: "Calendar",
       scope: { name: "org", value: { orgId: "org_1" } },
     });
+  });
+
+  it("accepts a CLI token containing a transformed scope output", async () => {
+    const platformBodies: unknown[] = [];
+    const server = createTailorKitServer({
+      scopes: {
+        org: z.object({ raw: z.string() }).transform(({ raw }) => ({ canonical: raw.trim() })),
+      },
+      components: {},
+      $internal: {
+        platformFetch: async (input, init) => {
+          const request = input instanceof Request ? input : new Request(input, init);
+          if (request.url.endsWith("/cli-auth/verify-token")) {
+            return Response.json({ scope: { name: "org", value: { canonical: "org_1" } } });
+          }
+          platformBodies.push(await request.json());
+          return Response.json({ id: "app_1" });
+        },
+      },
+    });
+    const client = createTailorKitClient({
+      fetch: (input, init) => {
+        const request = input instanceof Request ? input : new Request(input, init);
+        request.headers.set("authorization", "Bearer cli-token");
+        return Promise.resolve(server.handler(request, { authenticate: () => null }));
+      },
+      url: "https://example.com/api/tailorkit",
+    });
+    await expect(client.apps.create({ name: "Calendar", description: null })).resolves.toEqual({
+      id: "app_1",
+    });
+    expect(platformBodies).toEqual([
+      {
+        name: "Calendar",
+        description: null,
+        scope: { name: "org", value: { canonical: "org_1" } },
+      },
+    ]);
   });
 });

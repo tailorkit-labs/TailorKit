@@ -80,7 +80,7 @@ describe("auth store", () => {
     await expect(getDeployToken("https://example.com")).rejects.toThrow();
   });
 
-  it("rejects auth.json entries with an unnamed legacy scope", async () => {
+  it("keeps legacy tokens readable while discarding their unnamed scope", async () => {
     const homeDirectory = await createTemporaryHome();
     await writeAuthStoreFixture(homeDirectory, {
       hosts: {
@@ -92,7 +92,10 @@ describe("auth store", () => {
     });
     const { getDeployToken } = await loadAuthModule(homeDirectory);
 
-    await expect(getDeployToken("https://example.com")).rejects.toThrow();
+    await expect(getDeployToken("https://example.com")).resolves.toEqual({
+      deployToken: "deploy-token",
+      scope: undefined,
+    });
   });
 
   it("preserves unknown top-level auth.json keys when saving a host token", async () => {

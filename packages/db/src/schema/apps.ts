@@ -15,7 +15,7 @@ import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { project } from "./project";
 import { createSelectSchema } from "drizzle-orm/zod";
 import z from "zod";
-import { scopeSchema, type Scope } from "./scope";
+import { scopeKeySchema, scopeSchema, type Scope } from "./scope";
 
 export const app = pgTable(
   "app",
@@ -54,7 +54,7 @@ export const app = pgTable(
 export const App = createSelectSchema(app, {
   name: z.string().max(127),
   description: z.string().max(255).nullable(),
-  scopeKey: z.string().regex(/^[a-f0-9]{32}$/u),
+  scopeKey: scopeKeySchema,
   scope: scopeSchema,
 });
 export type App = z.output<typeof App>;

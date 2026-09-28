@@ -24,8 +24,12 @@ export function useApps(options: UseAppsOptions = {}): UseAppsResult {
 }
 export function useAppsStore(store: TailorKitStore, options: UseAppsOptions = {}): UseAppsResult {
   const selection = normalizeScopeSelection(options.scopes);
+  const subscribe = useCallback(
+    (listener: () => void) => store.subscribeApps(selection.scopes, listener),
+    [store, selection.key],
+  );
   const snapshot = useSyncExternalStore(
-    store.subscribe,
+    subscribe,
     () => store.getAppsSnapshot(selection.scopes),
     () => store.getAppsSnapshot(selection.scopes),
   );

@@ -9,6 +9,7 @@ import type { IframeUiHost } from "@tailorkit/sandbox/host";
 import type { HostToIframePayload, RemoteNode } from "@tailorkit/sandbox/protocol";
 import { createTailorKitClient } from "../tailorkit";
 import { RemoteViewHost } from "../remote-view";
+import { createTailorKitStore } from "../store";
 import type { TailorKitApp } from "../tailorkit";
 
 const hostRecords: {
@@ -314,6 +315,23 @@ describe("tailorKitClient React adapter", () => {
       expect(testingView.getByText("all:ready:all")).toBeTruthy();
     });
     expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("keeps snapshots pure and discards inactive scope selections", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json([]));
+    const store = createTailorKitStore("http://runtime.test/api/tailorkit");
+    const idle = store.getAppsSnapshot(["organization"]);
+    expect(store.getAppsSnapshot(["user"])).toBe(idle);
+
+    const unsubscribe = store.subscribeApps(["organization"], () => {});
+    await store.fetchApps({ scopes: ["organization"] });
+    expect(store.getAppsSnapshot(["organization"]).status).toBe("ready");
+    unsubscribe();
+    expect(store.getAppsSnapshot(["organization"])).toBe(idle);
+
+    store.setProvidedApps([]);
+    store.setProvidedApps(undefined);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("defaults to all scopes when useApps omits a selection", async () => {

@@ -21,6 +21,9 @@ export function validateTailorKitScopeSchemas(value: unknown): TailorKitScopeSch
   if (entries.length === 0) {
     throw new TypeError("TailorKit must declare at least one named scope.");
   }
+  if (entries.length > maximumObjectKeys) {
+    throw new TypeError(`TailorKit may declare at most ${maximumObjectKeys} named scopes.`);
+  }
   const schemas: [string, StandardSchemaV1][] = [];
   for (const [name, schema] of entries) {
     validateTailorKitScopeName(name);
@@ -169,9 +172,7 @@ function normalizeJsonValue(
   ancestors: Set<object>,
   countNode: () => void,
 ): unknown {
-  if (!isRoot) {
-    countNode();
-  }
+  countNode();
   if (value === null || typeof value === "boolean" || typeof value === "string") {
     if (typeof value === "string" && value.length > maximumStringLength) {
       throw new TypeError(

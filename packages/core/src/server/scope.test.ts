@@ -93,6 +93,11 @@ describe("TailorKit named scope validation", () => {
 
   it("requires at least one declared and authenticated scope", async () => {
     expect(() => validateTailorKitScopeSchemas({})).toThrow(/at least one named scope/u);
+    expect(() =>
+      validateTailorKitScopeSchemas(
+        Object.fromEntries(Array.from({ length: 33 }, (_, index) => [`scope${index}`, z.any()])),
+      ),
+    ).toThrow(/at most 32 named scopes/u);
     await expect(
       validateTailorKitScopes({ org: z.object({ id: z.string() }) }, {}),
     ).rejects.toThrow(/at least one scope/u);
@@ -166,6 +171,11 @@ describe("TailorKit named scope validation", () => {
     const tooLarge = Object.fromEntries(
       Array.from({ length: 32 }, (_, index) => [`field${index}`, "é".repeat(255)]),
     );
+    const withinNodeLimit = {
+      groups: Array.from({ length: 5 }, () => Array.from({ length: 100 }, () => 0)),
+      extra: Array.from({ length: 4 }, () => 0),
+    }; // root + groups + five arrays + 500 items + extra + four items = 512
+    const beyondNodeLimit = { ...withinNodeLimit, extra: [0, 0, 0, 0, 0] };
 
     expect(() => normalizeTailorKitScope(tooManyKeys)).toThrow(/at most 32/u);
     expect(() => normalizeTailorKitScope({ ["k".repeat(65)]: 1 })).toThrow(/1 to 64/u);
@@ -173,5 +183,7 @@ describe("TailorKit named scope validation", () => {
     expect(() => normalizeTailorKitScope(tooManyArrayItems)).toThrow(/at most 100/u);
     expect(() => normalizeTailorKitScope(tooDeep)).toThrow(/16 levels/u);
     expect(() => normalizeTailorKitScope(tooLarge)).toThrow(/16384 bytes/u);
+    expect(() => normalizeTailorKitScope(withinNodeLimit)).not.toThrow();
+    expect(() => normalizeTailorKitScope(beyondNodeLimit)).toThrow(/at most 512 JSON values/u);
   });
 });

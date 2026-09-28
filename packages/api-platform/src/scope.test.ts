@@ -65,6 +65,46 @@ describe("scope canonicalization", () => {
     expect(() => canonicalizeScope({ name: "organization", value: nestedValue })).toThrow();
   });
 
+  it("uses the same root-inclusive 512-value boundary in schema and canonicalization", () => {
+    const value = Object.fromEntries(
+      Array.from({ length: 32 }, (_, index) => [
+        `key${index}`,
+        Array.from({ length: index === 31 ? 14 : 15 }, () => null),
+      ]),
+    );
+    const scope = { name: "organization", value };
+    expect(scopeSchema.safeParse(scope).success).toBe(true);
+    expect(() => canonicalizeScope(scope)).not.toThrow();
+
+    value.key31?.push(null);
+    const result = scopeSchema.safeParse(scope);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.issues[0]?.message).toContain("512 JSON values");
+    expect(() => canonicalizeScope(scope)).toThrow(/512 values/u);
+  });
+
+  it("reports the violated schema bound", () => {
+    const parse = (value: unknown) => scopeSchema.safeParse({ name: "organization", value });
+    const tooManyKeys = Object.fromEntries(
+      Array.from({ length: 33 }, (_, index) => [`key${index}`, index]),
+    );
+    const tooManyBytes = Object.fromEntries(
+      Array.from({ length: 32 }, (_, index) => [
+        `key${index}`,
+        Array.from({ length: 10 }, () => "x".repeat(255)),
+      ]),
+    );
+    for (const [value, message] of [
+      [tooManyKeys, "1–32 entries"],
+      [{ id: -0 }, "cannot be -0"],
+      [tooManyBytes, "16 KiB"],
+    ] as const) {
+      const result = parse(value);
+      expect(result.success).toBe(false);
+      if (!result.success) expect(result.error.issues[0]?.message).toContain(message);
+    }
+  });
+
   it("compares the canonical named scope identity", () => {
     expect(
       scopeMatches(

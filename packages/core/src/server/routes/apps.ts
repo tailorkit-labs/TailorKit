@@ -37,10 +37,10 @@ export const appRouter = {
     .handler(
       async ({ context, input }) =>
         await appsDelete({
+          body: { scope: getTailorKitScope(context) },
           client: context.platform,
           headers: context.platformHeaders,
           path: { appId: input.appId },
-          query: { scope: getTailorKitScope(context) },
         }),
     ),
   deploy: o
@@ -49,11 +49,10 @@ export const appRouter = {
     .handler(
       async ({ context, input }) =>
         await appsDeploy({
-          body: { deploymentId: input.deploymentId },
+          body: { deploymentId: input.deploymentId, scope: getTailorKitScope(context) },
           client: context.platform,
           headers: context.platformHeaders,
           path: { appId: input.appId },
-          query: { scope: getTailorKitScope(context) },
         }),
     ),
   get: o
@@ -92,11 +91,11 @@ export const appRouter = {
           body: {
             description: input.description,
             name: input.name,
+            scope: getTailorKitScope(context),
           },
           client: context.platform,
           headers: context.platformHeaders,
           path: { appId: input.appId },
-          query: { scope: getTailorKitScope(context) },
         }),
     ),
 };

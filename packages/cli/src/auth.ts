@@ -49,6 +49,18 @@ const namedScopeSchema = z.object({
   name: z.string().min(1),
   value: z.record(z.string(), z.unknown()),
 });
+const legacyFlatScopeSchema = z.record(z.string(), z.string());
+const storedScopeSchema = z.preprocess(
+  (value) =>
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    !Object.hasOwn(value, "value") &&
+    legacyFlatScopeSchema.safeParse(value).success
+      ? undefined
+      : value,
+  namedScopeSchema.optional(),
+);
 
 const authStorePath = path.join(homedir(), ".tailorkit", "auth.json");
 const defaultLoginTimeoutMs = 30 * 60 * 1000;
@@ -56,7 +68,7 @@ const pollIntervalMs = 2000;
 
 const storedHostAuthSchema = z.object({
   deployToken: z.string().min(1),
-  scope: namedScopeSchema.optional(),
+  scope: storedScopeSchema,
 });
 const approvedCliAuthResultSchema = z.object({
   deployToken: z.string().min(1),

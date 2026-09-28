@@ -9,6 +9,30 @@ import { canonicalizeScope, canonicalizeScopes } from "./scope";
 
 const rateLimiter = createRatelimiter({ maxRequests: 100, window: 1000 });
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+type CanonicalScope = ReturnType<typeof canonicalizeScope>;
+
+async function findAppInScopes(projectId: string, appId: string, scopes: CanonicalScope[]) {
+  const find = (identifier: "id" | "publicId") =>
+    db.query.app.findFirst({
+      where: {
+        RAW: (fields, { and, eq, or }) =>
+          and(
+            eq(fields.projectId, projectId),
+            eq(fields[identifier], appId),
+            or(
+              ...scopes.map(({ scope, scopeKey }) =>
+                and(eq(fields.scopeKey, scopeKey), eq(fields.scope, scope)),
+              ),
+            ),
+          )!,
+      },
+      with: { currentDeployment: { where: { status: "published" } } },
+    });
+
+  const app = (uuidPattern.test(appId) ? await find("id") : null) ?? (await find("publicId"));
+  if (!app) throw new ORPCError("NOT_FOUND");
+  return app;
+}
 
 export const o = os.$context<Context>().$route({
   inputStructure: "detailed",
@@ -27,39 +51,9 @@ export const requireApp = o.middleware(
       "tailorkit.resource_type": "app",
     });
 
-    const { scope, scopeKey } = canonicalizeScope(input.scope);
-    const appById = uuidPattern.test(input.appId)
-      ? await db.query.app.findFirst({
-          where: {
-            RAW: (fields, { and, eq }) =>
-              and(
-                eq(fields.id, input.appId),
-                eq(fields.projectId, context.project.id),
-                eq(fields.scopeKey, scopeKey),
-                eq(fields.scope, scope),
-              )!,
-          },
-          with: { currentDeployment: { where: { status: "published" } } },
-        })
-      : null;
-    const app =
-      appById ??
-      (await db.query.app.findFirst({
-        where: {
-          RAW: (fields, { and, eq }) =>
-            and(
-              eq(fields.projectId, context.project.id),
-              eq(fields.publicId, input.appId),
-              eq(fields.scopeKey, scopeKey),
-              eq(fields.scope, scope),
-            )!,
-        },
-        with: { currentDeployment: { where: { status: "published" } } },
-      }));
-
-    if (!app) {
-      throw new ORPCError("NOT_FOUND");
-    }
+    const app = await findAppInScopes(context.project.id, input.appId, [
+      canonicalizeScope(input.scope),
+    ]);
 
     return next({ context: { ...context, app } });
   },
@@ -73,45 +67,11 @@ export const requireAppInScopes = o.middleware(
       "tailorkit.resource_type": "app",
     });
 
-    const scopes = canonicalizeScopes(input.scopes);
-    const appById = uuidPattern.test(input.appId)
-      ? await db.query.app.findFirst({
-          where: {
-            RAW: (fields, { and, eq, or }) =>
-              and(
-                eq(fields.id, input.appId),
-                eq(fields.projectId, context.project.id),
-                or(
-                  ...scopes.map(({ scope, scopeKey }) =>
-                    and(eq(fields.scopeKey, scopeKey), eq(fields.scope, scope)),
-                  ),
-                ),
-              )!,
-          },
-          with: { currentDeployment: { where: { status: "published" } } },
-        })
-      : null;
-    const app =
-      appById ??
-      (await db.query.app.findFirst({
-        where: {
-          RAW: (fields, { and, eq, or }) =>
-            and(
-              eq(fields.projectId, context.project.id),
-              eq(fields.publicId, input.appId),
-              or(
-                ...scopes.map(({ scope, scopeKey }) =>
-                  and(eq(fields.scopeKey, scopeKey), eq(fields.scope, scope)),
-                ),
-              ),
-            )!,
-        },
-        with: { currentDeployment: { where: { status: "published" } } },
-      }));
-
-    if (!app) {
-      throw new ORPCError("NOT_FOUND");
-    }
+    const app = await findAppInScopes(
+      context.project.id,
+      input.appId,
+      canonicalizeScopes(input.scopes),
+    );
 
     return next({ context: { ...context, app } });
   },
