@@ -6,7 +6,7 @@ import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import { ArrowLeftIcon, RocketIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@tailorkit/ui/badge";
-import { Button } from "@tailorkit/ui/button";
+import { buttonVariants } from "@tailorkit/ui/button";
 import {
   CardFrame,
   CardFrameDescription,
@@ -157,14 +157,14 @@ function AppPage() {
   return (
     <PageLayout
       actions={
-        <Button
-          render={<Link params={{ orgSlug, projectSlug }} to="/$orgSlug/$projectSlug/apps" />}
-          size="sm"
-          variant="outline"
+        <Link
+          className={buttonVariants({ size: "sm", variant: "outline" })}
+          params={{ orgSlug, projectSlug }}
+          to="/$orgSlug/$projectSlug/apps"
         >
-          <ArrowLeftIcon />
+          <ArrowLeftIcon aria-hidden="true" data-icon="inline-start" />
           Back to apps
-        </Button>
+        </Link>
       }
       description={app.description || `Scope: ${app.scopeId}`}
       title={

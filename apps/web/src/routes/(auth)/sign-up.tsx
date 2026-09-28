@@ -1,7 +1,7 @@
 "use client";
 
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
-import { Button } from "@tailorkit/ui/button";
+import { LoadingButton as Button } from "#components/loading-button";
 import {
   Card,
   CardFooter,

@@ -9,7 +9,7 @@ import { isOrgCreationManaged } from "#lib/org-creation";
 import { orpc } from "#lib/orpc";
 import { Avatar, AvatarFallback } from "@tailorkit/ui/avatar";
 import { Badge } from "@tailorkit/ui/badge";
-import { Button } from "@tailorkit/ui/button";
+import { Button, buttonVariants } from "@tailorkit/ui/button";
 import { Card, CardFrame } from "@tailorkit/ui/card";
 import {
   Empty,
@@ -57,20 +57,23 @@ function OrganizationsPage() {
       <PageLayout
         actions={
           <>
-            <Button render={<Link to="/account/invites" />} size="sm" variant="outline">
-              <MailIcon />
+            <Link
+              className={buttonVariants({ size: "sm", variant: "outline" })}
+              to="/account/invites"
+            >
+              <MailIcon aria-hidden="true" data-icon="inline-start" />
               Invites
               {pendingInviteCount > 0 && (
                 <Badge size="sm" variant="info">
                   {pendingInviteCount}
                 </Badge>
               )}
-            </Button>
+            </Link>
             {isOrgCreationManaged ? (
-              <Button render={<Link to="/account/request-organization" />} size="sm">
-                <PlusIcon />
+              <Link className={buttonVariants({ size: "sm" })} to="/account/request-organization">
+                <PlusIcon aria-hidden="true" data-icon="inline-start" />
                 New organisation
-              </Button>
+              </Link>
             ) : (
               <CreateOrgDialog>
                 <Button size="sm" type="button">
@@ -99,10 +102,13 @@ function OrganizationsPage() {
                 </EmptyHeader>
                 <EmptyContent>
                   {isOrgCreationManaged ? (
-                    <Button render={<Link to="/account/request-organization" />} size="sm">
-                      <PlusIcon />
+                    <Link
+                      className={buttonVariants({ size: "sm" })}
+                      to="/account/request-organization"
+                    >
+                      <PlusIcon aria-hidden="true" data-icon="inline-start" />
                       Create organisation
-                    </Button>
+                    </Link>
                   ) : (
                     <CreateOrgDialog>
                       <Button size="sm" type="button">

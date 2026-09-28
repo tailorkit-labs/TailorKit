@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@tailorkit/ui/button";
+import { LoadingButton as Button } from "#components/loading-button";
 import {
   Card,
   CardDescription,
@@ -589,7 +589,7 @@ export function TwoFactorSettings({
                 onClick={() => setDisableOpen(true)}
                 size="sm"
                 type="button"
-                variant="destructive-outline"
+                variant="destructive"
               >
                 Disable 2FA
               </Button>
@@ -770,7 +770,7 @@ function DisableTwoFactorDialog({
             onClick={() => void onDisable()}
             size="sm"
             type="button"
-            variant="destructive-outline"
+            variant="destructive"
           >
             Disable 2FA
           </Button>

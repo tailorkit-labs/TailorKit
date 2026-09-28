@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { Button } from "@tailorkit/ui/button";
+import { buttonVariants } from "@tailorkit/ui/button";
 
 type DocsSession = {
   user?: {
@@ -66,19 +66,23 @@ export function NavbarAuth() {
   if (!session?.user) {
     return (
       <div className="flex items-center gap-2">
-        <Button size="sm" variant="ghost" render={<a aria-label="Login" href={authLinks.login} />}>
+        <a
+          aria-label="Login"
+          className={buttonVariants({ size: "sm", variant: "ghost" })}
+          href={authLinks.login}
+        >
           Login
-        </Button>
-        <Button size="sm" render={<a aria-label="Sign up" href={authLinks.signUp} />}>
+        </a>
+        <a aria-label="Sign up" className={buttonVariants({ size: "sm" })} href={authLinks.signUp}>
           Sign up
-        </Button>
+        </a>
       </div>
     );
   }
 
   return (
-    <Button size="sm" render={<a aria-label="Dashboard" href={authLinks.dashboard} />}>
+    <a aria-label="Dashboard" className={buttonVariants({ size: "sm" })} href={authLinks.dashboard}>
       Dashboard
-    </Button>
+    </a>
   );
 }

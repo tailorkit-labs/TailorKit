@@ -1,4 +1,4 @@
-import { Button } from "@tailorkit/ui/button";
+import { buttonVariants } from "@tailorkit/ui/button";
 import { cn } from "@tailorkit/ui";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -80,15 +80,16 @@ export function HomeHero() {
         </div>
 
         <div className="flex flex-wrap gap-3 sm:gap-4">
-          <Button
-            variant="default"
-            render={
-              <a href="https://cal.com/alfiejones" rel="noopener noreferrer">
-                Talk to a Founder
-              </a>
-            }
-          />
-          <Button variant="secondary" render={<Link to="/docs/$">Read the docs</Link>} />
+          <a
+            className={buttonVariants()}
+            href="https://cal.com/alfiejones"
+            rel="noopener noreferrer"
+          >
+            Talk to a Founder
+          </a>
+          <Link className={buttonVariants({ variant: "secondary" })} to="/docs/$">
+            Read the docs
+          </Link>
         </div>
       </div>
     </section>

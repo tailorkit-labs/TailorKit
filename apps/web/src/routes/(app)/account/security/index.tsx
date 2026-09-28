@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { Badge } from "@tailorkit/ui/badge";
-import { Button } from "@tailorkit/ui/button";
+import { LoadingButton as Button } from "#components/loading-button";
 import {
   Card,
   CardDescription,
@@ -210,7 +210,7 @@ function ActiveSessions({ locale, timeZone }: { locale: string; timeZone: string
               onClick={() => revokeMutation.mutate(session.token)}
               size="sm"
               type="button"
-              variant="destructive-outline"
+              variant="destructive"
             >
               Sign out
             </Button>
@@ -232,7 +232,7 @@ function ActiveSessions({ locale, timeZone }: { locale: string; timeZone: string
               onClick={() => revokeOtherMutation.mutate()}
               size="sm"
               type="button"
-              variant="destructive-outline"
+              variant="destructive"
             >
               Sign out others
             </Button>
@@ -618,7 +618,7 @@ function SecurityPage() {
                                 ? "Unlink Google"
                                 : "Google cannot be unlinked because it is your only sign-in method"
                             }
-                            variant="destructive-outline"
+                            variant="destructive"
                           >
                             Unlink
                           </Button>
@@ -657,7 +657,7 @@ function SecurityPage() {
                                 ? "Unlink GitHub"
                                 : "GitHub cannot be unlinked because it is your only sign-in method"
                             }
-                            variant="destructive-outline"
+                            variant="destructive"
                           >
                             Unlink
                           </Button>

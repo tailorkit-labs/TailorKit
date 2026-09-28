@@ -2,7 +2,7 @@
 
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@tailorkit/ui/button";
+import { LoadingButton as Button } from "#components/loading-button";
 import {
   Card,
   CardDescription,

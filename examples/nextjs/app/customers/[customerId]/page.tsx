@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Mail, Phone } from "lucide-react";
 import { demoAuthCookieName, getDemoUser } from "@examples/shared";
 import { Badge } from "@tailorkit/ui/badge";
-import { Button } from "@tailorkit/ui/button";
+import { buttonVariants } from "@tailorkit/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tailorkit/ui/card";
 import { DetailCard } from "@/components/crm-ui";
 import { CustomerDetailView } from "@/components/customer-screen";
@@ -28,10 +28,10 @@ export default async function CustomerDetailPage({
     <>
       <CustomerDetailView context={{ customer }} />
       <div className="flex flex-col gap-6">
-        <Button render={<Link href="/customers" />} size="sm" variant="ghost">
-          <ArrowLeft aria-hidden="true" />
+        <Link className={buttonVariants({ size: "sm", variant: "ghost" })} href="/customers">
+          <ArrowLeft aria-hidden="true" data-icon="inline-start" />
           Customers
-        </Button>
+        </Link>
 
         <div>
           <div className="flex flex-wrap items-center gap-2">

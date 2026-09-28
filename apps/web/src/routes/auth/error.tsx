@@ -1,4 +1,4 @@
-import { Button } from "@tailorkit/ui/button";
+import { buttonVariants } from "@tailorkit/ui/button";
 import {
   Card,
   CardFrame,
@@ -45,9 +45,13 @@ function AuthErrorPage() {
               <p className="text-muted-foreground text-sm">
                 {message ?? "Something went wrong while signing you in. Please try again."}
               </p>
-              <Button className="w-full" render={<a aria-label="Back to sign in" href="/login" />}>
+              <a
+                aria-label="Back to sign in"
+                className={buttonVariants({ className: "w-full" })}
+                href="/login"
+              >
                 Back to sign in
-              </Button>
+              </a>
             </CardPanel>
           </Card>
 

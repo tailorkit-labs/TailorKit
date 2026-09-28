@@ -1,4 +1,4 @@
-import { Button } from "@tailorkit/ui/button";
+import { buttonVariants } from "@tailorkit/ui/button";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { HomeLayout } from "fumadocs-ui/layouts/home";
 import { ArrowRight } from "lucide-react";
@@ -56,15 +56,16 @@ function Hero() {
             expose.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button
-              size="lg"
-              render={
-                <a href="https://cal.com/alfiejones" rel="noopener noreferrer">
-                  Talk to a founder <ArrowRight aria-hidden="true" data-icon="inline-end" />
-                </a>
-              }
-            />
-            <Button size="lg" variant="outline" render={<Link to="/docs">Read the docs</Link>} />
+            <a
+              className={buttonVariants({ size: "lg" })}
+              href="https://cal.com/alfiejones"
+              rel="noopener noreferrer"
+            >
+              Talk to a founder <ArrowRight aria-hidden="true" data-icon="inline-end" />
+            </a>
+            <Link className={buttonVariants({ size: "lg", variant: "outline" })} to="/docs">
+              Read the docs
+            </Link>
           </div>
         </div>
       </div>

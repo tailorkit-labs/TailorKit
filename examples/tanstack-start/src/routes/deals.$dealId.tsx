@@ -1,5 +1,5 @@
 import { Badge } from "@tailorkit/ui/badge";
-import { Button } from "@tailorkit/ui/button";
+import { buttonVariants } from "@tailorkit/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tailorkit/ui/card";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
@@ -24,10 +24,10 @@ function DealDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Button size="sm" variant="ghost" render={<Link to="/deals" />}>
-        <ArrowLeft aria-hidden="true" />
+      <Link className={buttonVariants({ size: "sm", variant: "ghost" })} to="/deals">
+        <ArrowLeft aria-hidden="true" data-icon="inline-start" />
         Deals
-      </Button>
+      </Link>
 
       <div>
         <div className="flex flex-wrap items-center gap-2">

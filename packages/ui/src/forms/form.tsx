@@ -2,7 +2,7 @@ import type { BooleanFieldProps as BaseBooleanFieldProps } from "./boolean-field
 import type { NumberFieldProps as BaseNumberFieldProps } from "./number-field";
 import type { SelectFieldProps as BaseSelectFieldProps } from "./select-field";
 import type { TextFieldProps as BaseTextFieldProps } from "./text-field";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 import { useState } from "react";
 
@@ -18,8 +18,10 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "../components/f
 import { InputGroup, InputGroupAddon, InputGroupInput } from "../components/input-group";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../components/tooltip";
 import { Button } from "../components/button";
-import type { ButtonProps } from "../components/button";
+import { Spinner } from "../components/spinner";
 import { cn } from "#ui";
+
+type ButtonProps = ComponentProps<typeof Button>;
 
 export { formOptions };
 export { formatFieldErrors } from "./field-errors";
@@ -191,7 +193,7 @@ function SubmitButton({
   variant,
   className,
   ...props
-}: Omit<ButtonProps, "type" | "disabled" | "loading">) {
+}: Omit<ButtonProps, "type" | "disabled">) {
   const form = useFormContext();
   return (
     <form.Subscribe<SubmitButtonState>
@@ -206,10 +208,12 @@ function SubmitButton({
           variant={variant}
           className={cn("w-min", className)}
           type="submit"
-          disabled={!canSubmit}
-          loading={isSubmitting || isValidating}
+          disabled={!canSubmit || isSubmitting || isValidating}
           {...props}
         >
+          {(isSubmitting || isValidating) && (
+            <Spinner aria-hidden="true" data-icon="inline-start" />
+          )}
           {children}
         </Button>
       )}

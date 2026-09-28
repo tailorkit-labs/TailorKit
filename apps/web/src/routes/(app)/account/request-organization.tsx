@@ -4,7 +4,7 @@ import { AccountLayout } from "#components/account-layout";
 import { CreateOrgDialog } from "#components/create-org-dialog";
 import { PageLayout } from "#components/page-layout";
 import { isOrgCreationManaged } from "#lib/org-creation";
-import { Button } from "@tailorkit/ui/button";
+import { Button, buttonVariants } from "@tailorkit/ui/button";
 import { Card, CardFrame, CardHeader, CardPanel, CardTitle } from "@tailorkit/ui/card";
 
 export const Route = createFileRoute("/(app)/account/request-organization")({
@@ -35,27 +35,26 @@ function RequestOrganizationPage() {
               </p>
               <div className="flex flex-wrap gap-2">
                 {isOrgCreationManaged ? (
-                  <Button
-                    render={
-                      <a
-                        aria-label="Contact us"
-                        href="https://cal.com/alfiejones"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      />
-                    }
-                    size="sm"
+                  <a
+                    aria-label="Contact us"
+                    className={buttonVariants({ size: "sm" })}
+                    href="https://cal.com/alfiejones"
+                    rel="noopener noreferrer"
+                    target="_blank"
                   >
                     Contact us
-                  </Button>
+                  </a>
                 ) : (
                   <CreateOrgDialog>
                     <Button size="sm">Create organisation</Button>
                   </CreateOrgDialog>
                 )}
-                <Button render={<Link to="/account/invites" />} size="sm" variant="outline">
+                <Link
+                  className={buttonVariants({ size: "sm", variant: "outline" })}
+                  to="/account/invites"
+                >
                   View invites
-                </Button>
+                </Link>
               </div>
             </CardPanel>
           </Card>

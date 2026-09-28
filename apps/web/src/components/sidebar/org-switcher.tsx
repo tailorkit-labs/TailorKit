@@ -1,6 +1,6 @@
 import { ChevronsUpDownIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@tailorkit/ui/avatar";
-import { Button } from "@tailorkit/ui/button";
+import { Button, buttonVariants } from "@tailorkit/ui/button";
 import {
   Combobox,
   ComboboxEmpty,
@@ -100,14 +100,16 @@ export function OrgSwitcher({ orgSlug }: OrgSwitcherProps) {
         </ComboboxList>
         <div className="border-t p-2">
           {isOrgCreationManaged ? (
-            <Button
-              className="w-full justify-start"
-              render={<Link to="/account/request-organization" />}
-              variant="ghost"
+            <Link
+              className={buttonVariants({
+                className: "w-full justify-start",
+                variant: "ghost",
+              })}
+              to="/account/request-organization"
             >
-              <PlusIcon className="mr-2 size-4" />
+              <PlusIcon aria-hidden="true" data-icon="inline-start" />
               Create org
-            </Button>
+            </Link>
           ) : (
             <CreateOrgDialog>
               <Button className="w-full justify-start" type="button" variant="ghost">

@@ -3,7 +3,8 @@
 import { ChevronLeftIcon } from "lucide-react";
 import { Fragment, useRef, useState } from "react";
 import { cn } from "@tailorkit/ui";
-import { Button } from "@tailorkit/ui/button";
+import { LoadingButton as Button } from "#components/loading-button";
+import { buttonVariants } from "@tailorkit/ui/button";
 import {
   Card,
   CardFooter,
@@ -346,15 +347,23 @@ function RouteComponent() {
 
           <CardFrameFooter className="relative">
             {step === "email" ? (
-              <Button variant={"link"} render={<Link search={{ email, return_to }} to="/login" />}>
-                <ChevronLeftIcon />
+              <Link
+                className={buttonVariants({ variant: "link" })}
+                search={{ email, return_to }}
+                to="/login"
+              >
+                <ChevronLeftIcon aria-hidden="true" data-icon="inline-start" />
                 Back to sign in
-              </Button>
+              </Link>
             ) : (
-              <Button variant={"link"} render={<Link search={{ email, return_to }} to="/login" />}>
-                <ChevronLeftIcon />
+              <Link
+                className={buttonVariants({ variant: "link" })}
+                search={{ email, return_to }}
+                to="/login"
+              >
+                <ChevronLeftIcon aria-hidden="true" data-icon="inline-start" />
                 Use a different email
-              </Button>
+              </Link>
             )}
           </CardFrameFooter>
         </CardFrame>

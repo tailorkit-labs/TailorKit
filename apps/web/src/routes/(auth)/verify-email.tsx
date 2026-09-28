@@ -2,7 +2,8 @@
 
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@tailorkit/ui/button";
+import { LoadingButton as Button } from "#components/loading-button";
+import { buttonVariants } from "@tailorkit/ui/button";
 import {
   Card,
   CardFooter,
@@ -195,10 +196,14 @@ function RouteComponent() {
             </CardFooter>
           </Card>
           <CardFrameFooter className="relative">
-            <Button variant={"link"} render={<Link search={{ email, return_to }} to="/login" />}>
-              <ChevronLeftIcon />
+            <Link
+              className={buttonVariants({ variant: "link" })}
+              search={{ email, return_to }}
+              to="/login"
+            >
+              <ChevronLeftIcon aria-hidden="true" data-icon="inline-start" />
               Back to sign in
-            </Button>
+            </Link>
           </CardFrameFooter>
         </CardFrame>
       </div>

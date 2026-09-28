@@ -1,5 +1,5 @@
 import { validateProjectSlug } from "@tailorkit/db/validate-project-slug";
-import { Button } from "@tailorkit/ui/button";
+import { LoadingButton as Button } from "#components/loading-button";
 import {
   Card,
   CardDescription,
@@ -187,7 +187,7 @@ function ProjectSettingsPage() {
           <Button
             size="sm"
             type="button"
-            variant="destructive-outline"
+            variant="destructive"
             onClick={() => setDeleteDialogOpen(true)}
           >
             <Trash2Icon />

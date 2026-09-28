@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Button } from "@tailorkit/ui/button";
+import { buttonVariants } from "@tailorkit/ui/button";
 import {
   Empty,
   EmptyContent,
@@ -23,10 +23,10 @@ export function NotFound() {
         </EmptyHeader>
         <EmptyContent>
           <div className="flex gap-2">
-            <Button render={<Link to="/" />}>
-              <HomeIcon className="mr-2" />
+            <Link className={buttonVariants()} to="/">
+              <HomeIcon aria-hidden="true" data-icon="inline-start" />
               Home
-            </Button>
+            </Link>
           </div>
         </EmptyContent>
       </Empty>

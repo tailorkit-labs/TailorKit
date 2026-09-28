@@ -305,7 +305,7 @@ function ProjectApiKeysPage() {
               disabled={rotateMutation.isPending}
               size="sm"
               type="button"
-              variant="destructive-outline"
+              variant="destructive"
               onClick={() => setRotateDialogOpen(true)}
             >
               <RefreshCwIcon />

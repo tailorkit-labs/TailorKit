@@ -1,5 +1,5 @@
 import { gitConfig } from "#lib/shared";
-import { Button } from "@tailorkit/ui/button";
+import { buttonVariants } from "@tailorkit/ui/button";
 import { Logo } from "@tailorkit/ui/logo";
 import { Link } from "@tanstack/react-router";
 
@@ -59,14 +59,9 @@ export function Footer() {
         <p className="text-sm text-foreground/60">
           Have questions? We'd love to chat about your use case.
         </p>
-        <Button
-          variant="default"
-          render={
-            <a href="https://cal.com/alfiejones" rel="noopener noreferrer">
-              Talk to a Founder
-            </a>
-          }
-        />
+        <a className={buttonVariants()} href="https://cal.com/alfiejones" rel="noopener noreferrer">
+          Talk to a Founder
+        </a>
       </div>
 
       {/* Watermark */}
