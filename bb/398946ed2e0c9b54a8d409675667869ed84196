@@ -1,0 +1,21 @@
+packages/db/src/migrations/20260928020750_optimal_carlie_cooper/migration.sql
+  s_f3e800461aea44::t_99b1a9b47b8f01 17
+packages/db/src/migrations/20260928020750_optimal_carlie_cooper/snapshot.json
+  s_f3e800461aea44::t_f9bcb94db67fc5 4-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bb398946ed2e0c9b54a8d409675667869ed84196",
+  "prompts": {},
+  "sessions": {
+    "s_f3e800461aea44": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e28e-78c9-72e0-90fd-5c6df82f980b",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
