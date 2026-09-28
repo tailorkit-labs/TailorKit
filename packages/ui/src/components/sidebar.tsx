@@ -191,7 +191,7 @@ export function SidebarTrigger({
       data-slot="sidebar-trigger"
       size="icon"
       variant="ghost"
-      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+      onClick={(e) => {
         onClick?.(e);
         toggleSidebar();
       }}
