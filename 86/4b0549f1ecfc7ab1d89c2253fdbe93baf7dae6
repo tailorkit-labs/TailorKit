@@ -1,0 +1,19 @@
+packages/db/src/migrations/20260928020750_optimal_carlie_cooper/migration.sql
+  s_c45799f166e49a::t_3c90811dfb30a4 4-5,8-35,43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "864b0549f1ecfc7ab1d89c2253fdbe93baf7dae6",
+  "prompts": {},
+  "sessions": {
+    "s_c45799f166e49a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e2b3-d11b-7801-8685-979768c2de0d",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
