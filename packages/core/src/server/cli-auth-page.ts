@@ -237,33 +237,33 @@ export function escapeHtml(value: string): string {
 export const approvalStyles = `
 :root {
   color-scheme: light;
-  --background: hsl(0, 0%, 96%);
-  --card: hsl(0, 0%, 94.7%);
-  --border: hsla(0, 0%, 80%, 50%);
-  --foreground: hsl(0, 0%, 3.9%);
-  --muted: hsl(0, 0%, 96.1%);
-  --muted-foreground: hsl(0, 0%, 45.1%);
-  --primary: hsl(0, 0%, 3.9%);
-  --primary-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(0, 0%, 3.9%);
+  --background: #ffffff;
+  --card: #ffffff;
+  --border: rgb(0 0 0 / 8%);
+  --foreground: #262626;
+  --muted: rgb(0 0 0 / 4%);
+  --muted-foreground: color-mix(in srgb, #737373 90%, #000000);
+  --primary: #262626;
+  --primary-foreground: #fafafa;
+  --ring: #a3a3a3;
   --destructive: oklch(63.7% 0.237 25.331);
-  --success: oklch(72.3% 0.219 149.579);
+  --success: #10b981;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --background: #111111;
-    --card: #141414;
-    --border: hsla(0, 0%, 40%, 20%);
-    --foreground: hsl(0, 0%, 92%);
-    --muted: hsl(0, 0%, 12.9%);
-    --muted-foreground: hsla(0, 0%, 70%, 0.8);
-    --primary: hsl(0, 0%, 100%);
-    --primary-foreground: hsl(0, 0%, 9%);
-    --ring: hsl(0, 0%, 100%);
-    --destructive: oklch(63.7% 0.237 25.331);
-    --success: oklch(72.3% 0.219 149.579);
+    --background: color-mix(in srgb, #0a0a0a 95%, #ffffff);
+    --card: color-mix(in srgb, var(--background) 98%, #ffffff);
+    --border: rgb(255 255 255 / 6%);
+    --foreground: #f5f5f5;
+    --muted: rgb(255 255 255 / 4%);
+    --muted-foreground: color-mix(in srgb, #737373 90%, #ffffff);
+    --primary: #f5f5f5;
+    --primary-foreground: #262626;
+    --ring: #737373;
+    --destructive: color-mix(in srgb, #ef4444 90%, #ffffff);
+    --success: #34d399;
   }
 }
 

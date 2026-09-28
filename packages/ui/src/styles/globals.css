@@ -8,9 +8,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Geist Variable", sans-serif;
-  --font-heading: "Geist Variable", sans-serif;
-  --font-mono: "Geist Mono Variable", monospace;
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-sans);
+  --font-mono: var(--font-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -137,21 +137,20 @@
 
 :root {
   --radius: 0.625rem;
-  --background: hsl(0, 0%, 96%);
-  --foreground: hsl(0, 0%, 3.9%);
-  --card: hsl(0, 0%, 94.7%);
-  --card-foreground: hsl(0, 0%, 3.9%);
-  --popover: hsl(0, 0%, 98%);
-  --popover-foreground: hsl(0, 0%, 15.1%);
-  /* Saturated lime balances brightness with text and hover contrast on light surfaces. */
-  --primary: #507200;
-  --primary-foreground: #ffffff;
-  --secondary: hsl(0, 0%, 93.1%);
-  --secondary-foreground: hsl(0, 0%, 9%);
+  --background: var(--color-white);
+  --foreground: var(--color-neutral-800);
+  --card: var(--color-white);
+  --card-foreground: var(--color-neutral-800);
+  --popover: var(--color-white);
+  --popover-foreground: var(--color-neutral-800);
+  --primary: var(--color-neutral-800);
+  --primary-foreground: var(--color-neutral-50);
+  --secondary: --alpha(var(--color-black) / 4%);
+  --secondary-foreground: var(--color-neutral-800);
   --muted: --alpha(var(--color-black) / 4%);
-  --muted-foreground: hsl(0, 0%, 45.1%);
-  --accent: hsla(0, 0%, 82%, 50%);
-  --accent-foreground: hsl(0, 0%, 9%);
+  --muted-foreground: color-mix(in srgb, var(--color-neutral-500) 90%, var(--color-black));
+  --accent: --alpha(var(--color-black) / 4%);
+  --accent-foreground: var(--color-neutral-800);
   --destructive: var(--color-red-500);
   --destructive-foreground: var(--color-red-700);
   --info: var(--color-blue-500);
@@ -160,34 +159,34 @@
   --success-foreground: var(--color-emerald-700);
   --warning: var(--color-amber-500);
   --warning-foreground: var(--color-amber-700);
-  --border: hsla(0, 0%, 80%, 50%);
-  --input: hsl(0, 0%, 86%);
-  --ring: #507200;
-  --sidebar: hsl(0, 0%, 94.7%);
-  --sidebar-foreground: hsl(0, 0%, 3.9%);
-  --sidebar-primary: #507200;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: hsla(0, 0%, 82%, 50%);
-  --sidebar-accent-foreground: hsl(0, 0%, 9%);
-  --sidebar-border: hsla(0, 0%, 80%, 50%);
-  --sidebar-ring: hsl(0, 0%, 63.9%);
+  --border: --alpha(var(--color-black) / 8%);
+  --input: --alpha(var(--color-black) / 10%);
+  --ring: var(--color-neutral-400);
+  --sidebar: var(--color-neutral-50);
+  --sidebar-foreground: color-mix(in srgb, var(--color-neutral-800) 64%, var(--sidebar));
+  --sidebar-primary: var(--color-neutral-800);
+  --sidebar-primary-foreground: var(--color-neutral-50);
+  --sidebar-accent: --alpha(var(--color-black) / 4%);
+  --sidebar-accent-foreground: var(--color-neutral-800);
+  --sidebar-border: --alpha(var(--color-black) / 6%);
+  --sidebar-ring: var(--color-neutral-400);
 }
 
 .dark {
-  --background: #111111;
-  --foreground: hsl(0, 0%, 92%);
-  --card: #141414;
-  --card-foreground: hsl(0, 0%, 98%);
-  --popover: hsl(0, 0%, 10%);
-  --popover-foreground: hsl(0, 0%, 86.9%);
-  --primary: #b8e954;
-  --primary-foreground: #000000;
-  --secondary: hsl(0, 0%, 12.9%);
-  --secondary-foreground: hsl(0, 0%, 92%);
-  --muted: hsl(0, 0%, 12.9%);
-  --muted-foreground: hsla(0, 0%, 70%, 0.8);
-  --accent: hsla(0, 0%, 40.9%, 30%);
-  --accent-foreground: hsl(0, 0%, 90%);
+  --background: color-mix(in srgb, var(--color-neutral-950) 95%, var(--color-white));
+  --foreground: var(--color-neutral-100);
+  --card: color-mix(in srgb, var(--background) 98%, var(--color-white));
+  --card-foreground: var(--color-neutral-100);
+  --popover: color-mix(in srgb, var(--background) 98%, var(--color-white));
+  --popover-foreground: var(--color-neutral-100);
+  --primary: var(--color-neutral-100);
+  --primary-foreground: var(--color-neutral-800);
+  --secondary: --alpha(var(--color-white) / 4%);
+  --secondary-foreground: var(--color-neutral-100);
+  --muted: --alpha(var(--color-white) / 4%);
+  --muted-foreground: color-mix(in srgb, var(--color-neutral-500) 90%, var(--color-white));
+  --accent: --alpha(var(--color-white) / 4%);
+  --accent-foreground: var(--color-neutral-100);
   --destructive: color-mix(in srgb, var(--color-red-500) 90%, var(--color-white));
   --destructive-foreground: var(--color-red-400);
   --info: var(--color-blue-500);
@@ -196,17 +195,17 @@
   --success-foreground: var(--color-emerald-400);
   --warning: var(--color-amber-500);
   --warning-foreground: var(--color-amber-400);
-  --border: hsla(0, 0%, 40%, 20%);
-  --input: hsl(0, 0%, 16%);
-  --ring: #b8e954;
-  --sidebar: hsl(0, 0%, 6.25%);
-  --sidebar-foreground: hsl(0, 0%, 92%);
-  --sidebar-primary: #b8e954;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: hsla(0, 0%, 40.9%, 30%);
-  --sidebar-accent-foreground: hsl(0, 0%, 90%);
-  --sidebar-border: hsla(0, 0%, 40%, 20%);
-  --sidebar-ring: hsl(0, 0%, 54.9%);
+  --border: --alpha(var(--color-white) / 6%);
+  --input: --alpha(var(--color-white) / 8%);
+  --ring: var(--color-neutral-500);
+  --sidebar: color-mix(in srgb, var(--color-neutral-950) 97%, var(--color-white));
+  --sidebar-foreground: color-mix(in srgb, var(--color-neutral-100) 64%, var(--sidebar));
+  --sidebar-primary: var(--color-neutral-100);
+  --sidebar-primary-foreground: var(--color-neutral-800);
+  --sidebar-accent: --alpha(var(--color-white) / 4%);
+  --sidebar-accent-foreground: var(--color-neutral-100);
+  --sidebar-border: --alpha(var(--color-white) / 5%);
+  --sidebar-ring: var(--color-neutral-400);
 }
 
 @layer base {
