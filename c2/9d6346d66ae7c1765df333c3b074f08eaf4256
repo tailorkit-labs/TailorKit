@@ -1,0 +1,22 @@
+examples/tanstack-start/src/components/auth.tsx
+  s_927b63d94af524::t_c7882bc99cb69a 21
+examples/nextjs/components/auth-screen.tsx
+  s_927b63d94af524::t_c7882bc99cb69a 9,41
+  s_927b63d94af524::t_0d19ff008ec7a1 47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c29d6346d66ae7c1765df333c3b074f08eaf4256",
+  "prompts": {},
+  "sessions": {
+    "s_927b63d94af524": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e5c2-5adb-7943-87f1-8152e32c3f0d",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
