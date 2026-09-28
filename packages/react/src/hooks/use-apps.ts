@@ -1,6 +1,6 @@
 import { useTailorRootContext } from "../components/context";
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import type { TailorKitApp } from "../tailor-kit";
+import type { TailorKitApp } from "../tailorkit";
 import type { TailorKitAppsSnapshot, TailorKitStore } from "../store";
 
 export interface UseAppsResult {

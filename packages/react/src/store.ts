@@ -1,5 +1,5 @@
 import type { TailorKitSchemaSpecType } from "@tailorkit/core/spec";
-import type { TailorKitApp } from "./tailor-kit";
+import type { TailorKitApp } from "./tailorkit";
 import { createViewRegistry } from "./view-registry";
 import { createPreviewManager } from "./preview-manager";
 

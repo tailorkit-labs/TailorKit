@@ -1,8 +1,12 @@
 export { AppView } from "./components/app-view";
-export { components, createTailorKitClient } from "./tailor-kit";
-export type { AppViewProps, TailorKitApp, TailorKitInstance, Register } from "./tailor-kit";
+export { components, createTailorKitClient } from "./tailorkit";
+export type {
+  AppViewProps,
+  TailorKitApp,
+  TailorKitClientConfig,
+  TailorKitInstance,
+} from "./tailorkit";
 export { Root } from "./components/root";
 export { useApps } from "./hooks/use-apps";
-export { useView } from "./hooks/use-view";
-export type { ViewOptions, ViewState } from "./hooks/use-view";
+export type { UseView, ViewOptions, ViewState } from "./hooks/use-view";
 export { primitives } from "./primitives";

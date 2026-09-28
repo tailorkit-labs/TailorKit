@@ -1,9 +1,8 @@
-import { useView } from "tailorkit/react";
 import { Outlet, createFileRoute, useRouterState } from "@tanstack/react-router";
 import { MetricCard, PageHeader } from "#components/crm-ui";
 import { CustomerTable } from "#components/customer-table";
 import { customers } from "#lib/crm-data";
-import "#lib/tailorkit-client.tsx";
+import { useView } from "#lib/tailorkit-client";
 
 export const Route = createFileRoute("/customers")({ component: CustomersPage });
 
