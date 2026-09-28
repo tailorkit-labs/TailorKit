@@ -521,7 +521,7 @@ describe("createTailorKitServer", () => {
     expect(requests[2]?.headers.get("authorization")).toBe("Bearer host-token");
   });
 
-  it("attaches the validated handler scope when creating platform apps", async () => {
+  it("attaches the validated CLI deploy token scope when creating platform apps", async () => {
     const requests: Request[] = [];
     const hostRequests: Request[] = [];
     const server = createTailorKitServer({

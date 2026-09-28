@@ -92,7 +92,12 @@ function preflightScopeValue(value: unknown): boolean {
       if (keys.length > maxObjectEntries) valid = false;
       for (let index = 0; index < keys.length && valid; index += 1) {
         const key = keys[index];
-        if (typeof key !== "string" || key.length === 0 || key.length > maxKeyLength) {
+        if (
+          typeof key !== "string" ||
+          key === "__proto__" ||
+          key.length === 0 ||
+          key.length > maxKeyLength
+        ) {
           valid = false;
           break;
         }
@@ -113,7 +118,14 @@ function preflightScopeValue(value: unknown): boolean {
   if (rootKeys.length === 0 || rootKeys.length > maxObjectEntries) return false;
   for (let index = 0; index < rootKeys.length && valid; index += 1) {
     const key = rootKeys[index];
-    if (typeof key !== "string" || key.length === 0 || key.length > maxKeyLength) return false;
+    if (
+      typeof key !== "string" ||
+      key === "__proto__" ||
+      key.length === 0 ||
+      key.length > maxKeyLength
+    ) {
+      return false;
+    }
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
     if (!descriptor || !("value" in descriptor) || !descriptor.enumerable) return false;
     if (index > 0) addBytes(1);

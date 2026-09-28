@@ -296,5 +296,25 @@ describe("platform appRouter", () => {
         ORPCError<"NOT_FOUND", unknown>
       >),
     );
+
+    const [otherScopeApp] = await db
+      .insert(appTable)
+      .values({
+        name: "Staging app",
+        projectId,
+        publicId: "staging002",
+        ...canonicalizeScope(stagingScope),
+      })
+      .returning();
+    if (!otherScopeApp) {
+      throw new Error("Expected staging app to be created.");
+    }
+    await expect(
+      call(
+        appRouter.get,
+        { params: { appId: otherScopeApp.id }, body: { scopes: [productionScope] } },
+        { context: createContext() },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 });

@@ -2,6 +2,7 @@ import { call } from "@orpc/server";
 import { app as appTable, appDeployment, appDeploymentFile } from "@tailorkit/db/schema/apps";
 import { organization } from "@tailorkit/db/schema/auth";
 import { project as projectTable } from "@tailorkit/db/schema/project";
+import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Context } from "../context";
 import { createTestDb } from "../test/pglite";
@@ -116,6 +117,21 @@ describe("platform deployment uploads", () => {
         contentType: "image/svg+xml",
       }),
     },
+  });
+
+  it("hides a deployment when its app has a malformed stored scope", async () => {
+    const deployment = await createLogoDeployment();
+    await db
+      .update(appTable)
+      .set({ scope: { name: "environment", value: {} } })
+      .where(eq(appTable.id, deployment.appId));
+    await expect(
+      call(
+        deploymentRouter.get,
+        { params: { deploymentId: deployment.id }, body: { scopes: [productionScope] } },
+        { context: publishContext("https://uploads.example/logo-dark.svg") },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("maps reordered returned files using their generated file IDs", () => {

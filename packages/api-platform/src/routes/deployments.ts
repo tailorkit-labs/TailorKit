@@ -156,12 +156,22 @@ const requireDeployment = o.middleware(
     });
     const deploymentApp = deploymentWithApp?.app;
 
+    let scopeMatchesApp = false;
+    if (deploymentApp) {
+      try {
+        scopeMatchesApp =
+          (input.scope ? scopeMatches(deploymentApp.scope, input.scope) : false) ||
+          (input.scopes?.some((scope) => scopeMatches(deploymentApp.scope, scope)) ?? false);
+      } catch {
+        // A malformed stored scope must not expose the deployment.
+      }
+    }
+
     if (
       !deploymentWithApp ||
       !deploymentApp ||
       deploymentApp.projectId !== context.project.id ||
-      (!(input.scope && scopeMatches(deploymentApp.scope, input.scope)) &&
-        !(input.scopes?.some((scope) => scopeMatches(deploymentApp.scope, scope)) ?? false))
+      !scopeMatchesApp
     ) {
       throw new ORPCError("NOT_FOUND", { message: "Deployment not found." });
     }

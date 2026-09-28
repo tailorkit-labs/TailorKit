@@ -1,7 +1,9 @@
 import { call } from "@orpc/server";
 import { organization } from "@tailorkit/db/schema/auth";
+import { cliAuthSession, cliToken } from "@tailorkit/db/schema/cli-auth";
 import { project as projectTable } from "@tailorkit/db/schema/project";
 import { env } from "#env";
+import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Context } from "../context";
 import { createTestDb } from "../test/pglite";
@@ -16,14 +18,18 @@ vi.mock("@tailorkit/db", () => ({
 }));
 
 const { cliAuthRouter } = await import("./cli-auth");
-const { canonicalizeScope } = await import("../scope");
 
 const organizationId = "11111111-1111-4111-8111-111111111111";
 const projectId = "22222222-2222-4222-8222-222222222222";
 const scope = {
   name: "user",
+  value: { userId: "user_456", organizationId: "org_123" },
+};
+const expectedScope = {
+  name: "user",
   value: { organizationId: "org_123", userId: "user_456" },
 };
+const expectedScopeKey = "b3a5b34b9e83902dc4737fb4cc2e2c13";
 
 function createContext(): Context {
   return {
@@ -108,7 +114,7 @@ describe("platform CLI auth scopes", () => {
     }
     expect(polled.body).toEqual({
       deployToken: expect.any(String),
-      scope,
+      scope: expectedScope,
       status: "approved",
     });
 
@@ -117,14 +123,57 @@ describe("platform CLI auth scopes", () => {
       { body: { deployToken: polled.body.deployToken } },
       { context },
     );
-    expect(verified.body).toEqual({ scope });
+    expect(verified.body).toEqual({ scope: expectedScope });
 
     const token = await db.query.cliToken.findFirst();
     expect(token).toEqual(
       expect.objectContaining({
-        scope,
-        scopeKey: canonicalizeScope(scope).scopeKey,
+        scope: expectedScope,
+        scopeKey: expectedScopeKey,
       }),
     );
+  });
+
+  it("rejects malformed stored scopes in approved sessions and deploy tokens", async () => {
+    const context = createContext();
+    const started = await call(cliAuthRouter.start, { body: {} }, { context });
+    await call(
+      cliAuthRouter.approve,
+      { body: { scope, userCode: started.body.userCode } },
+      { context },
+    );
+    const session = await db.query.cliAuthSession.findFirst();
+    if (!session) throw new Error("Expected CLI auth session.");
+    await db
+      .update(cliAuthSession)
+      .set({ scope: { name: "user", value: {} } })
+      .where(eq(cliAuthSession.id, session.id));
+    await expect(
+      call(cliAuthRouter.poll, { body: { deviceCode: started.body.deviceCode } }, { context }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+
+    await db
+      .update(cliAuthSession)
+      .set({ scope: expectedScope })
+      .where(eq(cliAuthSession.id, session.id));
+    const polled = await call(
+      cliAuthRouter.poll,
+      { body: { deviceCode: started.body.deviceCode } },
+      { context },
+    );
+    if (polled.body.status !== "approved") throw new Error("Expected approved CLI token.");
+    const token = await db.query.cliToken.findFirst();
+    if (!token) throw new Error("Expected CLI token.");
+    await db
+      .update(cliToken)
+      .set({ scope: { name: "user", value: {} } })
+      .where(eq(cliToken.id, token.id));
+    await expect(
+      call(
+        cliAuthRouter.verifyToken,
+        { body: { deployToken: polled.body.deployToken } },
+        { context },
+      ),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 });

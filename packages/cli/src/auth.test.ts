@@ -231,4 +231,27 @@ describe("auth store", () => {
       scope: { name: "organization", value: { orgId: "org-1", userId: "user-1" } },
     });
   });
+
+  it("rejects a legacy verification response before changing stored auth", async () => {
+    const homeDirectory = await createTemporaryHome();
+    vi.mocked(loadTailorKitConfig).mockResolvedValue({
+      config: { host: "https://example.com" },
+      filepath: path.join(homeDirectory, "tailorkit.config.ts"),
+      root: homeDirectory,
+    });
+    vi.mocked(createTailorKitClient).mockReturnValue({
+      cliAuth: {
+        verifyToken: vi.fn().mockResolvedValue({ data: { scopeId: "legacy-scope" } }),
+      },
+    } as unknown as ReturnType<typeof createTailorKitClient>);
+    const filePath = await writeAuthStoreFixture(homeDirectory, {
+      hosts: { "https://example.com": { deployToken: "deploy-token" } },
+    });
+    const { runWhoami } = await loadAuthModule(homeDirectory);
+
+    await expect(runWhoami({ cwd: homeDirectory })).rejects.toThrow("Not logged in");
+    await expect(readFile(filePath, "utf-8").then(JSON.parse)).resolves.toEqual({
+      hosts: { "https://example.com": { deployToken: "deploy-token" } },
+    });
+  });
 });

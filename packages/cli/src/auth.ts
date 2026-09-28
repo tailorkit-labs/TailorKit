@@ -58,6 +58,11 @@ const storedHostAuthSchema = z.object({
   deployToken: z.string().min(1),
   scope: namedScopeSchema.optional(),
 });
+const approvedCliAuthResultSchema = z.object({
+  deployToken: z.string().min(1),
+  scope: namedScopeSchema,
+});
+const verifiedCliAuthResultSchema = z.object({ scope: namedScopeSchema });
 
 const authStoreSchema = z
   .object({
@@ -191,14 +196,15 @@ export const runLogin = async (
         throw new Error("CLI login expired.");
       }
       case "approved": {
+        const approved = approvedCliAuthResultSchema.parse(result);
         await saveDeployToken(hostUrl, {
-          deployToken: result.deployToken,
-          scope: result.scope,
+          deployToken: approved.deployToken,
+          scope: approved.scope,
         });
 
         return {
           hostUrl,
-          scope: result.scope,
+          scope: approved.scope,
         };
       }
       default: {
@@ -229,7 +235,9 @@ export const runWhoami = async (
     const verifyResult = await client.cliAuth.verifyToken({});
     throwRpcError(verifyResult);
 
-    result = ("data" in verifyResult ? verifyResult.data : verifyResult) as CliAuthVerifyResult;
+    result = verifiedCliAuthResultSchema.parse(
+      "data" in verifyResult ? verifyResult.data : verifyResult,
+    );
   } catch {
     throw createNotLoggedInError(hostUrl);
   }

@@ -2,7 +2,11 @@ import type { StandardSchemaV1 } from "@standard-schema/spec";
 import { expectTypeOf } from "vite-plus/test";
 import { z } from "zod";
 import { createTailorKitServer } from "./handler";
-import type { TailorKitHandlerOptions, TailorKitHostContext } from "./types";
+import type {
+  TailorKitHandlerOptions,
+  TailorKitHostContext,
+  TailorKitServerOptions,
+} from "./types";
 
 interface UserContext {
   user: { id: string };
@@ -58,6 +62,21 @@ const namedScopes = {
   userOrg: z.object({ orgId: z.string(), userId: z.string() }),
 };
 const scopedServer = createTailorKitServer({ scopes: namedScopes, components: {} });
+const explicitlyTypedOptions: TailorKitServerOptions<
+  Record<never, never>,
+  Record<never, never>,
+  Record<never, never>,
+  typeof namedScopes
+> = { scopes: namedScopes, components: {} };
+const explicitlyTypedServer = createTailorKitServer(explicitlyTypedOptions);
+explicitlyTypedServer.handler(new Request("https://example.com/api/tailorkit/apps"), {
+  authenticate: () => ({
+    scopes: {
+      // @ts-expect-error explicit options retain the org schema's required orgId
+      org: {},
+    },
+  }),
+});
 scopedServer.handler(new Request("https://example.com/api/tailorkit/apps"), {
   authenticate: () => ({
     scopes: {

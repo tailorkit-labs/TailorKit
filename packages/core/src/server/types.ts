@@ -22,14 +22,16 @@ export interface TailorKitPlatformOptions {
   headers?: HeaderInput | (() => HeaderInput | Promise<HeaderInput>);
 }
 
-export interface TailorKitServerBaseOptions {
+export interface TailorKitServerBaseOptions<
+  TScopes extends Record<string, StandardSchemaV1> = Record<string, StandardSchemaV1>,
+> {
   /**
    * TailorKit.dev project key. The host application must read its
    * `TAILORKIT_PROJECT_KEY` environment variable and pass the value here.
    */
   projectKey?: string;
   /** Standard Schema validators keyed by the names used to identify app scopes. */
-  scopes: Record<string, StandardSchemaV1>;
+  scopes: TScopes;
   /** Optional custom asset origin. Hosted apps receive a tenant-viewd clientPath from TailorKit automatically. */
   assetsBaseUrl?: string;
   basePath?: string;
@@ -126,9 +128,10 @@ export interface TailorKitServerOptions<
   TComponents extends ComponentDefinitions,
   TContexts extends ContextDefinitions,
   TActions extends ActionTree = Record<never, never>,
+  TScopes extends Record<string, StandardSchemaV1> = Record<string, StandardSchemaV1>,
 >
   extends
-    TailorKitServerBaseOptions,
+    TailorKitServerBaseOptions<TScopes>,
     TailorKitServerSchemaOptions<TComponents, TContexts, TActions> {}
 
 export type TailorKitHostContext<TActionContext = never, TScopes = TailorKitScopes> = {

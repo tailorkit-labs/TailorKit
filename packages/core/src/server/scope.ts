@@ -264,6 +264,9 @@ function getRecordEntries(value: object, errorMessage: string): [string, unknown
   }
   const entries: [string, unknown][] = [];
   for (const key of ownKeys as string[]) {
+    if (key === "__proto__") {
+      throw new TypeError('TailorKit scope property names may not be "__proto__".');
+    }
     if (key.length === 0 || key.length > maximumKeyLength) {
       throw new TypeError(
         `TailorKit scope property names must be 1 to ${maximumKeyLength} characters.`,

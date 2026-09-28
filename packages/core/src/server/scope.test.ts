@@ -109,6 +109,15 @@ describe("TailorKit named scope validation", () => {
     ).toEqual({ values: ["", null, true, false, 0, 1.25, [], {}] });
   });
 
+  it("rejects __proto__ properties at every scope depth", () => {
+    expect(() => normalizeTailorKitScope(JSON.parse('{"__proto__":"value"}'))).toThrow(
+      /__proto__/u,
+    );
+    expect(() => normalizeTailorKitScope(JSON.parse('{"nested":{"__proto__":"value"}}'))).toThrow(
+      /__proto__/u,
+    );
+  });
+
   it("rejects non-JSON values and non-plain objects", () => {
     const circular: Record<string, unknown> = { ok: true };
     circular.self = circular;

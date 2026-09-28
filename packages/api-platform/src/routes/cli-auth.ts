@@ -212,7 +212,14 @@ const pollCliAuth = protectedRouter
         message: "Approved CLI auth session is missing scope.",
       });
     }
-    const sessionScope = canonicalizeScope(session.scope);
+    let sessionScope: ReturnType<typeof canonicalizeScope>;
+    try {
+      sessionScope = canonicalizeScope(session.scope);
+    } catch {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "Approved CLI auth session has an invalid scope.",
+      });
+    }
     if (sessionScope.scopeKey !== session.scopeKey) {
       throw new ORPCError("BAD_REQUEST", {
         message: "Approved CLI auth session has an invalid scope.",
@@ -242,7 +249,14 @@ const pollCliAuth = protectedRouter
           message: "Approved CLI auth session is missing scope.",
         });
       }
-      const consumedScope = canonicalizeScope(consumedSession.scope);
+      let consumedScope: ReturnType<typeof canonicalizeScope>;
+      try {
+        consumedScope = canonicalizeScope(consumedSession.scope);
+      } catch {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Approved CLI auth session has an invalid scope.",
+        });
+      }
       if (consumedScope.scopeKey !== consumedSession.scopeKey) {
         throw new ORPCError("BAD_REQUEST", {
           message: "Approved CLI auth session has an invalid scope.",
@@ -292,7 +306,12 @@ const verifyCliAuthToken = protectedRouter
       throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
     }
 
-    const scope = canonicalizeScope(token.scope);
+    let scope: ReturnType<typeof canonicalizeScope>;
+    try {
+      scope = canonicalizeScope(token.scope);
+    } catch {
+      throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
+    }
     if (scope.scopeKey !== token.scopeKey) {
       throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
     }

@@ -120,7 +120,7 @@ function canonicalizeJsonValue(
   validateOwnDataProperties(value, ownKeys);
   const keys = ownKeys as string[];
   for (const key of keys) {
-    if (key.length === 0 || key.length > maxKeyLength) {
+    if (key === "__proto__" || key.length === 0 || key.length > maxKeyLength) {
       throw new TypeError("Scope object keys must contain 1–64 characters.");
     }
   }

@@ -178,12 +178,16 @@ function AppPage() {
         <CardFrame>
           <CardFrameHeader>
             <CardFrameTitle>Installation scope</CardFrameTitle>
-            <CardFrameDescription className="w-full">
-              <div className="grid w-full gap-2">
-                <Badge size="sm" variant="outline">
+            <CardFrameDescription className="min-w-0 w-full">
+              <div className="grid min-w-0 w-full gap-2">
+                <Badge
+                  className="max-w-full min-w-0 break-all whitespace-normal"
+                  size="sm"
+                  variant="outline"
+                >
                   {app.scope.name}
                 </Badge>
-                <pre className="max-h-64 overflow-auto rounded-md border bg-muted/40 p-3 font-mono text-foreground text-xs">
+                <pre className="max-h-64 max-w-full overflow-auto rounded-md border bg-muted/40 p-3 font-mono text-foreground text-xs">
                   {JSON.stringify(app.scope.value, null, 2)}
                 </pre>
               </div>

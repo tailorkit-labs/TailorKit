@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { canonicalizeScope, scopeMatches } from "./scope";
+import { canonicalizeScope, scopeMatches, scopeSchema } from "./scope";
 
 describe("scope canonicalization", () => {
   it("sorts object properties recursively and preserves array order", () => {
@@ -52,6 +52,17 @@ describe("scope canonicalization", () => {
     expect(() => canonicalizeScope({ name: "organization", value: { id: Number.NaN } })).toThrow();
     expect(() => canonicalizeScope({ name: "organization", value: { id: 2 ** 53 } })).toThrow();
     expect(() => canonicalizeScope([])).toThrow();
+  });
+
+  it("rejects __proto__ keys instead of silently losing them during schema parsing", () => {
+    const rootValue = JSON.parse('{"__proto__":"unexpected","orgId":"org_123"}') as unknown;
+    const nestedValue = JSON.parse(
+      '{"orgId":"org_123","labels":[{"__proto__":"unexpected"}]}',
+    ) as unknown;
+    expect(scopeSchema.safeParse({ name: "organization", value: rootValue }).success).toBe(false);
+    expect(scopeSchema.safeParse({ name: "organization", value: nestedValue }).success).toBe(false);
+    expect(() => canonicalizeScope({ name: "organization", value: rootValue })).toThrow();
+    expect(() => canonicalizeScope({ name: "organization", value: nestedValue })).toThrow();
   });
 
   it("compares the canonical named scope identity", () => {

@@ -227,6 +227,14 @@ describe("platform preview lifecycle and grants", () => {
     expect(await kv.get(`preview:ended:${second.body.sessionId}`)).toBe("1");
   });
 
+  it("rejects a CLI token whose stored scope is malformed", async () => {
+    await db
+      .update(cliToken)
+      .set({ scope: { name: "user", value: {} } })
+      .where(eq(cliToken.id, tokenId));
+    await expect(start()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
+
   it("retires a session when its CLI token expires during a heartbeat", async () => {
     const started = await start();
     await db

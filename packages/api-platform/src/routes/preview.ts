@@ -42,7 +42,12 @@ async function getValidCliToken(projectId: string, deployToken: string) {
   if (!token || token.revokedAt || token.expiresAt <= new Date()) {
     throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
   }
-  const scope = canonicalizeScope(token.scope);
+  let scope: ReturnType<typeof canonicalizeScope>;
+  try {
+    scope = canonicalizeScope(token.scope);
+  } catch {
+    throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
+  }
   if (scope.scopeKey !== token.scopeKey) {
     throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
   }
