@@ -14,5 +14,6 @@ ALTER TABLE "cli_auth_session" DROP COLUMN "scope_id";--> statement-breakpoint
 ALTER TABLE "cli_token" DROP COLUMN "scope_id";--> statement-breakpoint
 ALTER TABLE "preview_session" DROP COLUMN "scope_id";--> statement-breakpoint
 CREATE INDEX "app_project_scope_key_idx" ON "app" ("project_id","scope_key");--> statement-breakpoint
+CREATE INDEX "cli_auth_session_project_scope_key_idx" ON "cli_auth_session" ("project_id","scope_key");--> statement-breakpoint
 CREATE INDEX "cli_token_project_scope_key_idx" ON "cli_token" ("project_id","scope_key");--> statement-breakpoint
 CREATE INDEX "preview_session_app_id_scope_key_status_idx" ON "preview_session" ("app_id","scope_key","status");

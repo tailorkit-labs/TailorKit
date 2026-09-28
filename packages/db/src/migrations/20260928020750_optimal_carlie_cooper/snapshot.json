@@ -1,8 +1,8 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "85cf770f-0105-44e2-9980-9de224f76687",
-  "prevIds": ["e58ec99a-aedc-4100-8d9c-6a2ba28721b5"],
+  "id": "6e82bced-3d6c-49d1-9408-c7eb03b1dfcd",
+  "prevIds": ["144b03f5-4eb8-4acd-9d4a-f89dded20a6b"],
   "ddl": [
     {
       "values": ["application/javascript", "image/svg+xml", "image/png", "image/webp"],

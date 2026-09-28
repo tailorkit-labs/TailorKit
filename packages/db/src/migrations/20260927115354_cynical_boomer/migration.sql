@@ -1,1 +1,0 @@
-CREATE INDEX "cli_auth_session_project_scope_key_idx" ON "cli_auth_session" ("project_id","scope_key");
