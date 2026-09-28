@@ -277,9 +277,9 @@ export default app;
 The TailorKit client connects your frontend to the TailorKit API handler and
 maps the components from your TailorKit config to components in your app.
 
-Create `tailorkit-client.ts` in your frontend, wherever you keep client-side utilities.
+Create `tailorkit-client.tsx` in your frontend, wherever you keep client-side utilities.
 
-```tsx title="./src/lib/tailorkit-client.ts" tab="React"
+```tsx title="./src/lib/tailorkit-client.tsx" tab="React"
 import { Button } from "@/components/button";
 import type { tailorKit } from "./tailorkit";
 import { createTailorKitClient, primitives } from "tailorkit/react";
@@ -299,18 +299,16 @@ export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
   },
 });
 
-declare module "tailorkit/react" {
-  interface Register {
-    client: typeof tailorKitClient;
-  }
-}
+export const { AppView, useApps, useView } = tailorKitClient;
 
 export default tailorKitClient;
 ```
 
 Use an absolute URL, or construct a URL from `window.location.origin` in a
-browser-only integration. Wrap the host in `<Root client={tailorKitClient}>`
-and import `AppView`, `useApps`, and `useView` from `tailorkit/react`.
+browser-only integration. Export `AppView`, `useApps`, and `useView` from the
+configured client so their types come from `tailorKit` without module
+augmentation. Import `Root` from `tailorkit/react` and pass it the client; use
+the other helpers beneath it.
 See [Views, views, and slots](/docs/views) for the complete React setup.
 
 </Step>

@@ -1,8 +1,7 @@
-import { AppView, useApps, useView } from "../index";
 import { createTailorKitServer } from "@tailorkit/core/server";
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from "@standard-schema/spec";
 import type { ReactNode } from "react";
-import { components, createTailorKitClient } from "../tailor-kit";
+import { components, createTailorKitClient } from "../tailorkit";
 
 const typedSchema = <TValue,>(): StandardSchemaV1<unknown, TValue> &
   StandardJSONSchemaV1<unknown, TValue> =>
@@ -41,6 +40,7 @@ const server = createTailorKitServer({
 });
 
 const tailor = createTailorKitClient<typeof server>({ baseUrl: "http://runtime.test" });
+const { AppView, useApps, useView } = tailor;
 const app = { clientPath: "/apps/todo.js", id: "todo" };
 
 const childrenServer = createTailorKitServer({
@@ -153,16 +153,21 @@ useView("/user", { status: "loading", context: { userId: "user_1" } });
 // @ts-expect-error loading app views cannot expose context
 <AppView slot="panel" app={app} view="/user" status="loading" context={{ userId: "user_1" }} />;
 
-declare module "../tailor-kit" {
-  interface Register {
-    client: typeof tailor;
-  }
-}
-
 useApps();
 useApps({ scopes: ["organization", "user"] });
 // @ts-expect-error selected scopes must be declared by the server
 useApps({ scopes: ["unknown"] });
+
+const workspaceServer = createTailorKitServer({
+  scopes: { workspace: typedSchema<{ workspaceId: string }>() },
+  components: {},
+});
+const workspaceClient = createTailorKitClient<typeof workspaceServer>({
+  baseUrl: "http://runtime.test",
+});
+workspaceClient.useApps({ scopes: ["workspace"] });
+// @ts-expect-error scope names belong to the client that declared them
+workspaceClient.useApps({ scopes: ["organization"] });
 
 // @ts-expect-error Unknown host slot.
 <AppView app={app} slot="missing" />;

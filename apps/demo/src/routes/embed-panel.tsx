@@ -1,7 +1,7 @@
-import { AppView, Root, useView } from "tailorkit/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import type { CSSProperties } from "react";
+import { Root } from "tailorkit/react";
 import {
   createHandoff,
   decodeState,
@@ -65,6 +65,7 @@ function EmbedPanel() {
     (demo ? decodeState(demo) : null) ?? createHandoff(defaultTheme, defaultEmbedConfig);
   const theme = handoff.tailorkitTheme;
   const tailorClient = useMemo(() => createDemoTailorClient(theme), [theme]);
+  const { AppView, useView } = tailorClient;
   const activeApp = demoApps.find((app) => app.id === handoff.selectedApp) ?? demoApps[0];
   const cssVars = useMemo(() => toCssVars(theme) as CSSProperties, [theme]);
 
@@ -83,7 +84,7 @@ function EmbedPanel() {
 
   return (
     <Root client={tailorClient} apps={demoApps}>
-      <CurrentDemoView />
+      <CurrentDemoView useView={useView} />
       <main className="h-screen flex flex-col" style={cssVars}>
         {/* Panel header */}
         <div
@@ -133,7 +134,11 @@ function EmbedPanel() {
   );
 }
 
-function CurrentDemoView() {
+function CurrentDemoView({
+  useView,
+}: {
+  useView: ReturnType<typeof createDemoTailorClient>["useView"];
+}) {
   useView("/", { context: {} });
   return null;
 }

@@ -3,7 +3,7 @@ import {
   previewMetadataSchema,
 } from "@tailorkit/client-platform/preview";
 import type { PreviewBuildManifest, PreviewEvent } from "@tailorkit/client-platform/preview";
-import type { TailorKitApp } from "./tailor-kit";
+import type { TailorKitApp } from "./tailorkit";
 
 export interface PreviewSnapshot {
   revision: number;

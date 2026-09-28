@@ -1,4 +1,3 @@
-import { useView } from "tailorkit/react";
 import { Badge } from "@tailorkit/ui/badge";
 import { Button } from "@tailorkit/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tailorkit/ui/card";
@@ -7,7 +6,7 @@ import { ArrowLeft, Mail, Phone } from "lucide-react";
 import { DetailCard } from "#components/crm-ui";
 import { getCustomer } from "#lib/crm-data";
 import { useAuthSession } from "#lib/auth-client";
-import "#lib/tailorkit-client";
+import { useView } from "#lib/tailorkit-client";
 
 export const Route = createFileRoute("/customers/$customerId")({
   component: CustomerDetailPage,

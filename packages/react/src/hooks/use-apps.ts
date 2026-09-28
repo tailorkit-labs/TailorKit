@@ -1,12 +1,11 @@
 import { useTailorRootContext } from "../components/context";
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import type { TailorKitApp } from "../tailor-kit";
-import type { RegisteredScopeNames } from "../tailor-kit";
+import type { TailorKitApp } from "../tailorkit";
 import type { TailorKitAppsSnapshot, TailorKitStore } from "../store";
 import { normalizeScopeSelection } from "../scope-query";
 
-export interface UseAppsOptions {
-  scopes?: readonly RegisteredScopeNames[];
+export interface UseAppsOptions<TScopeNames extends string = string> {
+  scopes?: readonly TScopeNames[];
 }
 
 export interface UseAppsResult {

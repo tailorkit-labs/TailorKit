@@ -1,9 +1,7 @@
 "use client";
 
-import { useView } from "tailorkit/react";
-
+import { useView } from "@/lib/tailorkit-client";
 import type { Customer } from "@/lib/crm-data";
-import "@/lib/tailorkit-client";
 
 interface CustomerListContext {
   customers: Customer[];
