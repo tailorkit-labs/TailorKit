@@ -1,0 +1,43 @@
+packages/react/src/tailor-kit.tsx
+  s_f3e800461aea44::t_386eb360c7f045 98-100,113,117,184-185,190-192,199,204
+packages/react/src/store.ts
+  s_f3e800461aea44::t_651e9132c6c5c0 5,13-20,30,34,42-61,77-85,88-92,95-97,101-102,105,108,111-112,118,121,129,132-133,140,178-179,190-194,196
+  s_f3e800461aea44::t_7e142b880fbce0 195
+packages/react/src/hooks/use-apps.ts
+  s_f3e800461aea44::t_d1c1132a5a2d5d 4,6-10,23-24,26-27,30-31,35-36,38-41
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_f3e800461aea44::t_0d1ec7da5c23bc 276-308,311-313
+  s_f3e800461aea44::t_8fb99fd5fd0354 236,256,309
+  s_f3e800461aea44::t_df27dc5ac18ea2 310,314-315,334
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_f3e800461aea44::t_814829f300a12f 1,22-25,162-165
+  s_f3e800461aea44::t_4115d3865098c5 166
+packages/react/src/scope-query.ts
+  s_f3e800461aea44::t_f24efc64b9f474 14-22
+apps/docs/content/docs/(guides)/views.mdx
+  s_f3e800461aea44::t_c990e1eb8817dd 41,73,79-81,84
+  s_f3e800461aea44::t_2b1cc8fbf0180f 82-83
+  s_f3e800461aea44::t_3cb8c5f2f2bf00 85-90,119-120
+packages/react/src/index.ts
+  s_f3e800461aea44::t_3a7d402e06a119 6
+packages/react/src/components/root.tsx
+  s_f3e800461aea44::t_f24efc64b9f474 18,20-21
+packages/react/src/preview-manager.ts
+  s_f3e800461aea44::t_af29d99ca6f884 78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "30b0be9d82dea5d11c68a7d5ec227d9512520faa",
+  "prompts": {},
+  "sessions": {
+    "s_f3e800461aea44": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e28e-78c9-72e0-90fd-5c6df82f980b",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
