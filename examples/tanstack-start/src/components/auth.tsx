@@ -18,7 +18,7 @@ export function AuthScreen() {
           className="justify-start py-3"
           key={user.id}
           onClick={() => void signIn(user.id)}
-          size="xl"
+          size="lg"
         >
           Sign in as {user.name}
         </Button>

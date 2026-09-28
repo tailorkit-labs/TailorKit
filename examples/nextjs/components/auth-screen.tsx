@@ -6,6 +6,7 @@ import { Building2 } from "lucide-react";
 import { demoUsers, signInDemoUser } from "@examples/shared";
 import { Button } from "@tailorkit/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tailorkit/ui/card";
+import { Spinner } from "@tailorkit/ui/spinner";
 
 export function AuthScreen() {
   const router = useRouter();
@@ -37,12 +38,13 @@ export function AuthScreen() {
         <CardContent className="flex flex-col gap-2">
           {demoUsers.map((user) => (
             <Button
+              disabled={pendingUserId === user.id}
               key={user.id}
-              loading={pendingUserId === user.id}
               onClick={() => void signIn(user.id)}
               size="lg"
               type="button"
             >
+              {pendingUserId === user.id && <Spinner aria-hidden="true" data-icon="inline-start" />}
               Continue as {user.name}
             </Button>
           ))}
