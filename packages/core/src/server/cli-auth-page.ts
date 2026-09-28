@@ -219,7 +219,7 @@ function renderCard(state: ApprovalPageState): string {
     <h1 id="title">Approve CLI login</h1>
     <p class="description">Enter the code from your terminal.</p>
     ${state.error ? `<p class="error" role="alert">${escapeHtml(state.error)}</p>` : ""}
-    <form method="post" novalidate>
+    <form method="post">
       <fieldset>
         <legend>Confirmation code</legend>
         <div class="otp" role="group" aria-label="Confirmation code">

@@ -13,20 +13,20 @@ ALTER TABLE "preview_session" ADD COLUMN "scope_json" jsonb;--> statement-breakp
 UPDATE "app"
 SET
   "scope_json" = jsonb_build_object('name', 'legacy', 'value', jsonb_build_object('scopeId', "scope_id")),
-  "scope_key" = encode(substring(sha512(convert_to('scope:v2:' || '{"name":"legacy","value":{"scopeId":' || to_json("scope_id")::text || '}}', 'UTF8')) from 1 for 16), 'hex');--> statement-breakpoint
+  "scope_key" = encode(substring(sha256(convert_to('scope:v2:' || '{"name":"legacy","value":{"scopeId":' || to_json("scope_id")::text || '}}', 'UTF8')) from 1 for 16), 'hex');--> statement-breakpoint
 UPDATE "cli_auth_session"
 SET
   "scope_json" = jsonb_build_object('name', 'legacy', 'value', jsonb_build_object('scopeId', "scope_id")),
-  "scope_key" = encode(substring(sha512(convert_to('scope:v2:' || '{"name":"legacy","value":{"scopeId":' || to_json("scope_id")::text || '}}', 'UTF8')) from 1 for 16), 'hex')
+  "scope_key" = encode(substring(sha256(convert_to('scope:v2:' || '{"name":"legacy","value":{"scopeId":' || to_json("scope_id")::text || '}}', 'UTF8')) from 1 for 16), 'hex')
 WHERE "scope_id" IS NOT NULL;--> statement-breakpoint
 UPDATE "cli_token"
 SET
   "scope_json" = jsonb_build_object('name', 'legacy', 'value', jsonb_build_object('scopeId', "scope_id")),
-  "scope_key" = encode(substring(sha512(convert_to('scope:v2:' || '{"name":"legacy","value":{"scopeId":' || to_json("scope_id")::text || '}}', 'UTF8')) from 1 for 16), 'hex');--> statement-breakpoint
+  "scope_key" = encode(substring(sha256(convert_to('scope:v2:' || '{"name":"legacy","value":{"scopeId":' || to_json("scope_id")::text || '}}', 'UTF8')) from 1 for 16), 'hex');--> statement-breakpoint
 UPDATE "preview_session"
 SET
   "scope_json" = jsonb_build_object('name', 'legacy', 'value', jsonb_build_object('scopeId', "scope_id")),
-  "scope_key" = encode(substring(sha512(convert_to('scope:v2:' || '{"name":"legacy","value":{"scopeId":' || to_json("scope_id")::text || '}}', 'UTF8')) from 1 for 16), 'hex');--> statement-breakpoint
+  "scope_key" = encode(substring(sha256(convert_to('scope:v2:' || '{"name":"legacy","value":{"scopeId":' || to_json("scope_id")::text || '}}', 'UTF8')) from 1 for 16), 'hex');--> statement-breakpoint
 ALTER TABLE "app" ALTER COLUMN "scope_key" SET NOT NULL;--> statement-breakpoint
 ALTER TABLE "app" ALTER COLUMN "scope_json" SET NOT NULL;--> statement-breakpoint
 ALTER TABLE "cli_token" ALTER COLUMN "scope_key" SET NOT NULL;--> statement-breakpoint

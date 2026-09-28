@@ -343,17 +343,49 @@ describe("createTailorKitServer", () => {
 
   it("renders configured CLI approvals for authenticated users", async () => {
     const server = createTailorKitServer({
-      scopes: { org: testScopeSchema },
+      scopes: { org: testScopeSchema, userOrg: testScopeSchema },
       cliAuth: { signInPath: "/admin/sign-in" },
       components: {},
     });
     const response = await server.handler(
       new Request("https://example.com/api/tailorkit/cli-auth/approve?code=ABC-123-XYZ"),
-      { authenticate: () => ({ scopes: { org: { tenant: "test" } } }) },
+      {
+        authenticate: () => ({
+          scopes: { org: { tenant: "test" }, userOrg: { tenant: "user" } },
+        }),
+      },
     );
 
     expect(response.status).toBe(200);
-    await expect(response.text()).resolves.toContain("Approve CLI login");
+    const html = await response.text();
+    expect(html).toContain("Approve CLI login");
+    expect(html).toContain('<form method="post">');
+    expect(html).toContain('name="scope" required');
+    expect(html).not.toContain('<form method="post" novalidate>');
+  });
+
+  it("preserves the scope selection when a CLI approval code is missing", async () => {
+    const server = createTailorKitServer({
+      scopes: { org: testScopeSchema, userOrg: testScopeSchema },
+      components: {},
+    });
+    const response = await server.handler(
+      new Request("https://example.com/api/tailorkit/cli-auth/approve", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ intent: "approve", userCode: "", scope: "userOrg" }),
+      }),
+      {
+        authenticate: () => ({
+          scopes: { org: { tenant: "test" }, userOrg: { tenant: "user" } },
+        }),
+      },
+    );
+
+    const html = await response.text();
+    expect(html).toContain("Enter the code shown in your terminal.");
+    expect(html).toContain('<option value="org">org</option>');
+    expect(html).toContain('<option value="userOrg" selected>userOrg</option>');
   });
 
   it("rejects cross-origin CLI sign-in redirects", async () => {

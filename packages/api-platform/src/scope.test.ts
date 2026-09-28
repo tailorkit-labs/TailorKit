@@ -41,6 +41,12 @@ describe("scope canonicalization", () => {
     );
   });
 
+  it("derives the 32-character scope key from the versioned SHA-256 digest", () => {
+    expect(canonicalizeScope({ name: "organization", value: { orgId: "org_123" } }).scopeKey).toBe(
+      "fe18d2da9e8ef6a26e31f30052a78cb6",
+    );
+  });
+
   it("supports nested JSON values but rejects values that are not safe JSON", () => {
     expect(
       canonicalizeScope({ name: "organization", value: { metadata: { labels: [], data: {} } } })

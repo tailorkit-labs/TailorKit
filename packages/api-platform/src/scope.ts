@@ -200,7 +200,7 @@ export function canonicalizeScope(value: unknown): { scope: Scope; scopeKey: str
   scope.name = name;
   scope.value = valueScope;
   const serialized = serializeScope(scope);
-  const scopeKey = createHash("sha512").update(`scope:v2:${serialized}`).digest("hex").slice(0, 32);
+  const scopeKey = createHash("sha256").update(`scope:v2:${serialized}`).digest("hex").slice(0, 32);
   return { scope, scopeKey };
 }
 
