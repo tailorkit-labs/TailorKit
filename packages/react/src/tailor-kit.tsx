@@ -95,6 +95,9 @@ export interface Register {}
 export type RegisteredViews = Register extends { client: TailorKitInstance<infer S> }
   ? S
   : Record<`/${string}`, ViewDefinition>;
+export type RegisteredScopeNames = Register extends { client: { readonly $scopeNames?: infer S } }
+  ? Extract<S, string>
+  : string;
 type RegisteredSlotMap = Register extends { client: { readonly $slots?: infer V } }
   ? V
   : SlotDefinitions;
@@ -107,12 +110,13 @@ type SlotView<V extends RegisteredSlots> = RegisteredSlotMap[V] extends {
 export interface TailorKitInstance<
   TViews extends Record<string, ViewDefinition> = Record<string, ViewDefinition>,
   TSlots extends SlotDefinitions = SlotDefinitions,
+  TScopeNames extends string = string,
 > {
   readonly $slots?: TSlots;
   readonly $views?: TViews;
+  readonly $scopeNames?: TScopeNames;
   readonly baseUrl: string | URL;
   readonly components: Record<string, unknown>;
-  readonly scopes?: readonly string[];
   readonly theme: TailorKitTheme;
 }
 
@@ -174,30 +178,30 @@ type ServerViews<TTailor extends TailorKitServerShape> = {
 export function createTailorKitClient<TTailor extends TailorKitServerShape>(options: {
   baseUrl: string | URL;
   components?: CompleteComponentRenderers<ServerComponents<TTailor>>;
-  scopes?: readonly ServerScopeNames<TTailor>[];
   theme?: TailorKitTheme;
 }): TailorKitInstance<
   ServerViews<TTailor>,
-  TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions
+  TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions,
+  ServerScopeNames<TTailor>
 > {
-  const scopes = options.scopes === undefined ? undefined : Object.freeze([...options.scopes]);
   return createReactTailorKitClient<
     ServerComponents<TTailor>,
     ServerViews<TTailor>,
-    TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions
-  >({ ...options, scopes });
+    TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions,
+    ServerScopeNames<TTailor>
+  >(options);
 }
 
 function createReactTailorKitClient<
   TComponents extends Record<string, AnyComponentDefinition>,
   TViews extends Record<string, ViewDefinition> = Record<string, never>,
   TSlots extends SlotDefinitions = SlotDefinitions,
+  TScopeNames extends string = string,
 >(options: {
   baseUrl: string | URL;
   components?: ComponentRenderers<TComponents>;
-  scopes?: readonly string[];
   theme?: TailorKitTheme;
-}): TailorKitInstance<TViews, TSlots> {
+}): TailorKitInstance<TViews, TSlots, TScopeNames> {
   const wrappedComponents: Record<string, unknown> = {};
 
   const theme = options.theme ?? {};
@@ -221,7 +225,6 @@ function createReactTailorKitClient<
   return {
     baseUrl: options.baseUrl,
     components: wrappedComponents,
-    scopes: options.scopes,
     theme,
   };
 }

@@ -38,8 +38,7 @@ field names across ancestors are rejected by the type checker and runtime.
 ## Name multiple installation scopes
 
 Give each identity boundary its own schema key. Return values under those same
-keys from `authenticate()`, then select the identities a browser client should
-load:
+keys from `authenticate()`, then select the identities for each app read:
 
 ```ts
 import { createTailorKit } from "tailorkit";
@@ -71,13 +70,24 @@ async function handleRequest(request: Request) {
 ```
 
 ```tsx
-import { createTailorKitClient } from "tailorkit/react";
+import { createTailorKitClient, useApps } from "tailorkit/react";
 import type { tailorKit } from "./tailorkit";
 
 export const client = createTailorKitClient<typeof tailorKit>({
   baseUrl: "https://example.com/api/tailorkit/",
-  scopes: ["org", "userOrg"],
 });
+
+function InstalledApps() {
+  const { data: apps, isLoading } = useApps({ scopes: ["org", "userOrg"] });
+  if (isLoading) return <p>Loading apps…</p>;
+  return (
+    <ul>
+      {apps?.map((app) => (
+        <li key={app.id}>{app.name}</li>
+      ))}
+    </ul>
+  );
+}
 ```
 
 Scope values identify installations exactly, so keep them to stable identity
@@ -94,7 +104,6 @@ import type { tailorKit } from "./tailorkit";
 
 export const client = createTailorKitClient<typeof tailorKit>({
   baseUrl: "https://example.com/api/tailorkit/",
-  scopes: ["org", "userOrg"],
 });
 
 declare module "tailorkit/react" {
@@ -107,8 +116,8 @@ declare module "tailorkit/react" {
 The registration types the standalone host hooks. Pass the stable client
 configuration to `Root`; all rendering and hooks below it use React context.
 Each root owns an independent registry, even when roots share a client.
-The optional `scopes` list selects which authenticated identities load apps and
-preview metadata. Omit it to load every scope returned by `authenticate()`.
+Pass `scopes` to `useApps` to select which authenticated identities to list.
+Calling `useApps()` with no options loads every scope returned by `authenticate()`.
 
 ```tsx
 import { Root, AppView } from "tailorkit/react";

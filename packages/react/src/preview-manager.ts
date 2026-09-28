@@ -4,7 +4,6 @@ import {
 } from "@tailorkit/client-platform/preview";
 import type { PreviewBuildManifest, PreviewEvent } from "@tailorkit/client-platform/preview";
 import type { TailorKitApp } from "./tailor-kit";
-import { appendScopeSelection } from "./scope-query";
 
 export interface PreviewSnapshot {
   revision: number;
@@ -76,11 +75,7 @@ async function verify(candidate: Candidate): Promise<string | null> {
   return source;
 }
 
-export function createPreviewManager(
-  baseUrl: URL,
-  onEnded: () => void,
-  scopes?: readonly string[],
-) {
+export function createPreviewManager(baseUrl: URL, onEnded: () => void) {
   const entries = new Map<string, Entry>();
   const notify = (entry: Entry) => {
     for (const listener of entry.listeners) {
@@ -175,7 +170,6 @@ export function createPreviewManager(
     try {
       const refresh = new URL("preview/metadata", baseUrl);
       refresh.searchParams.set("sessionId", metadata.sessionId);
-      appendScopeSelection(refresh, scopes);
       const response = await fetch(refresh, { credentials: "same-origin" });
       if (response.ok) {
         metadata = previewMetadataSchema.parse(await response.json());

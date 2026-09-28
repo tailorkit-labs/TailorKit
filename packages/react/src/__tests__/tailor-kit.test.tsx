@@ -207,7 +207,6 @@ describe("tailorKitClient React adapter", () => {
     const tailor = createTailorKitClient<typeof server>({
       baseUrl: "http://runtime.test/api/tailorkit",
       components,
-      scopes: ["user"],
     });
     const suppliedApps: TailorKitApp[] = [];
     const content = (token: string) => (
@@ -234,7 +233,7 @@ describe("tailorKitClient React adapter", () => {
       .mock.calls.map(([input]) => input)
       .find((input) => input instanceof URL && input.pathname.endsWith("/preview/metadata"));
     expect(metadataRequest).toBeInstanceOf(URL);
-    expect(new URL(metadataRequest as URL).searchParams.getAll("scopes")).toEqual(["user"]);
+    expect(new URL(metadataRequest as URL).searchParams.getAll("scopes")).toEqual([]);
     const socket = PreviewSocket.instances[0];
     view.rerender(content("updated-token"));
     expect(PreviewSocket.instances).toHaveLength(1);
@@ -251,11 +250,10 @@ describe("tailorKitClient React adapter", () => {
     const tailor = createTailorKitClient<typeof server>({
       baseUrl: "http://runtime.test/api/tailorkit",
       components,
-      scopes: ["organization", "user"],
     });
 
     function AppList() {
-      const { data, status } = useApps();
+      const { data, status } = useApps({ scopes: ["organization", "user"] });
       return createElement("p", null, `${status}:${(data ?? []).map((app) => app.id).join(",")}`);
     }
 
@@ -275,11 +273,49 @@ describe("tailorKitClient React adapter", () => {
     );
   });
 
-  it("sends an empty scope selection instead of loading every scope", async () => {
+  it("keeps app lists for different scope selections separate", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+      const url = new URL(input.toString());
+      const names = url.searchParams.getAll("scopes");
+      const id = names.length === 0 ? "all" : names.join("-");
+      return Promise.resolve(Response.json([{ id }]));
+    });
+    const tailor = createTailorKitClient<typeof server>({
+      baseUrl: "http://runtime.test/api/tailorkit",
+      components,
+    });
+
+    function AppList({
+      label,
+      scopes,
+    }: {
+      label: string;
+      scopes?: readonly ("organization" | "user")[];
+    }) {
+      const { data, status } = useApps({ scopes });
+      return createElement("p", null, `${label}:${status}:${data?.[0]?.id ?? ""}`);
+    }
+
+    render(
+      <Root client={tailor}>
+        <AppList label="org" scopes={["organization"]} />
+        <AppList label="user" scopes={["user"]} />
+        <AppList label="all" />
+      </Root>,
+    );
+
+    await waitFor(() => {
+      expect(testingView.getByText("org:ready:organization")).toBeTruthy();
+      expect(testingView.getByText("user:ready:user")).toBeTruthy();
+      expect(testingView.getByText("all:ready:all")).toBeTruthy();
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("defaults to all scopes when useApps omits a selection", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json([]));
     const tailor = createTailorKitClient<typeof server>({
       baseUrl: "http://runtime.test/api/tailorkit",
-      scopes: [],
     });
 
     function AppList() {
@@ -295,7 +331,7 @@ describe("tailorKitClient React adapter", () => {
 
     await waitFor(() => expect(testingView.getByText("ready")).toBeTruthy());
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      new URL("apps?scopes=", "http://runtime.test/api/tailorkit/"),
+      new URL("apps", "http://runtime.test/api/tailorkit/"),
     );
   });
 

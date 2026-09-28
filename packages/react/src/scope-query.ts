@@ -11,15 +11,13 @@ export function appendScopeSelection(url: URL, scopes?: readonly string[]): void
   }
 }
 
-export function sameScopeSelection(
-  left: readonly string[] | undefined,
-  right: readonly string[] | undefined,
-): boolean {
-  return (
-    left === right ||
-    (left !== undefined &&
-      right !== undefined &&
-      left.length === right.length &&
-      left.every((scope, index) => scope === right[index]))
-  );
+export function normalizeScopeSelection(scopes?: readonly string[]): {
+  key: string;
+  scopes?: readonly string[];
+} {
+  if (scopes === undefined) {
+    return { key: "*" };
+  }
+  const names = [...new Set(scopes)].sort();
+  return { key: JSON.stringify(names), scopes: names };
 }

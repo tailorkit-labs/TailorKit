@@ -1,7 +1,13 @@
 import { useTailorRootContext } from "../components/context";
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import type { TailorKitApp } from "../tailor-kit";
+import type { RegisteredScopeNames } from "../tailor-kit";
 import type { TailorKitAppsSnapshot, TailorKitStore } from "../store";
+import { normalizeScopeSelection } from "../scope-query";
+
+export interface UseAppsOptions {
+  scopes?: readonly RegisteredScopeNames[];
+}
 
 export interface UseAppsResult {
   data: TailorKitApp[] | undefined;
@@ -14,21 +20,25 @@ export interface UseAppsResult {
   status: "error" | "idle" | "loading" | "ready";
 }
 
-export function useApps(): UseAppsResult {
-  return useAppsStore(useTailorRootContext("useApps").store);
+export function useApps(options: UseAppsOptions = {}): UseAppsResult {
+  return useAppsStore(useTailorRootContext("useApps").store, options);
 }
-export function useAppsStore(store: TailorKitStore): UseAppsResult {
+export function useAppsStore(store: TailorKitStore, options: UseAppsOptions = {}): UseAppsResult {
+  const selection = normalizeScopeSelection(options.scopes);
   const snapshot = useSyncExternalStore(
     store.subscribe,
-    store.getAppsSnapshot,
-    store.getAppsSnapshot,
+    () => store.getAppsSnapshot(selection.scopes),
+    () => store.getAppsSnapshot(selection.scopes),
   );
 
   useEffect(() => {
-    void store.fetchApps();
-  }, [store]);
+    void store.fetchApps({ scopes: selection.scopes });
+  }, [store, selection.key]);
 
-  const refetch = useCallback(() => store.fetchApps({ force: true }), [store]);
+  const refetch = useCallback(
+    () => store.fetchApps({ force: true, scopes: selection.scopes }),
+    [store, selection.key],
+  );
 
   return toUseAppsResult(snapshot, refetch);
 }
