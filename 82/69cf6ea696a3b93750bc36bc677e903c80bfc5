@@ -1,0 +1,22 @@
+packages/react/src/tailorkit.tsx
+  s_c45799f166e49a::t_43fd971c6d0f5d 1
+  s_c45799f166e49a::t_ba51f6dc6c57e7 217
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_c45799f166e49a::t_43fd971c6d0f5d 99,135,618
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8269cf6ea696a3b93750bc36bc677e903c80bfc5",
+  "prompts": {},
+  "sessions": {
+    "s_c45799f166e49a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e2b3-d11b-7801-8685-979768c2de0d",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
