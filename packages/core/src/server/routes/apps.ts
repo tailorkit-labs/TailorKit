@@ -7,7 +7,7 @@ import {
   appsUpdate,
 } from "@tailorkit/client-platform/client";
 import { z } from "zod";
-import { getTailorKitScope, o, requireCliDeployToken } from "../procedures";
+import { getTailorKitScope, getTailorKitScopes, o, requireCliDeployToken } from "../procedures";
 
 const paginationInput = z.object({
   page: z.number().int().min(1).optional(),
@@ -58,28 +58,28 @@ export const appRouter = {
     ),
   get: o
     .use(requireCliDeployToken)
-    .input(z.object({ appId: z.string() }))
+    .input(z.object({ appId: z.string(), scopes: z.array(z.string()).optional() }))
     .handler(
       async ({ context, input }) =>
         await appsGet({
+          body: { scopes: getTailorKitScopes(context, input.scopes) },
           client: context.platform,
           headers: context.platformHeaders,
           path: { appId: input.appId },
-          query: { scope: getTailorKitScope(context) },
         }),
     ),
   list: o
     .use(requireCliDeployToken)
-    .input(paginationInput.optional())
+    .input(paginationInput.extend({ scopes: z.array(z.string()).optional() }).optional())
     .handler(
       async ({ context, input }) =>
         await appsList({
           client: context.platform,
           headers: context.platformHeaders,
-          query: {
+          body: {
             page: input?.page,
             pageSize: input?.pageSize,
-            scope: getTailorKitScope(context),
+            scopes: getTailorKitScopes(context, input?.scopes),
           },
         }),
     ),

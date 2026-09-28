@@ -25,13 +25,13 @@ const runPlatformCliAuthRequest = async <T>(request: Promise<T>): Promise<T> => 
 export const cliAuthRouter = {
   approve: o
     .use(requireHostAuth)
-    .input(z.object({ userCode: z.string().min(1) }))
+    .input(z.object({ scope: z.string().min(1), userCode: z.string().min(1) }))
     .handler(
       async ({ context, input }) =>
         await runPlatformCliAuthRequest(
           cliAuthApprove({
             body: {
-              scope: getTailorKitScope(context),
+              scope: getTailorKitScope(context, input.scope),
               userCode: input.userCode,
             },
             client: context.platform,

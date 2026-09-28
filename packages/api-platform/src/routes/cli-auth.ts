@@ -2,13 +2,12 @@ import { ORPCError } from "@orpc/server";
 import { hashSecret } from "@tailorkit/api-utils/hashing";
 import { db } from "@tailorkit/db";
 import { cliAuthSession, cliToken } from "@tailorkit/db/schema/cli-auth";
-import { scopeValueSchema } from "@tailorkit/db/schema/scope";
 import { env } from "#env";
 import { and, eq, gt } from "drizzle-orm";
 import { randomBytes, randomInt } from "node:crypto";
 import z from "zod";
 import { o, protectedRouter } from "../procedures";
-import { canonicalizeScope } from "../scope";
+import { canonicalizeScope, scopeSchema } from "../scope";
 
 const deviceCodeBytes = 32;
 const deployTokenBytes = 32;
@@ -97,7 +96,7 @@ const approveCliAuth = protectedRouter
   .input(
     z.object({
       body: z.object({
-        scope: scopeValueSchema,
+        scope: scopeSchema,
         userCode: z.string().min(1),
       }),
     }),
@@ -170,7 +169,7 @@ const pollCliAuth = protectedRouter
         z.object({ status: z.literal("denied") }),
         z.object({
           deployToken: z.string(),
-          scope: scopeValueSchema,
+          scope: scopeSchema,
           status: z.literal("approved"),
         }),
         z.object({ status: z.literal("expired") }),
@@ -280,7 +279,7 @@ const verifyCliAuthToken = protectedRouter
     method: "POST",
   })
   .input(z.object({ body: z.object({ deployToken: z.string().min(1) }) }))
-  .output(z.object({ body: z.object({ scope: scopeValueSchema }) }))
+  .output(z.object({ body: z.object({ scope: scopeSchema }) }))
   .handler(async ({ context, input }) => {
     const token = await db.query.cliToken.findFirst({
       where: {

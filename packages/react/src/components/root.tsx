@@ -6,6 +6,7 @@ import type { ComponentProps } from "./render";
 import { mergeProps, useRender } from "./render";
 import { TailorRootContext } from "./context";
 import type { TailorRootContextValue } from "./context";
+import { sameScopeSelection } from "../scope-query";
 
 export interface RootProps extends ComponentProps<"div"> {
   apps?: TailorKitApp[];
@@ -15,10 +16,15 @@ export interface RootProps extends ComponentProps<"div"> {
 
 export function Root({ apps: appsProp, children, render, client, ...props }: RootProps): ReactNode {
   const baseUrl = toBaseUrl(client.baseUrl).toString();
-  const [previousStore, setStore] = useState(() => createTailorKitStore(baseUrl, appsProp));
+  const [previousStore, setStore] = useState(() =>
+    createTailorKitStore(baseUrl, appsProp, client.scopes),
+  );
   let store = previousStore;
-  if (previousStore.baseUrl.toString() !== baseUrl) {
-    store = createTailorKitStore(baseUrl, appsProp);
+  if (
+    previousStore.baseUrl.toString() !== baseUrl ||
+    !sameScopeSelection(previousStore.scopes, client.scopes)
+  ) {
+    store = createTailorKitStore(baseUrl, appsProp, client.scopes);
     setStore(store);
   }
   useEffect(() => {

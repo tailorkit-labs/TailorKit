@@ -14,14 +14,19 @@ import { normalizeBasePath } from "./apps";
 import { handleCliAuthApprovalPage } from "./cli-auth-page";
 import { handlePreviewConsent, readPreviewGrantIds } from "./preview-consent";
 import { createContext } from "./context";
-import { validateTailorKitScope } from "./scope";
+import {
+  selectTailorKitScopes,
+  validateTailorKitScopeSchemas,
+  validateTailorKitScopes,
+} from "./scope";
 import { tailorkitRouter } from "./router";
 import type {
   InferTailorKitServerActions,
   InferTailorKitServerComponents,
   InferTailorKitServerContexts,
-  InferTailorKitServerScope,
+  InferTailorKitServerScopes,
   TailorKitHandlerOptions,
+  TailorKitScopes,
   TailorKitServer,
   TailorKitServerInputOptions,
 } from "./types";
@@ -45,11 +50,12 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
   InferTailorKitServerContexts<TOptions>,
   InferTailorKitServerActions<TOptions>,
   ResolveActionTreeContext<InferTailorKitServerActions<TOptions>>,
-  InferTailorKitServerScope<TOptions>
+  InferTailorKitServerScopes<TOptions>
 > & {
   readonly $slots?: TOptions extends { slots: infer V } ? V : Record<never, never>;
 } {
   const basePath = normalizeBasePath(options.basePath ?? "/api/tailorkit");
+  const scopeSchemas = validateTailorKitScopeSchemas(options.scopes);
   const previewReturnPath = options.preview?.returnPath ?? "/";
   if (
     !previewReturnPath.startsWith("/") ||
@@ -91,7 +97,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
     request: Request,
     handlerOptions: TailorKitHandlerOptions<
       ResolveActionTreeContext<InferTailorKitServerActions<TOptions>>,
-      InferTailorKitServerScope<TOptions>
+      InferTailorKitServerScopes<TOptions>
     >,
   ) => {
     const authenticate = async ({ request }: { request: Request }) => {
@@ -102,7 +108,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
 
       return {
         ...hostContext,
-        scope: await validateTailorKitScope(options.scopeSchema, hostContext.scope),
+        scopes: await validateTailorKitScopes(scopeSchemas, hostContext.scopes),
       };
     };
     const url = new URL(request.url);
@@ -131,6 +137,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
+        scopeSchemas,
         authenticate,
       });
       return handlePreviewConsent({
@@ -152,14 +159,19 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
+        scopeSchemas,
         authenticate,
       });
       const viewer = await context.authenticate({ request });
       if (!viewer) {
         return new Response("Unauthorized", { status: 401 });
       }
+      const scopes = resolveReadScopes(url, viewer.scopes);
+      if (scopes instanceof Response) {
+        return scopes;
+      }
       const result = await previewAccepted({
-        body: { grantIds: readPreviewGrantIds(request), scope: viewer.scope },
+        body: { grantIds: readPreviewGrantIds(request), scopes },
         client: context.platform,
         headers: context.platformHeaders,
         throwOnError: true,
@@ -183,6 +195,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
+        scopeSchemas,
         authenticate,
       });
       const tailorkit = await context.authenticate({ request });
@@ -191,13 +204,18 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         return new Response("Unauthorized", { status: 401 });
       }
 
+      const scopes = resolveReadScopes(url, tailorkit.scopes);
+      if (scopes instanceof Response) {
+        return scopes;
+      }
+
       const items: Record<string, unknown>[] = [];
       let page = 1;
       for (;;) {
         const result = await appsList({
           client: context.platform,
           headers: context.platformHeaders,
-          query: { page, pageSize: 100, scope: tailorkit.scope },
+          body: { page, pageSize: 100, scopes },
           throwOnError: true,
         });
         const data = "data" in result ? result.data : result;
@@ -210,7 +228,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
       const grantIds = readPreviewGrantIds(request);
       if (grantIds.length) {
         const result = await previewAccepted({
-          body: { grantIds, scope: tailorkit.scope },
+          body: { grantIds, scopes },
           client: context.platform,
           headers: context.platformHeaders,
           throwOnError: true,
@@ -237,6 +255,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
+        scopeSchemas,
         authenticate,
       });
 
@@ -256,6 +275,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
+        scopeSchemas,
         authenticate,
       }),
       prefix: basePath as AbsolutePath,
@@ -272,4 +292,14 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
     $internal: { assetsBaseUrl, platformBaseUrl, router: tailorkitRouter, schema },
     handler,
   };
+}
+
+function resolveReadScopes(url: URL, availableScopes: TailorKitScopes) {
+  try {
+    const names = url.searchParams.getAll("scopes");
+    return selectTailorKitScopes(availableScopes, names.length ? names : undefined);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Invalid scope selection.";
+    return new Response(message, { status: 400 });
+  }
 }

@@ -20,7 +20,7 @@ import { primitives } from "tailorkit/zod";
 import { z } from "zod";
 
 export const tailorKit = createTailorKit({
-  scopeSchema: z.object({ userId: z.string().min(1) }),
+  scopes: { user: z.object({ userId: z.string().min(1) }) },
   components: {
     ...primitives(),
   },
@@ -33,7 +33,7 @@ import { primitives } from "tailorkit/valibot";
 import * as v from "valibot";
 
 export const tailorKit = createTailorKit({
-  scopeSchema: v.object({ userId: v.pipe(v.string(), v.minLength(1)) }),
+  scopes: { user: v.object({ userId: v.pipe(v.string(), v.minLength(1)) }) },
   components: {
     ...primitives(),
   },
@@ -46,7 +46,7 @@ import { primitives } from "tailorkit/arktype";
 import { type } from "arktype";
 
 export const tailorKit = createTailorKit({
-  scopeSchema: type({ userId: "string >= 1" }),
+  scopes: { user: type({ userId: "string >= 1" }) },
   components: {
     ...primitives(),
   },
@@ -164,7 +164,7 @@ const theme: TailorKitTheme = {
 };
 
 export const tailorKit = createTailorKit({
-  scopeSchema: z.object({ userId: z.string().min(1) }),
+  scopes: { user: z.object({ userId: z.string().min(1) }) },
   components: {
     ...primitives(theme),
   },
@@ -192,7 +192,7 @@ const theme: TailorKitTheme = {
 };
 
 export const tailorKit = createTailorKit({
-  scopeSchema: v.object({ userId: v.pipe(v.string(), v.minLength(1)) }),
+  scopes: { user: v.object({ userId: v.pipe(v.string(), v.minLength(1)) }) },
   components: {
     ...primitives(theme),
   },
@@ -220,7 +220,7 @@ const theme: TailorKitTheme = {
 };
 
 export const tailorKit = createTailorKit({
-  scopeSchema: type({ userId: "string >= 1" }),
+  scopes: { user: type({ userId: "string >= 1" }) },
   components: {
     ...primitives(theme),
   },

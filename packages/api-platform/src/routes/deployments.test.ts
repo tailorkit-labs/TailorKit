@@ -22,7 +22,7 @@ const organizationId = "11111111-1111-4111-8111-111111111111";
 const projectId = "22222222-2222-4222-8222-222222222222";
 const logoChecksum = "b".repeat(64);
 const logoChecksumBase64 = Buffer.from(logoChecksum, "hex").toString("base64");
-const productionScope = { environment: "production" };
+const productionScope = { name: "environment", value: { environment: "production" } };
 
 describe("platform deployment uploads", () => {
   let client: Awaited<ReturnType<typeof createTestDb>>["client"];

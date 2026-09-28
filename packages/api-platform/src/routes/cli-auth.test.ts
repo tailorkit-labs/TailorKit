@@ -20,7 +20,10 @@ const { canonicalizeScope } = await import("../scope");
 
 const organizationId = "11111111-1111-4111-8111-111111111111";
 const projectId = "22222222-2222-4222-8222-222222222222";
-const scope = { organizationId: "org_123", userId: "user_456" };
+const scope = {
+  name: "user",
+  value: { organizationId: "org_123", userId: "user_456" },
+};
 
 function createContext(): Context {
   return {

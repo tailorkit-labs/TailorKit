@@ -19,7 +19,7 @@ const typedSchema = <TValue,>(): StandardSchemaV1<unknown, TValue> &
   }) as const satisfies StandardSchemaV1<unknown, TValue> & StandardJSONSchemaV1<unknown, TValue>;
 
 const server = createTailorKitServer({
-  scopeSchema: typedSchema<{ userId: string }>(),
+  scopes: { user: typedSchema<{ userId: string }>() },
   slots: {
     panel: { views: ["/", "/home", "/home/detail", "/user"] },
     navbar: { views: ["/"] },
@@ -38,10 +38,19 @@ const server = createTailorKitServer({
 });
 
 const tailor = createTailorKitClient<typeof server>({ baseUrl: "http://runtime.test" });
+createTailorKitClient<typeof server>({
+  baseUrl: "http://runtime.test",
+  scopes: ["user"],
+});
+createTailorKitClient<typeof server>({
+  baseUrl: "http://runtime.test",
+  // @ts-expect-error selected scopes must be declared by the server
+  scopes: ["organization"],
+});
 const app = { clientPath: "/apps/todo.js", id: "todo" };
 
 const childrenServer = createTailorKitServer({
-  scopeSchema: typedSchema<{ userId: string }>(),
+  scopes: { user: typedSchema<{ userId: string }>() },
   components: {
     Button: {
       children: true,
@@ -62,7 +71,7 @@ createTailorKitClient<typeof childrenServer>({
 });
 
 const requiredComponentsServer = createTailorKitServer({
-  scopeSchema: typedSchema<{ userId: string }>(),
+  scopes: { user: typedSchema<{ userId: string }>() },
   components: {
     Button: {},
     Input: {},
@@ -88,7 +97,7 @@ components(childrenSchema, {
 });
 
 const callbackServer = createTailorKitServer({
-  scopeSchema: typedSchema<{ userId: string }>(),
+  scopes: { user: typedSchema<{ userId: string }>() },
   components: {
     Button: {
       fields: typedSchema<{ variant?: "default" | "secondary" }>(),

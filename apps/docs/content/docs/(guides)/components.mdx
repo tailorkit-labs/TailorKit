@@ -163,7 +163,7 @@ import { z } from "zod";
 export const tailorKit = createTailorKit({
   assetsBaseUrl: process.env.TAILORKIT_ASSETS_BASE_URL ?? "http://localhost:8333/tailorkit",
   projectKey: process.env.TAILORKIT_PROJECT_KEY,
-  scopeSchema: z.object({ userId: z.string().min(1) }),
+  scopes: { user: z.object({ userId: z.string().min(1) }) },
   components,
   contexts,
   actions,
@@ -190,7 +190,7 @@ const handle = ({ request }: { request: Request }) =>
 
       return {
         actionContext: { user },
-        scope: { userId: user.id },
+        scopes: { user: { userId: user.id } },
       };
     },
   });

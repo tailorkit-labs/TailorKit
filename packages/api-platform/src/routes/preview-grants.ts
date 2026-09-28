@@ -1,7 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { ORPCError } from "@orpc/server";
 import { db } from "@tailorkit/db";
-import { scopeValueSchema } from "@tailorkit/db/schema/scope";
 import { getBaseUrl } from "@tailorkit/env";
 import { env } from "#env";
 import { getKV } from "@tailorkit/kv";
@@ -11,7 +10,13 @@ import { protectedRouter } from "../procedures";
 import { createPreviewViewerToken } from "../preview-token";
 import { ensurePreviewDeveloperGrace } from "../preview-lifecycle";
 import { AppWithCurrentDeployment } from "./apps";
-import { canonicalizeScope, scopeMatches } from "../scope";
+import {
+  canonicalizeScope,
+  canonicalizeScopes,
+  scopeMatches,
+  scopeSchema,
+  scopesSchema,
+} from "../scope";
 
 const opaqueId = z.string().regex(/^[A-Za-z0-9_-]{43}$/u);
 const createId = () => randomBytes(32).toString("base64url");
@@ -29,7 +34,7 @@ const requireKV = () => {
 const grantSchema = z.object({
   projectId: z.string().min(1),
   sessionId: z.uuid(),
-  scope: scopeValueSchema,
+  scope: scopeSchema,
 });
 type Grant = z.infer<typeof grantSchema>;
 
@@ -63,7 +68,7 @@ export const accept = protectedRouter
   .input(
     z.object({
       params: z.object({ shareId: opaqueId }),
-      body: z.object({ scope: scopeValueSchema }),
+      body: z.object({ scope: scopeSchema }),
     }),
   )
   .output(z.object({ body: z.object({ grantId: opaqueId, sessionId: z.uuid() }) }))
@@ -108,7 +113,7 @@ export const accepted = protectedRouter
   .route({ path: "/grants/resolve", method: "POST" })
   .input(
     z.object({
-      body: z.object({ grantIds: z.array(opaqueId).max(20), scope: scopeValueSchema }),
+      body: z.object({ grantIds: z.array(opaqueId).max(20), scopes: scopesSchema }),
     }),
   )
   .output(
@@ -125,7 +130,7 @@ export const accepted = protectedRouter
   )
   .handler(async ({ context, input }) => {
     const kv = requireKV();
-    const scope = canonicalizeScope(input.body.scope);
+    const scopes = canonicalizeScopes(input.body.scopes);
     const items = [];
     const seen = new Set<string>();
     for (const grantId of input.body.grantIds) {
@@ -139,7 +144,10 @@ export const accepted = protectedRouter
       } catch {
         continue;
       }
-      if (grant.projectId !== context.project.id || !scopeMatches(grant.scope, scope.scope)) {
+      if (
+        grant.projectId !== context.project.id ||
+        !scopes.some(({ scope }) => scopeMatches(grant.scope, scope))
+      ) {
         continue;
       }
       const session = await db.query.previewSession.findFirst({

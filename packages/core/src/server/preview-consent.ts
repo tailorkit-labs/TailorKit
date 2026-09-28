@@ -2,7 +2,8 @@ import { previewAccept, previewInvitation } from "@tailorkit/client-platform/cli
 import type { Client as PlatformClient } from "@tailorkit/client-platform/client/client/index";
 import { z } from "zod";
 import { approvalStyles, escapeHtml } from "./cli-auth-page";
-import type { TailorKitScope } from "./types";
+import { selectTailorKitScopes } from "./scope";
+import type { TailorKitNamedScope, TailorKitScopes } from "./types";
 
 export const previewCookieName = "tailorkit_preview_grants";
 const grantIdSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/u);
@@ -37,7 +38,7 @@ interface ConsentOptions {
   platformHeaders: Record<string, string>;
   authenticate: (ctx: {
     request: Request;
-  }) => Promise<{ scope: TailorKitScope } | null> | { scope: TailorKitScope } | null;
+  }) => Promise<{ scopes: TailorKitScopes } | null> | { scopes: TailorKitScopes } | null;
 }
 
 // Strip share IDs from Referer while preserving Origin on same-origin form submissions.
@@ -55,6 +56,7 @@ export async function handlePreviewConsent(options: ConsentOptions): Promise<Res
     authenticate,
   } = options;
   const url = new URL(request.url);
+  let selectedScopeName: string | undefined;
   if (!grantIdSchema.safeParse(shareId).success) {
     return new Response("Preview unavailable", { status: 404, headers });
   }
@@ -73,6 +75,8 @@ export async function handlePreviewConsent(options: ConsentOptions): Promise<Res
     }
     const form = await request.formData();
     const intent = consentIntentSchema.safeParse(form.get("intent"));
+    selectedScopeName =
+      typeof form.get("scope") === "string" ? String(form.get("scope")) : undefined;
     if (intent.success && intent.data === "cancel") {
       return new Response(null, { status: 303, headers: { ...headers, location: returnPath } });
     }
@@ -98,9 +102,17 @@ export async function handlePreviewConsent(options: ConsentOptions): Promise<Res
     );
   }
   if (request.method === "POST") {
+    let scope: TailorKitNamedScope;
+    try {
+      scope = selectWriteScope(viewer.scopes, selectedScopeName);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Choose one scope to accept this preview.";
+      return new Response(message, { status: 400, headers });
+    }
     try {
       const result = await previewAccept({
-        body: { scope: viewer.scope },
+        body: { scope },
         path: { shareId },
         client: platform,
         headers: platformHeaders,
@@ -126,14 +138,42 @@ export async function handlePreviewConsent(options: ConsentOptions): Promise<Res
     });
     const data = "data" in result ? result.data : result;
     const appName = escapeHtml(data.appName);
+    const scopeControl = renderScopeControl(viewer.scopes, selectedScopeName);
     return html(
       `Preview ${appName}`,
       "After you accept, this preview is available only in this browser.",
-      `<aside class="warning" role="note" aria-labelledby="preview-warning-title"><span class="warning-icon" aria-hidden="true">⚠</span><div><h2 class="warning-title" id="preview-warning-title">Untrusted content</h2><p class="warning-description">Only accept previews from trusted developers.</p></div></aside><form method="post"><div class="actions"><button class="button primary" name="intent" value="accept" type="submit">Accept preview</button><button class="button secondary" name="intent" value="cancel" type="submit">Cancel</button></div></form>`,
+      `<aside class="warning" role="note" aria-labelledby="preview-warning-title"><span class="warning-icon" aria-hidden="true">⚠</span><div><h2 class="warning-title" id="preview-warning-title">Untrusted content</h2><p class="warning-description">Only accept previews from trusted developers.</p></div></aside><form method="post">${scopeControl}<div class="actions"><button class="button primary" name="intent" value="accept" type="submit">Accept preview</button><button class="button secondary" name="intent" value="cancel" type="submit" formnovalidate>Cancel</button></div></form>`,
     );
   } catch (error) {
     return previewErrorResponse(error);
   }
+}
+
+function selectWriteScope(
+  scopes: TailorKitScopes,
+  selectedName: string | undefined,
+): TailorKitNamedScope {
+  const availableNames = Object.keys(scopes);
+  const name = selectedName ?? (availableNames.length === 1 ? availableNames[0]! : undefined);
+  if (name === undefined) {
+    throw new TypeError("Choose one scope to accept this preview.");
+  }
+  return selectTailorKitScopes(scopes, [name])[0]!;
+}
+
+function renderScopeControl(scopes: TailorKitScopes, selectedName?: string): string {
+  const names = Object.keys(scopes);
+  if (names.length === 1) {
+    return `<input type="hidden" name="scope" value="${escapeHtml(names[0]!)}">`;
+  }
+  const options = names
+    .map(
+      (name) =>
+        `<option value="${escapeHtml(name)}"${name === selectedName ? " selected" : ""}>${escapeHtml(name)}</option>`,
+    )
+    .join("");
+  const placeholder = `<option value="" disabled${selectedName ? "" : " selected"}>Choose a scope</option>`;
+  return `<label for="preview-scope">Save this preview under</label><select id="preview-scope" name="scope" required>${placeholder}${options}</select>`;
 }
 
 function previewErrorResponse(error: unknown): Response {

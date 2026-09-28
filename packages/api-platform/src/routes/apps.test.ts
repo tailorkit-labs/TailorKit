@@ -26,8 +26,8 @@ const orgId = "11111111-1111-4111-8111-111111111111";
 const projectId = "22222222-2222-4222-8222-222222222222";
 const otherProjectId = "33333333-3333-4333-8333-333333333333";
 const userId = "44444444-4444-4444-8444-444444444444";
-const productionScope = { environment: "production" };
-const stagingScope = { environment: "staging" };
+const productionScope = { name: "environment", value: { environment: "production" } };
+const stagingScope = { name: "environment", value: { environment: "staging" } };
 
 function createContext(overrides: Partial<Context> = {}): Context {
   return {
@@ -145,7 +145,7 @@ describe("platform appRouter", () => {
 
     const result = await call(
       appRouter.list,
-      { query: { page: 1, pageSize: 10, scope: productionScope } },
+      { body: { page: 1, pageSize: 10, scopes: [productionScope] } },
       { context },
     );
 
@@ -211,7 +211,7 @@ describe("platform appRouter", () => {
 
     const result = await call(
       appRouter.list,
-      { query: { page: 1, pageSize: 10, scope: productionScope } },
+      { body: { page: 1, pageSize: 10, scopes: [productionScope] } },
       { context },
     );
 
@@ -219,6 +219,55 @@ describe("platform appRouter", () => {
     expect(result.body.items[0]?.clientPath).toBe(
       `https://team0000000001.tailorkit.app/p/${projectId}/a/notes00001/d/deploy0001/client.js`,
     );
+  });
+
+  it("lists apps across selected named scopes with global ordering and pagination", async () => {
+    const context = createContext();
+    const teamScope = { name: "team", value: { teamId: "team_1" } };
+    const userScope = { name: "user", value: { userId: "user_1" } };
+    const excludedScope = { name: "team", value: { teamId: "team_2" } };
+    const createdAt = (day: number) =>
+      new Date(`2026-01-${String(day).padStart(2, "0")}T00:00:00.000Z`);
+
+    await db.insert(appTable).values([
+      {
+        name: "Team app",
+        projectId,
+        publicId: "teamapp00001",
+        createdAt: createdAt(3),
+        ...canonicalizeScope(teamScope),
+      },
+      {
+        name: "User app",
+        projectId,
+        publicId: "userapp00001",
+        createdAt: createdAt(4),
+        ...canonicalizeScope(userScope),
+      },
+      {
+        name: "Other team app",
+        projectId,
+        publicId: "otherapp0001",
+        createdAt: createdAt(5),
+        ...canonicalizeScope(excludedScope),
+      },
+    ]);
+
+    const firstPage = await call(
+      appRouter.list,
+      { body: { page: 1, pageSize: 1, scopes: [teamScope, userScope] } },
+      { context },
+    );
+    const secondPage = await call(
+      appRouter.list,
+      { body: { page: 2, pageSize: 1, scopes: [teamScope, userScope] } },
+      { context },
+    );
+
+    expect(firstPage.body.items.map(({ name }) => name)).toEqual(["User app"]);
+    expect(secondPage.body.items.map(({ name }) => name)).toEqual(["Team app"]);
+    expect(firstPage.body.pagination.hasMore).toBe(true);
+    expect(secondPage.body.pagination.hasMore).toBe(false);
   });
 
   it("does not resolve apps outside the current project or scope", async () => {
@@ -239,7 +288,7 @@ describe("platform appRouter", () => {
     await expect(
       call(
         appRouter.get,
-        { params: { appId: created.id }, query: { scope: productionScope } },
+        { params: { appId: created.id }, body: { scopes: [productionScope] } },
         { context: createContext() },
       ),
     ).rejects.toEqual(

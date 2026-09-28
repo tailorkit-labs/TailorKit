@@ -63,18 +63,33 @@ describe("auth store", () => {
 
     await saveDeployToken("https://example.com", {
       deployToken: "deploy-token",
-      scope: { userId: "user-1" },
+      scope: { name: "user", value: { userId: "user-1" } },
     });
 
     await expect(getDeployToken("https://example.com")).resolves.toEqual({
       deployToken: "deploy-token",
-      scope: { userId: "user-1" },
+      scope: { name: "user", value: { userId: "user-1" } },
     });
   });
 
   it("validates auth.json before returning stored credentials", async () => {
     const homeDirectory = await createTemporaryHome();
     await writeAuthStoreFixture(homeDirectory, { hosts: { "https://example.com": {} } });
+    const { getDeployToken } = await loadAuthModule(homeDirectory);
+
+    await expect(getDeployToken("https://example.com")).rejects.toThrow();
+  });
+
+  it("rejects auth.json entries with an unnamed legacy scope", async () => {
+    const homeDirectory = await createTemporaryHome();
+    await writeAuthStoreFixture(homeDirectory, {
+      hosts: {
+        "https://example.com": {
+          deployToken: "deploy-token",
+          scope: { userId: "user-1" },
+        },
+      },
+    });
     const { getDeployToken } = await loadAuthModule(homeDirectory);
 
     await expect(getDeployToken("https://example.com")).rejects.toThrow();
@@ -94,7 +109,7 @@ describe("auth store", () => {
 
     await saveDeployToken("https://new.example.com", {
       deployToken: "new-token",
-      scope: { userId: "user-1" },
+      scope: { name: "user", value: { userId: "user-1" } },
     });
 
     await expect(readFile(filePath, "utf-8").then(JSON.parse)).resolves.toEqual({
@@ -105,7 +120,7 @@ describe("auth store", () => {
         },
         "https://new.example.com": {
           deployToken: "new-token",
-          scope: { userId: "user-1" },
+          scope: { name: "user", value: { userId: "user-1" } },
         },
       },
     });
@@ -117,7 +132,7 @@ describe("auth store", () => {
 
     await saveDeployToken("https://example.com", {
       deployToken: "deploy-token",
-      scope: { userId: "user-1" },
+      scope: { name: "user", value: { userId: "user-1" } },
     });
 
     const fileStat = await stat(authStorePath(homeDirectory));
@@ -132,7 +147,7 @@ describe("auth store", () => {
 
     await saveDeployToken("https://example.com", {
       deployToken: "deploy-token",
-      scope: { userId: "user-1" },
+      scope: { name: "user", value: { userId: "user-1" } },
     });
 
     const fileStat = await stat(filePath);
@@ -190,7 +205,7 @@ describe("auth store", () => {
     );
   });
 
-  it("returns the verified structured scope", async () => {
+  it("returns the verified named scope", async () => {
     const homeDirectory = await createTemporaryHome();
     vi.mocked(loadTailorKitConfig).mockResolvedValue({
       config: { host: "https://example.com" },
@@ -200,7 +215,9 @@ describe("auth store", () => {
     vi.mocked(createTailorKitClient).mockReturnValue({
       cliAuth: {
         verifyToken: vi.fn().mockResolvedValue({
-          data: { scope: { orgId: "org-1", userId: "user-1" } },
+          data: {
+            scope: { name: "organization", value: { orgId: "org-1", userId: "user-1" } },
+          },
         }),
       },
     } as unknown as ReturnType<typeof createTailorKitClient>);
@@ -211,7 +228,7 @@ describe("auth store", () => {
 
     await expect(runWhoami({ cwd: homeDirectory })).resolves.toEqual({
       hostUrl: "https://example.com",
-      scope: { orgId: "org-1", userId: "user-1" },
+      scope: { name: "organization", value: { orgId: "org-1", userId: "user-1" } },
     });
   });
 });

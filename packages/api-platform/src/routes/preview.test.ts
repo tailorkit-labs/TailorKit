@@ -30,9 +30,9 @@ if (!authSecret) {
 const orgId = "11111111-1111-4111-8111-111111111111";
 const projectId = "22222222-2222-4222-8222-222222222222";
 const tokenId = "33333333-3333-4333-8333-333333333333";
-const authorScope = { userId: "author" };
-const otherHostScope = { userId: "other" };
-const viewerScope = { userId: "viewer" };
+const authorScope = { name: "user", value: { userId: "author" } };
+const otherHostScope = { name: "user", value: { userId: "other" } };
+const viewerScope = { name: "user", value: { userId: "viewer" } };
 
 function fakeKV() {
   const data = new Map<string, string>();
@@ -288,13 +288,13 @@ describe("platform preview lifecycle and grants", () => {
     );
     const wrongScope = await call(
       previewRouter.accepted,
-      { body: { grantIds: [accepted.body.grantId], scope: otherHostScope } },
+      { body: { grantIds: [accepted.body.grantId], scopes: [otherHostScope] } },
       { context },
     );
     expect(wrongScope.body.items).toEqual([]);
     const viewer = await call(
       previewRouter.accepted,
-      { body: { grantIds: [accepted.body.grantId], scope: viewerScope } },
+      { body: { grantIds: [accepted.body.grantId], scopes: [viewerScope] } },
       { context },
     );
     expect(viewer.body.items).toHaveLength(1);
@@ -306,7 +306,7 @@ describe("platform preview lifecycle and grants", () => {
     );
     const ended = await call(
       previewRouter.accepted,
-      { body: { grantIds: [accepted.body.grantId], scope: viewerScope } },
+      { body: { grantIds: [accepted.body.grantId], scopes: [viewerScope] } },
       { context },
     );
     expect(ended.body.items).toEqual([]);

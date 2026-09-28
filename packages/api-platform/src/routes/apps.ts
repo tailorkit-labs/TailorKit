@@ -1,14 +1,13 @@
 import { ORPCError } from "@orpc/server";
 import { db } from "@tailorkit/db";
 import { App, app, AppDeployment } from "@tailorkit/db/schema/apps";
-import { scopeValueSchema } from "@tailorkit/db/schema/scope";
 import { eq } from "drizzle-orm";
 import z from "zod";
 import { paginatedOutput, paginationQuery } from "../pagination";
-import { o, protectedRouter, requireApp } from "../procedures";
+import { o, protectedRouter, requireApp, requireAppInScopes } from "../procedures";
 import { createPublicId } from "../public-id";
 import { withAppAssetUrl } from "../asset-url";
-import { canonicalizeScope } from "../scope";
+import { canonicalizeScope, canonicalizeScopes, scopeSchema, scopesSchema } from "../scope";
 
 export const AppWithCurrentDeployment = App.omit({ scopeKey: true }).extend({
   currentDeployment: AppDeployment.nullable(),
@@ -34,21 +33,24 @@ async function createUniqueAppPublicId(projectId: string) {
 
 const listApps = protectedRouter
   .route({
-    path: "/",
-    method: "GET",
+    path: "/list",
+    method: "POST",
   })
-  .input(z.object({ query: paginationQuery.extend({ scope: scopeValueSchema }) }))
+  .input(z.object({ body: paginationQuery.extend({ scopes: scopesSchema }) }))
   .output(paginatedOutput(AppWithCurrentDeployment))
   .handler(async ({ context, input }) => {
-    const { page, pageSize } = input.query;
-    const scope = canonicalizeScope(input.query.scope);
+    const { page, pageSize } = input.body;
+    const scopes = canonicalizeScopes(input.body.scopes);
     const apps = await db.query.app.findMany({
       where: {
-        RAW: (fields, { and, eq }) =>
+        RAW: (fields, { and, eq, or }) =>
           and(
             eq(fields.projectId, context.project.id),
-            eq(fields.scopeKey, scope.scopeKey),
-            eq(fields.scope, scope.scope),
+            or(
+              ...scopes.map(({ scope, scopeKey }) =>
+                and(eq(fields.scopeKey, scopeKey), eq(fields.scope, scope)),
+              ),
+            ),
           )!,
       },
       orderBy: {
@@ -81,19 +83,17 @@ const listApps = protectedRouter
 
 const getApp = protectedRouter
   .route({
-    path: "/:appId",
-    method: "GET",
+    path: "/:appId/lookup",
+    method: "POST",
   })
   .input(
     z.object({
       params: z.object({ appId: z.string() }),
-      query: z.object({
-        scope: scopeValueSchema,
-      }),
+      body: z.object({ scopes: scopesSchema }),
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))
-  .use(requireApp, ({ params: { appId }, query: { scope } }) => ({ appId, scope }))
+  .use(requireAppInScopes, ({ params: { appId }, body: { scopes } }) => ({ appId, scopes }))
   .handler(({ context }) => ({
     body: withAppAssetUrl(context.app, context.organization.publicId, context.project.id),
   }));
@@ -105,7 +105,7 @@ const createApp = protectedRouter
   })
   .input(
     z.object({
-      body: App.pick({ name: true, description: true }).extend({ scope: scopeValueSchema }),
+      body: App.pick({ name: true, description: true }).extend({ scope: scopeSchema }),
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))
@@ -143,7 +143,7 @@ const deleteApp = protectedRouter
   .input(
     z.object({
       params: z.object({ appId: z.string() }),
-      query: z.object({ scope: scopeValueSchema }),
+      query: z.object({ scope: scopeSchema }),
     }),
   )
   .output(z.object({ body: z.object({ id: z.uuid({ version: "v7" }) }) }))
@@ -163,7 +163,7 @@ const updateApp = protectedRouter
     z.object({
       body: App.pick({ name: true, description: true }),
       params: z.object({ appId: z.string() }),
-      query: z.object({ scope: scopeValueSchema }),
+      query: z.object({ scope: scopeSchema }),
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))
@@ -200,7 +200,7 @@ const deploy = protectedRouter
     z.object({
       body: z.object({ deploymentId: z.string() }),
       params: z.object({ appId: z.string() }),
-      query: z.object({ scope: scopeValueSchema }),
+      query: z.object({ scope: scopeSchema }),
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))

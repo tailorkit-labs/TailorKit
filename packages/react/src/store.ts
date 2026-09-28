@@ -2,6 +2,7 @@ import type { TailorKitSchemaSpecType } from "@tailorkit/core/spec";
 import type { TailorKitApp } from "./tailor-kit";
 import { createViewRegistry } from "./view-registry";
 import { createPreviewManager } from "./preview-manager";
+import { appendScopeSelection } from "./scope-query";
 
 export interface TailorKitAppsSnapshot {
   apps: TailorKitApp[];
@@ -18,7 +19,11 @@ interface TailorKitMetaSnapshot {
 
 export type TailorKitStore = ReturnType<typeof createTailorKitStore>;
 
-export function createTailorKitStore(baseUrlInput: string | URL, initialApps?: TailorKitApp[]) {
+export function createTailorKitStore(
+  baseUrlInput: string | URL,
+  initialApps?: TailorKitApp[],
+  scopes?: readonly string[],
+) {
   const baseUrl = toBaseUrl(baseUrlInput);
   const listeners = new Set<() => void>();
   let providedApps = initialApps;
@@ -77,6 +82,7 @@ export function createTailorKitStore(baseUrlInput: string | URL, initialApps?: T
       const requestId = ++fetchAppsRequestId;
 
       const appsUrl = new URL("apps", baseUrl);
+      appendScopeSelection(appsUrl, scopes);
       fetchAppsPromise = fetch(appsUrl)
         .then(async (response) => {
           if (!response.ok) {
@@ -154,9 +160,14 @@ export function createTailorKitStore(baseUrlInput: string | URL, initialApps?: T
   };
   return {
     ...store,
-    previews: createPreviewManager(baseUrl, () => {
-      void store.fetchApps({ force: true });
-    }),
+    scopes,
+    previews: createPreviewManager(
+      baseUrl,
+      () => {
+        void store.fetchApps({ force: true });
+      },
+      scopes,
+    ),
   };
 }
 

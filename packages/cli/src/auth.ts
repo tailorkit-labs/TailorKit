@@ -15,9 +15,14 @@ interface LoginOptions extends AuthOptions {
   timeout?: number;
 }
 
+interface NamedScope {
+  name: string;
+  value: Record<string, unknown>;
+}
+
 interface StoredHostAuth {
   deployToken: string;
-  scope?: Record<string, string>;
+  scope?: NamedScope;
 }
 
 interface AuthStore {
@@ -34,11 +39,16 @@ type CliAuthPollResult =
   | { status: "pending" }
   | { status: "denied" }
   | { status: "expired" }
-  | { deployToken: string; scope: Record<string, string>; status: "approved" };
+  | { deployToken: string; scope: NamedScope; status: "approved" };
 
 interface CliAuthVerifyResult {
-  scope: Record<string, string>;
+  scope: NamedScope;
 }
+
+const namedScopeSchema = z.object({
+  name: z.string().min(1),
+  value: z.record(z.string(), z.unknown()),
+});
 
 const authStorePath = path.join(homedir(), ".tailorkit", "auth.json");
 const defaultLoginTimeoutMs = 30 * 60 * 1000;
@@ -46,7 +56,7 @@ const pollIntervalMs = 2000;
 
 const storedHostAuthSchema = z.object({
   deployToken: z.string().min(1),
-  scope: z.record(z.string(), z.string()).optional(),
+  scope: namedScopeSchema.optional(),
 });
 
 const authStoreSchema = z
@@ -151,7 +161,7 @@ export const getDeployToken = async (hostUrl: string): Promise<StoredHostAuth | 
 export const runLogin = async (
   options: LoginOptions,
   onUserCode: (details: { expiresAt: Date; hostUrl: string; userCode: string }) => void,
-): Promise<{ hostUrl: string; scope: Record<string, string> }> => {
+): Promise<{ hostUrl: string; scope: NamedScope }> => {
   const hostUrl = await resolveHostUrl(options);
   const client = createTailorKitClient({ url: hostUrl });
   const startResult = await client.cliAuth.start({});
@@ -202,7 +212,7 @@ export const runLogin = async (
 
 export const runWhoami = async (
   options: AuthOptions,
-): Promise<{ hostUrl: string; scope: Record<string, string> }> => {
+): Promise<{ hostUrl: string; scope: NamedScope }> => {
   const hostUrl = await resolveHostUrl(options);
   const auth = await getDeployToken(hostUrl);
 

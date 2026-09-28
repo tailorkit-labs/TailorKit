@@ -1,27 +1,44 @@
-import { describe, expect, it } from "vite-plus/test";
 import type { StandardSchemaV1 } from "@standard-schema/spec";
+import { type as arktype } from "arktype";
+import { describe, expect, it } from "vite-plus/test";
+import * as v from "valibot";
 import { z } from "zod";
-import { normalizeTailorKitScope, validateTailorKitScope } from "./scope";
+import {
+  normalizeTailorKitScope,
+  validateTailorKitScopeSchemas,
+  validateTailorKitScopes,
+} from "./scope";
 
-describe("TailorKit scope validation", () => {
-  it("returns a frozen copy with keys in stable lexical order", () => {
-    const input = { userId: "user_1", orgId: "org_1" };
+describe("TailorKit named scope validation", () => {
+  it("sorts object keys recursively while preserving array order", () => {
+    const input = {
+      userId: "user_1",
+      orgs: [{ z: 1, a: 2 }, { b: { z: 3, a: 4 } }],
+    };
     const scope = normalizeTailorKitScope(input);
 
-    expect(Object.keys(scope)).toEqual(["orgId", "userId"]);
+    expect(Object.keys(scope)).toEqual(["orgs", "userId"]);
+    expect(scope).toEqual({
+      orgs: [{ a: 2, z: 1 }, { b: { a: 4, z: 3 } }],
+      userId: "user_1",
+    });
     expect(scope).not.toBe(input);
     expect(Object.isFrozen(scope)).toBe(true);
-    expect(input).toEqual({ userId: "user_1", orgId: "org_1" });
+    expect(input).toEqual({ userId: "user_1", orgs: [{ z: 1, a: 2 }, { b: { z: 3, a: 4 } }] });
   });
 
-  it("uses the Standard Schema normalized output", async () => {
-    const schema = z
-      .object({ tenant: z.string() })
-      .transform(({ tenant }) => ({ tenant: tenant.trim() }));
+  it("validates each declared scope with its Standard Schema and uses the parsed output", async () => {
+    const scopes = {
+      org: z.object({ tenant: z.string() }).transform(({ tenant }) => ({ tenant: tenant.trim() })),
+      user: z.object({ id: z.string() }),
+    };
 
-    await expect(validateTailorKitScope(schema, { tenant: "  org_1  " })).resolves.toEqual({
-      tenant: "org_1",
-    });
+    await expect(
+      validateTailorKitScopes(scopes, {
+        user: { id: "user_1" },
+        org: { tenant: "  org_1  " },
+      }),
+    ).resolves.toEqual({ org: { tenant: "org_1" }, user: { id: "user_1" } });
   });
 
   it("accepts Standard Schema validators without a JSON Schema converter", async () => {
@@ -37,25 +54,115 @@ describe("TailorKit scope validation", () => {
       },
     };
 
-    await expect(validateTailorKitScope(schema, { workspaceId: "workspace_1" })).resolves.toEqual({
-      workspaceId: "workspace_1",
+    await expect(
+      validateTailorKitScopes({ workspace: schema }, { workspace: { workspaceId: "workspace_1" } }),
+    ).resolves.toEqual({ workspace: { workspaceId: "workspace_1" } });
+  });
+
+  it("accepts Zod, ArkType, and Valibot Standard Schema validators with nested JSON values", async () => {
+    const validators = {
+      zod: z.object({ payload: z.unknown() }),
+      arktype: arktype({ payload: "unknown" }),
+      valibot: v.object({ payload: v.unknown() }),
+    };
+    const payload = [3, { z: "last", a: 2 }, 1];
+
+    await expect(
+      validateTailorKitScopes(validators, {
+        zod: { payload },
+        arktype: { payload },
+        valibot: { payload },
+      }),
+    ).resolves.toEqual({
+      arktype: { payload: [3, { a: 2, z: "last" }, 1] },
+      valibot: { payload: [3, { a: 2, z: "last" }, 1] },
+      zod: { payload: [3, { a: 2, z: "last" }, 1] },
     });
   });
 
-  it("rejects values that do not normalize to a flat nonempty string record", () => {
-    expect(() => normalizeTailorKitScope({})).toThrow(/between 1 and 32/u);
-    expect(() => normalizeTailorKitScope({ org: "" })).toThrow(/nonempty strings/u);
-    expect(() => normalizeTailorKitScope({ org: { id: "org_1" } })).toThrow(/nonempty strings/u);
-    expect(() => normalizeTailorKitScope(new Date())).toThrow(/flat record/u);
+  it("allows configured scopes to be absent for unauthenticated identities", async () => {
+    const validators = {
+      org: z.object({ orgId: z.string() }),
+      userOrg: z.object({ orgId: z.string(), userId: z.string() }),
+    };
+
+    await expect(validateTailorKitScopes(validators, { org: { orgId: "org_1" } })).resolves.toEqual(
+      { org: { orgId: "org_1" } },
+    );
   });
 
-  it("rejects outputs with too many or oversized fields", () => {
-    const tooManyFields = Object.fromEntries(
-      Array.from({ length: 33 }, (_, index) => [`field${index}`, "value"]),
+  it("requires at least one declared and authenticated scope", async () => {
+    expect(() => validateTailorKitScopeSchemas({})).toThrow(/at least one named scope/u);
+    await expect(
+      validateTailorKitScopes({ org: z.object({ id: z.string() }) }, {}),
+    ).rejects.toThrow(/at least one scope/u);
+    await expect(
+      validateTailorKitScopes({ org: z.object({ id: z.string() }) }, { team: { id: "team_1" } }),
+    ).rejects.toThrow(/undeclared scope "team"/u);
+  });
+
+  it("accepts explicit JSON values, including empty nested arrays and objects", () => {
+    expect(
+      normalizeTailorKitScope({
+        values: ["", null, true, false, 0, 1.25, [], {}],
+      }),
+    ).toEqual({ values: ["", null, true, false, 0, 1.25, [], {}] });
+  });
+
+  it("rejects non-JSON values and non-plain objects", () => {
+    const circular: Record<string, unknown> = { ok: true };
+    circular.self = circular;
+    const withAccessor = Object.defineProperty({ ok: true }, "value", {
+      enumerable: true,
+      get: () => "not data",
+    });
+    const withSymbol = { ok: true, [Symbol("key")]: "not JSON" };
+    const arrayWithHole: unknown[] = [];
+    arrayWithHole.length = 1;
+    const arrayWithExtra = Object.assign(["ok"], { extra: true });
+    const withCustomPrototype = Object.assign(Object.create({ inherited: true }), { ok: true });
+
+    for (const value of [
+      {},
+      new Date(),
+      { value: undefined },
+      { value: () => "not JSON" },
+      { value: Symbol("not JSON") },
+      { value: 1n },
+      { value: Number.NaN },
+      { value: Number.POSITIVE_INFINITY },
+      { value: -0 },
+      { value: Number.MAX_SAFE_INTEGER + 1 },
+      circular,
+      withAccessor,
+      withSymbol,
+      { value: arrayWithHole },
+      { value: arrayWithExtra },
+      withCustomPrototype,
+    ]) {
+      expect(() => normalizeTailorKitScope(value)).toThrow();
+    }
+  });
+
+  it("enforces key, value, array, depth, node, and serialized size limits", () => {
+    const tooManyKeys = Object.fromEntries(
+      Array.from({ length: 33 }, (_, index) => [`field${index}`, index]),
+    );
+    const tooManyArrayItems = { value: Array.from({ length: 101 }, (_, index) => index) };
+    let deepValue: unknown = "leaf";
+    for (let index = 0; index < 17; index += 1) {
+      deepValue = { child: deepValue };
+    }
+    const tooDeep = { value: deepValue };
+    const tooLarge = Object.fromEntries(
+      Array.from({ length: 32 }, (_, index) => [`field${index}`, "é".repeat(255)]),
     );
 
-    expect(() => normalizeTailorKitScope(tooManyFields)).toThrow(/between 1 and 32/u);
-    expect(() => normalizeTailorKitScope({ ["k".repeat(65)]: "value" })).toThrow(/field names/u);
-    expect(() => normalizeTailorKitScope({ value: "x".repeat(256) })).toThrow(/at most 255/u);
+    expect(() => normalizeTailorKitScope(tooManyKeys)).toThrow(/at most 32/u);
+    expect(() => normalizeTailorKitScope({ ["k".repeat(65)]: 1 })).toThrow(/1 to 64/u);
+    expect(() => normalizeTailorKitScope({ value: "x".repeat(256) })).toThrow(/255 characters/u);
+    expect(() => normalizeTailorKitScope(tooManyArrayItems)).toThrow(/at most 100/u);
+    expect(() => normalizeTailorKitScope(tooDeep)).toThrow(/16 levels/u);
+    expect(() => normalizeTailorKitScope(tooLarge)).toThrow(/16384 bytes/u);
   });
 });

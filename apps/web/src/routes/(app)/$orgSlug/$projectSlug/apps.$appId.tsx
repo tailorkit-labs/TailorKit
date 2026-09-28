@@ -178,14 +178,14 @@ function AppPage() {
         <CardFrame>
           <CardFrameHeader>
             <CardFrameTitle>Installation scope</CardFrameTitle>
-            <CardFrameDescription>
-              <div className="grid gap-1">
-                {Object.entries(app.scope).map(([key, value]) => (
-                  <div className="flex justify-between gap-3" key={key}>
-                    <span className="text-muted-foreground">{key}</span>
-                    <span className="break-all text-right">{value}</span>
-                  </div>
-                ))}
+            <CardFrameDescription className="w-full">
+              <div className="grid w-full gap-2">
+                <Badge size="sm" variant="outline">
+                  {app.scope.name}
+                </Badge>
+                <pre className="max-h-64 overflow-auto rounded-md border bg-muted/40 p-3 font-mono text-foreground text-xs">
+                  {JSON.stringify(app.scope.value, null, 2)}
+                </pre>
               </div>
             </CardFrameDescription>
           </CardFrameHeader>

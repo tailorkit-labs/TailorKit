@@ -1,11 +1,12 @@
 import { cliAuthApprove, cliAuthDeny } from "@tailorkit/client-platform/client";
 import type { Client as PlatformClient } from "@tailorkit/client-platform/client/client/index";
-import type { TailorKitScope } from "./types";
+import { selectTailorKitScopes } from "./scope";
+import type { TailorKitNamedScope, TailorKitScopes } from "./types";
 
 type HeaderInput = ConstructorParameters<typeof Headers>[0];
 
 interface TailorKitRuntimeContext {
-  scope: TailorKitScope;
+  scopes: TailorKitScopes;
 }
 
 export interface CliAuthApprovalPageOptions {
@@ -19,7 +20,13 @@ export interface CliAuthApprovalPageOptions {
 }
 
 type ApprovalPageState =
-  | { code: string; error?: string; status: "idle" }
+  | {
+      code: string;
+      error?: string;
+      scopes?: TailorKitScopes;
+      selectedScopeName?: string;
+      status: "idle";
+    }
   | { status: "approved" }
   | { status: "denied" };
 
@@ -32,12 +39,17 @@ export async function handleCliAuthApprovalPage({
 }: CliAuthApprovalPageOptions): Promise<Response> {
   if (request.method === "GET") {
     const url = new URL(request.url);
+    const tailorkit = await authenticate({ request });
 
-    if (signInPath && !(await authenticate({ request }))) {
+    if (signInPath && !tailorkit) {
       return redirectToSignIn({ approvalUrl: url, signInPath });
     }
 
-    return renderCliAuthApprovalPage({ code: url.searchParams.get("code") ?? "", status: "idle" });
+    return renderCliAuthApprovalPage({
+      code: url.searchParams.get("code") ?? "",
+      scopes: tailorkit?.scopes,
+      status: "idle",
+    });
   }
 
   if (request.method !== "POST") {
@@ -50,11 +62,14 @@ export async function handleCliAuthApprovalPage({
   const form = await request.formData();
   const intent = String(form.get("intent") ?? "");
   const userCode = String(form.get("userCode") ?? "").trim();
+  const selectedScopeName =
+    typeof form.get("scope") === "string" ? String(form.get("scope")) : undefined;
 
   if (!userCode) {
     return renderCliAuthApprovalPage({
       code: userCode,
       error: "Enter the code shown in your terminal.",
+      selectedScopeName,
       status: "idle",
     });
   }
@@ -64,15 +79,17 @@ export async function handleCliAuthApprovalPage({
     return renderCliAuthApprovalPage({
       code: userCode,
       error: "You need to sign in before approving this CLI login.",
+      selectedScopeName,
       status: "idle",
     });
   }
 
   try {
     if (intent === "approve") {
+      const scope = selectOneScope(tailorkit.scopes, selectedScopeName);
       await cliAuthApprove({
         body: {
-          scope: tailorkit.scope,
+          scope,
           userCode,
         },
         client: platform,
@@ -97,6 +114,8 @@ export async function handleCliAuthApprovalPage({
     return renderCliAuthApprovalPage({
       code: userCode,
       error: error instanceof Error ? error.message : "Unable to finish this CLI login request.",
+      scopes: tailorkit.scopes,
+      selectedScopeName,
       status: "idle",
     });
   }
@@ -104,8 +123,19 @@ export async function handleCliAuthApprovalPage({
   return renderCliAuthApprovalPage({
     code: userCode,
     error: "Choose whether to approve or deny this CLI login.",
+    scopes: tailorkit.scopes,
+    selectedScopeName,
     status: "idle",
   });
+}
+
+function selectOneScope(scopes: TailorKitScopes, selectedName?: string): TailorKitNamedScope {
+  const availableNames = Object.keys(scopes);
+  const name = selectedName ?? (availableNames.length === 1 ? availableNames[0]! : undefined);
+  if (name === undefined) {
+    throw new TypeError("Choose one scope for this CLI login.");
+  }
+  return selectTailorKitScopes(scopes, [name])[0]!;
 }
 
 function redirectToSignIn({
@@ -192,9 +222,10 @@ function renderCard(state: ApprovalPageState): string {
           <input id="fallback-code" class="fallback-input" name="userCode" value="${escapeHtml(formatCode(code))}" autocomplete="one-time-code">
         </noscript>
       </fieldset>
+      ${renderScopeControl(state.scopes, state.selectedScopeName)}
       <div class="actions">
         <button class="button primary" name="intent" value="approve" type="submit">Approve</button>
-        <button class="button secondary" name="intent" value="deny" type="submit">Deny</button>
+        <button class="button secondary" name="intent" value="deny" type="submit" formnovalidate>Deny</button>
       </div>
     </form>
     <div class="loading-overlay" id="loadingOverlay" aria-live="polite" hidden>
@@ -202,6 +233,24 @@ function renderCard(state: ApprovalPageState): string {
       <p id="loadingMessage">Loading...</p>
     </div>
   </section>`;
+}
+
+function renderScopeControl(scopes: TailorKitScopes | undefined, selectedName?: string): string {
+  const names = Object.keys(scopes ?? {});
+  if (names.length === 0) {
+    return "";
+  }
+  if (names.length === 1) {
+    return `<input type="hidden" name="scope" value="${escapeHtml(names[0]!)}">`;
+  }
+  const options = names
+    .map(
+      (name) =>
+        `<option value="${escapeHtml(name)}"${name === selectedName ? " selected" : ""}>${escapeHtml(name)}</option>`,
+    )
+    .join("");
+  const placeholder = `<option value="" disabled${selectedName ? "" : " selected"}>Choose a scope</option>`;
+  return `<label for="cli-scope">Use this scope</label><select id="cli-scope" name="scope" required>${placeholder}${options}</select>`;
 }
 
 function renderOtpInputs(code: string): string {

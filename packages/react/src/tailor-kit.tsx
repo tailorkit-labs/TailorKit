@@ -112,6 +112,7 @@ export interface TailorKitInstance<
   readonly $views?: TViews;
   readonly baseUrl: string | URL;
   readonly components: Record<string, unknown>;
+  readonly scopes?: readonly string[];
   readonly theme: TailorKitTheme;
 }
 
@@ -152,6 +153,18 @@ type ServerComponents<TTailor extends TailorKitServerShape> = {
 type ServerViewMap<TTailor extends TailorKitServerShape> =
   TTailor["$internal"]["schema"]["contexts"];
 
+type ServerScopeNames<TTailor extends TailorKitServerShape> = TTailor extends {
+  handler: (request: Request, options: infer TOptions) => unknown;
+}
+  ? TOptions extends { authenticate: infer TAuthenticate }
+    ? TAuthenticate extends (...args: infer _TArgs) => infer TResult
+      ? Extract<Awaited<TResult>, { scopes: unknown }> extends { scopes: infer TScopes }
+        ? keyof TScopes & string
+        : never
+      : never
+    : never
+  : never;
+
 type ServerViews<TTailor extends TailorKitServerShape> = {
   [TName in keyof ServerViewMap<TTailor>]: ServerViewMap<TTailor>[TName] extends ViewDefinition
     ? ServerViewMap<TTailor>[TName]
@@ -161,16 +174,18 @@ type ServerViews<TTailor extends TailorKitServerShape> = {
 export function createTailorKitClient<TTailor extends TailorKitServerShape>(options: {
   baseUrl: string | URL;
   components?: CompleteComponentRenderers<ServerComponents<TTailor>>;
+  scopes?: readonly ServerScopeNames<TTailor>[];
   theme?: TailorKitTheme;
 }): TailorKitInstance<
   ServerViews<TTailor>,
   TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions
 > {
+  const scopes = options.scopes === undefined ? undefined : Object.freeze([...options.scopes]);
   return createReactTailorKitClient<
     ServerComponents<TTailor>,
     ServerViews<TTailor>,
     TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions
-  >(options);
+  >({ ...options, scopes });
 }
 
 function createReactTailorKitClient<
@@ -180,6 +195,7 @@ function createReactTailorKitClient<
 >(options: {
   baseUrl: string | URL;
   components?: ComponentRenderers<TComponents>;
+  scopes?: readonly string[];
   theme?: TailorKitTheme;
 }): TailorKitInstance<TViews, TSlots> {
   const wrappedComponents: Record<string, unknown> = {};
@@ -205,6 +221,7 @@ function createReactTailorKitClient<
   return {
     baseUrl: options.baseUrl,
     components: wrappedComponents,
+    scopes: options.scopes,
     theme,
   };
 }

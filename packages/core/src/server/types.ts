@@ -28,8 +28,8 @@ export interface TailorKitServerBaseOptions {
    * `TAILORKIT_PROJECT_KEY` environment variable and pass the value here.
    */
   projectKey?: string;
-  /** Required Standard Schema for the structured identity returned by authenticate().scope. */
-  scopeSchema: StandardSchemaV1;
+  /** Standard Schema validators keyed by the names used to identify app scopes. */
+  scopes: Record<string, StandardSchemaV1>;
   /** Optional custom asset origin. Hosted apps receive a tenant-viewd clientPath from TailorKit automatically. */
   assetsBaseUrl?: string;
   basePath?: string;
@@ -99,12 +99,28 @@ export type InferTailorKitServerContexts<TOptions extends TailorKitServerInputOp
 export type InferTailorKitServerActions<TOptions extends TailorKitServerInputOptions> =
   TOptions extends { actions: infer TActions } ? TActions : Record<never, never>;
 
-export type TailorKitScope = Record<string, string>;
+export type TailorKitJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | TailorKitJsonValue[]
+  | { [key: string]: TailorKitJsonValue };
 
-export type InferTailorKitServerScope<TOptions extends TailorKitServerInputOptions> =
-  TOptions extends { scopeSchema: infer TSchema extends StandardSchemaV1 }
-    ? StandardSchemaV1.InferInput<TSchema>
-    : TailorKitScope;
+/** A JSON object that identifies one named app scope. */
+export type TailorKitScope = { [key: string]: TailorKitJsonValue };
+
+export interface TailorKitNamedScope {
+  name: string;
+  value: TailorKitScope;
+}
+
+export type TailorKitScopes = Record<string, TailorKitScope>;
+
+export type InferTailorKitServerScopes<TOptions extends TailorKitServerInputOptions> =
+  TOptions extends { scopes: infer TSchemas extends Record<string, StandardSchemaV1> }
+    ? { [TName in keyof TSchemas]?: StandardSchemaV1.InferInput<TSchemas[TName]> }
+    : Record<never, never>;
 
 export interface TailorKitServerOptions<
   TComponents extends ComponentDefinitions,
@@ -115,36 +131,36 @@ export interface TailorKitServerOptions<
     TailorKitServerBaseOptions,
     TailorKitServerSchemaOptions<TComponents, TContexts, TActions> {}
 
-export type TailorKitHostContext<TActionContext = never, TScope = TailorKitScope> = {
-  scope: TScope;
+export type TailorKitHostContext<TActionContext = never, TScopes = TailorKitScopes> = {
+  scopes: TScopes;
 } & ([TActionContext] extends [never]
   ? { actionContext?: never }
   : { actionContext: TActionContext });
 
-export interface TailorKitHandlerOptions<TActionContext = never, TScope = TailorKitScope> {
+export interface TailorKitHandlerOptions<TActionContext = never, TScopes = TailorKitScopes> {
   authenticate: (ctx: {
     request: Request;
   }) =>
-    | TailorKitHostContext<TActionContext, TScope>
+    | TailorKitHostContext<TActionContext, TScopes>
     | null
-    | Promise<TailorKitHostContext<TActionContext, TScope> | null>;
+    | Promise<TailorKitHostContext<TActionContext, TScopes> | null>;
 }
 
 export type TailorKitHandlerContext<
   TActionContext = never,
-  TScope = TailorKitScope,
-> = TailorKitHostContext<TActionContext, TScope>;
+  TScopes = TailorKitScopes,
+> = TailorKitHostContext<TActionContext, TScopes>;
 
 export interface TailorKitServer<
   TComponents extends ComponentDefinitions,
   TContexts extends ContextDefinitions,
   TActions extends ActionTree = Record<never, never>,
   TActionContext = ResolveActionTreeContext<TActions>,
-  TScope = TailorKitScope,
+  TScopes = TailorKitScopes,
 > {
   handler: (
     request: Request,
-    options: TailorKitHandlerOptions<TActionContext, TScope>,
+    options: TailorKitHandlerOptions<TActionContext, TScopes>,
   ) => Response | Promise<Response>;
   /**
    * Internal TailorKit implementation details.

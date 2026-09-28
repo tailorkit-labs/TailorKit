@@ -2,27 +2,70 @@ import { describe, expect, it } from "vite-plus/test";
 import { canonicalizeScope, scopeMatches } from "./scope";
 
 describe("scope canonicalization", () => {
-  it("derives the same versioned key independent of property insertion order", () => {
-    const first = canonicalizeScope({ organizationId: "org_123", userId: "user_456" });
-    const reordered = canonicalizeScope({ userId: "user_456", organizationId: "org_123" });
+  it("sorts object properties recursively and preserves array order", () => {
+    const first = canonicalizeScope({
+      name: "organization",
+      value: {
+        orgId: "org_123",
+        settings: { enabled: true, mode: "compact" },
+        members: ["user_1", { last: "Lovelace", first: "Ada" }],
+      },
+    });
+    const reordered = canonicalizeScope({
+      name: "organization",
+      value: {
+        members: ["user_1", { first: "Ada", last: "Lovelace" }],
+        settings: { mode: "compact", enabled: true },
+        orgId: "org_123",
+      },
+    });
 
-    expect(first.scope).toEqual({ organizationId: "org_123", userId: "user_456" });
-    expect(first.scopeKey).toMatch(/^[a-f0-9]{64}$/u);
+    expect(first.scopeKey).toMatch(/^[a-f0-9]{32}$/u);
     expect(reordered).toEqual(first);
+    expect(
+      canonicalizeScope({
+        name: "organization",
+        value: {
+          orgId: "org_123",
+          settings: { enabled: true, mode: "compact" },
+          members: [{ first: "Ada", last: "Lovelace" }, "user_1"],
+        },
+      }).scopeKey,
+    ).not.toBe(first.scopeKey);
   });
 
-  it("rejects non-flat or empty scope records", () => {
-    expect(() => canonicalizeScope({})).toThrow();
-    expect(() => canonicalizeScope({ userId: "" })).toThrow();
-    expect(() => canonicalizeScope({ identity: { userId: "user_456" } })).toThrow();
+  it("includes the scope name in the identity", () => {
+    const sameValue = { organizationId: "org_123" };
+    expect(canonicalizeScope({ name: "organization", value: sameValue }).scopeKey).not.toBe(
+      canonicalizeScope({ name: "user", value: sameValue }).scopeKey,
+    );
+  });
+
+  it("supports nested JSON values but rejects values that are not safe JSON", () => {
+    expect(
+      canonicalizeScope({ name: "organization", value: { metadata: { labels: [], data: {} } } })
+        .scope.value,
+    ).toEqual({ metadata: { labels: [], data: {} } });
+    expect(() => canonicalizeScope({ name: "organization", value: {} })).toThrow();
+    expect(() => canonicalizeScope({ name: "organization", value: { id: undefined } })).toThrow();
+    expect(() => canonicalizeScope({ name: "organization", value: { id: -0 } })).toThrow();
+    expect(() => canonicalizeScope({ name: "organization", value: { id: Number.NaN } })).toThrow();
+    expect(() => canonicalizeScope({ name: "organization", value: { id: 2 ** 53 } })).toThrow();
     expect(() => canonicalizeScope([])).toThrow();
   });
 
-  it("compares the full normalized scope as well as its key", () => {
-    expect(scopeMatches({ teamId: "team_123" }, { teamId: "team_123" })).toBe(true);
-    expect(scopeMatches({ teamId: "team_123" }, { teamId: "team_456" })).toBe(false);
-    expect(scopeMatches({ teamId: "team_123" }, { teamId: "team_123", userId: "user_456" })).toBe(
-      false,
-    );
+  it("compares the canonical named scope identity", () => {
+    expect(
+      scopeMatches(
+        { name: "organization", value: { teamId: "team_123", labels: [{ b: 2, a: 1 }] } },
+        { name: "organization", value: { labels: [{ a: 1, b: 2 }], teamId: "team_123" } },
+      ),
+    ).toBe(true);
+    expect(
+      scopeMatches(
+        { name: "organization", value: { teamId: "team_123" } },
+        { name: "user", value: { teamId: "team_123" } },
+      ),
+    ).toBe(false);
   });
 });

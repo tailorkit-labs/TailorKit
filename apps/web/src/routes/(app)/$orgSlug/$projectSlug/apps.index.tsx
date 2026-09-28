@@ -6,6 +6,7 @@ import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import { AppWindowIcon, SearchIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { RefObject } from "react";
+import type { Scope } from "@tailorkit/db/schema/scope";
 import { Badge } from "@tailorkit/ui/badge";
 import { CardFrame } from "@tailorkit/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@tailorkit/ui/empty";
@@ -62,7 +63,7 @@ interface AppRow {
   id: string;
   publicId: string;
   name: string;
-  scope: Record<string, string>;
+  scope: Scope;
   createdAt: Date | string;
   currentDeployment: { status: string } | null;
   deploymentCount: number;
@@ -123,15 +124,17 @@ function AppsTable({
         ),
       },
       {
-        accessorFn: (row) => JSON.stringify(row.scope),
+        accessorFn: (row) => `${row.scope.name} ${JSON.stringify(row.scope.value)}`,
         id: "scope",
         header: "Scope",
         size: 220,
         cell: ({ row }) => (
-          <span className="block truncate text-sm" title={JSON.stringify(row.original.scope)}>
-            {Object.entries(row.original.scope)
-              .map(([key, value]) => `${key}: ${value}`)
-              .join(", ")}
+          <span
+            className="block truncate text-sm"
+            title={`${row.original.scope.name}: ${JSON.stringify(row.original.scope.value, null, 2)}`}
+          >
+            <span className="font-medium">{row.original.scope.name}:</span>{" "}
+            {JSON.stringify(row.original.scope.value)}
           </span>
         ),
       },

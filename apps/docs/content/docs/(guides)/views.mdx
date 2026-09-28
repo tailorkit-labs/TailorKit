@@ -19,7 +19,7 @@ import { z } from "zod";
 
 export const tailorKit = createTailorKit({
   components: {},
-  scopeSchema: z.object({ userId: z.string().min(1) }),
+  scopes: { user: z.object({ userId: z.string().min(1) }) },
   slots: { navbar: { views: ["/"] }, panel: { views: ["/users", "/users/detail"] } },
   contexts: {
     "/": z.object({ workspaceId: z.string() }),
@@ -35,6 +35,57 @@ Each view declares only its own fields. Ancestor fields are composed into the
 context received by app views. A field must have one owning view: duplicate
 field names across ancestors are rejected by the type checker and runtime.
 
+## Name multiple installation scopes
+
+Give each identity boundary its own schema key. Return values under those same
+keys from `authenticate()`, then select the identities a browser client should
+load:
+
+```ts
+import { createTailorKit } from "tailorkit";
+import { z } from "zod";
+
+export const tailorKit = createTailorKit({
+  scopes: {
+    org: z.object({ orgId: z.string() }),
+    userOrg: z.object({ orgId: z.string(), userId: z.string() }),
+  },
+  // components, contexts, and slots...
+});
+
+async function handleRequest(request: Request) {
+  return tailorKit.handler(request, {
+    authenticate: async () => {
+      const session = await auth(request);
+      if (!session) return null;
+
+      return {
+        scopes: {
+          org: { orgId: session.org.id },
+          userOrg: { orgId: session.org.id, userId: session.user.id },
+        },
+      };
+    },
+  });
+}
+```
+
+```tsx
+import { createTailorKitClient } from "tailorkit/react";
+import type { tailorKit } from "./tailorkit";
+
+export const client = createTailorKitClient<typeof tailorKit>({
+  baseUrl: "https://example.com/api/tailorkit/",
+  scopes: ["org", "userOrg"],
+});
+```
+
+Scope values identify installations exactly, so keep them to stable identity
+data such as opaque IDs. Do not include mutable settings or feature lists:
+changing any value changes the installation identity. Nested objects and arrays
+are supported; TailorKit sorts object keys recursively, so property insertion
+order does not change identity, while array order remains significant.
+
 ## Configure React once
 
 ```tsx
@@ -43,6 +94,7 @@ import type { tailorKit } from "./tailorkit";
 
 export const client = createTailorKitClient<typeof tailorKit>({
   baseUrl: "https://example.com/api/tailorkit/",
+  scopes: ["org", "userOrg"],
 });
 
 declare module "tailorkit/react" {
@@ -55,6 +107,8 @@ declare module "tailorkit/react" {
 The registration types the standalone host hooks. Pass the stable client
 configuration to `Root`; all rendering and hooks below it use React context.
 Each root owns an independent registry, even when roots share a client.
+The optional `scopes` list selects which authenticated identities load apps and
+preview metadata. Omit it to load every scope returned by `authenticate()`.
 
 ```tsx
 import { Root, AppView } from "tailorkit/react";

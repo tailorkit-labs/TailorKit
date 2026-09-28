@@ -17,11 +17,11 @@ export const Route = createFileRoute("/api/tailorkit/$")({
     handlers: {
       GET: ({ request }) =>
         tailor.handler(request, {
-          authenticate: () => ({ scope: { demoId: "demo" } }),
+          authenticate: () => ({ scopes: { demo: { demoId: "demo" } } }),
         }),
       POST: ({ request }) =>
         tailor.handler(request, {
-          authenticate: () => ({ scope: { demoId: "demo" } }),
+          authenticate: () => ({ scopes: { demo: { demoId: "demo" } } }),
         }),
     },
   },
