@@ -1,0 +1,27 @@
+packages/api-platform/src/routes/deployments.ts
+  s_f3e800461aea44::t_a5982dc821400f 25-31,165-174,177-181
+  s_f3e800461aea44::t_0678a0b70c10b9 182-183,186-187
+packages/api-platform/src/routes/deployments.test.ts
+  s_f3e800461aea44::t_b775ea718f72ec 123,136-139
+packages/api-platform/src/routes/cli-auth.test.ts
+  s_f3e800461aea44::t_13f46f34e1fd68 157-165,186-189,191
+  s_f3e800461aea44::t_02eb7df7818ae0 190
+  s_f3e800461aea44::t_8bcb054df11afe 192-194
+  s_f3e800461aea44::t_ce079ef5fe662e 195-197
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4a54b680fa02a9acec42b61567d594a8620ef41f",
+  "prompts": {},
+  "sessions": {
+    "s_f3e800461aea44": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e28e-78c9-72e0-90fd-5c6df82f980b",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
