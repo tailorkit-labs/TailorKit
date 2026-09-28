@@ -141,7 +141,7 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 9999px;
   --background: hsl(0, 0%, 96%);
   --foreground: hsl(0, 0%, 3.9%);
   --card: hsl(0, 0%, 94.7%);
