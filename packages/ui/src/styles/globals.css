@@ -11,6 +11,14 @@
   --font-sans: "Geist Variable", sans-serif;
   --font-heading: "Geist Variable", sans-serif;
   --font-mono: "Geist Mono Variable", monospace;
+  --radius-xs: var(--radius);
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
+  --radius-4xl: var(--radius);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-sidebar-ring: var(--sidebar-ring);
