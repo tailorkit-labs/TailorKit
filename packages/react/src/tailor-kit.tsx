@@ -11,7 +11,10 @@ import type {
 } from "@tailorkit/core/schema";
 import type { primitives } from "./primitives";
 
-import type { ViewOptions, ViewName } from "./hooks/use-view";
+import { useView } from "./hooks/use-view";
+import type { UseView, ViewName, ViewOptions } from "./hooks/use-view";
+import { useApps } from "./hooks/use-apps";
+import { AppView as ReactAppView } from "./components/app-view";
 
 type AnyComponentDefinition = ComponentDefinition<
   Schema | undefined,
@@ -72,14 +75,15 @@ type AppViewViewProps<
       | ViewOptions<TViews, TView>;
 
 export type AppViewProps<
-  TViews extends Record<string, ViewDefinition> = RegisteredViews,
+  TViews extends Record<string, ViewDefinition> = Record<`/${string}`, ViewDefinition>,
   TView extends ViewName<TViews> = ViewName<TViews>,
+  TSlots extends SlotDefinitions = SlotDefinitions,
 > = {
-  [V in RegisteredSlots]: AppViewBaseProps & { slot: V } & AppViewViewProps<
+  [V in keyof TSlots & string]: AppViewBaseProps & { slot: V } & AppViewViewProps<
       TViews,
-      Extract<TView, SlotView<V>>
+      Extract<TView, SlotView<TSlots, V>>
     >;
-}[RegisteredSlots];
+}[keyof TSlots & string];
 
 const componentTagPrefix = "tailorkit-";
 
@@ -89,30 +93,27 @@ const toComponentTagName = (name: string): string =>
     .replaceAll(/[\s_]+/gu, "-")
     .toLowerCase()}`;
 
-// Augment Register once in the host to type the context-based hooks.
-// oxlint-disable-next-line typescript-eslint/no-empty-interface, typescript-eslint/no-empty-object-type
-export interface Register {}
-export type RegisteredViews = Register extends { client: TailorKitInstance<infer S> }
-  ? S
-  : Record<`/${string}`, ViewDefinition>;
-type RegisteredSlotMap = Register extends { client: { readonly $slots?: infer V } }
-  ? V
-  : SlotDefinitions;
-export type RegisteredSlots = keyof RegisteredSlotMap & string;
-type SlotView<V extends RegisteredSlots> = RegisteredSlotMap[V] extends {
+type SlotView<TSlots extends SlotDefinitions, V extends keyof TSlots & string> = TSlots[V] extends {
   views: readonly (infer P)[];
 }
   ? Extract<P, string>
   : never;
-export interface TailorKitInstance<
-  TViews extends Record<string, ViewDefinition> = Record<string, ViewDefinition>,
-  TSlots extends SlotDefinitions = SlotDefinitions,
-> {
-  readonly $slots?: TSlots;
-  readonly $views?: TViews;
+
+export interface TailorKitClientConfig {
   readonly baseUrl: string | URL;
   readonly components: Record<string, unknown>;
   readonly theme: TailorKitTheme;
+}
+
+export interface TailorKitInstance<
+  TViews extends Record<string, ViewDefinition> = Record<string, ViewDefinition>,
+  TSlots extends SlotDefinitions = SlotDefinitions,
+> extends TailorKitClientConfig {
+  readonly $slots?: TSlots;
+  readonly $views?: TViews;
+  readonly AppView: (props: AppViewProps<TViews, ViewName<TViews>, TSlots>) => ReactNode;
+  readonly useApps: typeof useApps;
+  readonly useView: UseView<TViews>;
 }
 
 type PrimitiveRenderers = typeof primitives;
@@ -202,10 +203,17 @@ function createReactTailorKitClient<
     }
   }
 
-  return {
+  const clientConfig: TailorKitClientConfig = {
     baseUrl: options.baseUrl,
     components: wrappedComponents,
     theme,
+  };
+
+  return {
+    ...clientConfig,
+    AppView: ReactAppView as TailorKitInstance<TViews, TSlots>["AppView"],
+    useApps,
+    useView: useView as UseView<TViews>,
   };
 }
 

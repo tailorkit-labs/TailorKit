@@ -33,7 +33,7 @@ field names across ancestors are rejected by the type checker and runtime.
 
 ## Configure React once
 
-```tsx
+```tsx title="./src/lib/tailorkit-client.tsx"
 import { createTailorKitClient } from "tailorkit/react";
 import type { tailorKit } from "./tailorkit";
 
@@ -41,19 +41,18 @@ export const client = createTailorKitClient<typeof tailorKit>({
   baseUrl: "https://example.com/api/tailorkit/",
 });
 
-declare module "tailorkit/react" {
-  interface Register {
-    client: typeof client;
-  }
-}
+export const { AppView, useApps, useView } = client;
 ```
 
-The registration types the standalone host hooks. Pass the stable client
-configuration to `Root`; all rendering and hooks below it use React context.
-Each root owns an independent registry, even when roots share a client.
+The helpers carry the view and slot types from the client. Import `Root` from
+`tailorkit/react` and pass it the client; use `useApps`, `useView`, and
+`AppView` beneath it. Each root owns an independent registry, even when roots
+share a client. Separate clients can expose different view and slot contracts
+in the same TypeScript project.
 
 ```tsx
-import { Root, AppView } from "tailorkit/react";
+import { Root } from "tailorkit/react";
+import { AppView, client } from "./tailorkit-client";
 
 function Host({ app, children }) {
   return (
@@ -70,17 +69,17 @@ function Host({ app, children }) {
 }
 ```
 
-Use `useApps()` below `Root` to load installed apps. For a supplied app list,
-pass `apps` to `Root`; the hook returns that list without fetching. Updates to
-the list are reflected in the hook, and removing the prop resumes discovery. The client configuration
-no longer exposes bound React hooks or components.
+Use the exported `useApps()` below `Root` to load installed apps. For a
+supplied app list, pass `apps` to `Root`; the hook returns that list without
+fetching. Updates to the list are reflected in the hook, and removing the prop
+resumes discovery.
 
 ## Publish each layer
 
 Call `useView` in the layout or page that owns the data:
 
 ```tsx
-import { useView } from "tailorkit/react";
+import { useView } from "./tailorkit-client";
 
 function WorkspaceLayout({ workspaceId }) {
   useView("/", { context: { workspaceId } });
@@ -135,7 +134,7 @@ Each slot searches the active path, then its ancestors, considering only
 paths in its supported `views` list. A supported ancestor remains eligible when
 the current, more specific view is not supported.
 Fallback never crosses slot boundaries. An empty supported view list disables
-all views in that slot. View lists are typed against the global definitions;
+all views in that slot. View lists are typed from the configured client schema;
 app bindings and explicit `AppView` views are restricted to the selected slot.
 
 Supported lists control view implementations, not context inheritance. For
@@ -182,7 +181,9 @@ A widget or dedicated page can choose its own view independently of the current
 route:
 
 ```tsx
-<AppView app={app} slot="panel" view="/users/detail" context={{ user }} />
+import { AppView } from "./tailorkit-client";
+
+<AppView app={app} slot="panel" view="/users/detail" context={{ user }} />;
 ```
 
 The override supplies that view's own context; matching mounted ancestors still

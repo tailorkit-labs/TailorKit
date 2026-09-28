@@ -1,11 +1,11 @@
 import type { TailorKitStore } from "../store";
 import { createContext, useContext } from "react";
 
-import type { TailorKitInstance } from "../tailor-kit";
+import type { TailorKitClientConfig } from "../tailor-kit";
 
 export interface TailorRootContextValue {
   store: TailorKitStore;
-  client: TailorKitInstance;
+  client: TailorKitClientConfig;
 }
 
 export const TailorRootContext = createContext<TailorRootContextValue | null>(null);
