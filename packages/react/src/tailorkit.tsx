@@ -1,3 +1,4 @@
+import { createElement } from "react";
 import type { ReactNode } from "react";
 import type {
   TailorKitTheme,
@@ -209,13 +210,11 @@ function createReactTailorKitClient<
     components: wrappedComponents,
     theme,
   };
-  const TypedReactAppView = ReactAppView as TailorKitInstance<TViews, TSlots>["AppView"];
-
   const client: TailorKitInstance<TViews, TSlots> = {
     ...clientConfig,
     AppView: function ClientAppView(props) {
       useTailorRootContext("AppView", client);
-      return <TypedReactAppView {...props} />;
+      return createElement(ReactAppView as unknown as (props: object) => ReactNode, props);
     },
     useApps: function useClientApps() {
       useTailorRootContext("useApps", client);

@@ -96,6 +96,7 @@ const schema = server.$internal.schema;
 
 function CurrentViewRoute({
   nested,
+  tailor,
 }: {
   nested: boolean;
   tailor: ReturnType<typeof createTailorKitClient<typeof server>>;
@@ -131,6 +132,7 @@ function CurrentViewHost({
 
 function HomeAppView({
   app,
+  tailor,
 }: {
   app: TailorKitApp;
   tailor: ReturnType<typeof createTailorKitClient<typeof server>>;
@@ -613,7 +615,7 @@ describe("view registries", () => {
     render(
       <StrictMode>
         <Root client={client}>
-          <Layers />
+          <Layers client={client} />
         </Root>
         <Root client={client}>
           <OtherRoute />
