@@ -11,9 +11,10 @@ import type {
 } from "@tailorkit/core/schema";
 import type { primitives } from "./primitives";
 
-import { useView } from "./hooks/use-view";
-import type { UseView, ViewName, ViewOptions } from "./hooks/use-view";
-import { useApps } from "./hooks/use-apps";
+import { useTailorRootContext } from "./components/context";
+import { useView as useRootView } from "./hooks/use-view";
+import type { UseView, ViewName, ViewOptions, ViewState } from "./hooks/use-view";
+import { useApps as useRootApps } from "./hooks/use-apps";
 import { AppView as ReactAppView } from "./components/app-view";
 
 type AnyComponentDefinition = ComponentDefinition<
@@ -112,7 +113,7 @@ export interface TailorKitInstance<
   readonly $slots?: TSlots;
   readonly $views?: TViews;
   readonly AppView: (props: AppViewProps<TViews, ViewName<TViews>, TSlots>) => ReactNode;
-  readonly useApps: typeof useApps;
+  readonly useApps: typeof useRootApps;
   readonly useView: UseView<TViews>;
 }
 
@@ -208,13 +209,28 @@ function createReactTailorKitClient<
     components: wrappedComponents,
     theme,
   };
+  const TypedReactAppView = ReactAppView as TailorKitInstance<TViews, TSlots>["AppView"];
 
-  return {
+  const client: TailorKitInstance<TViews, TSlots> = {
     ...clientConfig,
-    AppView: ReactAppView as TailorKitInstance<TViews, TSlots>["AppView"],
-    useApps,
-    useView: useView as UseView<TViews>,
+    AppView: function ClientAppView(props) {
+      useTailorRootContext("AppView", client);
+      return <TypedReactAppView {...props} />;
+    },
+    useApps: function useClientApps() {
+      useTailorRootContext("useApps", client);
+      return useRootApps();
+    },
+    useView: function useClientView<TView extends ViewName<TViews>>(
+      view: TView,
+      options: ViewState<TViews, NoInfer<TView>>,
+    ) {
+      useTailorRootContext("useView", client);
+      useRootView<TViews, TView>(view, options);
+    },
   };
+
+  return client;
 }
 
 export type { ViewOptions } from "./hooks/use-view";

@@ -10,10 +10,18 @@ export interface TailorRootContextValue {
 
 export const TailorRootContext = createContext<TailorRootContextValue | null>(null);
 
-export function useTailorRootContext(component: string): TailorRootContextValue {
+export function useTailorRootContext(
+  component: string,
+  expectedClient?: TailorKitClientConfig,
+): TailorRootContextValue {
   const context = useContext(TailorRootContext);
   if (!context) {
     throw new Error(`${component} must be rendered inside Root.`);
+  }
+  if (expectedClient && context.client !== expectedClient) {
+    throw new Error(
+      `${component} was created for a different TailorKit client than the one passed to Root.`,
+    );
   }
   return context;
 }

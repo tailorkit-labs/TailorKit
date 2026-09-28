@@ -56,10 +56,10 @@ export type UseView<TViews extends Record<string, ViewDefinition>> = <
   options: ViewState<TViews, NoInfer<TView>>,
 ) => void;
 
-export function useView<TView extends ViewName<DefaultViews>>(
-  view: TView,
-  options: ViewState<DefaultViews, NoInfer<TView>>,
-): void {
+export function useView<
+  TViews extends Record<string, ViewDefinition> = DefaultViews,
+  TView extends ViewName<TViews> = ViewName<TViews>,
+>(view: TView, options: ViewState<TViews, NoInfer<TView>>): void {
   const { store } = useTailorRootContext("useView");
   const id = useMemo(() => Symbol("tailorkit-current-view"), []);
   const status = options.status ?? "ready";
