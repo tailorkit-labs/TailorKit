@@ -22,7 +22,13 @@ import { o, protectedRouter, requireApp, requireAppInScopes } from "../procedure
 import { setSpanAttributes } from "@tailorkit/observability";
 import { createPublicId } from "../public-id";
 import type { Context } from "../context";
-import { scopeMatches, scopeSchema, scopesSchema } from "../scope";
+import {
+  canonicalizeScope,
+  canonicalizeScopes,
+  scopeMatches,
+  scopeSchema,
+  scopesSchema,
+} from "../scope";
 
 const uploadUrlExpiresInSeconds = 15 * 60;
 const logoInspectionTimeoutMs = 10_000;
@@ -156,16 +162,29 @@ const requireDeployment = o.middleware(
     });
     const deploymentApp = deploymentWithApp?.app;
 
-    let scopeMatchesApp = false;
+    let requestedScopes: Scope[];
+    try {
+      requestedScopes = input.scope
+        ? [canonicalizeScope(input.scope).scope]
+        : canonicalizeScopes(input.scopes).map(({ scope }) => scope);
+    } catch {
+      throw new ORPCError("BAD_REQUEST", { message: "Invalid deployment scope." });
+    }
+
+    let storedScope: Scope | null = null;
     if (deploymentApp) {
       try {
-        scopeMatchesApp =
-          (input.scope ? scopeMatches(deploymentApp.scope, input.scope) : false) ||
-          (input.scopes?.some((scope) => scopeMatches(deploymentApp.scope, scope)) ?? false);
-      } catch {
-        // A malformed stored scope must not expose the deployment.
+        storedScope = canonicalizeScope(deploymentApp.scope).scope;
+      } catch (error) {
+        console.warn("Deployment app has an invalid stored scope.", {
+          appId: deploymentApp.id,
+          deploymentId: input.deploymentId,
+          error,
+        });
       }
     }
+    const scopeMatchesApp =
+      storedScope !== null && requestedScopes.some((scope) => scopeMatches(storedScope, scope));
 
     if (
       !deploymentWithApp ||

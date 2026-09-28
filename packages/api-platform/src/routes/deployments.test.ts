@@ -120,6 +120,7 @@ describe("platform deployment uploads", () => {
   });
 
   it("hides a deployment when its app has a malformed stored scope", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const deployment = await createLogoDeployment();
     await db
       .update(appTable)
@@ -132,6 +133,10 @@ describe("platform deployment uploads", () => {
         { context: publishContext("https://uploads.example/logo-dark.svg") },
       ),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(warn).toHaveBeenCalledWith(
+      "Deployment app has an invalid stored scope.",
+      expect.objectContaining({ appId: deployment.appId, deploymentId: deployment.id }),
+    );
   });
 
   it("maps reordered returned files using their generated file IDs", () => {

@@ -154,7 +154,15 @@ describe("platform CLI auth scopes", () => {
 
     await db
       .update(cliAuthSession)
-      .set({ scope: expectedScope })
+      .set({ scope: expectedScope, scopeKey: "0".repeat(32) })
+      .where(eq(cliAuthSession.id, session.id));
+    await expect(
+      call(cliAuthRouter.poll, { body: { deviceCode: started.body.deviceCode } }, { context }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+
+    await db
+      .update(cliAuthSession)
+      .set({ scope: expectedScope, scopeKey: expectedScopeKey })
       .where(eq(cliAuthSession.id, session.id));
     const polled = await call(
       cliAuthRouter.poll,
@@ -167,6 +175,18 @@ describe("platform CLI auth scopes", () => {
     await db
       .update(cliToken)
       .set({ scope: { name: "user", value: {} } })
+      .where(eq(cliToken.id, token.id));
+    await expect(
+      call(
+        cliAuthRouter.verifyToken,
+        { body: { deployToken: polled.body.deployToken } },
+        { context },
+      ),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+
+    await db
+      .update(cliToken)
+      .set({ scope: expectedScope, scopeKey: "0".repeat(32) })
       .where(eq(cliToken.id, token.id));
     await expect(
       call(
