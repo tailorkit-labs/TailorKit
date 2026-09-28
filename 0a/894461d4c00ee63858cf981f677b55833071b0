@@ -1,0 +1,90 @@
+packages/core/src/server/types.ts
+  s_f3e800461aea44::t_95a953fc863f6f 124-132
+packages/db/src/schema/cli-auth.ts
+  s_f3e800461aea44::t_3d8f4c0b469e7e 15,97,104
+packages/api-platform/src/procedures.ts
+  s_f3e800461aea44::t_a71fb84c063f27 12-29
+  s_f3e800461aea44::t_bd72f7f69e496a 30-35,54-56,70-74
+packages/core/src/server/scope.ts
+  s_f3e800461aea44::t_a39773dcd042fc 24-26
+  s_f3e800461aea44::t_95a953fc863f6f 175
+packages/db/src/schema/scope.ts
+  s_f3e800461aea44::t_09ad015064861e 188-194
+  s_f3e800461aea44::t_3d8f4c0b469e7e 20
+  s_f3e800461aea44::t_a1be19992fe639 27,34,37,40-44,48,53,59-62,71,76,84,87-89,93,101-103,105,114,119,131-133,142,145-147,151,174-178
+  s_f3e800461aea44::t_e01d37aa10d2ab 187,195-197
+packages/core/src/server/handler.test.ts
+  s_f3e800461aea44::t_c5d55247340c1e 607-625,637-640
+  s_f3e800461aea44::t_f3592f7c1b36cb 630
+  s_f3e800461aea44::t_474f2136e18440 626-629,631-636
+  s_f3e800461aea44::t_dbfd0e7478018e 106-133
+  s_f3e800461aea44::t_7b12a5bd72930b 641-644
+packages/db/src/schema/preview-session.ts
+  s_f3e800461aea44::t_3d8f4c0b469e7e 17,76
+packages/api-platform/src/routes/apps.test.ts
+  s_f3e800461aea44::t_cb7148ff2f2c7b 320-325,327-378
+  s_f3e800461aea44::t_8982d3a22c8149 326
+packages/api-platform/src/routes/apps.ts
+  s_f3e800461aea44::t_a6db963a2b075a 146,150,164,169,200,205
+packages/core/src/server/routes/apps.ts
+  s_f3e800461aea44::t_dd455ed4d32b7b 40,52,94
+packages/api-platform/src/scope.test.ts
+  s_f3e800461aea44::t_631c742ce2ee5d 68-107
+packages/core/src/server/types.test-d.ts
+  s_f3e800461aea44::t_0172c7afdd2f49 92-94
+  s_f3e800461aea44::t_741b77402f2245 91
+packages/core/src/server/procedures.ts
+  s_f3e800461aea44::t_95a953fc863f6f 72-75
+  s_f3e800461aea44::t_c28ba1bdb4739b 4
+packages/cli/src/auth.test.ts
+  s_f3e800461aea44::t_eb204692e3d22e 83,95-98
+packages/core/src/server/scope.test.ts
+  s_f3e800461aea44::t_eb06739274eebc 174-178,186-187
+  s_f3e800461aea44::t_2b4c93aa6d89d6 96-100
+packages/core/src/server/handler.ts
+  s_f3e800461aea44::t_a39773dcd042fc 173-178,217-219,309-311
+packages/db/src/schema/apps.ts
+  s_f3e800461aea44::t_3d8f4c0b469e7e 18,57
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_f3e800461aea44::t_a308e4808b2fce 12,320-334
+  s_f3e800461aea44::t_25ac9c7a70294a 335-336
+apps/docs/content/docs/(guides)/views.mdx
+  s_f3e800461aea44::t_f4fb627f792dd1 75,95-100
+  s_f3e800461aea44::t_fd6845da34a743 45,49,54
+  s_f3e800461aea44::t_feba1e79442a24 131-132
+  s_f3e800461aea44::t_e3cfe5ba0273e6 101-102
+packages/core/src/server/cli-auth-page.ts
+  s_f3e800461aea44::t_a39773dcd042fc 68,73,693-698
+  s_f3e800461aea44::t_69643208550dd6 90-94,234
+  s_f3e800461aea44::t_0819d7024e2ef5 137-141,145,247-252,267
+packages/react/src/store.ts
+  s_f3e800461aea44::t_9909175297818b 19,35-39,55,59,80-84,88,93,183,191-204,210
+packages/core/src/server/preview-consent.ts
+  s_f3e800461aea44::t_69643208550dd6 4-5,104,106-110,144-149
+packages/react/src/hooks/use-apps.ts
+  s_f3e800461aea44::t_5f795ce8b452fd 27-30,32
+packages/cli/src/auth.ts
+  s_f3e800461aea44::t_d678974ced6ed0 52-63,71
+packages/api-platform/openapi.json
+  s_f3e800461aea44::t_4193065476921c 1440-1452,1454,1456,1481-1511,1520-1550,1555-1557,1559-1562,1564,1595-1604,1606,1608,1616-1624,1626,1651-1681,1690-1720,1725-1727,1730,2067-2077,2079-2082,2084,2086,2111-2141,2150-2180,2185-2187,2190
+packages/client-platform/src/client/sdk.gen.ts
+  s_f3e800461aea44::t_295045966088b2 114-117
+packages/client-platform/src/client/types.gen.ts
+  s_f3e800461aea44::t_4b3a75ff928111 339,372-375,426-429,535-538
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0a894461d4c00ee63858cf981f677b55833071b0",
+  "prompts": {},
+  "sessions": {
+    "s_f3e800461aea44": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e28e-78c9-72e0-90fd-5c6df82f980b",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
