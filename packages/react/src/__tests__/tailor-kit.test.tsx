@@ -399,10 +399,11 @@ describe("tailorKitClient React adapter", () => {
       baseUrl: "http://runtime.test",
       components,
     });
+    const { AppView: ClientAppView } = tailor;
 
     render(
       <Root client={tailor}>
-        <AppView
+        <ClientAppView
           slot="panel"
           app={{ clientPath: "/apps/todo.js", id: "todo" }}
           context={{ userId: "user_1" }}
@@ -422,6 +423,27 @@ describe("tailorKitClient React adapter", () => {
         ],
       });
     });
+  });
+
+  it("rejects a client AppView rendered under a different Root client", () => {
+    const tailor = createTailorKitClient<typeof server>({
+      baseUrl: "http://runtime.test",
+      components,
+    });
+    const otherTailor = createTailorKitClient<typeof server>({
+      baseUrl: "http://other-runtime.test",
+      components,
+    });
+    const { AppView: ClientAppView } = tailor;
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    expect(() =>
+      render(
+        <Root client={otherTailor}>
+          <ClientAppView slot="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />
+        </Root>,
+      ),
+    ).toThrow("AppView was created for a different TailorKit client than the one passed to Root.");
   });
 
   it("warns when multiple hooks register views at the same hierarchy depth", async () => {

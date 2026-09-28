@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import type { ReactNode } from "react";
+import type { Attributes, ReactNode } from "react";
 import type {
   TailorKitTheme,
   CallbackMap,
@@ -214,7 +214,13 @@ function createReactTailorKitClient<
     ...clientConfig,
     AppView: function ClientAppView(props) {
       useTailorRootContext("AppView", client);
-      return createElement(ReactAppView as unknown as (props: object) => ReactNode, props);
+      const TypedReactAppView = ReactAppView as unknown as (
+        props: AppViewProps<TViews, ViewName<TViews>, TSlots>,
+      ) => ReactNode;
+      return createElement(
+        TypedReactAppView,
+        props as AppViewProps<TViews, ViewName<TViews>, TSlots> & Attributes,
+      );
     },
     useApps: function useClientApps() {
       useTailorRootContext("useApps", client);
