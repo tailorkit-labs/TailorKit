@@ -6,7 +6,7 @@ import { useStableContext } from "../hooks/use-stable-context";
 import { useTailorRootContext } from "./context";
 import { buildThemeCss, PrimitiveThemeContext } from "../primitives";
 import { RemoteViewHost } from "../remote-view";
-import type { AppViewProps, TailorKitApp } from "../tailor-kit";
+import type { AppViewProps, TailorKitApp } from "../tailorkit";
 
 export const AppView = ({
   app,

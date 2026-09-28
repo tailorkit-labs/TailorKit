@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { createTailorKitStore, toBaseUrl } from "../store";
-import type { TailorKitApp, TailorKitClientConfig } from "../tailor-kit";
+import type { TailorKitApp, TailorKitClientConfig } from "../tailorkit";
 import type { ComponentProps } from "./render";
 import { mergeProps, useRender } from "./render";
 import { TailorRootContext } from "./context";

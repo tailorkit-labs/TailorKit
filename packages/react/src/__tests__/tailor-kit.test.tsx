@@ -7,9 +7,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { createTailorKitServer } from "@tailorkit/core/server";
 import type { IframeUiHost } from "@tailorkit/sandbox/host";
 import type { HostToIframePayload, RemoteNode } from "@tailorkit/sandbox/protocol";
-import { createTailorKitClient } from "../tailor-kit";
+import { createTailorKitClient } from "../tailorkit";
 import { RemoteViewHost } from "../remote-view";
-import type { TailorKitApp } from "../tailor-kit";
+import type { TailorKitApp } from "../tailorkit";
 
 const hostRecords: {
   appUrl: string;
