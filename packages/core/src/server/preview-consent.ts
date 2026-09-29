@@ -1,7 +1,8 @@
 import { previewAccept, previewInvitation } from "@tailorkit/client-platform/client";
 import type { Client as PlatformClient } from "@tailorkit/client-platform/client/client/index";
 import { z } from "zod";
-import { approvalStyles, escapeHtml } from "./cli-auth-page";
+import { approvalStyles, escapeHtml, renderScopeControl, selectOneScope } from "./cli-auth-page";
+import type { TailorKitScopes } from "./types";
 
 export const previewCookieName = "tailorkit_preview_grants";
 const grantIdSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/u);
@@ -36,7 +37,7 @@ interface ConsentOptions {
   platformHeaders: Record<string, string>;
   authenticate: (ctx: {
     request: Request;
-  }) => Promise<{ scopeId: string } | null> | { scopeId: string } | null;
+  }) => Promise<{ scopes: TailorKitScopes } | null> | { scopes: TailorKitScopes } | null;
 }
 
 // Strip share IDs from Referer while preserving Origin on same-origin form submissions.
@@ -54,6 +55,7 @@ export async function handlePreviewConsent(options: ConsentOptions): Promise<Res
     authenticate,
   } = options;
   const url = new URL(request.url);
+  let selectedScopeName: string | undefined;
   if (!grantIdSchema.safeParse(shareId).success) {
     return new Response("Preview unavailable", { status: 404, headers });
   }
@@ -72,6 +74,8 @@ export async function handlePreviewConsent(options: ConsentOptions): Promise<Res
     }
     const form = await request.formData();
     const intent = consentIntentSchema.safeParse(form.get("intent"));
+    selectedScopeName =
+      typeof form.get("scope") === "string" ? String(form.get("scope")) : undefined;
     if (intent.success && intent.data === "cancel") {
       return new Response(null, { status: 303, headers: { ...headers, location: returnPath } });
     }
@@ -97,9 +101,21 @@ export async function handlePreviewConsent(options: ConsentOptions): Promise<Res
     );
   }
   if (request.method === "POST") {
+    let scope;
+    try {
+      scope = selectOneScope(
+        viewer.scopes,
+        selectedScopeName,
+        "Choose one scope to accept this preview.",
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Choose one scope to accept this preview.";
+      return new Response(message, { status: 400, headers });
+    }
     try {
       const result = await previewAccept({
-        body: { scopeId: viewer.scopeId },
+        body: { scope },
         path: { shareId },
         client: platform,
         headers: platformHeaders,
@@ -125,10 +141,16 @@ export async function handlePreviewConsent(options: ConsentOptions): Promise<Res
     });
     const data = "data" in result ? result.data : result;
     const appName = escapeHtml(data.appName);
+    const scopeControl = renderScopeControl(
+      viewer.scopes,
+      selectedScopeName,
+      "preview-scope",
+      "Save this preview under",
+    );
     return html(
       `Preview ${appName}`,
       "After you accept, this preview is available only in this browser.",
-      `<aside class="warning" role="note" aria-labelledby="preview-warning-title"><span class="warning-icon" aria-hidden="true">⚠</span><div><h2 class="warning-title" id="preview-warning-title">Untrusted content</h2><p class="warning-description">Only accept previews from trusted developers.</p></div></aside><form method="post"><div class="actions"><button class="button primary" name="intent" value="accept" type="submit">Accept preview</button><button class="button secondary" name="intent" value="cancel" type="submit">Cancel</button></div></form>`,
+      `<aside class="warning" role="note" aria-labelledby="preview-warning-title"><span class="warning-icon" aria-hidden="true">⚠</span><div><h2 class="warning-title" id="preview-warning-title">Untrusted content</h2><p class="warning-description">Only accept previews from trusted developers.</p></div></aside><form method="post">${scopeControl}<div class="actions"><button class="button primary" name="intent" value="accept" type="submit">Accept preview</button><button class="button secondary" name="intent" value="cancel" type="submit" formnovalidate>Cancel</button></div></form>`,
     );
   } catch (error) {
     return previewErrorResponse(error);

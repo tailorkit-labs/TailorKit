@@ -27,7 +27,7 @@
     }
   },
   "scripts": {
-    "build": "vp pack src/index.ts src/relations.ts src/validate-org-slug.ts src/validate-project-slug.ts src/schema/index.ts src/schema/apps.ts src/schema/auth.ts src/schema/cli-auth.ts src/schema/preview-session.ts src/schema/project.ts --format esm --dts --clean",
+    "build": "vp pack src/index.ts src/relations.ts src/validate-org-slug.ts src/validate-project-slug.ts src/schema/index.ts src/schema/apps.ts src/schema/auth.ts src/schema/cli-auth.ts src/schema/preview-session.ts src/schema/project.ts src/schema/scope.ts --format esm --dts --clean",
     "check-types": "tsc --noEmit",
     "drizzle-kit": "node --conditions=development --preserve-symlinks-main ./node_modules/drizzle-kit/bin.cjs",
     "db:push": "pnpm drizzle-kit push",

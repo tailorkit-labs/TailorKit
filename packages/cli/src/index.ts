@@ -133,7 +133,7 @@ cli
       });
 
       log.info(`Host: ${pc.cyan(result.hostUrl)}`);
-      log.info(`Scope: ${pc.cyan(result.scopeId)}`);
+      log.info(`Scope: ${pc.cyan(JSON.stringify(result.scope))}`);
       outro("Authenticated.");
     } catch (error) {
       log.error(error instanceof Error ? error.message : String(error));

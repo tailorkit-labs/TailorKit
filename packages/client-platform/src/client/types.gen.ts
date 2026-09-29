@@ -5,14 +5,44 @@ export type ClientOptions = {
 };
 
 export type AppsListData = {
-  body?: never;
-  path?: never;
-  query: {
+  body: {
     page?: number;
     pageSize?: number;
-    scopeId: string;
+    scopes: Array<{
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    }>;
   };
-  url: "/apps";
+  path?: never;
+  query?: never;
+  url: "/apps/list";
 };
 
 export type AppsListResponses = {
@@ -24,7 +54,37 @@ export type AppsListResponses = {
       id: string;
       publicId: string;
       projectId: string;
-      scopeId: string;
+      scope: {
+        name: string;
+        value: {
+          [key: string]:
+            | string
+            | number
+            | boolean
+            | null
+            | Array<
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown | null>
+                | {
+                    [key: string]: unknown;
+                  }
+              >
+            | {
+                [key: string]:
+                  | string
+                  | number
+                  | boolean
+                  | null
+                  | Array<unknown | null>
+                  | {
+                      [key: string]: unknown;
+                    };
+              };
+        };
+      };
       name: string;
       description: string | null;
       currentDeploymentId: string | null;
@@ -59,11 +119,149 @@ export type AppsListResponses = {
 
 export type AppsListResponse = AppsListResponses[keyof AppsListResponses];
 
+export type AppsGetData = {
+  body: {
+    scopes: Array<{
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    }>;
+  };
+  path: {
+    appId: string;
+  };
+  query?: never;
+  url: "/apps/{appId}/lookup";
+};
+
+export type AppsGetResponses = {
+  /**
+   * OK
+   */
+  200: {
+    id: string;
+    publicId: string;
+    projectId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown | null>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown | null>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
+    name: string;
+    description: string | null;
+    currentDeploymentId: string | null;
+    createdAt: string;
+    updatedAt: string;
+    currentDeployment: {
+      id: string;
+      publicId: string;
+      appId: string;
+      status: "uploading" | "deploying" | "verifying" | "published";
+      clientEntryFileId: string | null;
+      logoLightFileId: string | null;
+      logoDarkFileId: string | null;
+      logoLightPath: string | null;
+      logoDarkPath: string | null;
+      createdAt: string;
+      updatedAt: string;
+    } | null;
+    clientPath?: string;
+    logoPaths?: {
+      dark?: string;
+      light?: string;
+    };
+  };
+};
+
+export type AppsGetResponse = AppsGetResponses[keyof AppsGetResponses];
+
 export type AppsCreateData = {
   body: {
     name: string;
     description: string | null;
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
   };
   path?: never;
   query?: never;
@@ -78,7 +276,37 @@ export type AppsCreateResponses = {
     id: string;
     publicId: string;
     projectId: string;
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown | null>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown | null>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
     name: string;
     description: string | null;
     currentDeploymentId: string | null;
@@ -108,13 +336,43 @@ export type AppsCreateResponses = {
 export type AppsCreateResponse = AppsCreateResponses[keyof AppsCreateResponses];
 
 export type AppsDeleteData = {
-  body?: never;
+  body: {
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
+  };
   path: {
     appId: string;
   };
-  query: {
-    scopeId: string;
-  };
+  query?: never;
   url: "/apps/{appId}";
 };
 
@@ -129,65 +387,46 @@ export type AppsDeleteResponses = {
 
 export type AppsDeleteResponse = AppsDeleteResponses[keyof AppsDeleteResponses];
 
-export type AppsGetData = {
-  body?: never;
-  path: {
-    appId: string;
-  };
-  query: {
-    scopeId: string;
-  };
-  url: "/apps/{appId}";
-};
-
-export type AppsGetResponses = {
-  /**
-   * OK
-   */
-  200: {
-    id: string;
-    publicId: string;
-    projectId: string;
-    scopeId: string;
-    name: string;
-    description: string | null;
-    currentDeploymentId: string | null;
-    createdAt: string;
-    updatedAt: string;
-    currentDeployment: {
-      id: string;
-      publicId: string;
-      appId: string;
-      status: "uploading" | "deploying" | "verifying" | "published";
-      clientEntryFileId: string | null;
-      logoLightFileId: string | null;
-      logoDarkFileId: string | null;
-      logoLightPath: string | null;
-      logoDarkPath: string | null;
-      createdAt: string;
-      updatedAt: string;
-    } | null;
-    clientPath?: string;
-    logoPaths?: {
-      dark?: string;
-      light?: string;
-    };
-  };
-};
-
-export type AppsGetResponse = AppsGetResponses[keyof AppsGetResponses];
-
 export type AppsUpdateData = {
   body: {
     name: string;
     description: string | null;
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
   };
   path: {
     appId: string;
   };
-  query: {
-    scopeId: string;
-  };
+  query?: never;
   url: "/apps/{appId}";
 };
 
@@ -199,7 +438,37 @@ export type AppsUpdateResponses = {
     id: string;
     publicId: string;
     projectId: string;
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown | null>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown | null>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
     name: string;
     description: string | null;
     currentDeploymentId: string | null;
@@ -231,13 +500,42 @@ export type AppsUpdateResponse = AppsUpdateResponses[keyof AppsUpdateResponses];
 export type AppsDeployData = {
   body: {
     deploymentId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
   };
   path: {
     appId: string;
   };
-  query: {
-    scopeId: string;
-  };
+  query?: never;
   url: "/apps/{appId}/deploy";
 };
 
@@ -249,7 +547,37 @@ export type AppsDeployResponses = {
     id: string;
     publicId: string;
     projectId: string;
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown | null>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown | null>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
     name: string;
     description: string | null;
     currentDeploymentId: string | null;
@@ -280,7 +608,37 @@ export type AppsDeployResponse = AppsDeployResponses[keyof AppsDeployResponses];
 
 export type CliAuthApproveData = {
   body: {
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
     userCode: string;
   };
   path?: never;
@@ -341,7 +699,37 @@ export type CliAuthPollResponses = {
       }
     | {
         deployToken: string;
-        scopeId: string;
+        scope: {
+          name: string;
+          value: {
+            [key: string]:
+              | string
+              | number
+              | boolean
+              | null
+              | Array<
+                  | string
+                  | number
+                  | boolean
+                  | null
+                  | Array<unknown | null>
+                  | {
+                      [key: string]: unknown;
+                    }
+                >
+              | {
+                  [key: string]:
+                    | string
+                    | number
+                    | boolean
+                    | null
+                    | Array<unknown | null>
+                    | {
+                        [key: string]: unknown;
+                      };
+                };
+          };
+        };
         status: "approved";
       }
     | {
@@ -387,7 +775,37 @@ export type CliAuthVerifyTokenResponses = {
    * OK
    */
   200: {
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown | null>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown | null>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
   };
 };
 
@@ -395,15 +813,45 @@ export type CliAuthVerifyTokenResponse =
   CliAuthVerifyTokenResponses[keyof CliAuthVerifyTokenResponses];
 
 export type DeploymentsListData = {
-  body?: never;
-  path?: never;
-  query: {
+  body: {
     page?: number;
     pageSize?: number;
     appId: string;
-    scopeId: string;
+    scopes: Array<{
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    }>;
   };
-  url: "/deployments";
+  path?: never;
+  query?: never;
+  url: "/deployments/list";
 };
 
 export type DeploymentsListResponses = {
@@ -434,6 +882,68 @@ export type DeploymentsListResponses = {
 
 export type DeploymentsListResponse = DeploymentsListResponses[keyof DeploymentsListResponses];
 
+export type DeploymentsGetData = {
+  body: {
+    scopes: Array<{
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    }>;
+  };
+  path: {
+    deploymentId: string;
+  };
+  query?: never;
+  url: "/deployments/{deploymentId}/lookup";
+};
+
+export type DeploymentsGetResponses = {
+  /**
+   * OK
+   */
+  200: {
+    id: string;
+    publicId: string;
+    appId: string;
+    status: "uploading" | "deploying" | "verifying" | "published";
+    clientEntryFileId: string | null;
+    logoLightFileId: string | null;
+    logoDarkFileId: string | null;
+    logoLightPath: string | null;
+    logoDarkPath: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+export type DeploymentsGetResponse = DeploymentsGetResponses[keyof DeploymentsGetResponses];
+
 export type DeploymentsCreateData = {
   body: {
     appId: string;
@@ -458,7 +968,37 @@ export type DeploymentsCreateData = {
         contentType: "image/svg+xml" | "image/png" | "image/webp";
       };
     };
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
   };
   path?: never;
   query?: never;
@@ -545,41 +1085,39 @@ export type DeploymentsCreateResponses = {
 export type DeploymentsCreateResponse =
   DeploymentsCreateResponses[keyof DeploymentsCreateResponses];
 
-export type DeploymentsGetData = {
-  body?: never;
-  path: {
-    deploymentId: string;
-  };
-  query: {
-    scopeId: string;
-  };
-  url: "/deployments/{deploymentId}";
-};
-
-export type DeploymentsGetResponses = {
-  /**
-   * OK
-   */
-  200: {
-    id: string;
-    publicId: string;
-    appId: string;
-    status: "uploading" | "deploying" | "verifying" | "published";
-    clientEntryFileId: string | null;
-    logoLightFileId: string | null;
-    logoDarkFileId: string | null;
-    logoLightPath: string | null;
-    logoDarkPath: string | null;
-    createdAt: string;
-    updatedAt: string;
-  };
-};
-
-export type DeploymentsGetResponse = DeploymentsGetResponses[keyof DeploymentsGetResponses];
-
 export type DeploymentsPublishData = {
   body: {
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
     rollout?: boolean;
   };
   path: {
@@ -684,7 +1222,37 @@ export type PreviewInvitationResponse =
 
 export type PreviewAcceptData = {
   body: {
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    };
   };
   path: {
     shareId: string;
@@ -708,7 +1276,37 @@ export type PreviewAcceptResponse = PreviewAcceptResponses[keyof PreviewAcceptRe
 export type PreviewAcceptedData = {
   body: {
     grantIds: Array<string>;
-    scopeId: string;
+    scopes: Array<{
+      name: string;
+      value: {
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<
+              | string
+              | number
+              | boolean
+              | null
+              | Array<unknown>
+              | {
+                  [key: string]: unknown;
+                }
+            >
+          | {
+              [key: string]:
+                | string
+                | number
+                | boolean
+                | null
+                | Array<unknown>
+                | {
+                    [key: string]: unknown;
+                  };
+            };
+      };
+    }>;
   };
   path?: never;
   query?: never;
@@ -725,7 +1323,37 @@ export type PreviewAcceptedResponses = {
         id: string;
         publicId: string;
         projectId: string;
-        scopeId: string;
+        scope: {
+          name: string;
+          value: {
+            [key: string]:
+              | string
+              | number
+              | boolean
+              | null
+              | Array<
+                  | string
+                  | number
+                  | boolean
+                  | null
+                  | Array<unknown | null>
+                  | {
+                      [key: string]: unknown;
+                    }
+                >
+              | {
+                  [key: string]:
+                    | string
+                    | number
+                    | boolean
+                    | null
+                    | Array<unknown | null>
+                    | {
+                        [key: string]: unknown;
+                      };
+                };
+          };
+        };
         name: string;
         description: string | null;
         currentDeploymentId: string | null;

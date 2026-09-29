@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { createElement } from "react";
+import type { Attributes, ReactNode } from "react";
 import type {
   TailorKitTheme,
   CallbackMap,
@@ -11,9 +12,11 @@ import type {
 } from "@tailorkit/core/schema";
 import type { primitives } from "./primitives";
 
-import { useView } from "./hooks/use-view";
-import type { UseView, ViewName, ViewOptions } from "./hooks/use-view";
-import { useApps } from "./hooks/use-apps";
+import { useTailorRootContext } from "./components/context";
+import { useView as useRootView } from "./hooks/use-view";
+import type { UseView, ViewName, ViewOptions, ViewState } from "./hooks/use-view";
+import { useApps as useRootApps } from "./hooks/use-apps";
+import type { UseAppsOptions, UseAppsResult } from "./hooks/use-apps";
 import { AppView as ReactAppView } from "./components/app-view";
 
 type AnyComponentDefinition = ComponentDefinition<
@@ -98,7 +101,6 @@ type SlotView<TSlots extends SlotDefinitions, V extends keyof TSlots & string> =
 }
   ? Extract<P, string>
   : never;
-
 export interface TailorKitClientConfig {
   readonly baseUrl: string | URL;
   readonly components: Record<string, unknown>;
@@ -108,11 +110,12 @@ export interface TailorKitClientConfig {
 export interface TailorKitInstance<
   TViews extends Record<string, ViewDefinition> = Record<string, ViewDefinition>,
   TSlots extends SlotDefinitions = SlotDefinitions,
+  TScopeNames extends string = string,
 > extends TailorKitClientConfig {
   readonly $slots?: TSlots;
   readonly $views?: TViews;
   readonly AppView: (props: AppViewProps<TViews, ViewName<TViews>, TSlots>) => ReactNode;
-  readonly useApps: typeof useApps;
+  readonly useApps: (options?: UseAppsOptions<TScopeNames>) => UseAppsResult;
   readonly useView: UseView<TViews>;
 }
 
@@ -153,6 +156,18 @@ type ServerComponents<TTailor extends TailorKitServerShape> = {
 type ServerViewMap<TTailor extends TailorKitServerShape> =
   TTailor["$internal"]["schema"]["contexts"];
 
+type ServerScopeNames<TTailor extends TailorKitServerShape> = TTailor extends {
+  handler: (request: Request, options: infer TOptions) => unknown;
+}
+  ? TOptions extends { authenticate: infer TAuthenticate }
+    ? TAuthenticate extends (...args: infer _TArgs) => infer TResult
+      ? Extract<Awaited<TResult>, { scopes: unknown }> extends { scopes: infer TScopes }
+        ? keyof TScopes & string
+        : never
+      : never
+    : never
+  : never;
+
 type ServerViews<TTailor extends TailorKitServerShape> = {
   [TName in keyof ServerViewMap<TTailor>]: ServerViewMap<TTailor>[TName] extends ViewDefinition
     ? ServerViewMap<TTailor>[TName]
@@ -165,12 +180,14 @@ export function createTailorKitClient<TTailor extends TailorKitServerShape>(opti
   theme?: TailorKitTheme;
 }): TailorKitInstance<
   ServerViews<TTailor>,
-  TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions
+  TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions,
+  ServerScopeNames<TTailor>
 > {
   return createReactTailorKitClient<
     ServerComponents<TTailor>,
     ServerViews<TTailor>,
-    TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions
+    TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions,
+    ServerScopeNames<TTailor>
   >(options);
 }
 
@@ -178,11 +195,12 @@ function createReactTailorKitClient<
   TComponents extends Record<string, AnyComponentDefinition>,
   TViews extends Record<string, ViewDefinition> = Record<string, never>,
   TSlots extends SlotDefinitions = SlotDefinitions,
+  TScopeNames extends string = string,
 >(options: {
   baseUrl: string | URL;
   components?: ComponentRenderers<TComponents>;
   theme?: TailorKitTheme;
-}): TailorKitInstance<TViews, TSlots> {
+}): TailorKitInstance<TViews, TSlots, TScopeNames> {
   const wrappedComponents: Record<string, unknown> = {};
 
   const theme = options.theme ?? {};
@@ -208,13 +226,32 @@ function createReactTailorKitClient<
     components: wrappedComponents,
     theme,
   };
-
-  return {
+  const client: TailorKitInstance<TViews, TSlots, TScopeNames> = {
     ...clientConfig,
-    AppView: ReactAppView as TailorKitInstance<TViews, TSlots>["AppView"],
-    useApps,
-    useView: useView as UseView<TViews>,
+    AppView: function ClientAppView(props) {
+      useTailorRootContext("AppView", client);
+      const TypedReactAppView = ReactAppView as unknown as (
+        props: AppViewProps<TViews, ViewName<TViews>, TSlots>,
+      ) => ReactNode;
+      return createElement(
+        TypedReactAppView,
+        props as AppViewProps<TViews, ViewName<TViews>, TSlots> & Attributes,
+      );
+    },
+    useApps: function useClientApps(options) {
+      useTailorRootContext("useApps", client);
+      return useRootApps(options);
+    },
+    useView: function useClientView<TView extends ViewName<TViews>>(
+      view: TView,
+      options: ViewState<TViews, NoInfer<TView>>,
+    ) {
+      useTailorRootContext("useView", client);
+      useRootView<TViews, TView>(view, options);
+    },
   };
+
+  return client;
 }
 
 export type { ViewOptions } from "./hooks/use-view";

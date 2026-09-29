@@ -20,6 +20,7 @@ vi.mock("@tailorkit/db", () => ({
 vi.mock("@tailorkit/kv", async (original) => ({ ...(await original()), getKV: () => state.kv }));
 
 const { previewRouter } = await import("./preview");
+const { canonicalizeScope } = await import("../scope");
 const { authorizePreviewSocket } = await import("../preview-ws-auth");
 const { previewWebSocketRouter } = await import("../preview-ws");
 const authSecret = env.AUTH_SECRET;
@@ -29,6 +30,9 @@ if (!authSecret) {
 const orgId = "11111111-1111-4111-8111-111111111111";
 const projectId = "22222222-2222-4222-8222-222222222222";
 const tokenId = "33333333-3333-4333-8333-333333333333";
+const authorScope = { name: "user", value: { userId: "author" } };
+const otherHostScope = { name: "user", value: { userId: "other" } };
+const viewerScope = { name: "user", value: { userId: "viewer" } };
 
 function fakeKV() {
   const data = new Map<string, string>();
@@ -135,13 +139,23 @@ describe("platform preview lifecycle and grants", () => {
     await db.insert(cliToken).values({
       id: tokenId,
       projectId,
-      scopeId: "author",
+      ...canonicalizeScope(authorScope),
       tokenHash: hashSecret("deploy-token", authSecret),
       expiresAt: new Date(Date.now() + 60_000),
     });
     await db.insert(appTable).values([
-      { projectId, publicId: "authapp00001", name: "Author app", scopeId: "author" },
-      { projectId, publicId: "otherapp0001", name: "Other app", scopeId: "other" },
+      {
+        projectId,
+        publicId: "authapp00001",
+        name: "Author app",
+        ...canonicalizeScope(authorScope),
+      },
+      {
+        projectId,
+        publicId: "otherapp0001",
+        name: "Other app",
+        ...canonicalizeScope(otherHostScope),
+      },
     ]);
   });
   afterEach(async () => {
@@ -213,6 +227,14 @@ describe("platform preview lifecycle and grants", () => {
     expect(await kv.get(`preview:ended:${second.body.sessionId}`)).toBe("1");
   });
 
+  it("rejects a CLI token whose stored scope is malformed", async () => {
+    await db
+      .update(cliToken)
+      .set({ scope: { name: "user", value: {} } })
+      .where(eq(cliToken.id, tokenId));
+    await expect(start()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
+
   it("retires a session when its CLI token expires during a heartbeat", async () => {
     const started = await start();
     await db
@@ -269,18 +291,18 @@ describe("platform preview lifecycle and grants", () => {
     const started = await start();
     const accepted = await call(
       previewRouter.accept,
-      { params: { shareId: started.body.shareId }, body: { scopeId: "viewer" } },
+      { params: { shareId: started.body.shareId }, body: { scope: viewerScope } },
       { context },
     );
     const wrongScope = await call(
       previewRouter.accepted,
-      { body: { grantIds: [accepted.body.grantId], scopeId: "other" } },
+      { body: { grantIds: [accepted.body.grantId], scopes: [otherHostScope] } },
       { context },
     );
     expect(wrongScope.body.items).toEqual([]);
     const viewer = await call(
       previewRouter.accepted,
-      { body: { grantIds: [accepted.body.grantId], scopeId: "viewer" } },
+      { body: { grantIds: [accepted.body.grantId], scopes: [viewerScope] } },
       { context },
     );
     expect(viewer.body.items).toHaveLength(1);
@@ -292,7 +314,7 @@ describe("platform preview lifecycle and grants", () => {
     );
     const ended = await call(
       previewRouter.accepted,
-      { body: { grantIds: [accepted.body.grantId], scopeId: "viewer" } },
+      { body: { grantIds: [accepted.body.grantId], scopes: [viewerScope] } },
       { context },
     );
     expect(ended.body.items).toEqual([]);
@@ -367,11 +389,14 @@ describe("platform preview lifecycle and grants", () => {
       { length: 7 },
       (_, index) => `scopeapp${String(index).padStart(4, "0")}`,
     );
-    await db
-      .insert(appTable)
-      .values(
-        appIds.map((publicId) => ({ projectId, publicId, name: publicId, scopeId: "author" })),
-      );
+    await db.insert(appTable).values(
+      appIds.map((publicId) => ({
+        projectId,
+        publicId,
+        name: publicId,
+        ...canonicalizeScope(authorScope),
+      })),
+    );
     const startApp = (appId: string) =>
       call(previewRouter.start, { body: { appId, deployToken: "deploy-token" } }, { context });
     const started = await Promise.all(appIds.slice(0, 5).map(startApp));
@@ -383,7 +408,7 @@ describe("platform preview lifecycle and grants", () => {
     await db.insert(cliToken).values({
       id: "44444444-4444-4444-8444-444444444444",
       projectId,
-      scopeId: "other",
+      ...canonicalizeScope(otherHostScope),
       tokenHash: hashSecret("other-token", authSecret),
       expiresAt: new Date(Date.now() + 60_000),
     });
@@ -415,11 +440,14 @@ describe("platform preview lifecycle and grants", () => {
       { length: 6 },
       (_, index) => `raceapp${String(index).padStart(5, "0")}`,
     );
-    await db
-      .insert(appTable)
-      .values(
-        appIds.map((publicId) => ({ projectId, publicId, name: publicId, scopeId: "author" })),
-      );
+    await db.insert(appTable).values(
+      appIds.map((publicId) => ({
+        projectId,
+        publicId,
+        name: publicId,
+        ...canonicalizeScope(authorScope),
+      })),
+    );
     const results = await Promise.allSettled(
       appIds.map((appId) =>
         call(previewRouter.start, { body: { appId, deployToken: "deploy-token" } }, { context }),

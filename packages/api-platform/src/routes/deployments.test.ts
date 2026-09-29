@@ -2,6 +2,7 @@ import { call } from "@orpc/server";
 import { app as appTable, appDeployment, appDeploymentFile } from "@tailorkit/db/schema/apps";
 import { organization } from "@tailorkit/db/schema/auth";
 import { project as projectTable } from "@tailorkit/db/schema/project";
+import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Context } from "../context";
 import { createTestDb } from "../test/pglite";
@@ -16,11 +17,13 @@ vi.mock("@tailorkit/db", () => ({
 }));
 
 const { deploymentRouter, mapReturnedFilesByAssetPath } = await import("./deployments");
+const { canonicalizeScope } = await import("../scope");
 
 const organizationId = "11111111-1111-4111-8111-111111111111";
 const projectId = "22222222-2222-4222-8222-222222222222";
 const logoChecksum = "b".repeat(64);
 const logoChecksumBase64 = Buffer.from(logoChecksum, "hex").toString("base64");
+const productionScope = { name: "environment", value: { environment: "production" } };
 
 describe("platform deployment uploads", () => {
   let client: Awaited<ReturnType<typeof createTestDb>>["client"];
@@ -51,7 +54,7 @@ describe("platform deployment uploads", () => {
       name: "Inbox",
       projectId,
       publicId: "app000000001",
-      scopeId: "production",
+      ...canonicalizeScope(productionScope),
     });
   });
 
@@ -59,7 +62,7 @@ describe("platform deployment uploads", () => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
     await client.close();
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   const createLogoDeployment = async () => {
@@ -114,6 +117,47 @@ describe("platform deployment uploads", () => {
         contentType: "image/svg+xml",
       }),
     },
+  });
+
+  it("hides a deployment when its app has a malformed stored scope", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const deployment = await createLogoDeployment();
+    await db
+      .update(appTable)
+      .set({ scope: { name: "environment", value: {} } })
+      .where(eq(appTable.id, deployment.appId));
+    await expect(
+      call(
+        deploymentRouter.get,
+        { params: { deploymentId: deployment.id }, body: { scopes: [productionScope] } },
+        { context: publishContext("https://uploads.example/logo-dark.svg") },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(warn).toHaveBeenCalledWith(
+      "Deployment app has an invalid stored scope.",
+      expect.objectContaining({ appId: deployment.appId, deploymentId: deployment.id }),
+    );
+  });
+
+  it("hides a deployment when its stored scope key does not match its scope", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const deployment = await createLogoDeployment();
+    await db
+      .update(appTable)
+      .set({ scopeKey: "0".repeat(32) })
+      .where(eq(appTable.id, deployment.appId));
+
+    await expect(
+      call(
+        deploymentRouter.get,
+        { params: { deploymentId: deployment.id }, body: { scopes: [productionScope] } },
+        { context: publishContext("https://uploads.example/logo-dark.svg") },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(warn).toHaveBeenCalledWith(
+      "Deployment app has an invalid stored scope.",
+      expect.objectContaining({ appId: deployment.appId, deploymentId: deployment.id }),
+    );
   });
 
   it("maps reordered returned files using their generated file IDs", () => {
@@ -197,7 +241,7 @@ describe("platform deployment uploads", () => {
               contentType: "image/svg+xml",
             },
           },
-          scopeId: "production",
+          scope: productionScope,
         },
       },
       { context },
@@ -280,7 +324,7 @@ describe("platform deployment uploads", () => {
               contentType: "image/svg+xml",
             },
           },
-          scopeId: "production",
+          scope: productionScope,
         },
       },
       { context },
@@ -342,7 +386,7 @@ describe("platform deployment uploads", () => {
                 objectKey: "client.js",
               },
             ],
-            scopeId: "production",
+            scope: productionScope,
           },
         },
         { context },
@@ -360,7 +404,7 @@ describe("platform deployment uploads", () => {
       call(
         deploymentRouter.publish,
         {
-          body: { rollout: true, scopeId: "production" },
+          body: { rollout: true, scope: productionScope },
           params: { deploymentId: deployment.id },
         },
         { context: publishContext("http://uploads.example/logo-dark.svg") },
@@ -390,7 +434,7 @@ describe("platform deployment uploads", () => {
     const publish = call(
       deploymentRouter.publish,
       {
-        body: { rollout: true, scopeId: "production" },
+        body: { rollout: true, scope: productionScope },
         params: { deploymentId: deployment.id },
       },
       { context: publishContext("https://uploads.example/logo-dark.svg") },
