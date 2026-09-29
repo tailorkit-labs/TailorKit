@@ -197,6 +197,7 @@ export const runInit = async (options: InitOptions): Promise<string> => {
   await generateApp({
     force,
     formatting,
+    packageManager,
     hostUrl,
     linting,
     packageName,

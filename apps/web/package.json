@@ -15,6 +15,7 @@
   },
   "scripts": {
     "check-types": "tsc --noEmit",
+    "env:pull": "pnpm vercel env pull",
     "test": "vp test run",
     "build": "vp build",
     "preview": "vp preview",

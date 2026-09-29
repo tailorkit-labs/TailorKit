@@ -8,23 +8,23 @@ import {
   Observability,
   SensitiveDataFilter,
 } from "@mastra/observability";
-import { env } from "#env";
+import { env } from "../env";
 import { agent, workspace } from "./agents/agent";
 
 const durableAgent = createDurableAgent({ agent });
-const storage = env.DATABASE_URL
-  ? new PostgresStore({
-      id: "mastra-storage",
-      connectionString: env.DATABASE_URL,
-      max: 5,
-    })
-  : undefined;
+const storage = new PostgresStore({
+  id: "mastra-storage",
+  connectionString: env.DATABASE_URL,
+  schemaName: "mastra",
+  max: 5,
+});
 
 const codingController = new AgentController({
   id: "tailorkit-coding-controller",
   agent,
   workspace,
-  ...(storage ? { storage } : {}),
+  storage,
+  initialState: { yolo: true },
   modes: [{ id: "build", name: "Build", metadata: { default: true } }],
 });
 
@@ -32,15 +32,12 @@ export const mastra = new Mastra({
   agents: { agent: durableAgent },
   agentControllers: { codingController },
   recovery: { durableAgents: "auto" },
-  ...(storage ? { storage } : {}),
+  storage,
   observability: new Observability({
     configs: {
       default: {
         serviceName: "mastra",
-        exporters: [
-          ...(storage ? [new MastraStorageExporter()] : []),
-          new MastraPlatformExporter(),
-        ],
+        exporters: [new MastraStorageExporter(), new MastraPlatformExporter()],
         spanOutputProcessors: [new SensitiveDataFilter()],
       },
     },

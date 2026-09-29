@@ -68,6 +68,8 @@ temp
 /packages/agent/output.txt
 /packages/agent/.mastra
 /packages/agent/src/mastra/public/
+/packages/agent/workspace/
+/packages/agent/workspaces/
 /packages/agent/.env.development
 /packages/agent/*.db
 /packages/agent/*.db-*
@@ -78,3 +80,5 @@ temp
 
 # CLI test output
 .sandbox-test
+.vercel
+.env*

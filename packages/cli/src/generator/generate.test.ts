@@ -15,16 +15,17 @@ const createTempDir = async (): Promise<string> => {
 
 const defaultOptions = {
   force: false,
-  formatting: false,
+  formatting: true,
   hostUrl: "https://host.example.com/api/tailorkit",
-  linting: false,
+  linting: true,
   packageName: "test-app",
+  packageManager: "npm",
   packageVersions: {
-    oxfmt: "1.0.0",
-    oxlint: "1.0.0",
-    preact: "10.0.0",
-    tailorkit: "4.5.6",
-    typescript: "5.0.0",
+    oxfmt: "0.71.0",
+    oxlint: "1.86.0",
+    preact: "10.29.8",
+    tailorkit: "0.1.0",
+    typescript: "7.0.2",
   },
   useWorkspaceDependencies: false,
 } as const;

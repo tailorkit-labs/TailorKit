@@ -64,6 +64,14 @@ allowBuilds:
   msw: false
   protobufjs: false
   sharp: false
+  cpu-features: false
+  ssh2: false
+  "@google/genai": false
+  agent-browser: false
+  bufferutil: false
+  edgedriver: false
+  geckodriver: false
+  onnxruntime-node: false
 peerDependencyRules:
   allowAny:
     - vite

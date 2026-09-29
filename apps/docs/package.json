@@ -19,6 +19,7 @@
   },
   "scripts": {
     "check-types": "fumadocs-mdx && tsc --noEmit",
+    "env:pull": "pnpm vercel env pull",
     "dev": "vp dev --port 5173",
     "build": "vp build",
     "start": "vp preview",

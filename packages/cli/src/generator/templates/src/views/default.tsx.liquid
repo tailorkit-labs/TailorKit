@@ -7,7 +7,7 @@ const view = createView("/", {
 function ViewComponent() {
   const context = view.useContext();
 
-  return <div>{context.user.name}</div>;
+  return <>{context.user.name}</>;
 }
 
 export default view;

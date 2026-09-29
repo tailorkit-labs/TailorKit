@@ -21,6 +21,7 @@ export interface GenerateAppOptions {
   formatting: boolean;
   hostUrl: string;
   linting: boolean;
+  packageManager: string;
   packageName: string;
   packageVersions: {
     oxfmt: string;
@@ -60,6 +61,7 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     linting,
     packageName,
     packageVersions,
+    packageManager,
     useWorkspaceDependencies,
   } = options;
 
@@ -68,12 +70,12 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
   const checkParts: string[] = [];
   const fixParts: string[] = [];
   if (linting) {
-    checkParts.push("pnpm run lint");
-    fixParts.push("pnpm run lint:fix");
+    checkParts.push(`${packageManager} run lint`);
+    fixParts.push(`${packageManager} run lint:fix`);
   }
   if (formatting) {
-    checkParts.push("pnpm run format");
-    fixParts.push("pnpm run format:fix");
+    checkParts.push(`${packageManager} run format`);
+    fixParts.push(`${packageManager} run format:fix`);
   }
 
   const templateData = {
