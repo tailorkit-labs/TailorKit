@@ -1,5 +1,11 @@
 # @tailorkit/app
 
+## 0.1.0-beta.15
+
+### Patch Changes
+
+- @tailorkit/core@0.1.0-beta.15
+
 ## 0.1.0-beta.14
 
 ### Patch Changes
