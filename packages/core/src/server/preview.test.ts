@@ -1,15 +1,18 @@
 /* oxlint-disable require-await -- the platform fetch mock has the Fetch promise shape. */
 import { describe, expect, it } from "vite-plus/test";
+import { z } from "zod";
 import { createTailorKitServer } from "./handler";
 import { isActivePreviewConflict } from "./routes/preview";
 
 const shareId = "s".repeat(43);
+const testScopeSchema = z.record(z.string(), z.string().min(1));
 const grantId = "g".repeat(43);
 const basePath = "/custom/tailorkit";
 const baseUrl = `https://host.test${basePath}`;
 
-function server(requests: string[], previewError?: unknown) {
+function server(requests: string[], previewError?: unknown, platformBodies: unknown[] = []) {
   return createTailorKitServer({
+    scopes: { org: testScopeSchema },
     basePath,
     components: {},
     cliAuth: { signInPath: "/sign-in" },
@@ -20,6 +23,11 @@ function server(requests: string[], previewError?: unknown) {
         const request = input instanceof Request ? input : new Request(input, init);
         const url = new URL(request.url);
         requests.push(`${request.method} ${url.pathname}${url.search}`);
+        let body: Record<string, unknown> | undefined;
+        if (request.method !== "GET" && request.headers.get("content-type")?.includes("json")) {
+          body = (await request.clone().json()) as Record<string, unknown>;
+          platformBodies.push(body);
+        }
         if (url.pathname.endsWith(`/preview/shares/${shareId}/accept`)) {
           if (previewError) {
             return Response.json(previewError, { status: 503 });
@@ -36,8 +44,8 @@ function server(requests: string[], previewError?: unknown) {
             sessionId: "session",
           });
         }
-        if (url.pathname.endsWith("/apps")) {
-          const page = Number(url.searchParams.get("page"));
+        if (url.pathname.endsWith("/apps/list")) {
+          const page = Number(body?.page);
           return Response.json(
             page === 1
               ? {
@@ -114,7 +122,7 @@ describe("preview host flow", () => {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ json: { appId: "app" } }),
       }),
-      { authenticate: () => ({ scopeId: "viewer" }) },
+      { authenticate: () => ({ scopes: { org: { tenant: "viewer" } } }) },
     );
 
     expect(response.status).toBe(401);
@@ -125,7 +133,7 @@ describe("preview host flow", () => {
   it("returns 503 for structured platform storage errors", async () => {
     const tailor = server([], { code: "SERVICE_UNAVAILABLE", message: "KV unavailable" });
     const consentUrl = `${baseUrl}/preview/${shareId}`;
-    const options = { authenticate: () => ({ scopeId: "viewer" }) };
+    const options = { authenticate: () => ({ scopes: { org: { tenant: "viewer" } } }) };
     const invitation = await tailor.handler(new Request(consentUrl), options);
     expect(invitation.status).toBe(503);
 
@@ -145,14 +153,15 @@ describe("preview host flow", () => {
 
   it("uses the custom mount, requires login, and rejects cross-origin acceptance", async () => {
     const requests: string[] = [];
-    const tailor = server(requests);
+    const platformBodies: unknown[] = [];
+    const tailor = server(requests, undefined, platformBodies);
     const consentUrl = `${baseUrl}/preview/${shareId}`;
     const guest = await tailor.handler(new Request(consentUrl), { authenticate: () => null });
     expect(guest.status).toBe(302);
     expect(guest.headers.get("location")).toContain("/sign-in?returnTo=");
 
     const consent = await tailor.handler(new Request(consentUrl), {
-      authenticate: () => ({ scopeId: "viewer" }),
+      authenticate: () => ({ scopes: { org: { tenant: "viewer" } } }),
     });
     const consentHtml = await consent.text();
     expect(consentHtml).toContain(
@@ -175,7 +184,7 @@ describe("preview host flow", () => {
         },
         body: "intent=accept",
       }),
-      { authenticate: () => ({ scopeId: "viewer" }) },
+      { authenticate: () => ({ scopes: { org: { tenant: "viewer" } } }) },
     );
     expect(foreign.status).toBe(403);
     expect(requests.some((value) => value.endsWith("/accept"))).toBe(false);
@@ -189,7 +198,7 @@ describe("preview host flow", () => {
         },
         body: "intent=accept",
       }),
-      { authenticate: () => ({ scopeId: "viewer" }) },
+      { authenticate: () => ({ scopes: { org: { tenant: "viewer" } } }) },
     );
     expect(opaqueOriginWithoutToken.status).toBe(403);
 
@@ -202,12 +211,15 @@ describe("preview host flow", () => {
         },
         body: "intent=accept",
       }),
-      { authenticate: () => ({ scopeId: "viewer" }) },
+      { authenticate: () => ({ scopes: { org: { tenant: "viewer" } } }) },
     );
     expect(accepted.status).toBe(303);
     expect(accepted.headers.get("location")).toBe("/dashboard");
     expect(accepted.headers.get("set-cookie")).toContain("HttpOnly; SameSite=Lax; Secure");
     expect(accepted.headers.get("set-cookie")).toContain(`Path=${basePath}`);
+    expect(platformBodies).toContainEqual({
+      scope: { name: "org", value: { tenant: "viewer" } },
+    });
     const cancelled = await tailor.handler(
       new Request(consentUrl, {
         method: "POST",
@@ -249,7 +261,7 @@ describe("preview host flow", () => {
           headers,
           body: `intent=accept&csrfToken=${token}`,
         }),
-        { authenticate: () => ({ scopeId: "viewer" }) },
+        { authenticate: () => ({ scopes: { org: { tenant: "viewer" } } }) },
       );
       expect(response.status).toBe(403);
       expect(requests).toEqual([]);
@@ -262,7 +274,7 @@ describe("preview host flow", () => {
       const requests: string[] = [];
       const tailor = server(requests);
       const consentUrl = `${origin}${basePath}/preview/${shareId}`;
-      const options = { authenticate: () => ({ scopeId: "viewer" }) };
+      const options = { authenticate: () => ({ scopes: { org: { tenant: "viewer" } } }) };
       const first = await tailor.handler(new Request(consentUrl), options);
       const second = await tailor.handler(new Request(consentUrl), options);
       for (const page of [first, second]) {
@@ -290,16 +302,21 @@ describe("preview host flow", () => {
 
   it("rejects a return path that could leave the host origin", () => {
     expect(() =>
-      createTailorKitServer({ components: {}, preview: { returnPath: "//evil.test" } }),
+      createTailorKitServer({
+        scopes: { org: testScopeSchema },
+        components: {},
+        preview: { returnPath: "//evil.test" },
+      }),
     ).toThrow("same-origin root-relative");
   });
 
   it("keeps every published app field across pages and appends accepted cross-scope apps", async () => {
     const requests: string[] = [];
-    const tailor = server(requests);
+    const platformBodies: unknown[] = [];
+    const tailor = server(requests, undefined, platformBodies);
     const cookie = `tailorkit_preview_grants=${encodeURIComponent(JSON.stringify([grantId]))}`;
     const response = await tailor.handler(new Request(`${baseUrl}/apps`, { headers: { cookie } }), {
-      authenticate: () => ({ scopeId: "viewer" }),
+      authenticate: () => ({ scopes: { org: { tenant: "viewer" } } }),
     });
     expect(response.status).toBe(200);
     const apps = (await response.json()) as {
@@ -321,6 +338,16 @@ describe("preview host flow", () => {
       name: "Cross scope",
       preview: { sessionId: "session-2" },
     });
-    expect(requests.filter((value) => value.includes("/apps?"))).toHaveLength(2);
+    const appListRequests = requests.filter((value) => value.includes("/apps/list"));
+    expect(appListRequests).toHaveLength(2);
+    expect(platformBodies).toContainEqual({
+      page: 1,
+      pageSize: 100,
+      scopes: [{ name: "org", value: { tenant: "viewer" } }],
+    });
+    expect(platformBodies).toContainEqual({
+      grantIds: [grantId],
+      scopes: [{ name: "org", value: { tenant: "viewer" } }],
+    });
   });
 });

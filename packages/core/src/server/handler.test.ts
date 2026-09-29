@@ -7,8 +7,10 @@ import { createTailorKitServer } from "./handler";
 const userAction = createActions().context<{ userId: string }>();
 const orgAction = createActions().context<{ orgId: string; userId: string }>();
 const untypedAction = createActions();
+const testScopeSchema = z.record(z.string(), z.string().min(1));
 
 const tailor = createTailorKitServer({
+  scopes: { org: testScopeSchema },
   actions: {
     todo: {
       create: orgAction
@@ -25,6 +27,7 @@ const tailor = createTailorKitServer({
 });
 
 const inferredTailor = createTailorKitServer({
+  scopes: { org: testScopeSchema },
   actions: {
     ping: userAction
       .input(z.object({}))
@@ -35,6 +38,7 @@ const inferredTailor = createTailorKitServer({
 });
 
 const optionalSchemaTailor = createTailorKitServer({
+  scopes: { org: testScopeSchema },
   actions: {
     nested: {
       ping: untypedAction.handler(() => ({ ping: "pong" as const })),
@@ -50,11 +54,83 @@ optionalSchemaTailor.handler(new Request("https://example.com/api/tailorkit/sche
   authenticate: () => ({
     // @ts-expect-error actionContext is never when actions do not call .context<...>()
     actionContext: {},
-    scopeId: "test",
+    scopes: { org: { tenant: "test" } },
   }),
 });
 
 describe("createTailorKitServer", () => {
+  it("selects only requested authenticated scope names for host app reads", async () => {
+    const platformBodies: unknown[] = [];
+    const server = createTailorKitServer({
+      scopes: { org: testScopeSchema, userOrg: testScopeSchema },
+      components: {},
+      $internal: {
+        platformFetch: async (input, init) => {
+          const request = input instanceof Request ? input : new Request(input, init);
+          platformBodies.push(await request.json());
+          return Response.json({
+            items: [],
+            pagination: { hasMore: false, page: 1, pageSize: 100 },
+          });
+        },
+      },
+    });
+    const authenticate = () => ({
+      scopes: {
+        org: { tenant: "org" },
+        userOrg: { tenant: "user_org" },
+      },
+    });
+
+    const response = await server.handler(
+      new Request("https://example.com/api/tailorkit/apps?scopes=userOrg&scopes=userOrg"),
+      { authenticate },
+    );
+    expect(response.status).toBe(200);
+    expect(platformBodies).toEqual([
+      {
+        page: 1,
+        pageSize: 100,
+        scopes: [{ name: "userOrg", value: { tenant: "user_org" } }],
+      },
+    ]);
+
+    const invalid = await server.handler(
+      new Request("https://example.com/api/tailorkit/apps?scopes=missing"),
+      { authenticate },
+    );
+    expect(invalid.status).toBe(400);
+    expect(platformBodies).toHaveLength(1);
+  });
+
+  it("treats scopes= as an empty app and preview selection", async () => {
+    let platformCalls = 0;
+    const server = createTailorKitServer({
+      scopes: { org: testScopeSchema },
+      components: {},
+      $internal: {
+        platformFetch: () => {
+          platformCalls += 1;
+          return Promise.resolve(Response.json({ items: [] }));
+        },
+      },
+    });
+    const authenticate = () => ({ scopes: { org: { tenant: "workspace" } } });
+    const apps = await server.handler(
+      new Request("https://example.com/api/tailorkit/apps?scopes="),
+      { authenticate },
+    );
+    expect(apps.status).toBe(200);
+    await expect(apps.json()).resolves.toEqual([]);
+
+    const metadata = await server.handler(
+      new Request("https://example.com/api/tailorkit/preview/metadata?sessionId=test&scopes="),
+      { authenticate },
+    );
+    expect(metadata.status).toBe(404);
+    expect(platformCalls).toBe(0);
+  });
+
   it("preserves hosted bundle URLs without an assetsBaseUrl override", async () => {
     const app = {
       id: "app",
@@ -62,6 +138,7 @@ describe("createTailorKitServer", () => {
         "https://abc123def4.tailorkit.app/p/22222222-2222-4222-8222-222222222222/a/33333333-3333-4333-8333-333333333333/d/44444444-4444-4444-8444-444444444444/client.js",
     };
     const server = createTailorKitServer({
+      scopes: { org: testScopeSchema },
       projectKey: "server-only-key",
       components: {},
       $internal: {
@@ -72,7 +149,7 @@ describe("createTailorKitServer", () => {
       },
     });
     const response = await server.handler(new Request("https://host.test/api/tailorkit/apps"), {
-      authenticate: () => ({ scopeId: "workspace" }),
+      authenticate: () => ({ scopes: { org: { tenant: "workspace" } } }),
     });
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual([app]);
@@ -88,7 +165,7 @@ describe("createTailorKitServer", () => {
           tailor.handler(hostRequest, {
             authenticate: () => ({
               actionContext: { orgId: "org_1", userId: "user_1" },
-              scopeId: "org:org_1",
+              scopes: { org: { orgId: "org_1" } },
             }),
           }),
         );
@@ -115,7 +192,7 @@ describe("createTailorKitServer", () => {
           inferredTailor.handler(hostRequest, {
             authenticate: () => ({
               actionContext: { userId: "user_1" },
-              scopeId: "user:user_1",
+              scopes: { org: { userId: "user_1" } },
             }),
           }),
         );
@@ -135,7 +212,7 @@ describe("createTailorKitServer", () => {
 
         return Promise.resolve(
           optionalSchemaTailor.handler(hostRequest, {
-            authenticate: () => ({ scopeId: "test" }),
+            authenticate: () => ({ scopes: { org: { tenant: "test" } } }),
           }),
         );
       },
@@ -175,7 +252,7 @@ describe("createTailorKitServer", () => {
           tailor.handler(hostRequest, {
             authenticate: () => ({
               actionContext: { orgId: "org_1", userId: "user_1" },
-              scopeId: "org:org_1",
+              scopes: { org: { orgId: "org_1" } },
             }),
           }),
         );
@@ -195,7 +272,7 @@ describe("createTailorKitServer", () => {
 
         return Promise.resolve(
           optionalSchemaTailor.handler(hostRequest, {
-            authenticate: () => ({ scopeId: "test" }),
+            authenticate: () => ({ scopes: { org: { tenant: "test" } } }),
           }),
         );
       },
@@ -220,7 +297,7 @@ describe("createTailorKitServer", () => {
   it("serves the serialized schema from the handler", async () => {
     const response = await optionalSchemaTailor.handler(
       new Request("https://example.com/api/tailorkit/schema"),
-      { authenticate: () => ({ scopeId: "test" }) },
+      { authenticate: () => ({ scopes: { org: { tenant: "test" } } }) },
     );
 
     await expect(response.json()).resolves.toMatchObject({
@@ -235,7 +312,7 @@ describe("createTailorKitServer", () => {
   it("serves a built-in CLI auth approval page", async () => {
     const response = await optionalSchemaTailor.handler(
       new Request("https://example.com/api/tailorkit/cli-auth/approve?code=ABC-123-XYZ"),
-      { authenticate: () => ({ scopeId: "test" }) },
+      { authenticate: () => ({ scopes: { org: { tenant: "test" } } }) },
     );
 
     const html = await response.text();
@@ -247,6 +324,7 @@ describe("createTailorKitServer", () => {
 
   it("redirects unauthenticated CLI approvals to the host sign-in page", async () => {
     const server = createTailorKitServer({
+      scopes: { org: testScopeSchema },
       cliAuth: { signInPath: "/admin/sign-in?source=tailorkit" },
       components: {},
     });
@@ -265,20 +343,54 @@ describe("createTailorKitServer", () => {
 
   it("renders configured CLI approvals for authenticated users", async () => {
     const server = createTailorKitServer({
+      scopes: { org: testScopeSchema, userOrg: testScopeSchema },
       cliAuth: { signInPath: "/admin/sign-in" },
       components: {},
     });
     const response = await server.handler(
       new Request("https://example.com/api/tailorkit/cli-auth/approve?code=ABC-123-XYZ"),
-      { authenticate: () => ({ scopeId: "test" }) },
+      {
+        authenticate: () => ({
+          scopes: { org: { tenant: "test" }, userOrg: { tenant: "user" } },
+        }),
+      },
     );
 
     expect(response.status).toBe(200);
-    await expect(response.text()).resolves.toContain("Approve CLI login");
+    const html = await response.text();
+    expect(html).toContain("Approve CLI login");
+    expect(html).toContain('<form method="post">');
+    expect(html).toContain('name="scope" required');
+    expect(html).not.toContain('<form method="post" novalidate>');
+  });
+
+  it("preserves the scope selection when a CLI approval code is missing", async () => {
+    const server = createTailorKitServer({
+      scopes: { org: testScopeSchema, userOrg: testScopeSchema },
+      components: {},
+    });
+    const response = await server.handler(
+      new Request("https://example.com/api/tailorkit/cli-auth/approve", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ intent: "approve", userCode: "", scope: "userOrg" }),
+      }),
+      {
+        authenticate: () => ({
+          scopes: { org: { tenant: "test" }, userOrg: { tenant: "user" } },
+        }),
+      },
+    );
+
+    const html = await response.text();
+    expect(html).toContain("Enter the code shown in your terminal.");
+    expect(html).toContain('<option value="org">org</option>');
+    expect(html).toContain('<option value="userOrg" selected>userOrg</option>');
   });
 
   it("rejects cross-origin CLI sign-in redirects", async () => {
     const server = createTailorKitServer({
+      scopes: { org: testScopeSchema },
       cliAuth: { signInPath: "//evil.example/sign-in" },
       components: {},
     });
@@ -291,9 +403,25 @@ describe("createTailorKitServer", () => {
     ).rejects.toThrow("TailorKit cliAuth.signInPath must be a same-origin path.");
   });
 
+  it("rejects host scopes that fail Standard Schema validation before platform access", async () => {
+    const server = createTailorKitServer({
+      cliAuth: { signInPath: "/sign-in" },
+      scopes: { org: z.object({ orgId: z.string().min(1) }) },
+      components: {},
+    });
+
+    await expect(
+      server.handler(
+        new Request("https://example.com/api/tailorkit/cli-auth/approve?code=ABC-123-XYZ"),
+        { authenticate: () => ({ scopes: { org: { orgId: "" } } }) },
+      ),
+    ).rejects.toThrow(/failed its Standard Schema validation/u);
+  });
+
   it("approves CLI auth from the built-in approval page", async () => {
     const requests: Request[] = [];
     const server = createTailorKitServer({
+      scopes: { org: testScopeSchema },
       $internal: {
         platformBaseUrl: "http://localhost:3000/api/platform",
         platformFetch: (request, init) => {
@@ -315,7 +443,7 @@ describe("createTailorKitServer", () => {
         body,
         method: "POST",
       }),
-      { authenticate: () => ({ scopeId: "org:org_1" }) },
+      { authenticate: () => ({ scopes: { org: { orgId: "org_1" } } }) },
     );
 
     const html = await response.text();
@@ -323,7 +451,7 @@ describe("createTailorKitServer", () => {
     expect(requests[0]?.url).toBe("http://localhost:3000/api/platform/cli-auth/approve");
     expect(requests[0]?.headers.get("authorization")).toBe("Bearer host-token");
     await expect(requests[0]?.json()).resolves.toEqual({
-      scopeId: "org:org_1",
+      scope: { name: "org", value: { orgId: "org_1" } },
       userCode: "ABC-123-XYZ",
     });
   });
@@ -331,6 +459,7 @@ describe("createTailorKitServer", () => {
   it("uses projectKey as the default platform authorization header", async () => {
     const requests: Request[] = [];
     const server = createTailorKitServer({
+      scopes: { org: testScopeSchema },
       $internal: {
         platformBaseUrl: "http://localhost:3000/api/platform",
         platformFetch: (request, init) => {
@@ -353,7 +482,7 @@ describe("createTailorKitServer", () => {
         body,
         method: "POST",
       }),
-      { authenticate: () => ({ scopeId: "org:org_1" }) },
+      { authenticate: () => ({ scopes: { org: { orgId: "org_1" } } }) },
     );
 
     expect(requests[0]?.headers.get("authorization")).toBe("Bearer project-key");
@@ -361,6 +490,7 @@ describe("createTailorKitServer", () => {
 
   it("surfaces rejected project keys during CLI auth start", async () => {
     const server = createTailorKitServer({
+      scopes: { org: testScopeSchema },
       $internal: {
         platformBaseUrl: "http://localhost:3000/api/platform",
         platformFetch: () => Promise.resolve(new Response("Unauthorized", { status: 401 })),
@@ -374,7 +504,7 @@ describe("createTailorKitServer", () => {
 
         return Promise.resolve(
           server.handler(hostRequest, {
-            authenticate: () => ({ scopeId: "org:org_1" }),
+            authenticate: () => ({ scopes: { org: { orgId: "org_1" } } }),
           }),
         );
       },
@@ -390,6 +520,7 @@ describe("createTailorKitServer", () => {
     const requests: Request[] = [];
     const hostRequests: Request[] = [];
     const server = createTailorKitServer({
+      scopes: { org: testScopeSchema },
       $internal: {
         platformBaseUrl: "http://localhost:3000/api/platform",
         platformFetch: (request, init) => {
@@ -397,7 +528,9 @@ describe("createTailorKitServer", () => {
           requests.push(platformRequest);
 
           if (platformRequest.url.endsWith("/cli-auth/verify-token")) {
-            return Promise.resolve(Response.json({ scopeId: "org:org_1" }));
+            return Promise.resolve(
+              Response.json({ scope: { name: "org", value: { orgId: "org_1" } } }),
+            );
           }
 
           return Promise.resolve(
@@ -433,6 +566,9 @@ describe("createTailorKitServer", () => {
       url: "https://example.com/api/tailorkit",
     });
 
+    await expect(client.cliAuth.verifyToken({})).resolves.toEqual({
+      scope: { name: "org", value: { orgId: "org_1" } },
+    });
     await expect(client.apps.list({ page: 1 })).resolves.toEqual({
       items: [],
       pagination: { hasMore: false, page: 1, pageSize: 20 },
@@ -440,16 +576,16 @@ describe("createTailorKitServer", () => {
     expect(hostRequests[0]?.method).toBe("POST");
     expect(requests[0]?.url).toBe("http://localhost:3000/api/platform/cli-auth/verify-token");
     expect(requests[0]?.headers.get("authorization")).toBe("Bearer host-token");
-    expect(requests[1]?.url).toBe(
-      "http://localhost:3000/api/platform/apps?page=1&scopeId=org%3Aorg_1",
-    );
-    expect(requests[1]?.headers.get("authorization")).toBe("Bearer host-token");
+    expect(requests[1]?.url).toBe("http://localhost:3000/api/platform/cli-auth/verify-token");
+    expect(requests[2]?.url).toBe("http://localhost:3000/api/platform/apps/list");
+    expect(requests[2]?.headers.get("authorization")).toBe("Bearer host-token");
   });
 
-  it("attaches the handler scope id when creating platform apps", async () => {
+  it("attaches the validated CLI deploy token scope when creating platform apps", async () => {
     const requests: Request[] = [];
     const hostRequests: Request[] = [];
     const server = createTailorKitServer({
+      scopes: { org: testScopeSchema },
       $internal: {
         platformBaseUrl: "http://localhost:3000/api/platform",
         platformFetch: (request, init) => {
@@ -457,7 +593,9 @@ describe("createTailorKitServer", () => {
           requests.push(platformRequest);
 
           if (platformRequest.url.endsWith("/cli-auth/verify-token")) {
-            return Promise.resolve(Response.json({ scopeId: "org:org_1" }));
+            return Promise.resolve(
+              Response.json({ scope: { name: "org", value: { orgId: "org_1" } } }),
+            );
           }
 
           return Promise.resolve(Response.json({ id: "app_1" }));
@@ -495,7 +633,45 @@ describe("createTailorKitServer", () => {
     await expect(requests[1]?.json()).resolves.toEqual({
       description: null,
       name: "Calendar",
-      scopeId: "org:org_1",
+      scope: { name: "org", value: { orgId: "org_1" } },
     });
+  });
+
+  it("accepts a CLI token containing a transformed scope output", async () => {
+    const platformBodies: unknown[] = [];
+    const server = createTailorKitServer({
+      scopes: {
+        org: z.object({ raw: z.string() }).transform(({ raw }) => ({ canonical: raw.trim() })),
+      },
+      components: {},
+      $internal: {
+        platformFetch: async (input, init) => {
+          const request = input instanceof Request ? input : new Request(input, init);
+          if (request.url.endsWith("/cli-auth/verify-token")) {
+            return Response.json({ scope: { name: "org", value: { canonical: "org_1" } } });
+          }
+          platformBodies.push(await request.json());
+          return Response.json({ id: "app_1" });
+        },
+      },
+    });
+    const client = createTailorKitClient({
+      fetch: (input, init) => {
+        const request = input instanceof Request ? input : new Request(input, init);
+        request.headers.set("authorization", "Bearer cli-token");
+        return Promise.resolve(server.handler(request, { authenticate: () => null }));
+      },
+      url: "https://example.com/api/tailorkit",
+    });
+    await expect(client.apps.create({ name: "Calendar", description: null })).resolves.toEqual({
+      id: "app_1",
+    });
+    expect(platformBodies).toEqual([
+      {
+        name: "Calendar",
+        description: null,
+        scope: { name: "org", value: { canonical: "org_1" } },
+      },
+    ]);
   });
 });

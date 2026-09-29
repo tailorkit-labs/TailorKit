@@ -7,6 +7,6 @@ export type {
   TailorKitInstance,
 } from "./tailorkit";
 export { Root } from "./components/root";
-export { useApps } from "./hooks/use-apps";
+export type { UseAppsOptions, UseAppsResult } from "./hooks/use-apps";
 export type { UseView, ViewOptions, ViewState } from "./hooks/use-view";
 export { primitives } from "./primitives";

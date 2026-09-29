@@ -14,12 +14,19 @@ import { normalizeBasePath } from "./apps";
 import { handleCliAuthApprovalPage } from "./cli-auth-page";
 import { handlePreviewConsent, readPreviewGrantIds } from "./preview-consent";
 import { createContext } from "./context";
+import {
+  selectTailorKitScopes,
+  validateTailorKitScopeSchemas,
+  validateTailorKitScopes,
+} from "./scope";
 import { tailorkitRouter } from "./router";
 import type {
   InferTailorKitServerActions,
   InferTailorKitServerComponents,
   InferTailorKitServerContexts,
+  InferTailorKitServerScopes,
   TailorKitHandlerOptions,
+  TailorKitScopes,
   TailorKitServer,
   TailorKitServerInputOptions,
 } from "./types";
@@ -41,11 +48,14 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
 ): TailorKitServer<
   InferTailorKitServerComponents<TOptions>,
   InferTailorKitServerContexts<TOptions>,
-  InferTailorKitServerActions<TOptions>
+  InferTailorKitServerActions<TOptions>,
+  ResolveActionTreeContext<InferTailorKitServerActions<TOptions>>,
+  InferTailorKitServerScopes<TOptions>
 > & {
   readonly $slots?: TOptions extends { slots: infer V } ? V : Record<never, never>;
 } {
   const basePath = normalizeBasePath(options.basePath ?? "/api/tailorkit");
+  const scopeSchemas = validateTailorKitScopeSchemas(options.scopes);
   const previewReturnPath = options.preview?.returnPath ?? "/";
   if (
     !previewReturnPath.startsWith("/") ||
@@ -86,9 +96,21 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
   const handler = async (
     request: Request,
     handlerOptions: TailorKitHandlerOptions<
-      ResolveActionTreeContext<InferTailorKitServerActions<TOptions>>
+      ResolveActionTreeContext<InferTailorKitServerActions<TOptions>>,
+      InferTailorKitServerScopes<TOptions>
     >,
   ) => {
+    const authenticate = async ({ request }: { request: Request }) => {
+      const hostContext = await handlerOptions.authenticate({ request });
+      if (!hostContext) {
+        return null;
+      }
+
+      return {
+        ...hostContext,
+        scopes: await validateTailorKitScopes(scopeSchemas, hostContext.scopes),
+      };
+    };
     const url = new URL(request.url);
     const previewPrefix = `${basePath}/preview/`;
     if (url.pathname === `${basePath}/schema`) {
@@ -115,7 +137,8 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
-        authenticate: handlerOptions.authenticate,
+        scopeSchemas,
+        authenticate,
       });
       return handlePreviewConsent({
         request,
@@ -136,14 +159,25 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
-        authenticate: handlerOptions.authenticate,
+        scopeSchemas,
+        authenticate,
       });
       const viewer = await context.authenticate({ request });
       if (!viewer) {
         return new Response("Unauthorized", { status: 401 });
       }
+      const scopes = resolveReadScopes(url, viewer.scopes);
+      if (scopes instanceof Response) {
+        return scopes;
+      }
+      if (scopes.length === 0) {
+        return new Response("Preview unavailable", {
+          status: 404,
+          headers: { "cache-control": "no-store" },
+        });
+      }
       const result = await previewAccepted({
-        body: { grantIds: readPreviewGrantIds(request), scopeId: viewer.scopeId },
+        body: { grantIds: readPreviewGrantIds(request), scopes },
         client: context.platform,
         headers: context.platformHeaders,
         throwOnError: true,
@@ -167,12 +201,21 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
-        authenticate: handlerOptions.authenticate,
+        scopeSchemas,
+        authenticate,
       });
       const tailorkit = await context.authenticate({ request });
 
       if (!tailorkit) {
         return new Response("Unauthorized", { status: 401 });
+      }
+
+      const scopes = resolveReadScopes(url, tailorkit.scopes);
+      if (scopes instanceof Response) {
+        return scopes;
+      }
+      if (scopes.length === 0) {
+        return Response.json([], { headers: { "cache-control": "no-store" } });
       }
 
       const items: Record<string, unknown>[] = [];
@@ -181,7 +224,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         const result = await appsList({
           client: context.platform,
           headers: context.platformHeaders,
-          query: { page, pageSize: 100, scopeId: tailorkit.scopeId },
+          body: { page, pageSize: 100, scopes },
           throwOnError: true,
         });
         const data = "data" in result ? result.data : result;
@@ -194,7 +237,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
       const grantIds = readPreviewGrantIds(request);
       if (grantIds.length) {
         const result = await previewAccepted({
-          body: { grantIds, scopeId: tailorkit.scopeId },
+          body: { grantIds, scopes },
           client: context.platform,
           headers: context.platformHeaders,
           throwOnError: true,
@@ -221,7 +264,8 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
-        authenticate: handlerOptions.authenticate,
+        scopeSchemas,
+        authenticate,
       });
 
       return handleCliAuthApprovalPage({
@@ -240,7 +284,8 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         platformHeaders,
         request,
         schema,
-        authenticate: handlerOptions.authenticate,
+        scopeSchemas,
+        authenticate,
       }),
       prefix: basePath as AbsolutePath,
     });
@@ -256,4 +301,17 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
     $internal: { assetsBaseUrl, platformBaseUrl, router: tailorkitRouter, schema },
     handler,
   };
+}
+
+function resolveReadScopes(url: URL, availableScopes: TailorKitScopes) {
+  try {
+    const names = url.searchParams.getAll("scopes");
+    if (names.length === 1 && names[0] === "") {
+      return [];
+    }
+    return selectTailorKitScopes(availableScopes, names.length ? names : undefined);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Invalid scope selection.";
+    return new Response(message, { status: 400 });
+  }
 }

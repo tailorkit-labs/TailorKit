@@ -14,8 +14,12 @@ host publishes explicitly.
 ## Define the host contract
 
 ```ts
+import { createTailorKit } from "tailorkit";
+import { z } from "zod";
+
 export const tailorKit = createTailorKit({
   components: {},
+  scopes: { user: z.object({ userId: z.string().min(1) }) },
   slots: { navbar: { views: ["/"] }, panel: { views: ["/users", "/users/detail"] } },
   contexts: {
     "/": z.object({ workspaceId: z.string() }),
@@ -30,6 +34,79 @@ arrays. An optional object context may be omitted; it contributes no fields.
 Each view declares only its own fields. Ancestor fields are composed into the
 context received by app views. A field must have one owning view: duplicate
 field names across ancestors are rejected by the type checker and runtime.
+
+## Name multiple installation scopes
+
+Give each identity boundary its own schema key. Return values under those same
+keys from `authenticate()`, then select the identities for each app read:
+
+```ts
+import { createTailorKit } from "tailorkit";
+import { auth } from "#lib/auth";
+import { z } from "zod";
+
+export const tailorKit = createTailorKit({
+  components: {},
+  scopes: {
+    org: z.object({ orgId: z.string() }),
+    userOrg: z.object({ orgId: z.string(), userId: z.string() }),
+  },
+  // contexts and slots can be added here.
+});
+
+async function handleRequest(request: Request) {
+  return tailorKit.handler(request, {
+    authenticate: async () => {
+      const session = await auth(request);
+      if (!session) return null;
+
+      return {
+        scopes: {
+          org: { orgId: session.org.id },
+          userOrg: { orgId: session.org.id, userId: session.user.id },
+        },
+      };
+    },
+  });
+}
+```
+
+```tsx
+import { createTailorKitClient, Root } from "tailorkit/react";
+import type { tailorKit } from "./tailorkit";
+
+export const client = createTailorKitClient<typeof tailorKit>({
+  baseUrl: "https://example.com/api/tailorkit/",
+});
+
+const { useApps } = client;
+
+function InstalledApps() {
+  const { data: apps, isLoading } = useApps({ scopes: ["org", "userOrg"] });
+  if (isLoading) return <p>Loading apps…</p>;
+  return (
+    <ul>
+      {apps?.map((app) => (
+        <li key={app.id}>{app.name}</li>
+      ))}
+    </ul>
+  );
+}
+
+export function InstalledAppsRoot() {
+  return (
+    <Root client={client}>
+      <InstalledApps />
+    </Root>
+  );
+}
+```
+
+Scope values identify installations exactly, so keep them to stable identity
+data such as opaque IDs. Do not include mutable settings or feature lists:
+changing any value changes the installation identity. Nested objects and arrays
+are supported; TailorKit sorts object keys recursively, so property insertion
+order does not change identity, while array order remains significant.
 
 ## Configure React once
 
@@ -49,6 +126,10 @@ The helpers carry the view and slot types from the client. Import `Root` from
 `AppView` beneath it. Each root owns an independent registry, even when roots
 share a client. Separate clients can expose different view and slot contracts
 in the same TypeScript project.
+The bound `useApps` also types `scopes` from the server schema. Pass names to
+select which authenticated identities to list. Calling `useApps()` with no
+options loads every scope returned by `authenticate()`. Passing `scopes: []`
+loads no apps.
 
 ```tsx
 import { Root } from "tailorkit/react";

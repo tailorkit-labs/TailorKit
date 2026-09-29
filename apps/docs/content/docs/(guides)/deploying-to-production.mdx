@@ -105,9 +105,11 @@ authenticated tenant, and avoid returning secrets or internal metadata.
 
 ## View app installation
 
-Choose a stable `scopeId` that matches where apps are installed: a user, team,
-workspace, or customer. Derive it from the authenticated session rather than a
-request parameter supplied by the app.
+Define a stable schema for each named installation boundary in `scopes`, such
+as `user` and `organization`. Return their identity values under the same names
+in `authenticate` rather than accepting them from an app request. Use stable
+opaque IDs; these values are sent to TailorKit to match and display app
+installations.
 
 Keep project keys and CLI credentials on the server or developer machine. Never
 include them in browser bundles or app-generated context.
@@ -167,7 +169,7 @@ Before deploying:
   <label className="flex items-start gap-3 rounded-md border bg-card p-3 text-sm leading-6">
     <input className="mt-1" type="checkbox" />
     <span>
-      Derive <code>scopeId</code> from the authenticated session.
+      Derive every <code>scopes</code> value from the authenticated session.
     </span>
   </label>
   <label className="flex items-start gap-3 rounded-md border bg-card p-3 text-sm leading-6">

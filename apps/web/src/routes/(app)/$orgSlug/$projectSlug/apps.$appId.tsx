@@ -166,7 +166,7 @@ function AppPage() {
           Back to apps
         </Button>
       }
-      description={app.description || `Scope: ${app.scopeId}`}
+      description={app.description || "App and deployment details."}
       title={
         <span className="flex items-center gap-3">
           <AppLogo className="size-11" logoPaths={app.logoPaths} name={app.name} />
@@ -174,7 +174,26 @@ function AppPage() {
         </span>
       }
     >
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <CardFrame>
+          <CardFrameHeader>
+            <CardFrameTitle>Installation scope</CardFrameTitle>
+            <CardFrameDescription className="min-w-0 w-full">
+              <div className="grid min-w-0 w-full gap-2">
+                <Badge
+                  className="max-w-full min-w-0 break-all whitespace-normal"
+                  size="sm"
+                  variant="outline"
+                >
+                  {app.scope.name}
+                </Badge>
+                <pre className="max-h-64 max-w-full overflow-auto rounded-md border bg-muted/40 p-3 font-mono text-foreground text-xs">
+                  {JSON.stringify(app.scope.value, null, 2)}
+                </pre>
+              </div>
+            </CardFrameDescription>
+          </CardFrameHeader>
+        </CardFrame>
         <CardFrame>
           <CardFrameHeader>
             <CardFrameTitle>Current deployment</CardFrameTitle>

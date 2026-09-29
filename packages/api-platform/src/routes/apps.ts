@@ -4,11 +4,12 @@ import { App, app, AppDeployment } from "@tailorkit/db/schema/apps";
 import { eq } from "drizzle-orm";
 import z from "zod";
 import { paginatedOutput, paginationQuery } from "../pagination";
-import { o, protectedRouter, requireApp } from "../procedures";
+import { o, protectedRouter, requireApp, requireAppInScopes } from "../procedures";
 import { createPublicId } from "../public-id";
 import { withAppAssetUrl } from "../asset-url";
+import { canonicalizeScope, canonicalizeScopes, scopeSchema, scopesSchema } from "../scope";
 
-export const AppWithCurrentDeployment = App.extend({
+export const AppWithCurrentDeployment = App.omit({ scopeKey: true }).extend({
   currentDeployment: AppDeployment.nullable(),
   clientPath: z.url().optional(),
   logoPaths: z.object({ dark: z.url().optional(), light: z.url().optional() }).optional(),
@@ -32,17 +33,25 @@ async function createUniqueAppPublicId(projectId: string) {
 
 const listApps = protectedRouter
   .route({
-    path: "/",
-    method: "GET",
+    path: "/list",
+    method: "POST",
   })
-  .input(z.object({ query: paginationQuery.extend({ scopeId: z.string() }) }))
+  .input(z.object({ body: paginationQuery.extend({ scopes: scopesSchema }) }))
   .output(paginatedOutput(AppWithCurrentDeployment))
   .handler(async ({ context, input }) => {
-    const { page, pageSize, scopeId } = input.query;
+    const { page, pageSize } = input.body;
+    const scopes = canonicalizeScopes(input.body.scopes);
     const apps = await db.query.app.findMany({
       where: {
-        projectId: context.project.id,
-        scopeId,
+        RAW: (fields, { and, eq, or }) =>
+          and(
+            eq(fields.projectId, context.project.id),
+            or(
+              ...scopes.map(({ scope, scopeKey }) =>
+                and(eq(fields.scopeKey, scopeKey), eq(fields.scope, scope)),
+              ),
+            ),
+          )!,
       },
       orderBy: {
         createdAt: "desc",
@@ -74,19 +83,17 @@ const listApps = protectedRouter
 
 const getApp = protectedRouter
   .route({
-    path: "/:appId",
-    method: "GET",
+    path: "/:appId/lookup",
+    method: "POST",
   })
   .input(
     z.object({
       params: z.object({ appId: z.string() }),
-      query: z.object({
-        scopeId: z.string(),
-      }),
+      body: z.object({ scopes: scopesSchema }),
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))
-  .use(requireApp, ({ params: { appId }, query: { scopeId } }) => ({ appId, scopeId }))
+  .use(requireAppInScopes, ({ params: { appId }, body: { scopes } }) => ({ appId, scopes }))
   .handler(({ context }) => ({
     body: withAppAssetUrl(context.app, context.organization.publicId, context.project.id),
   }));
@@ -98,11 +105,12 @@ const createApp = protectedRouter
   })
   .input(
     z.object({
-      body: App.pick({ name: true, description: true, scopeId: true }),
+      body: App.pick({ name: true, description: true }).extend({ scope: scopeSchema }),
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))
   .handler(async ({ context, input }) => {
+    const scope = canonicalizeScope(input.body.scope);
     const [createdApp] = await db
       .insert(app)
       .values({
@@ -110,7 +118,8 @@ const createApp = protectedRouter
         name: input.body.name.trim(),
         projectId: context.project.id,
         publicId: await createUniqueAppPublicId(context.project.id),
-        scopeId: input.body.scopeId,
+        scopeKey: scope.scopeKey,
+        scope: scope.scope,
       })
       .returning();
 
@@ -134,11 +143,11 @@ const deleteApp = protectedRouter
   .input(
     z.object({
       params: z.object({ appId: z.string() }),
-      query: z.object({ scopeId: z.string() }),
+      body: z.object({ scope: scopeSchema }),
     }),
   )
   .output(z.object({ body: z.object({ id: z.uuid({ version: "v7" }) }) }))
-  .use(requireApp, ({ params: { appId }, query: { scopeId } }) => ({ appId, scopeId }))
+  .use(requireApp, ({ params: { appId }, body: { scope } }) => ({ appId, scope }))
   .handler(async ({ context }) => {
     await db.delete(app).where(eq(app.id, context.app.id));
 
@@ -152,13 +161,12 @@ const updateApp = protectedRouter
   })
   .input(
     z.object({
-      body: App.pick({ name: true, description: true }),
+      body: App.pick({ name: true, description: true }).extend({ scope: scopeSchema }),
       params: z.object({ appId: z.string() }),
-      query: z.object({ scopeId: z.string() }),
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))
-  .use(requireApp, ({ params: { appId }, query: { scopeId } }) => ({ appId, scopeId }))
+  .use(requireApp, ({ params: { appId }, body: { scope } }) => ({ appId, scope }))
   .handler(async ({ context, input }) => {
     const [updatedApp] = await db
       .update(app)
@@ -189,13 +197,12 @@ const deploy = protectedRouter
   })
   .input(
     z.object({
-      body: z.object({ deploymentId: z.string() }),
+      body: z.object({ deploymentId: z.string(), scope: scopeSchema }),
       params: z.object({ appId: z.string() }),
-      query: z.object({ scopeId: z.string() }),
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))
-  .use(requireApp, ({ params: { appId }, query: { scopeId } }) => ({ appId, scopeId }))
+  .use(requireApp, ({ params: { appId }, body: { scope } }) => ({ appId, scope }))
   .handler(async ({ context, input }) => {
     const deploymentByPublicId = await db.query.appDeployment.findFirst({
       where: {

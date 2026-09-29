@@ -158,10 +158,12 @@ available from the TailorKit API route.
 ```ts title="examples/tanstack-start/src/lib/tailorkit.ts"
 import { actions, components, contexts } from "@examples/shared";
 import { createTailorKit } from "tailorkit";
+import { z } from "zod";
 
 export const tailorKit = createTailorKit({
   assetsBaseUrl: process.env.TAILORKIT_ASSETS_BASE_URL ?? "http://localhost:8333/tailorkit",
   projectKey: process.env.TAILORKIT_PROJECT_KEY,
+  scopes: { user: z.object({ userId: z.string().min(1) }) },
   components,
   contexts,
   actions,
@@ -188,7 +190,7 @@ const handle = ({ request }: { request: Request }) =>
 
       return {
         actionContext: { user },
-        scopeId: user.id,
+        scopes: { user: { userId: user.id } },
       };
     },
   });

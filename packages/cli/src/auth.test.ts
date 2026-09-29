@@ -63,12 +63,12 @@ describe("auth store", () => {
 
     await saveDeployToken("https://example.com", {
       deployToken: "deploy-token",
-      scopeId: "scope-id",
+      scope: { name: "user", value: { userId: "user-1" } },
     });
 
     await expect(getDeployToken("https://example.com")).resolves.toEqual({
       deployToken: "deploy-token",
-      scopeId: "scope-id",
+      scope: { name: "user", value: { userId: "user-1" } },
     });
   });
 
@@ -78,6 +78,24 @@ describe("auth store", () => {
     const { getDeployToken } = await loadAuthModule(homeDirectory);
 
     await expect(getDeployToken("https://example.com")).rejects.toThrow();
+  });
+
+  it("keeps legacy tokens readable while discarding their unnamed scope", async () => {
+    const homeDirectory = await createTemporaryHome();
+    await writeAuthStoreFixture(homeDirectory, {
+      hosts: {
+        "https://example.com": {
+          deployToken: "deploy-token",
+          scope: { userId: "user-1" },
+        },
+      },
+    });
+    const { getDeployToken } = await loadAuthModule(homeDirectory);
+
+    await expect(getDeployToken("https://example.com")).resolves.toEqual({
+      deployToken: "deploy-token",
+      scope: undefined,
+    });
   });
 
   it("preserves unknown top-level auth.json keys when saving a host token", async () => {
@@ -94,7 +112,7 @@ describe("auth store", () => {
 
     await saveDeployToken("https://new.example.com", {
       deployToken: "new-token",
-      scopeId: "scope-id",
+      scope: { name: "user", value: { userId: "user-1" } },
     });
 
     await expect(readFile(filePath, "utf-8").then(JSON.parse)).resolves.toEqual({
@@ -105,7 +123,7 @@ describe("auth store", () => {
         },
         "https://new.example.com": {
           deployToken: "new-token",
-          scopeId: "scope-id",
+          scope: { name: "user", value: { userId: "user-1" } },
         },
       },
     });
@@ -117,7 +135,7 @@ describe("auth store", () => {
 
     await saveDeployToken("https://example.com", {
       deployToken: "deploy-token",
-      scopeId: "scope-id",
+      scope: { name: "user", value: { userId: "user-1" } },
     });
 
     const fileStat = await stat(authStorePath(homeDirectory));
@@ -132,7 +150,7 @@ describe("auth store", () => {
 
     await saveDeployToken("https://example.com", {
       deployToken: "deploy-token",
-      scopeId: "scope-id",
+      scope: { name: "user", value: { userId: "user-1" } },
     });
 
     const fileStat = await stat(filePath);
@@ -188,5 +206,55 @@ describe("auth store", () => {
     await expect(runWhoami({ cwd: homeDirectory })).rejects.toThrow(
       "Not logged in for https://example.com. Run tailorkit login after checking host in tailorkit.config.ts.",
     );
+  });
+
+  it("returns the verified named scope", async () => {
+    const homeDirectory = await createTemporaryHome();
+    vi.mocked(loadTailorKitConfig).mockResolvedValue({
+      config: { host: "https://example.com" },
+      filepath: path.join(homeDirectory, "tailorkit.config.ts"),
+      root: homeDirectory,
+    });
+    vi.mocked(createTailorKitClient).mockReturnValue({
+      cliAuth: {
+        verifyToken: vi.fn().mockResolvedValue({
+          data: {
+            scope: { name: "organization", value: { orgId: "org-1", userId: "user-1" } },
+          },
+        }),
+      },
+    } as unknown as ReturnType<typeof createTailorKitClient>);
+    await writeAuthStoreFixture(homeDirectory, {
+      hosts: { "https://example.com": { deployToken: "deploy-token" } },
+    });
+    const { runWhoami } = await loadAuthModule(homeDirectory);
+
+    await expect(runWhoami({ cwd: homeDirectory })).resolves.toEqual({
+      hostUrl: "https://example.com",
+      scope: { name: "organization", value: { orgId: "org-1", userId: "user-1" } },
+    });
+  });
+
+  it("rejects a legacy verification response before changing stored auth", async () => {
+    const homeDirectory = await createTemporaryHome();
+    vi.mocked(loadTailorKitConfig).mockResolvedValue({
+      config: { host: "https://example.com" },
+      filepath: path.join(homeDirectory, "tailorkit.config.ts"),
+      root: homeDirectory,
+    });
+    vi.mocked(createTailorKitClient).mockReturnValue({
+      cliAuth: {
+        verifyToken: vi.fn().mockResolvedValue({ data: { scopeId: "legacy-scope" } }),
+      },
+    } as unknown as ReturnType<typeof createTailorKitClient>);
+    const filePath = await writeAuthStoreFixture(homeDirectory, {
+      hosts: { "https://example.com": { deployToken: "deploy-token" } },
+    });
+    const { runWhoami } = await loadAuthModule(homeDirectory);
+
+    await expect(runWhoami({ cwd: homeDirectory })).rejects.toThrow("Not logged in");
+    await expect(readFile(filePath, "utf-8").then(JSON.parse)).resolves.toEqual({
+      hosts: { "https://example.com": { deployToken: "deploy-token" } },
+    });
   });
 });

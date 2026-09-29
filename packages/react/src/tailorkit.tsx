@@ -16,6 +16,7 @@ import { useTailorRootContext } from "./components/context";
 import { useView as useRootView } from "./hooks/use-view";
 import type { UseView, ViewName, ViewOptions, ViewState } from "./hooks/use-view";
 import { useApps as useRootApps } from "./hooks/use-apps";
+import type { UseAppsOptions, UseAppsResult } from "./hooks/use-apps";
 import { AppView as ReactAppView } from "./components/app-view";
 
 type AnyComponentDefinition = ComponentDefinition<
@@ -100,7 +101,6 @@ type SlotView<TSlots extends SlotDefinitions, V extends keyof TSlots & string> =
 }
   ? Extract<P, string>
   : never;
-
 export interface TailorKitClientConfig {
   readonly baseUrl: string | URL;
   readonly components: Record<string, unknown>;
@@ -110,11 +110,12 @@ export interface TailorKitClientConfig {
 export interface TailorKitInstance<
   TViews extends Record<string, ViewDefinition> = Record<string, ViewDefinition>,
   TSlots extends SlotDefinitions = SlotDefinitions,
+  TScopeNames extends string = string,
 > extends TailorKitClientConfig {
   readonly $slots?: TSlots;
   readonly $views?: TViews;
   readonly AppView: (props: AppViewProps<TViews, ViewName<TViews>, TSlots>) => ReactNode;
-  readonly useApps: typeof useRootApps;
+  readonly useApps: (options?: UseAppsOptions<TScopeNames>) => UseAppsResult;
   readonly useView: UseView<TViews>;
 }
 
@@ -155,6 +156,18 @@ type ServerComponents<TTailor extends TailorKitServerShape> = {
 type ServerViewMap<TTailor extends TailorKitServerShape> =
   TTailor["$internal"]["schema"]["contexts"];
 
+type ServerScopeNames<TTailor extends TailorKitServerShape> = TTailor extends {
+  handler: (request: Request, options: infer TOptions) => unknown;
+}
+  ? TOptions extends { authenticate: infer TAuthenticate }
+    ? TAuthenticate extends (...args: infer _TArgs) => infer TResult
+      ? Extract<Awaited<TResult>, { scopes: unknown }> extends { scopes: infer TScopes }
+        ? keyof TScopes & string
+        : never
+      : never
+    : never
+  : never;
+
 type ServerViews<TTailor extends TailorKitServerShape> = {
   [TName in keyof ServerViewMap<TTailor>]: ServerViewMap<TTailor>[TName] extends ViewDefinition
     ? ServerViewMap<TTailor>[TName]
@@ -167,12 +180,14 @@ export function createTailorKitClient<TTailor extends TailorKitServerShape>(opti
   theme?: TailorKitTheme;
 }): TailorKitInstance<
   ServerViews<TTailor>,
-  TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions
+  TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions,
+  ServerScopeNames<TTailor>
 > {
   return createReactTailorKitClient<
     ServerComponents<TTailor>,
     ServerViews<TTailor>,
-    TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions
+    TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions,
+    ServerScopeNames<TTailor>
   >(options);
 }
 
@@ -180,11 +195,12 @@ function createReactTailorKitClient<
   TComponents extends Record<string, AnyComponentDefinition>,
   TViews extends Record<string, ViewDefinition> = Record<string, never>,
   TSlots extends SlotDefinitions = SlotDefinitions,
+  TScopeNames extends string = string,
 >(options: {
   baseUrl: string | URL;
   components?: ComponentRenderers<TComponents>;
   theme?: TailorKitTheme;
-}): TailorKitInstance<TViews, TSlots> {
+}): TailorKitInstance<TViews, TSlots, TScopeNames> {
   const wrappedComponents: Record<string, unknown> = {};
 
   const theme = options.theme ?? {};
@@ -210,7 +226,7 @@ function createReactTailorKitClient<
     components: wrappedComponents,
     theme,
   };
-  const client: TailorKitInstance<TViews, TSlots> = {
+  const client: TailorKitInstance<TViews, TSlots, TScopeNames> = {
     ...clientConfig,
     AppView: function ClientAppView(props) {
       useTailorRootContext("AppView", client);
@@ -222,9 +238,9 @@ function createReactTailorKitClient<
         props as AppViewProps<TViews, ViewName<TViews>, TSlots> & Attributes,
       );
     },
-    useApps: function useClientApps() {
+    useApps: function useClientApps(options) {
       useTailorRootContext("useApps", client);
-      return useRootApps();
+      return useRootApps(options);
     },
     useView: function useClientView<TView extends ViewName<TViews>>(
       view: TView,

@@ -72,9 +72,25 @@ export type Options<
 export const appsList = <ThrowOnError extends boolean = false>(
   options: Options<AppsListData, ThrowOnError>,
 ): RequestResult<AppsListResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).get<AppsListResponses, unknown, ThrowOnError>({
-    url: "/apps",
+  (options.client ?? client).post<AppsListResponses, unknown, ThrowOnError>({
+    url: "/apps/list",
     ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const appsGet = <ThrowOnError extends boolean = false>(
+  options: Options<AppsGetData, ThrowOnError>,
+): RequestResult<AppsGetResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<AppsGetResponses, unknown, ThrowOnError>({
+    url: "/apps/{appId}/lookup",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 export const appsCreate = <ThrowOnError extends boolean = false>(
@@ -95,14 +111,10 @@ export const appsDelete = <ThrowOnError extends boolean = false>(
   (options.client ?? client).delete<AppsDeleteResponses, unknown, ThrowOnError>({
     url: "/apps/{appId}",
     ...options,
-  });
-
-export const appsGet = <ThrowOnError extends boolean = false>(
-  options: Options<AppsGetData, ThrowOnError>,
-): RequestResult<AppsGetResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).get<AppsGetResponses, unknown, ThrowOnError>({
-    url: "/apps/{appId}",
-    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 export const appsUpdate = <ThrowOnError extends boolean = false>(
@@ -192,9 +204,25 @@ export const cliAuthVerifyToken = <ThrowOnError extends boolean = false>(
 export const deploymentsList = <ThrowOnError extends boolean = false>(
   options: Options<DeploymentsListData, ThrowOnError>,
 ): RequestResult<DeploymentsListResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).get<DeploymentsListResponses, unknown, ThrowOnError>({
-    url: "/deployments",
+  (options.client ?? client).post<DeploymentsListResponses, unknown, ThrowOnError>({
+    url: "/deployments/list",
     ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const deploymentsGet = <ThrowOnError extends boolean = false>(
+  options: Options<DeploymentsGetData, ThrowOnError>,
+): RequestResult<DeploymentsGetResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<DeploymentsGetResponses, unknown, ThrowOnError>({
+    url: "/deployments/{deploymentId}/lookup",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 export const deploymentsCreate = <ThrowOnError extends boolean = false>(
@@ -207,14 +235,6 @@ export const deploymentsCreate = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
-  });
-
-export const deploymentsGet = <ThrowOnError extends boolean = false>(
-  options: Options<DeploymentsGetData, ThrowOnError>,
-): RequestResult<DeploymentsGetResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).get<DeploymentsGetResponses, unknown, ThrowOnError>({
-    url: "/deployments/{deploymentId}",
-    ...options,
   });
 
 export const deploymentsPublish = <ThrowOnError extends boolean = false>(

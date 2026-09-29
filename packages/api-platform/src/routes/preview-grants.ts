@@ -10,6 +10,13 @@ import { protectedRouter } from "../procedures";
 import { createPreviewViewerToken } from "../preview-token";
 import { ensurePreviewDeveloperGrace } from "../preview-lifecycle";
 import { AppWithCurrentDeployment } from "./apps";
+import {
+  canonicalizeScope,
+  canonicalizeScopes,
+  scopeMatches,
+  scopeSchema,
+  scopesSchema,
+} from "../scope";
 
 const opaqueId = z.string().regex(/^[A-Za-z0-9_-]{43}$/u);
 const createId = () => randomBytes(32).toString("base64url");
@@ -27,7 +34,7 @@ const requireKV = () => {
 const grantSchema = z.object({
   projectId: z.string().min(1),
   sessionId: z.uuid(),
-  scopeId: z.string().min(1),
+  scope: scopeSchema,
 });
 type Grant = z.infer<typeof grantSchema>;
 
@@ -61,12 +68,13 @@ export const accept = protectedRouter
   .input(
     z.object({
       params: z.object({ shareId: opaqueId }),
-      body: z.object({ scopeId: z.string().min(1) }),
+      body: z.object({ scope: scopeSchema }),
     }),
   )
   .output(z.object({ body: z.object({ grantId: opaqueId, sessionId: z.uuid() }) }))
   .handler(async ({ context, input }) => {
     const kv = requireKV();
+    const scope = canonicalizeScope(input.body.scope);
     const session = await db.query.previewSession.findFirst({
       where: { shareId: input.params.shareId, projectId: context.project.id, status: "active" },
     });
@@ -87,7 +95,7 @@ export const accept = protectedRouter
       JSON.stringify({
         projectId: context.project.id,
         sessionId: session.id,
-        scopeId: input.body.scopeId,
+        scope: scope.scope,
       } satisfies Grant),
       { ttl },
     );
@@ -105,7 +113,7 @@ export const accepted = protectedRouter
   .route({ path: "/grants/resolve", method: "POST" })
   .input(
     z.object({
-      body: z.object({ grantIds: z.array(opaqueId).max(20), scopeId: z.string().min(1) }),
+      body: z.object({ grantIds: z.array(opaqueId).max(20), scopes: scopesSchema }),
     }),
   )
   .output(
@@ -122,6 +130,7 @@ export const accepted = protectedRouter
   )
   .handler(async ({ context, input }) => {
     const kv = requireKV();
+    const scopes = canonicalizeScopes(input.body.scopes);
     const items = [];
     const seen = new Set<string>();
     for (const grantId of input.body.grantIds) {
@@ -135,7 +144,10 @@ export const accepted = protectedRouter
       } catch {
         continue;
       }
-      if (grant.projectId !== context.project.id || grant.scopeId !== input.body.scopeId) {
+      if (
+        grant.projectId !== context.project.id ||
+        !scopes.some(({ scope }) => scopeMatches(grant.scope, scope))
+      ) {
         continue;
       }
       const session = await db.query.previewSession.findFirst({
