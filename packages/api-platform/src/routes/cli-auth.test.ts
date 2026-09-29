@@ -29,7 +29,7 @@ const expectedScope = {
   name: "user",
   value: { organizationId: "org_123", userId: "user_456" },
 };
-const expectedScopeKey = "b3a5b34b9e83902dc4737fb4cc2e2c13";
+const expectedScopeKey = "83f6cbb3372e91fda7451be1728a9e91";
 
 function createContext(): Context {
   return {

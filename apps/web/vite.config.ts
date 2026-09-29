@@ -19,6 +19,7 @@ const serverPackages = [
 export default defineConfig(({ mode }) => {
   const isDev = mode === "development";
   const isTest = mode === "test";
+  const reactPlugin = viteReact({ compiler: true });
 
   return {
     define: {
@@ -28,49 +29,49 @@ export default defineConfig(({ mode }) => {
         env.VERCEL_SKEW_PROTECTION_ENABLED === "1",
       ),
     },
-    plugins: [
-      devtools(),
-      tailwindcss(),
-      tanstackStart(),
-      nitro({
-        serverDir: false,
-        // Preview uploads and viewer revisions share this Nitro deployment.
-        // KV leases give the CLI 75 seconds to reconnect after an upgrade.
-        features: { websocket: !isTest },
-        // Nitro's dev server otherwise treats client.js as a Vite static asset.
-        // Forward this prefix to Start, which owns the endpoint and its handlers.
-        handlers: [{ route: "/api/assets/**", handler: "#start-assets", env: "dev" }],
-        virtual: {
-          "#start-assets": `
+    plugins: isTest
+      ? [reactPlugin]
+      : [
+          devtools(),
+          tailwindcss(),
+          tanstackStart(),
+          nitro({
+            serverDir: false,
+            // Preview uploads and viewer revisions share this Nitro deployment.
+            // KV leases give the CLI 75 seconds to reconnect after an upgrade.
+            features: { websocket: !isTest },
+            // Nitro's dev server otherwise treats client.js as a Vite static asset.
+            // Forward this prefix to Start, which owns the endpoint and its handlers.
+            handlers: [{ route: "/api/assets/**", handler: "#start-assets", env: "dev" }],
+            virtual: {
+              "#start-assets": `
             import { fetchViteEnv } from "nitro/vite/runtime";
             export default ({ req }) => fetchViteEnv("ssr", req);
           `,
-        },
-        routeRules: {
-          "/signup": {
-            redirect: {
-              to: "/sign-up",
-              status: 308,
             },
-          },
-          "/signin": {
-            redirect: {
-              to: "/login",
-              status: 308,
+            routeRules: {
+              "/signup": {
+                redirect: {
+                  to: "/sign-up",
+                  status: 308,
+                },
+              },
+              "/signin": {
+                redirect: {
+                  to: "/login",
+                  status: 308,
+                },
+              },
+              "/sign-in": {
+                redirect: {
+                  to: "/login",
+                  status: 308,
+                },
+              },
             },
-          },
-          "/sign-in": {
-            redirect: {
-              to: "/login",
-              status: 308,
-            },
-          },
-        },
-      }),
-      viteReact({
-        compiler: true,
-      }),
-    ],
+          }),
+          reactPlugin,
+        ],
     server: {
       port: 3000,
     },
