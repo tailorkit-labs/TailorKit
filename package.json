@@ -38,7 +38,7 @@
     "oxfmt": "0.70.0",
     "oxlint": "1.85.0",
     "sherif": "^1.13.0",
-    "turbo": "2.11.3",
+    "turbo": "2.11.4",
     "ultracite": "7.12.0",
     "vite-plus": "catalog:"
   },
