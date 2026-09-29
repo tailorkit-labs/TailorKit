@@ -1,0 +1,19 @@
+packages/agent/src/mastra/agents/agent.ts
+  s_3759f56e13c516::t_c12189a21ab403 11,135-144,146-156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4a89cc517b51f0691efc1ec3ed5cada38e6fde81",
+  "prompts": {},
+  "sessions": {
+    "s_3759f56e13c516": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0eca2-af7f-7c43-bbaa-1dc9781efeae",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
