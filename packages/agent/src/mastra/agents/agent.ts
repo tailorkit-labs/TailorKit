@@ -8,7 +8,7 @@ import { createCodingAgent } from "@mastra/core/coding-agent";
 import { parseMemoryRequestContext } from "@mastra/core/memory";
 import { MASTRA_THREAD_ID_KEY, type RequestContext } from "@mastra/core/request-context";
 import { askUserTool, webFetchTool } from "@mastra/core/tools";
-import { WORKSPACE_TOOLS, Workspace, type SandboxStartHook } from "@mastra/core/workspace";
+import { Workspace, type SandboxStartHook } from "@mastra/core/workspace";
 import { DockerSandbox } from "@mastra/docker";
 import { Memory } from "@mastra/memory";
 import { VercelSandbox } from "@mastra/vercel";
@@ -132,27 +132,28 @@ const createSandbox = (requestContext: RequestContext): DockerSandbox | VercelSa
   const threadId = threadIdFrom(requestContext);
   const hostUrl = requestContext.get("tailorkit-host-url") as string;
   const name = workspaceNameFor(threadId, hostUrl);
-  const sandbox = isVercelDeployment
-    ? new VercelSandbox({
-        id: name,
-        sandboxName: name,
-        runtime: "node24",
-        timeout: sandboxTimeout,
-        workingDirectory: sandboxWorkingDirectory,
-        onStart: prepareTailorkitWorkspace(hostUrl),
-      })
-    : new DockerSandbox({
-        id: name,
-        image: "node:24",
-        timeout: sandboxTimeout,
-        workingDirectory: sandboxWorkingDirectory,
-        volumes: { [localWorkspaceFor(threadId, hostUrl)]: sandboxWorkingDirectory },
-        onStart: prepareTailorkitWorkspace(hostUrl),
-      });
-  if (!isVercelDeployment) {
-    mkdirSync(localWorkspaceFor(threadId, hostUrl), { recursive: true });
+  const onStart = prepareTailorkitWorkspace(hostUrl);
+  if (isVercelDeployment) {
+    return new VercelSandbox({
+      id: name,
+      sandboxName: name,
+      runtime: "node24",
+      timeout: sandboxTimeout,
+      workingDirectory: sandboxWorkingDirectory,
+      onStart,
+    });
   }
-  return sandbox;
+
+  const localPath = localWorkspaceFor(threadId, hostUrl);
+  mkdirSync(localPath, { recursive: true });
+  return new DockerSandbox({
+    id: name,
+    image: "node:24",
+    timeout: sandboxTimeout,
+    workingDirectory: sandboxWorkingDirectory,
+    volumes: { [localPath]: sandboxWorkingDirectory },
+    onStart,
+  });
 };
 
 export const workspace: Workspace = new Workspace({
