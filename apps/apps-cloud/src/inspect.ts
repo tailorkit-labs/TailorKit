@@ -1,13 +1,13 @@
-/** Node-only tooling for standalone workerd and isolated build-time inspection. */
+/** Cloudflare build-time inspection in a disposable, network-disabled workerd process. */
 import { createRequire } from "node:module";
 import { spawn } from "node:child_process";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { z } from "zod";
-import { defineSchema } from "./schema";
-import type { StoreDefinition } from "./server";
+import { defineSchema } from "@tailorkit/app-storage/server";
+import type { StoreDefinition } from "@tailorkit/app-storage/server";
 
 export function workerdBinary(): string {
   return (createRequire(import.meta.url)("workerd") as { default: string }).default;
@@ -116,39 +116,5 @@ const config :Workerd.Config = (
       await ended;
     }
     await rm(directory, { recursive: true, force: true });
-  }
-}
-export interface WorkerdOptions {
-  workerFile: string;
-  namespace: string;
-  bindings: Record<string, string>;
-  port?: number;
-}
-/** Stable namespace + /data volume preserve every installation's SQLite database across rebuilds. */
-export function workerdConfiguration(options: WorkerdOptions): string {
-  const bindings = Object.entries(options.bindings).map(
-    ([name, value]) => `(name = ${JSON.stringify(name)}, text = ${JSON.stringify(value)})`,
-  );
-  return `using Workerd = import "/workerd/workerd.capnp";
-const config :Workerd.Config = (
-  services = [
-    (name = "storage", worker = (
-      compatibilityDate = "2026-08-27",
-      modules = [(name = "worker.js", esModule = embed ${JSON.stringify(options.workerFile)})],
-      bindings = [${bindings.join(", ")}, (name = "LOADER", workerLoader = ()), (name = "STORES", durableObjectNamespace = "AppStorage")],
-      durableObjectNamespaces = [(className = "AppStorage", uniqueKey = ${JSON.stringify(options.namespace)}, enableSql = true)],
-      durableObjectStorage = (localDisk = "data")
-    )),
-    (name = "data", disk = (writable = true))
-  ],
-  sockets = [(name = "http", address = "0.0.0.0:${options.port ?? 8787}", http = (), service = "storage")]
-);
-`;
-}
-export async function writeWorkerdConfiguration(file: string, options: WorkerdOptions) {
-  await mkdir(path.dirname(file), { recursive: true });
-  const content = workerdConfiguration(options);
-  if ((await readFile(file, "utf-8").catch(() => "")) !== content) {
-    await writeFile(file, content);
   }
 }

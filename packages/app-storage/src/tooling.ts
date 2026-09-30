@@ -3,9 +3,55 @@ import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import type { StoreDefinition } from "./server";
 import type { Migration } from "./internal/driver";
+import { Context, Effect, Layer } from "effect";
+
+export interface StorageProject {
+  readonly root: string;
+  readonly appId: string;
+  readonly directory: string;
+  readonly state: string;
+  readonly entry: string;
+  readonly migrations: string;
+  readonly references: string;
+  readonly namespace: string;
+  readonly issuer: string;
+  readonly audience: string;
+  readonly publicKeys: string;
+  readonly origins: readonly string[];
+  readonly port: number;
+}
+export interface StorageHandle {
+  close(): void | Promise<void>;
+}
+export interface StorageToolService {
+  inspect(project: StorageProject): Effect.Effect<StoreDefinition, Error>;
+  build(project: StorageProject, watch: boolean): Effect.Effect<StorageHandle | undefined, Error>;
+  start(project: StorageProject): Effect.Effect<StorageHandle, Error>;
+}
+/** Trusted operator tooling only. App server implementations are never imported here. */
+export class StorageTools extends Context.Service<StorageTools, StorageToolService>()(
+  "tailorkit/storage/Tools",
+) {}
+export async function withStorageTools<A>(
+  adapter: string,
+  root: string,
+  run: (tools: StorageToolService) => Effect.Effect<A, Error>,
+): Promise<A> {
+  const require = createRequire(path.join(root, "package.json"));
+  const file = require.resolve(adapter);
+  const integration = await import(pathToFileURL(file).href);
+  if (!Layer.isLayer(integration.default)) {
+    throw new Error("Storage adapter must export a StorageTools Effect Layer");
+  }
+  return Effect.runPromise(
+    Effect.flatMap(StorageTools, run).pipe(
+      Effect.provide(integration.default as Layer.Layer<StorageTools>),
+    ),
+  );
+}
 /** Private build/CLI integration. Never import from an app's browser entry. */
 export function schemaSource(store: StoreDefinition): string {
   const tables = Object.entries(store.schema).map(([name, fields]) => {
@@ -85,14 +131,10 @@ export async function assertGeneratedSchema(directory: string, store: StoreDefin
   }
 }
 /** CLI binaries are pinned dependencies rather than npx downloads. */
-export function storageTool(name: "drizzle-kit" | "wrangler") {
+export function storageTool(name: "drizzle-kit") {
   const require = createRequire(import.meta.url);
   for (const directory of require.resolve.paths(name) ?? []) {
-    const binary = path.join(
-      directory,
-      name,
-      name === "drizzle-kit" ? "bin.cjs" : "bin/wrangler.js",
-    );
+    const binary = path.join(directory, name, "bin.cjs");
     if (existsSync(binary)) {
       return binary;
     }

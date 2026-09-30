@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 
 const generated = await readFile(new URL("../src/worker-env.d.ts", import.meta.url), "utf-8");
 const bindings = generated
-  .match(/interface __BaseEnv_StorageEnvironment \{([\s\S]*?)\n\}/u)[1]
+  .match(/interface __BaseEnv_CloudStorageEnvironment \{([\s\S]*?)\n\}/u)[1]
   .replace(/DurableObjectNamespace<[^;]+>/u, "DurableObjectNamespace")
   .replaceAll("\t", "  ");
 await writeFile(

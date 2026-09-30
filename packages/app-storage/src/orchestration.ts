@@ -14,7 +14,8 @@ export class Persistence extends Context.Service<Persistence, SqlDriver>()(
 export class NotificationDelivery extends Context.Service<NotificationDelivery, Notifications>()(
   "tailorkit/storage/NotificationDelivery",
 ) {}
-export class Execution extends Context.Service<Execution, StorageRuntime>()(
+export type StorageExecution = Pick<StorageRuntime, "query" | "mutate" | "subscribe">;
+export class Execution extends Context.Service<Execution, StorageExecution>()(
   "tailorkit/storage/Execution",
 ) {}
 export function executionLayer(store: StoreDefinition, migrations: readonly Migration[]) {

@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "tailorkit-app-storage-cloud",
+  "name": "tailorkit-apps-cloud",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-27",
   "workers_dev": false,

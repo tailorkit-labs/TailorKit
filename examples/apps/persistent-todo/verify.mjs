@@ -9,11 +9,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createStorageClient, functionReference } from "@tailorkit/app-storage";
 import { issueStorageToken, issueStorageMigrationToken } from "@tailorkit/app-storage/auth";
-import { storageTool } from "@tailorkit/app-storage/tooling";
+import { wranglerBinary } from "@tailorkit/apps-cloud/tooling";
 
 // Runs only local workerd, with a disposable state directory separate from the demo's data.
-const provider = process.argv.includes("--docker") ? "docker" : "cloudflare";
-const containerName = `tailorkit-verify-${crypto.randomUUID()}`;
 const root = import.meta.dirname;
 const privateKey = JSON.parse(
   await readFile(path.join(root, ".tailorkit-storage/dev-host-key.json"), "utf-8"),
@@ -41,59 +39,30 @@ const wait = async (predicate, label) => {
   throw new Error(`Timed out: ${label}\n${logs.slice(-3000)}`);
 };
 async function start() {
-  child =
-    provider === "docker"
-      ? spawn(
-          "docker",
-          [
-            "run",
-            "--rm",
-            "--name",
-            containerName,
-            "--user",
-            `${process.getuid()}:${process.getgid()}`,
-            "--read-only",
-            "--tmpfs",
-            "/tmp:rw,size=16m",
-            "--cap-drop=ALL",
-            "--security-opt=no-new-privileges",
-            "--memory=256m",
-            "--cpus=1",
-            "--pids-limit=64",
-            "-p",
-            `127.0.0.1:${port}:8787`,
-            "-v",
-            `${path.join(root, ".tailorkit-storage/docker")}:/app:ro`,
-            "-v",
-            `${state}:/data`,
-            "tailorkit-storage:local",
-          ],
-          { stdio: ["ignore", "pipe", "pipe"] },
-        )
-      : spawn(
-          process.execPath,
-          [
-            storageTool("wrangler"),
-            "dev",
-            path.resolve(root, "../../../apps/app-storage-cloud/src/index.ts"),
-            "--local",
-            "--config",
-            path.join(root, ".tailorkit-storage/wrangler.json"),
-            "--persist-to",
-            state,
-            "--port",
-            String(port),
-          ],
-          {
-            cwd: root,
-            stdio: ["ignore", "pipe", "pipe"],
-            env: {
-              ...process.env,
-              WRANGLER_SEND_METRICS: "false",
-              WRANGLER_LOG_PATH: path.join(state, "wrangler.log"),
-            },
-          },
-        );
+  child = spawn(
+    process.execPath,
+    [
+      wranglerBinary(),
+      "dev",
+      path.resolve(root, "../../../apps/apps-cloud/src/index.ts"),
+      "--local",
+      "--config",
+      path.join(root, ".tailorkit-storage/wrangler.json"),
+      "--persist-to",
+      state,
+      "--port",
+      String(port),
+    ],
+    {
+      cwd: root,
+      stdio: ["ignore", "pipe", "pipe"],
+      env: {
+        ...process.env,
+        WRANGLER_SEND_METRICS: "false",
+        WRANGLER_LOG_PATH: path.join(state, "wrangler.log"),
+      },
+    },
+  );
   child.stdout.on("data", (data) => {
     logs += data;
   });
@@ -120,12 +89,7 @@ async function stopRuntime() {
     return;
   }
   const exited = new Promise((resolve) => child.once("exit", resolve));
-  if (provider === "docker") {
-    const stopper = spawn("docker", ["stop", "--time=2", containerName], { stdio: "ignore" });
-    await new Promise((resolve) => stopper.once("exit", resolve));
-  } else {
-    child.kill("SIGTERM");
-  }
+  child.kill("SIGTERM");
   await exited;
 }
 function client(installationId, lifetimeSeconds = 120, overrides = {}) {
@@ -265,7 +229,7 @@ try {
   assert.deepEqual(await first.sdk.mutate(add, { text: "written once" }, { requestId }), accepted);
   assert.equal((await second.sdk.query(list, {})).length, 1);
   console.log(
-    `PASS (${provider}): facet SQLite, CLI migration gate and authorization, isolated installations, two clients, atomic receipts, JWT rejection, token renewal, persistence and reconnect after restart.`,
+    `PASS (cloudflare): facet SQLite, CLI migration gate and authorization, isolated installations, two clients, atomic receipts, JWT rejection, token renewal, persistence and reconnect after restart.`,
   );
 } finally {
   for (const stop of stops) {

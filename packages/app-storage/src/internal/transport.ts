@@ -3,7 +3,8 @@ import { RPCHandler, BodyLimitPlugin } from "@orpc/server/fetch";
 import { z } from "zod";
 import { StorageError } from "../errors";
 import type { StorageIdentity } from "../server";
-import type { Snapshot, StorageRuntime } from "./runtime";
+import type { Snapshot } from "./runtime";
+import type { StorageExecution } from "../orchestration";
 
 const invocation = z.strictObject({
   name: z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,63}$/u),
@@ -21,7 +22,7 @@ function wire<T>(run: () => T): T {
     throw new ORPCError("INTERNAL_SERVER_ERROR");
   }
 }
-export function storageRpcHandler(runtime: StorageRuntime) {
+export function storageRpcHandler(runtime: StorageExecution) {
   const o = os.$context<{ identity: StorageIdentity; signal: AbortSignal }>();
   return new RPCHandler(
     {

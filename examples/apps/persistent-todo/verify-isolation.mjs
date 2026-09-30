@@ -7,14 +7,10 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { build } from "vite";
 import { issueStorageToken } from "@tailorkit/app-storage/auth";
-import {
-  inspectIsolated,
-  workerdBinary,
-  writeWorkerdConfiguration,
-} from "@tailorkit/app-storage/selfhost";
+import { inspectIsolated } from "../../../apps/apps-cloud/src/inspect.ts";
+import { wranglerBinary } from "@tailorkit/apps-cloud/tooling";
 
 const root = import.meta.dirname;
 const temporary = await mkdtemp(path.join(tmpdir(), "tailorkit-isolation-"));
@@ -32,7 +28,7 @@ const config = JSON.parse(
 const privateKey = JSON.parse(
   await readFile(path.join(root, ".tailorkit-storage/dev-host-key.json"), "utf-8"),
 );
-const packageEntry = fileURLToPath(import.meta.resolve("@tailorkit/app-storage/cloudflare"));
+const packageEntry = path.resolve(root, "../../../apps/apps-cloud/src/worker.ts");
 let child;
 let logs = "";
 async function bundle(version) {
@@ -43,7 +39,7 @@ export class AppFacet extends DurableObject {
   async fetch(request) {
     if (new URL(request.url).pathname.endsWith("/stream")) {
       let timer;
-      return new Response(new ReadableStream({ start(controller) { controller.enqueue(new TextEncoder().encode("open")); timer = setInterval(() => controller.enqueue(new TextEncoder().encode("tick")), 100); }, cancel() { clearInterval(timer); } }));
+      return new Response(new ReadableStream({ start(controller) { controller.enqueue(new TextEncoder().encode("open")); timer = setInterval(() => controller.enqueue(new TextEncoder().encode("tick")), 100); }, cancel() { clearInterval(timer); } }), { headers: { "content-type": "text/event-stream", "cache-control": "no-cache" } });
     }
     let networkBlocked = false;
     try { await fetch("https://example.com"); } catch { networkBlocked = true; }
@@ -81,28 +77,46 @@ export default createStorageWorker(artifact);`,
       rollupOptions: { external: ["cloudflare:workers"], output: { entryFileNames: "worker.js" } },
     },
   });
-  await writeWorkerdConfiguration(path.join(temporary, "worker.capnp"), {
-    workerFile: "runtime/worker.js",
-    namespace: "tailorkit-isolation-check",
-    bindings: config.vars,
-    port,
-  });
+  await writeFile(
+    path.join(temporary, "wrangler.json"),
+    JSON.stringify({
+      ...config,
+      name: "tailorkit-isolation-check",
+      main: "runtime/worker.js",
+      alias: {},
+    }),
+  );
 }
 async function start() {
   child = spawn(
-    workerdBinary(),
+    process.execPath,
     [
-      "serve",
-      "--experimental",
-      path.join(temporary, "worker.capnp"),
-      `--directory-path=data=${state}`,
+      wranglerBinary(),
+      "dev",
+      "--local",
+      "--config",
+      path.join(temporary, "wrangler.json"),
+      "--persist-to",
+      state,
+      "--port",
+      String(port),
     ],
-    { stdio: ["ignore", "pipe", "pipe"] },
+    {
+      stdio: ["ignore", "pipe", "pipe"],
+      env: {
+        ...process.env,
+        WRANGLER_SEND_METRICS: "false",
+        WRANGLER_LOG_PATH: path.join(temporary, "wrangler.log"),
+      },
+    },
   );
+  child.stdout.on("data", (data) => {
+    logs = (logs + String(data)).slice(-4000);
+  });
   child.stderr.on("data", (data) => {
     logs = (logs + String(data)).slice(-4000);
   });
-  const deadline = Date.now() + 10_000;
+  const deadline = Date.now() + 20_000;
   while (Date.now() < deadline) {
     if (child.exitCode !== null) {
       throw new Error(logs);
@@ -182,23 +196,31 @@ export default { fetch: () => Response.json({ schema: {}, functions: {}, apiVers
     },
     { appId: config.vars.STORAGE_APP_ID, installationId: "first", userId: "verified-user" },
   );
+  const started = Date.now();
   const stream = await fetch(`http://127.0.0.1:${port}/rpc/stream`, {
     method: "POST",
     headers: { authorization: `Bearer ${expiringToken}` },
     signal: AbortSignal.timeout(5000),
   });
   const reader = stream.body.getReader();
-  assert.equal(new TextDecoder().decode((await reader.read()).value), "open");
-  const started = Date.now();
-  let chunks = 0;
+  let text = new TextDecoder().decode((await reader.read()).value);
+  assert.ok(text.startsWith("open"));
   try {
-    while (!(await reader.read()).done) {
-      chunks++;
+    for (;;) {
+      const chunk = await reader.read();
+      if (chunk.done) {
+        break;
+      }
+      text += new TextDecoder().decode(chunk.value);
     }
   } catch (error) {
     assert.notEqual(error.name, "TimeoutError");
   }
-  assert.ok(chunks > 2, "Adversarial stream remained active before expiry");
+  // Transport buffers may coalesce chunks; check messages rather than packet boundaries.
+  assert.ok(
+    (text.match(/tick/gu) ?? []).length > 2,
+    "Adversarial stream remained active before expiry",
+  );
   assert.ok(Date.now() - started < 3000, "Supervisor terminates unauthenticated streams");
   await stop();
   await bundle(2);

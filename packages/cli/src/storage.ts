@@ -3,7 +3,6 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { generateKeyPair, exportJWK, decodeJwt } from "jose";
 import { loadTailorKitConfig } from "@tailorkit/app/config/loader";
-import type { LoadedTailorKitConfig } from "@tailorkit/app/config/loader";
 import { createStorageClient, functionReference } from "@tailorkit/app-storage";
 import { issueStorageToken } from "@tailorkit/app-storage/auth";
 import { schemaFingerprint, storageTool } from "@tailorkit/app-storage/tooling";
@@ -12,6 +11,7 @@ import {
   generateStorageModel,
   inspectStorage,
   storagePaths,
+  startStorageRuntime,
 } from "@tailorkit/app/builder";
 
 export interface StorageOptions {
@@ -22,14 +22,12 @@ export interface StorageOptions {
   keyFile?: string;
   url?: string;
   tokenFile?: string;
-  provider?: "cloudflare" | "docker";
 }
-function childProcess(tool: "drizzle-kit" | "wrangler", args: string[], cwd: string) {
-  return spawn(
-    process.execPath,
-    [...(tool === "drizzle-kit" ? ["--preserve-symlinks-main"] : []), storageTool(tool), ...args],
-    { cwd, stdio: "inherit" },
-  );
+function childProcess(tool: "drizzle-kit", args: string[], cwd: string) {
+  return spawn(process.execPath, ["--preserve-symlinks-main", storageTool(tool), ...args], {
+    cwd,
+    stdio: "inherit",
+  });
 }
 export async function generateStorage(options: StorageOptions) {
   const loaded = await loadTailorKitConfig(options.configPath, options.cwd);
@@ -97,105 +95,6 @@ export async function initStorageDev(options: StorageOptions) {
     JSON.stringify({ keys: [{ ...(await exportJWK(publicKey)), kid: "local-dev" }] }, null, 2),
   );
 }
-export async function startStorageRuntime(
-  loaded: LoadedTailorKitConfig,
-  provider: "cloudflare" | "docker" = "cloudflare",
-) {
-  const config = loaded.config.storage;
-  if (!config) {
-    return { close: () => {} };
-  }
-  const paths = storagePaths(loaded);
-  if (!["cloudflare", "docker"].includes(provider)) {
-    throw new Error("Use --provider cloudflare or docker");
-  }
-  const containerName = `tailorkit-storage-${crypto.randomUUID()}`;
-  const dockerState = path.join(paths.state, "docker");
-  if (provider === "docker") {
-    await mkdir(dockerState, { recursive: true });
-  }
-  const child =
-    provider === "docker"
-      ? spawn(
-          "docker",
-          [
-            "run",
-            "--rm",
-            "--name",
-            containerName,
-            "--user",
-            `${process.getuid?.() ?? 1000}:${process.getgid?.() ?? 1000}`,
-            "--read-only",
-            "--tmpfs",
-            "/tmp:rw,size=16m",
-            "--cap-drop=ALL",
-            "--security-opt=no-new-privileges",
-            "--memory=256m",
-            "--cpus=1",
-            "--pids-limit=64",
-            "-p",
-            `127.0.0.1:${config.port}:8787`,
-            "-v",
-            `${path.join(paths.directory, "docker")}:/app:ro`,
-            "-v",
-            `${dockerState}:/data`,
-            "tailorkit-storage:local",
-            "--watch",
-          ],
-          { cwd: loaded.root, stdio: "inherit" },
-        )
-      : childProcess(
-          "wrangler",
-          [
-            "dev",
-            "--local",
-            "--config",
-            path.join(paths.directory, "wrangler.json"),
-            "--persist-to",
-            paths.state,
-            "--port",
-            String(config.port),
-          ],
-          loaded.root,
-        );
-  const stop = () => {
-    if (provider === "docker") {
-      spawn("docker", ["stop", containerName], { stdio: "ignore" });
-    } else {
-      child.kill("SIGTERM");
-    }
-  };
-  let error: Error | undefined;
-  child.once("error", (failure) => {
-    error = failure;
-  });
-  const deadline = Date.now() + 30_000;
-  while (Date.now() < deadline) {
-    if (error || child.exitCode !== null) {
-      throw error ?? new Error("Local storage runtime exited during startup");
-    }
-    try {
-      const response = await fetch(`http://localhost:${config.port}/_tailorkit/storage`, {
-        signal: AbortSignal.timeout(500),
-      });
-      if (
-        response.ok &&
-        ((await response.json()) as { appId?: string }).appId === loaded.config.appId
-      ) {
-        return {
-          close: () => {
-            stop();
-          },
-        };
-      }
-    } catch {
-      /* workerd is starting */
-    }
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  stop();
-  throw new Error("Timed out starting the local storage runtime");
-}
 export async function runStorageDev(options: StorageOptions) {
   const loaded = await loadTailorKitConfig(options.configPath, options.cwd);
   if (!loaded.config.storage) {
@@ -204,21 +103,25 @@ export async function runStorageDev(options: StorageOptions) {
   const watcher = await buildApp({ ...options, watch: true });
   let runtime: Awaited<ReturnType<typeof startStorageRuntime>>;
   try {
-    runtime = await startStorageRuntime(loaded, options.provider);
+    runtime = await startStorageRuntime(loaded);
   } catch (error) {
     if (watcher && typeof watcher === "object" && "close" in watcher) {
       await (watcher as { close(): Promise<void> }).close();
     }
     throw error;
   }
-  const close = () => {
-    runtime.close();
+  const close = async () => {
+    await runtime.close();
     if (watcher && typeof watcher === "object" && "close" in watcher) {
-      void (watcher as { close(): Promise<void> }).close();
+      await (watcher as { close(): Promise<void> }).close();
     }
   };
-  process.once("SIGINT", close);
-  process.once("SIGTERM", close);
+  process.once("SIGINT", () => {
+    void close();
+  });
+  process.once("SIGTERM", () => {
+    void close();
+  });
 }
 export async function seedStorage(options: StorageOptions) {
   const loaded = await loadTailorKitConfig(options.configPath, options.cwd);

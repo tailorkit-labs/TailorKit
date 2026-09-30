@@ -17,8 +17,6 @@
     "dev:host": "vp dev --host localhost --port 5011",
     "storage:verify": "node verify.mjs",
     "storage:migrate": "tailorkit storage migrate --installation demo",
-    "storage:docker": "tailorkit storage dev --provider docker",
-    "storage:verify:docker": "node verify.mjs --docker",
     "storage:verify:isolation": "node verify-isolation.mjs"
   },
   "dependencies": {
@@ -34,6 +32,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@tailorkit/apps-cloud": "workspace:*",
     "@tailorkit/cli": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",

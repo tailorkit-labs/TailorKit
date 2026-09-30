@@ -10,7 +10,14 @@ import { buildStorage, storagePaths } from "./storage";
 
 import { createTailorKitUploadManifest } from "./upload-manifest";
 
-export { buildStorage, inspectStorage, generateStorageModel, storagePaths } from "./storage";
+export {
+  buildStorage,
+  inspectStorage,
+  generateStorageModel,
+  storagePaths,
+  storageProject,
+  startStorageRuntime,
+} from "./storage";
 
 export {
   createTailorKitUploadManifest,
@@ -117,10 +124,8 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
         name: "tailorkit-browser-server-boundary",
         resolveId(id, importer) {
           if (
-            /^@tailorkit\/app-storage\/(?:server|auth|cloudflare|tooling|facet|orchestration|selfhost)$/u.test(
-              id,
-            ) ||
-            /^tailorkit\/app\/storage\/(?:server|auth|cloudflare)$/u.test(id) ||
+            /^@tailorkit\/app-storage\/(?:server|auth|runtime|tooling|orchestration)$/u.test(id) ||
+            /^tailorkit\/app\/storage\/(?:server|auth)$/u.test(id) ||
             (loaded.config.storage &&
               importer &&
               path.resolve(path.dirname(importer), id) ===

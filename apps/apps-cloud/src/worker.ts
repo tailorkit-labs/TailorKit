@@ -1,24 +1,23 @@
 import { DurableObject } from "cloudflare:workers";
 import { Effect, Layer } from "effect";
 import type { StorageEnvironment } from "./env";
-import type { StorageIdentity } from "./server";
+import type { StorageIdentity } from "@tailorkit/app-storage/server";
 import {
   bearerToken,
   installationKey,
   storageTokenVerifier,
   storageMigrationTokenVerifier,
-} from "./auth";
-import type { StorageTrust } from "./auth";
-import { StorageError, storageError } from "./errors";
-import { Authentication, InstallationRouting, dispatch } from "./orchestration";
+} from "@tailorkit/app-storage/auth";
+import type { StorageTrust } from "@tailorkit/app-storage/auth";
+import { StorageError } from "@tailorkit/app-storage";
+import { storageError } from "@tailorkit/app-storage/runtime";
+import {
+  Authentication,
+  InstallationRouting,
+  dispatch,
+} from "@tailorkit/app-storage/orchestration";
 
-/** Serialized code is data to the supervisor. It is never imported or evaluated here. */
-export interface StorageArtifact {
-  readonly code: string;
-  readonly codeHash: string;
-  readonly apiVersion: number;
-  readonly migrations: readonly { readonly id: string; readonly hash: string }[];
-}
+import type { StorageArtifact } from "@tailorkit/app-storage/runtime";
 function trust(env: StorageEnvironment): StorageTrust {
   return {
     issuer: env.STORAGE_ISSUER,
@@ -222,7 +221,7 @@ export function createStorageDurableObject(
   };
 }
 
-/** Trusted entry point, shared by Cloudflare and standalone workerd/Docker. */
+/** Trusted Cloudflare entry point. */
 export function createStorageWorker(artifact: StorageArtifact): {
   fetch(request: Request, env: StorageEnvironment): Promise<Response>;
 } {

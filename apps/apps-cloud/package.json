@@ -1,0 +1,27 @@
+{
+  "name": "@tailorkit/apps-cloud",
+  "private": true,
+  "license": "BUSL-1.1",
+  "type": "module",
+  "exports": {
+    "./tooling": "./src/tooling.ts"
+  },
+  "scripts": {
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "check-types": "pnpm types && tsc --noEmit",
+    "types": "wrangler types src/worker-env.d.ts --env-interface CloudStorageEnvironment --strict-vars=false && node scripts/env.mjs",
+    "dev": "wrangler dev --local"
+  },
+  "dependencies": {
+    "@tailorkit/app-storage": "workspace:*",
+    "effect": "4.0.0-rc.117",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "workerd": "1.20260921.1",
+    "wrangler": "4.137.0"
+  }
+}

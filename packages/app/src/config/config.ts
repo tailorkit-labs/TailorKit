@@ -17,7 +17,9 @@ const storageConfigSchema = z.object({
   entry: z.string().default("./src/server.ts"),
   migrations: z.string().default("./storage/migrations"),
   references: z.string().default("./src/storage.gen.ts"),
-  workerName: z.string().regex(/^[a-z][a-z0-9-]{0,62}$/u),
+  /** Trusted runtime integration, exporting the SDK's StorageTools Effect Layer. */
+  adapter: z.string().min(1),
+  namespace: z.string().regex(/^[a-z][a-z0-9-]{0,62}$/u),
   issuer: z.url(),
   audience: z.string().min(1).default("tailorkit-storage"),
   publicKeys: z.string().default("./storage/public-keys.json"),

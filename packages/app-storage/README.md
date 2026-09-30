@@ -35,7 +35,7 @@ export default defineStore({
 });
 ```
 
-Input and output validators implement Standard Schema. Both validators and handlers must complete synchronously. A mutation executes in one SQLite `transactionSync`, including its deduplication receipt. Returning a Promise rejects and rolls back the mutation. Async orchestration happens outside this transaction.
+Input and output validators implement Standard Schema. Both validators and handlers must complete synchronously. A mutation executes in one synchronous SQLite transaction, including its deduplication receipt. Returning a Promise rejects and rolls back the mutation. Async orchestration happens outside this transaction.
 
 Tables expose `all({ where, orderBy, limit })`, `first(where)`, `insert(row)`, `update(where, values)`, and `delete(where)`. Filters match fields by equality; update/delete require a nonempty filter. Supported fields are text, integer, number and boolean, with nullable, primary-key and unique options. Each table needs one primary key.
 
@@ -101,13 +101,14 @@ Server integration uses private Effect v4 services and Layers:
 | `Persistence`          | Synchronous SQL execution and atomic transaction  |
 | `NotificationDelivery` | Ordered invalidation publication and listeners    |
 | `Execution`            | Shared query/mutation/subscription runtime        |
+| `StorageTools`         | Inspect, build and start the configured adapter   |
 
 Tests replace services using `Layer.succeed` or `Effect.provideService`. Apps and browser code need no Effect imports. Persistence and notification delivery have independent boundaries. The initial delivery adapter is local to a facet; a future Redis/Upstash service needs durable publication/revision reconciliation and must preserve registration ordering. No remote adapter is implemented here.
 
-## Runtime apps and limits
+## Cloudflare runtime and limits
 
-`apps/app-storage-cloud` is the trusted Cloudflare supervisor’s Wrangler project, with a normal Worker entry point and Wrangler bundling. `packages/app-storage-selfhost` runs the same supervisor/facet bundles under standalone workerd with persistent disk SQLite. The builder produces distinct client, facet, supervisor and Docker artifacts. Existing client-only apps require no storage configuration.
+All Cloudflare-specific code and dependencies live in `apps/apps-cloud`: Worker/supervisor classes, facets, generated bindings, isolated build inspection, Wrangler configuration generation and local startup. The shared builder and CLI call the configured `StorageTools` Layer. The example uses `storage.adapter: "@tailorkit/apps-cloud/tooling"` and a stable `storage.namespace`. Wrangler bundles the trusted Worker entry directly; the builder bundles only the isolated app facet and generates type-only client references and compatibility metadata. Existing client-only apps require no adapter or storage configuration.
 
-Docker is a single runtime instance with one persistent data volume. It does not implement clustering or Cloudflare's managed durability, and standalone workerd's local disk backend is experimental. Back up its volume and put a TLS reverse proxy in front for remote access. Do not run multiple processes against the same SQLite data directory.
+Self-hosted execution is deferred. Persistence, notification delivery, execution, authentication/routing and build/development tools remain separate service contracts so another runtime can be added without changing app APIs. Workerd is used only by the Cloudflare local development/build tools.
 
-Other initial limits: no joins/index definitions, row tracking, optimistic updates, offline sync, receipt pruning or subscription hibernation. Cloudflare CPU limits are configured for dynamic execution; standalone workerd does not provide every managed Cloudflare resource limit, so the Docker app also has container CPU/memory bounds. Platform provisioning, rate limits/quotas and automatic installation migration orchestration remain future work. CLI preview starts local storage; remotely shared previews still need a reachable runtime and matching trusted host configuration. Nothing is deployed automatically.
+Initial limits: no joins/index definitions, row tracking, optimistic updates, offline sync, receipt pruning or subscription hibernation. Platform provisioning, rate limits/quotas and automatic installation migration orchestration remain future work. CLI preview starts local storage; remotely shared previews still need a reachable runtime and matching trusted host configuration. Nothing is deployed automatically.

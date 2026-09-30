@@ -321,7 +321,6 @@ cli
   .option("--key-file <path>", "Local host development signing key")
   .option("--url <url>", "Runtime URL for migrations")
   .option("--token-file <path>", "Operator-issued migration JWT (remote runtimes)")
-  .option("--provider <name>", "Local runtime: cloudflare or docker", { default: "cloudflare" })
   .action(async (action: string, options: Record<string, unknown>) => {
     try {
       const commands: Record<string, typeof generateStorage> = {
@@ -344,7 +343,6 @@ cli
         keyFile: options.keyFile as string | undefined,
         url: options.url as string | undefined,
         tokenFile: options.tokenFile as string | undefined,
-        provider: options.provider as "cloudflare" | "docker",
       });
     } catch (error) {
       log.error(error instanceof Error ? error.message : String(error));

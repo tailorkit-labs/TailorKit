@@ -5,6 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { z } from "zod";
+import { Layer } from "effect";
 import { createFunctions, defineSchema, defineStore, fields, StorageError } from "../server";
 import type { StorageIdentity, StoreDefinition } from "../server";
 import { readMigrations } from "../tooling";
@@ -12,7 +13,7 @@ import { localNotifications } from "./driver";
 import type { Migration, Notifications, SqlDriver } from "./driver";
 import { StorageRuntime } from "./runtime";
 import { migrate } from "./migrations";
-import { storageRpcHandler } from "./transport";
+import { createStorageHandler, Persistence, NotificationDelivery } from "../runtime";
 import { createStorageClient } from "../client";
 import { functionReference } from "../reference";
 
@@ -297,8 +298,15 @@ describe("persistent runtime", () => {
     await rejection;
   });
   it("round-trips queries, mutations and subscriptions over actual oRPC v2 HTTP/SSE", async () => {
-    const { runtime } = fixture();
-    const handler = storageRpcHandler(runtime);
+    const { store, driver, notifications } = fixture();
+    const handle = createStorageHandler(
+      store,
+      migrations,
+      Layer.merge(
+        Layer.succeed(Persistence, driver),
+        Layer.succeed(NotificationDelivery, notifications),
+      ),
+    );
     const client = createStorageClient({
       getSession: async () => ({
         token: "host-owned",
@@ -308,11 +316,7 @@ describe("persistent runtime", () => {
       fetch: async (url, init) => {
         const request = new Request(url, init);
         expect(request.headers.get("authorization")).toBe("Bearer host-owned");
-        const result = await handler.handle(request, {
-          prefix: "/rpc",
-          context: { identity, signal: request.signal },
-        });
-        return result.response!;
+        return handle(request, identity);
       },
     });
     const list = functionReference<"query", Record<string, never>, z.infer<typeof row>[]>(
