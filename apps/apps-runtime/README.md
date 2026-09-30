@@ -16,9 +16,10 @@ Request admission is serialized through an installation-local queue, including p
 
 ## Code layout
 
-- `src/index.ts`: Wrangler entry point.
-- `src/cloudflare/`: the worker/supervisor, private deployment source and generated environment.
-- `src/runtime/`: shared service contracts, request orchestration and installation routing.
+- `src/index.ts`: Wrangler entry point, gateway and installation supervisor.
+- `src/source.ts`: private deployment metadata and R2 bundle retrieval.
+- `src/runtime.ts`: service contracts, request orchestration and installation routing.
+- `src/env.ts`: generated environment bindings.
 - `src/http.ts`: bounded bodies, error responses and authenticated streams.
 
 Tests live beside the code they exercise. Unit tests cover gateway routing, authentication, deployment changes, code caching, isolation settings, source validation, request queues and stream lifecycle. The local workerd demonstration checks the real Cloudflare bindings and two-client realtime behavior.

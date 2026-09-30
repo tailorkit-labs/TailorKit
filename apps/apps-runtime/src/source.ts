@@ -2,9 +2,9 @@ import { Effect } from "effect";
 import { z } from "zod";
 import { StorageError } from "@tailorkit/app-storage";
 import { storageError } from "@tailorkit/app-storage/runtime";
-import type { DeploymentSource } from "../runtime/runtime";
+import type { DeploymentSource } from "./runtime";
 import type { RuntimeEnvironment } from "./env";
-import { readBounded } from "../http";
+import { readBounded } from "./http";
 
 const metadata = z.object({
   body: z.object({

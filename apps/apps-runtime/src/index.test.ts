@@ -15,7 +15,7 @@ vi.mock("cloudflare:workers", () => ({
 import { Effect } from "effect";
 import { StorageError } from "@tailorkit/app-storage";
 import { issueStorageToken } from "@tailorkit/app-storage/auth";
-import worker, { AppInstallation, verifier } from "./worker";
+import worker, { AppInstallation, verifier } from "./index";
 import type { RuntimeEnvironment } from "./env";
 
 // Node requires a duplex hint for request streams; workerd does not.
