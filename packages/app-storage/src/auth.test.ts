@@ -88,3 +88,21 @@ it("separates operator migration tokens from ordinary app tokens", async () => {
   await expect(verify(operator.token)).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   expect(await verifyMigration(operator.token)).toMatchObject(identity);
 });
+
+it("binds runtime tokens to a trusted project and deployment while preserving local legacy tokens", async () => {
+  const runtimeVerify = storageTokenVerifier({
+    ...signing,
+    publicKeys,
+    projectId: "project",
+    requireDeployment: true,
+  });
+  const access = { ...identity, projectId: "project", deploymentId: "deployment" };
+  const session = await issueStorageToken(signing, access);
+  expect(await runtimeVerify(session.token)).toEqual({ ...access, expiresAt: session.expiresAt });
+  await expect(
+    runtimeVerify((await issueStorageToken(signing, identity)).token),
+  ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  await expect(
+    runtimeVerify((await issueStorageToken(signing, { ...access, projectId: "other" })).token),
+  ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+});

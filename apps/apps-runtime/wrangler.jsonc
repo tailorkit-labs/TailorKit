@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tailorkit-apps-runtime",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-21",
+  "workers_dev": false,
+  "preview_urls": false,
+  "worker_loaders": [{ "binding": "LOADER" }],
+  "r2_buckets": [{ "binding": "BUNDLES", "bucket_name": "tailorkit-app-assets-prod" }],
+  "durable_objects": { "bindings": [{ "name": "STORES", "class_name": "AppInstallation" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["AppInstallation"] }],
+  "secrets": { "required": ["PLATFORM_TOKEN"] },
+  "vars": {
+    "PLATFORM_URL": "",
+    "STORAGE_SCOPE": "",
+    "STORAGE_PROJECT_ID": "",
+    "STORAGE_ISSUER": "",
+    "STORAGE_AUDIENCE": "",
+    "STORAGE_PUBLIC_KEYS": "{\"keys\":[]}",
+    "STORAGE_ORIGINS": "[]",
+  },
+  "observability": { "enabled": true, "traces": { "enabled": true } },
+}

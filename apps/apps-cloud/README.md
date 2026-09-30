@@ -1,8 +1,8 @@
 # Cloudflare app storage
 
-This Wrangler project owns the shared gateway, trusted supervisor and isolated Dynamic Worker facets. `src/index.ts` is the production entry point. It contains no app code or artifact alias; adding an app does not require redeploying this Worker.
+Use [apps-runtime](../apps-runtime/README.md) for the hosted query/mutation gateway. This project retains the app builder, isolated inspection, facet implementation and local Wrangler/migration tooling. Its earlier `src/index.ts` gateway remains for compatibility; new hosted integrations should target `tailorkit-apps-runtime`.
 
-## Code uploads and loading
+## Earlier gateway
 
 `tailorkit deploy` uploads the browser bundle to `deployments/<deployment>/client/client.js` and an optional server bundle to `deployments/<deployment>/server/server.js` in the existing private blob bucket. Both uploads are checksum-verified before publication. The public asset gateways only serve allowed client filenames and logos. They never serve server bundles or generate server download URLs.
 

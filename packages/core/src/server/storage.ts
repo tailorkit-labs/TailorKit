@@ -2,6 +2,16 @@ import { issueStorageToken } from "@tailorkit/app-storage/auth";
 import type { StorageSigningOptions } from "@tailorkit/app-storage/auth";
 import type { TailorKitScopes } from "./types";
 
+export interface HostStorageAccess {
+  userId: string;
+  appId: string;
+  installationId: string;
+  /** Required by apps-runtime; resolved by the trusted host, never supplied by the app. */
+  projectId?: string;
+  deploymentId?: string;
+  url: string;
+}
+
 export interface HostStorageOptions extends StorageSigningOptions {
   /** Authorize membership and resolve a stable installation from the host's verified scopes.
    * Return null for unauthorized apps. The client cannot choose a storage ID or runtime URL.
@@ -10,10 +20,7 @@ export interface HostStorageOptions extends StorageSigningOptions {
     request: Request;
     appId: string;
     scopes: TailorKitScopes;
-  }):
-    | { userId: string; appId: string; installationId: string; url: string }
-    | null
-    | Promise<{ userId: string; appId: string; installationId: string; url: string } | null>;
+  }): HostStorageAccess | null | Promise<HostStorageAccess | null>;
 }
 // Keep the request/build lifecycle and its failure paths together.
 // eslint-disable-next-line complexity

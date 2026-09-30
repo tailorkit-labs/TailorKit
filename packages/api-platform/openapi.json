@@ -3059,6 +3059,97 @@
         }
       }
     },
+    "/apps/{appId}/runtime": {
+      "post": {
+        "operationId": "deployments.runtime",
+        "parameters": [
+          {
+            "in": "path",
+            "required": true,
+            "name": "appId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                      },
+                      "value": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "additionalProperties": {
+                          "$ref": "#/components/schemas/__schema0"
+                        }
+                      }
+                    },
+                    "required": ["name", "value"],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["scope"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {
+                      "type": "string"
+                    },
+                    "appId": {
+                      "type": "string"
+                    },
+                    "deploymentId": {
+                      "type": "string"
+                    },
+                    "objectKey": {
+                      "type": "string"
+                    },
+                    "checksum": {
+                      "type": "string"
+                    },
+                    "contentLength": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "projectId",
+                    "appId",
+                    "deploymentId",
+                    "objectKey",
+                    "checksum",
+                    "contentLength"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/preview/start": {
       "post": {
         "operationId": "preview.start",

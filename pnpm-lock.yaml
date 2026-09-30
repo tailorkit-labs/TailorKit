@@ -336,6 +336,34 @@ importers:
         specifier: 4.137.0
         version: 4.137.0(@types/node@26.6.2)
 
+  apps/apps-runtime:
+    dependencies:
+      '@tailorkit/app-storage':
+        specifier: workspace:*
+        version: link:../../packages/app-storage
+      effect:
+        specifier: 4.0.0-rc.117
+        version: 4.0.0-rc.117
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.5
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: '@voidzero-dev/vite-plus-core@1.0.0-rc.1(@types/node@26.6.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@7.0.2)(yaml@2.9.1)'
+      workerd:
+        specifier: 1.20260921.1
+        version: 1.20260921.1
+      wrangler:
+        specifier: 4.137.0
+        version: 4.137.0(@types/node@26.6.2)
+
   apps/assets:
     dependencies:
       '@tailorkit/asset-delivery':

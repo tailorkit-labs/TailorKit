@@ -15,10 +15,14 @@ export interface StorageTrust {
   issuer: string;
   audience: string;
   appId?: string;
+  projectId?: string;
+  requireDeployment?: boolean;
   /** Trusted host public keys, provisioned by the operator; never read from JWT headers. */
   publicKeys: { keys: (JsonWebKey & { kid: string })[] };
 }
 const access = z.object({
+  projectId: z.string().min(1).max(256).optional(),
+  deploymentId: z.string().min(1).max(256).optional(),
   sub: z.string().min(1).max(256),
   appId: z.string().min(1).max(256),
   installationId: z.string().min(1).max(256),
@@ -36,6 +40,8 @@ export async function issueStorageToken(
   }
   const now = Math.floor(Date.now() / 1000);
   access.parse({
+    projectId: identity.projectId,
+    deploymentId: identity.deploymentId,
     sub: identity.userId,
     appId: identity.appId,
     installationId: identity.installationId,
@@ -47,6 +53,8 @@ export async function issueStorageToken(
       ? await importJWK({ ...options.privateKey, alg: "ES256" }, "ES256")
       : options.privateKey;
   const token = await new SignJWT({
+    projectId: identity.projectId,
+    deploymentId: identity.deploymentId,
     appId: identity.appId,
     installationId: identity.installationId,
     purpose,
@@ -89,12 +97,16 @@ export function storageTokenVerifier(
       if (
         (payload.purpose ?? "calls") !== purpose ||
         (trust.appId !== undefined && claims.appId !== trust.appId) ||
+        (trust.projectId !== undefined && claims.projectId !== trust.projectId) ||
+        (trust.requireDeployment && (!claims.projectId || !claims.deploymentId)) ||
         claims.exp - claims.iat > 300 ||
         claims.iat > Math.floor(Date.now() / 1000)
       ) {
         throw new Error("Invalid storage access");
       }
       return Object.freeze({
+        ...(claims.projectId ? { projectId: claims.projectId } : {}),
+        ...(claims.deploymentId ? { deploymentId: claims.deploymentId } : {}),
         userId: claims.sub,
         appId: claims.appId,
         installationId: claims.installationId,

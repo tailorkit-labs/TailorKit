@@ -1,0 +1,8 @@
+PLATFORM_URL=https://your-development-platform.example/api/platform
+PLATFORM_TOKEN=development-project-host-token
+STORAGE_SCOPE={"name":"environment","value":{"environment":"development"}}
+STORAGE_PROJECT_ID=canonical-project-id
+STORAGE_ISSUER=https://your-host.example
+STORAGE_AUDIENCE=tailorkit-apps-runtime
+STORAGE_PUBLIC_KEYS={"keys":[{"kty":"EC","crv":"P-256","kid":"host-key","x":"public-key-x","y":"public-key-y"}]}
+STORAGE_ORIGINS=["http://localhost:5011"]

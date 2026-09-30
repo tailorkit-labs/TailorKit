@@ -209,6 +209,16 @@ describe("platform deployment uploads", () => {
       },
       { context },
     );
+    const runtime = await call(deploymentRouter.runtime, lookup, { context });
+    expect(runtime.body).toEqual({
+      projectId: context.project.id,
+      appId: currentApp.id,
+      deploymentId: created.body.deployment.id,
+      objectKey: created.body.server?.file.objectKey,
+      checksum: logoChecksum,
+      contentLength: 11,
+    });
+    expect(context.storage.createDownloadUrl).not.toHaveBeenCalled();
     const resolved = await call(deploymentRouter.server, lookup, { context });
     expect(resolved.body).toEqual({
       url: "https://private.example/server",

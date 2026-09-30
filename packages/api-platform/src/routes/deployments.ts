@@ -620,10 +620,50 @@ const getServerBundle = protectedRouter
     };
   });
 
+// Trusted runtime metadata: return the authorized private R2 key without minting a download URL.
+const getRuntimeBundle = protectedRouter
+  .meta(openapi({ path: "/apps/{appId}/runtime", method: "POST" }))
+  .input(
+    z.object({ params: z.object({ appId: z.string() }), body: z.object({ scope: scopeSchema }) }),
+  )
+  .output(
+    z.object({
+      body: z.object({
+        projectId: z.string(),
+        appId: z.string(),
+        deploymentId: z.string(),
+        objectKey: z.string(),
+        checksum: z.string(),
+        contentLength: z.number(),
+      }),
+    }),
+  )
+  .use(requireApp.adaptInput(({ params, body }) => ({ appId: params.appId, scope: body.scope })))
+  .handler(async ({ context }) => {
+    const deployment = context.app.currentDeployment;
+    if (!deployment) throw new ORPCError("NOT_FOUND");
+    const key = `teams/${context.organization.publicId}/projects/${context.project.id}/apps/${context.app.publicId}/deployments/${deployment.publicId}/server/server.js`;
+    const file = await db.query.appDeploymentFile.findFirst({
+      where: { appDeploymentId: deployment.id, objectKey: key, status: "verified" },
+    });
+    if (!file?.checksum) throw new ORPCError("NOT_FOUND");
+    return {
+      body: {
+        projectId: context.project.id,
+        appId: context.app.id,
+        deploymentId: deployment.id,
+        objectKey: file.objectKey,
+        checksum: file.checksum,
+        contentLength: file.contentLength,
+      },
+    };
+  });
+
 export const deploymentRouter = o.router({
   list: listAppDeployments,
   get: getAppDeployment,
   create: createAppDeployment,
   publish: publishAppDeployment,
   server: getServerBundle,
+  runtime: getRuntimeBundle,
 });

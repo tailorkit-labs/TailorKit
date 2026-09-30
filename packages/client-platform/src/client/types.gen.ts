@@ -764,6 +764,39 @@ export type DeploymentsServerResponses = {
 export type DeploymentsServerResponse =
   DeploymentsServerResponses[keyof DeploymentsServerResponses];
 
+export type DeploymentsRuntimeData = {
+  body: {
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
+  };
+  path: {
+    appId: string;
+  };
+  query?: never;
+  url: "/apps/{appId}/runtime";
+};
+
+export type DeploymentsRuntimeResponses = {
+  /**
+   * OK
+   */
+  200: {
+    projectId: string;
+    appId: string;
+    deploymentId: string;
+    objectKey: string;
+    checksum: string;
+    contentLength: number;
+  };
+};
+
+export type DeploymentsRuntimeResponse =
+  DeploymentsRuntimeResponses[keyof DeploymentsRuntimeResponses];
+
 export type PreviewStartData = {
   body: {
     appId: string;

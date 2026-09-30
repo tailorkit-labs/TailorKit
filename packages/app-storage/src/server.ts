@@ -6,6 +6,8 @@ export type { Row, StoreSchema, ReadDatabase, WriteDatabase } from "./schema";
 export { StorageError } from "./errors";
 export type { References } from "./reference";
 export interface StorageIdentity {
+  readonly projectId?: string;
+  readonly deploymentId?: string;
   readonly userId: string;
   readonly appId: string;
   readonly installationId: string;

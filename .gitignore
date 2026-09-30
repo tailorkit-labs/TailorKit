@@ -71,3 +71,5 @@ temp
 .tailorkit
 .tailorkit-storage
 examples/apps/persistent-todo/storage/public-keys.json
+
+apps/apps-runtime/src/worker-env.d.ts
