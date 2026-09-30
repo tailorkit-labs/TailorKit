@@ -64,7 +64,7 @@ describe("createIframeUiHost", () => {
     expect(host.iframe.hidden).toBe(true);
     expect(host.iframe.getAttribute("sandbox")).toBe("allow-scripts");
     expect(host.iframe.getAttribute("sandbox")).not.toContain("allow-same-origin");
-    expect(host.iframe.srcdoc).toContain("connect-src 'none'");
+    expect(host.iframe.srcdoc).toContain("connect-src https: wss:;");
     expect(host.iframe.srcdoc).toContain("worker-src 'none'");
     expect(host.iframe.srcdoc).not.toContain("new Worker");
     expect(fetch).toHaveBeenCalledWith(new URL("https://assets.test/app.js"), {

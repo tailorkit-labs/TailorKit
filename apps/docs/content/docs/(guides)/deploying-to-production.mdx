@@ -20,8 +20,11 @@ expects.
 
 The runtime uses a hidden iframe with an opaque origin and executes the client
 directly in that sandboxed document. The iframe allows scripts but not
-same-origin access, and its content security policy blocks direct network
-connections. The host still fetches app code,
+same-origin access. Its content security policy allows direct HTTPS requests
+and secure WebSocket (`wss:`) connections without a host bridge. Services must
+accept the opaque origin (`Origin: null`), including CORS and preflight for
+HTTPS requests. Insecure HTTP and WebSocket connections are blocked. The host
+still fetches app code,
 passes context into the runtime, renders the returned UI, and executes approved
 actions. Those host-controlled edges require the same care as any public API.
 
