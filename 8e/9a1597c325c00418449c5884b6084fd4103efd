@@ -1,0 +1,46 @@
+apps/apps-runtime/src/cloudflare/worker.test.ts
+  s_6ba0854cdb659c::t_e648b7921703c0 2-14,34,146-150,152-154,193,315
+  s_6ba0854cdb659c::t_9c60ee60fa6db8 1,20-26,29,31-33
+  s_6ba0854cdb659c::t_53deafbc148278 15-19,35-38,41-45,47-51,53-54,56-61,63-69,71-94,97-111,114-126,128-139,141,143-145,155-168,170-176,178,180-192,194-208,210-215,217-246,248-253,256-308,310-314
+  s_6ba0854cdb659c::t_24c8e9757089d0 27-28
+  s_6ba0854cdb659c::t_19446dd7f57de1 30,39-40,46,52,55,62,70,95-96,112-113,127,140,142,151,169,177,179,209,216,247,254-255,309
+apps/apps-runtime/src/runtime/runtime.ts
+  s_6ba0854cdb659c::t_a30700d6ae1b60 1-77
+apps/apps-runtime/src/http.test.ts
+  s_6ba0854cdb659c::t_4399fca9ed6883 1-36,38-69,71-101,103-109,111-126,129,131-135
+  s_6ba0854cdb659c::t_1daaf3b7715939 37,70,102,110,127-128,130
+apps/apps-runtime/src/runtime/runtime.test.ts
+  s_6ba0854cdb659c::t_a30700d6ae1b60 1-9,11-93,144
+  s_6ba0854cdb659c::t_89019bfd124a4a 10,94-143
+apps/apps-runtime/src/cloudflare/source.ts
+  s_6ba0854cdb659c::t_a30700d6ae1b60 5,7
+  s_6ba0854cdb659c::t_09abcb8e50e178 1-4,6,8-74
+apps/apps-runtime/scripts/env.mjs
+  s_6ba0854cdb659c::t_09abcb8e50e178 9
+apps/apps-runtime/src/index.ts
+  s_6ba0854cdb659c::t_a30700d6ae1b60 1
+apps/apps-runtime/src/cloudflare/worker.ts
+  s_6ba0854cdb659c::t_a30700d6ae1b60 1-152
+apps/apps-runtime/README.md
+  s_6ba0854cdb659c::t_ce1f62d4dbc912 11-13,17-25,36,38-42,49-51
+apps/apps-runtime/src/cloudflare/source.test.ts
+  s_6ba0854cdb659c::t_b3e8e471087d62 17,24,39,41,57
+apps/apps-runtime/src/http.ts
+  s_6ba0854cdb659c::t_799ad1b3fe0718 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8e9a1597c325c00418449c5884b6084fd4103efd",
+  "prompts": {},
+  "sessions": {
+    "s_6ba0854cdb659c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f111-6fe2-7f91-ab5f-14a741f20094",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
