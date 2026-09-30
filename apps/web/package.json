@@ -23,7 +23,7 @@
   "dependencies": {
     "@base-ui/react": "^1.8.0",
     "@better-auth/infra": "^0.4.11",
-    "@better-auth/passkey": "1.7.5",
+    "@better-auth/passkey": "1.7.6",
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
@@ -52,6 +52,7 @@
     "@tanstack/react-table": "^9.2.4",
     "@vercel/functions": "^3.9.9",
     "better-auth": "catalog:",
+    "botid": "1.5.11",
     "crossws": "0.4.12",
     "drizzle-orm": "catalog:",
     "lucide-react": "catalog:",

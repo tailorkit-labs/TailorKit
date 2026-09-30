@@ -22,6 +22,8 @@ import { apiKey } from "@better-auth/api-key";
 import { dash } from "@better-auth/infra";
 import { passkey } from "@better-auth/passkey";
 import { initializePublicTeamId, publicTeamIdField } from "./lib/public-team-id";
+import { authCaptcha } from "./lib/captcha";
+import { authBasePath } from "./lib/captcha-endpoints";
 
 void initializeObservability("tailorkit-web");
 
@@ -143,6 +145,7 @@ function buildAuth() {
       },
     },
     baseURL: getBaseUrl(env),
+    basePath: authBasePath,
     database: drizzleAdapter(db, {
       provider: "pg",
       schema,
@@ -173,6 +176,7 @@ function buildAuth() {
     },
     socialProviders,
     plugins: [
+      authCaptcha,
       haveIBeenPwned(),
       passkey({
         rpName: "TailorKit",
