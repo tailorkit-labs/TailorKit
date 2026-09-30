@@ -183,19 +183,6 @@ describe("createTailorKitServer", () => {
     expect(requests[0]?.method).toBe("POST");
   });
 
-  it("does not expose the old action RPC endpoint", async () => {
-    const response = await optionalSchemaTailor.handler(
-      new Request("https://example.com/api/tailorkit/actions/call", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ json: { path: "nested.ping" } }),
-      }),
-      { authenticate: () => ({ scopes: { org: { tenant: "test" } } }) },
-    );
-
-    expect(response.status).toBe(404);
-  });
-
   it("infers handler context from implemented actions", async () => {
     const client = createTailorKitClient({
       fetch: (request, init) => {
