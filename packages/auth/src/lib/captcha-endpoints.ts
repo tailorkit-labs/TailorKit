@@ -1,5 +1,3 @@
-export const authBasePath = "/api/auth";
-
 // Include email OTP because TailorKit uses it for verification and recovery.
 export const captchaEndpoints = [
   "/sign-up/email",
@@ -16,6 +14,7 @@ export const captchaEndpoints = [
 ];
 
 export const captchaProtectedRoutes = captchaEndpoints.map((endpoint) => ({
-  path: `${authBasePath}${endpoint}`,
+  // BotID needs the full request path, including Better Auth's default base path.
+  path: `/api/auth${endpoint}`,
   method: "POST" as const,
 }));

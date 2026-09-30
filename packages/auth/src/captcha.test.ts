@@ -3,13 +3,12 @@ import { betterAuth } from "better-auth/minimal";
 import { checkBotId } from "botid/server";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { authCaptcha } from "./lib/captcha";
-import { authBasePath, captchaProtectedRoutes } from "./lib/captcha-endpoints";
+import { captchaProtectedRoutes } from "./lib/captcha-endpoints";
 
 vi.mock("botid/server", () => ({ checkBotId: vi.fn() }));
 
 const options: BetterAuthOptions = {
   baseURL: "https://tailorkit.dev",
-  basePath: authBasePath,
   secret: "test-secret-with-at-least-32-characters",
   logger: { disabled: true },
   plugins: [authCaptcha],
@@ -80,7 +79,7 @@ describe("auth captcha", () => {
     "does not challenge %s",
     async (path) => {
       const result = await authCaptcha.onRequest(
-        new Request(`https://tailorkit.dev${authBasePath}${path}`),
+        new Request(`https://tailorkit.dev/api/auth${path}`),
         await auth.$context,
       );
 

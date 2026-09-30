@@ -3,7 +3,7 @@ import { emailOTPClient, organizationClient, twoFactorClient } from "better-auth
 import { ac, roles } from "@tailorkit/auth/lib/permissions";
 import { dashClient } from "@better-auth/infra/client";
 import { passkeyClient } from "@better-auth/passkey/client";
-import { authBasePath, captchaProtectedRoutes } from "@tailorkit/auth/lib/captcha-endpoints";
+import { captchaProtectedRoutes } from "@tailorkit/auth/lib/captcha-endpoints";
 import { initBotId } from "botid/client/core";
 import { deploymentHeaders } from "./deployment-headers";
 
@@ -14,7 +14,6 @@ if (typeof window !== "undefined" && import.meta.env.PROD) {
 }
 
 export const authClient = createAuthClient({
-  basePath: authBasePath,
   fetchOptions: { headers: typeof window === "undefined" ? {} : deploymentHeaders },
   plugins: [
     dashClient(),
