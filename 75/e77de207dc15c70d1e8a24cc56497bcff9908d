@@ -1,0 +1,116 @@
+apps/apps-runtime/package.json
+  s_6ba0854cdb659c::t_58187f34d80fdc 11
+  s_6ba0854cdb659c::t_02528edda1722e 13
+  s_6ba0854cdb659c::t_1981c105ccf371 1-10,12,15-24,27-28
+  s_6ba0854cdb659c::t_689b0c0c5f5a87 14
+  s_6ba0854cdb659c::t_1018591986518c 25-26
+packages/client-platform/src/client/index.ts
+  s_6ba0854cdb659c::t_1fd4792d3b5e39 19,75-77
+apps/apps-runtime/scripts/reset.mjs
+  s_6ba0854cdb659c::t_1981c105ccf371 1-2
+apps/apps-runtime/scripts/verify.mjs
+  s_6ba0854cdb659c::t_689b0c0c5f5a87 1-5,7-14,18,32-34,40,53-84,93,117,258,260,270-271,274-282,286,289,292-296,311,316-317
+  s_6ba0854cdb659c::t_02528edda1722e 220-221
+  s_6ba0854cdb659c::t_6d636a5084d77e 228-234
+  s_6ba0854cdb659c::t_ddfc185e82f870 261-263
+  s_6ba0854cdb659c::t_ec65d8cf7a3ff4 15-17,19-31,35-39,41-52,85-92,94-116,120-127,133-157,159-194,204-219,222-226,235-257,264-269,272-273,283-285,287-288,290-291,297-310,312-315,319-325
+  s_6ba0854cdb659c::t_ad6732159a1201 259
+  s_6ba0854cdb659c::t_fbb6901c3baceb 128-132,197-202
+  s_6ba0854cdb659c::t_410db00dc2b41f 6,118-119,158,195-196,203,227,318
+packages/client-platform/src/client/sdk.gen.ts
+  s_6ba0854cdb659c::t_1fd4792d3b5e39 42-43,265-272
+  s_6ba0854cdb659c::t_8f13dc79b6df72 273-276
+packages/api-platform/src/routes/deployments.test.ts
+  s_6ba0854cdb659c::t_ec65d8cf7a3ff4 213-220
+  s_6ba0854cdb659c::t_c5c2290c745b04 212,221
+apps/apps-runtime/README.md
+  s_6ba0854cdb659c::t_1cf064d2d77990 30
+  s_6ba0854cdb659c::t_02528edda1722e 1-29,31-49
+apps/apps-runtime/LICENSE.md
+  s_6ba0854cdb659c::t_1981c105ccf371 1-87
+apps/apps-runtime/src/index.ts
+  s_6ba0854cdb659c::t_a36455bd7708a8 1-8,17-20,26-40,46,91,101-108,117-120,123-125,134,138-142
+  s_6ba0854cdb659c::t_ec65d8cf7a3ff4 9-16,21-25,41-45,47-88,90,92-100,109-116,121-122,126-133,135-137
+  s_6ba0854cdb659c::t_7bf86b628d593a 89
+apps/apps-runtime/src/env.ts
+  s_6ba0854cdb659c::t_7b1a2c83bc68a2 1-14
+apps/apps-runtime/src/http.ts
+  s_6ba0854cdb659c::t_ec65d8cf7a3ff4 2-5
+  s_6ba0854cdb659c::t_a36455bd7708a8 1,6-98
+packages/app-storage/src/auth.test.ts
+  s_6ba0854cdb659c::t_ec65d8cf7a3ff4 93-107
+  s_6ba0854cdb659c::t_c5af4a86ddba43 91-92,108
+apps/apps-runtime/scripts/seed.mjs
+  s_6ba0854cdb659c::t_02528edda1722e 1-5,7-15,17-29
+  s_6ba0854cdb659c::t_1cf064d2d77990 6,16
+apps/apps-runtime/tsconfig.json
+  s_6ba0854cdb659c::t_1981c105ccf371 1-13
+apps/apps-runtime/src/source.ts
+  s_6ba0854cdb659c::t_a36455bd7708a8 1-8,23,29,73-74
+  s_6ba0854cdb659c::t_fbb6901c3baceb 25-27
+  s_6ba0854cdb659c::t_729ee13c7fceae 56,71
+  s_6ba0854cdb659c::t_ec65d8cf7a3ff4 9-22,24,28,30-55,57-70,72
+packages/app-storage/src/auth.ts
+  s_6ba0854cdb659c::t_1981c105ccf371 18-19,24-25,43-44,56-57,100-101,108-109
+packages/client-platform/src/client/types.gen.ts
+  s_6ba0854cdb659c::t_1fd4792d3b5e39 767-799
+apps/apps-runtime/src/runtime.test.ts
+  s_6ba0854cdb659c::t_ec65d8cf7a3ff4 4-87
+  s_6ba0854cdb659c::t_172c0c56c36c4a 1-3,88
+apps/apps-runtime/wrangler.jsonc
+  s_6ba0854cdb659c::t_ec65d8cf7a3ff4 20,22
+  s_6ba0854cdb659c::t_1981c105ccf371 1-4,6-8,10-19,21,23
+  s_6ba0854cdb659c::t_e8dfc041205821 5
+  s_6ba0854cdb659c::t_5d06546cb3e8d5 9
+packages/api-platform/src/routes/deployments.ts
+  s_6ba0854cdb659c::t_ec65d8cf7a3ff4 630-639,650-659
+  s_6ba0854cdb659c::t_1981c105ccf371 624-629,640-649,660-661,668
+  s_6ba0854cdb659c::t_214ef623b2ded6 623
+packages/core/src/server/storage.ts
+  s_6ba0854cdb659c::t_ec65d8cf7a3ff4 23
+  s_6ba0854cdb659c::t_1981c105ccf371 5-14
+apps/apps-runtime/.dev.vars.example
+  s_6ba0854cdb659c::t_02528edda1722e 1-8
+apps/apps-runtime/scripts/env.mjs
+  s_6ba0854cdb659c::t_1981c105ccf371 1-11
+packages/app-storage/src/server.ts
+  s_6ba0854cdb659c::t_1981c105ccf371 9-10
+apps/apps-runtime/src/source.test.ts
+  s_6ba0854cdb659c::t_6d636a5084d77e 10-14
+  s_6ba0854cdb659c::t_fbb6901c3baceb 1-9,15-66
+apps/apps-runtime/src/runtime.ts
+  s_6ba0854cdb659c::t_a36455bd7708a8 1-17,35-53,57-73
+  s_6ba0854cdb659c::t_ec65d8cf7a3ff4 18-34,54-56
+.gitignore
+  s_6ba0854cdb659c::t_344d43e7bcfb30 74-75
+packages/api-platform/openapi.json
+  s_6ba0854cdb659c::t_59d3167013287a 3062-3152
+pnpm-lock.yaml
+  s_6ba0854cdb659c::t_cafeff4c75f0c6 339-366
+apps/apps-cloud/README.md
+  s_88462a8a39d5a6::t_92e18d008891ad 3,5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "75e77de207dc15c70d1e8a24cc56497bcff9908d",
+  "prompts": {},
+  "sessions": {
+    "s_6ba0854cdb659c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f111-6fe2-7f91-ab5f-14a741f20094",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_88462a8a39d5a6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f497-1cfd-7073-8af5-73b9c06ac3f6",
+        "model": "unknown"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
