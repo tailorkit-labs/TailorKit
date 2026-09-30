@@ -75,6 +75,7 @@ async function start() {
           [
             storageTool("wrangler"),
             "dev",
+            path.resolve(root, "../../../apps/app-storage-cloud/src/index.ts"),
             "--local",
             "--config",
             path.join(root, ".tailorkit-storage/wrangler.json"),

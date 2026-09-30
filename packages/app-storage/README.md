@@ -106,7 +106,7 @@ Tests replace services using `Layer.succeed` or `Effect.provideService`. Apps an
 
 ## Runtime apps and limits
 
-`apps/storage-cloudflare` packages the trusted Cloudflare supervisor. `apps/storage-docker` runs the same supervisor/facet bundles under standalone workerd with persistent disk SQLite. The builder produces distinct client, facet, supervisor and Docker artifacts. Existing client-only apps require no storage configuration.
+`apps/app-storage-cloud` is the trusted Cloudflare supervisor’s Wrangler project, with a normal Worker entry point and Wrangler bundling. `packages/app-storage-selfhost` runs the same supervisor/facet bundles under standalone workerd with persistent disk SQLite. The builder produces distinct client, facet, supervisor and Docker artifacts. Existing client-only apps require no storage configuration.
 
 Docker is a single runtime instance with one persistent data volume. It does not implement clustering or Cloudflare's managed durability, and standalone workerd's local disk backend is experimental. Back up its volume and put a TLS reverse proxy in front for remote access. Do not run multiple processes against the same SQLite data directory.
 

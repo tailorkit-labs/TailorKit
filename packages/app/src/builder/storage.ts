@@ -162,6 +162,8 @@ export async function buildStorage(loaded: LoadedTailorKitConfig, watch = false)
         {
           name: config.workerName,
           main: "runtime/worker.js",
+          // Wrangler resolves aliases from its project root, even with --config elsewhere.
+          alias: { "app-storage-artifact": path.join(paths.directory, "artifact.json") },
           compatibility_date: "2026-08-27",
           workers_dev: false,
           preview_urls: false,

@@ -34,7 +34,7 @@ Open <http://localhost:5011>. The example host authorizes its fixed local user a
 Build the shared self-hosted image once:
 
 ```sh
-docker build -t tailorkit-storage:local apps/storage-docker
+docker build -t tailorkit-storage:local packages/app-storage-selfhost
 pnpm --filter persistent-todo storage:docker
 ```
 
@@ -44,7 +44,7 @@ For a persistent service managed by Compose:
 
 ```sh
 TAILORKIT_STORAGE_ARTIFACT="$PWD/examples/apps/persistent-todo/.tailorkit-storage/docker" \
-  docker compose -f apps/storage-docker/compose.yaml up --build -d
+  docker compose -f packages/app-storage-selfhost/compose.yaml up --build -d
 ```
 
 Compose uses its own named data volume. Preserve that volume across container updates; `storage:reset` does not delete it. The service binds to loopback. Add a TLS reverse proxy and configure trusted issuer/keys/origins for external use. See [runtime details and limits](../../../packages/app-storage/README.md).

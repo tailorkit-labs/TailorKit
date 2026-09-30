@@ -1,3 +1,5 @@
+# Preserve the existing Compose project and its named data volume after moving directories.
+name: storage-docker
 services:
   storage:
     build: .

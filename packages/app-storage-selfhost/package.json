@@ -1,5 +1,5 @@
 {
-  "name": "@tailorkit/storage-docker",
+  "name": "@tailorkit/app-storage-selfhost",
   "private": true,
   "license": "BUSL-1.1",
   "type": "module",
