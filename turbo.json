@@ -41,6 +41,9 @@
     "generate": {
       "cache": false
     },
+    "env:pull": {
+      "cache": false
+    },
     "//#quality": {
       "dependsOn": ["//#lint", "//#format"]
     },

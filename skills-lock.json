@@ -21,6 +21,12 @@
       "sourceType": "github",
       "computedHash": "44c9d1c501a8f76c5332740795a2fa0f07dc814cd1a2c4a6103a971eb982db79"
     },
+    "mastra": {
+      "source": "mastra-ai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/mastra/SKILL.md",
+      "computedHash": "73f845aa59d106d408dfaae1089184fe364acda60fa09683480fdc090417712f"
+    },
     "react-email": {
       "source": "resend/react-email",
       "sourceType": "github",
