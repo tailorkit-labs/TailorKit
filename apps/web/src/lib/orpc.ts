@@ -27,7 +27,7 @@ const getORPCClient = createIsomorphicFn()
   )
   .client((): RouterClient<typeof appRouter> => {
     const link = new RPCLink({
-      url: `${window.location.origin}/api/rpc`,
+      url: "/api/rpc",
       headers: deploymentHeaders,
     });
 

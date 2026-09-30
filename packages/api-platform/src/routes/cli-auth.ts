@@ -1,3 +1,4 @@
+import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { hashSecret } from "@tailorkit/api-utils/hashing";
 import { db } from "@tailorkit/db";
@@ -53,10 +54,12 @@ function normalizeUserCode(userCode: string): string {
 }
 
 const startCliAuth = protectedRouter
-  .route({
-    path: "/start",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/start",
+      method: "POST",
+    }),
+  )
   .input(z.object({ body: z.object({}) }))
   .output(
     z.object({
@@ -89,10 +92,12 @@ const startCliAuth = protectedRouter
   });
 
 const approveCliAuth = protectedRouter
-  .route({
-    path: "/approve",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/approve",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
       body: z.object({
@@ -129,10 +134,12 @@ const approveCliAuth = protectedRouter
   });
 
 const denyCliAuth = protectedRouter
-  .route({
-    path: "/deny",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/deny",
+      method: "POST",
+    }),
+  )
   .input(z.object({ body: z.object({ userCode: z.string().min(1) }) }))
   .output(z.object({ body: z.object({ id: z.string() }) }))
   .handler(async ({ context, input }) => {
@@ -157,10 +164,12 @@ const denyCliAuth = protectedRouter
   });
 
 const pollCliAuth = protectedRouter
-  .route({
-    path: "/poll",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/poll",
+      method: "POST",
+    }),
+  )
   .input(z.object({ body: z.object({ deviceCode: z.string().min(1) }) }))
   .output(
     z.object({
@@ -288,10 +297,12 @@ const pollCliAuth = protectedRouter
   });
 
 const verifyCliAuthToken = protectedRouter
-  .route({
-    path: "/verify-token",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/verify-token",
+      method: "POST",
+    }),
+  )
   .input(z.object({ body: z.object({ deployToken: z.string().min(1) }) }))
   .output(z.object({ body: z.object({ scope: scopeSchema }) }))
   .handler(async ({ context, input }) => {
@@ -321,7 +332,7 @@ const verifyCliAuthToken = protectedRouter
     return { body: { scope: scope.scope } };
   });
 
-export const cliAuthRouter = o.prefix("/cli-auth").router({
+export const cliAuthRouter = o.meta(openapi({ prefix: "/cli-auth" })).router({
   approve: approveCliAuth,
   deny: denyCliAuth,
   poll: pollCliAuth,

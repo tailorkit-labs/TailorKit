@@ -17,7 +17,7 @@ const validateSchema = async <T>(schema: Schema | undefined, value: unknown): Pr
 };
 
 export const actionRouter = {
-  call: o
+  execute: o
     .use(requireHostAuth)
     .input(z.object({ input: z.unknown().optional(), path: z.string() }))
     .handler(async ({ context, input }) => {

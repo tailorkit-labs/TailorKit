@@ -1,3 +1,4 @@
+import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { db } from "@tailorkit/db";
 import { App, app, AppDeployment } from "@tailorkit/db/schema/apps";
@@ -32,10 +33,12 @@ async function createUniqueAppPublicId(projectId: string) {
 }
 
 const listApps = protectedRouter
-  .route({
-    path: "/list",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/apps/list",
+      method: "POST",
+    }),
+  )
   .input(z.object({ body: paginationQuery.extend({ scopes: scopesSchema }) }))
   .output(paginatedOutput(AppWithCurrentDeployment))
   .handler(async ({ context, input }) => {
@@ -82,10 +85,12 @@ const listApps = protectedRouter
   });
 
 const getApp = protectedRouter
-  .route({
-    path: "/:appId/lookup",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/apps/{appId}/lookup",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
       params: z.object({ appId: z.string() }),
@@ -93,16 +98,20 @@ const getApp = protectedRouter
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))
-  .use(requireAppInScopes, ({ params: { appId }, body: { scopes } }) => ({ appId, scopes }))
+  .use(
+    requireAppInScopes.adaptInput(({ params: { appId }, body: { scopes } }) => ({ appId, scopes })),
+  )
   .handler(({ context }) => ({
     body: withAppAssetUrl(context.app, context.organization.publicId, context.project.id),
   }));
 
 const createApp = protectedRouter
-  .route({
-    path: "/",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/apps",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
       body: App.pick({ name: true, description: true }).extend({ scope: scopeSchema }),
@@ -136,10 +145,12 @@ const createApp = protectedRouter
   });
 
 const deleteApp = protectedRouter
-  .route({
-    path: "/:appId",
-    method: "DELETE",
-  })
+  .meta(
+    openapi({
+      path: "/apps/{appId}",
+      method: "DELETE",
+    }),
+  )
   .input(
     z.object({
       params: z.object({ appId: z.string() }),
@@ -147,7 +158,7 @@ const deleteApp = protectedRouter
     }),
   )
   .output(z.object({ body: z.object({ id: z.uuid({ version: "v7" }) }) }))
-  .use(requireApp, ({ params: { appId }, body: { scope } }) => ({ appId, scope }))
+  .use(requireApp.adaptInput(({ params: { appId }, body: { scope } }) => ({ appId, scope })))
   .handler(async ({ context }) => {
     await db.delete(app).where(eq(app.id, context.app.id));
 
@@ -155,10 +166,12 @@ const deleteApp = protectedRouter
   });
 
 const updateApp = protectedRouter
-  .route({
-    path: "/:appId",
-    method: "PUT",
-  })
+  .meta(
+    openapi({
+      path: "/apps/{appId}",
+      method: "PUT",
+    }),
+  )
   .input(
     z.object({
       body: App.pick({ name: true, description: true }).extend({ scope: scopeSchema }),
@@ -166,7 +179,7 @@ const updateApp = protectedRouter
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))
-  .use(requireApp, ({ params: { appId }, body: { scope } }) => ({ appId, scope }))
+  .use(requireApp.adaptInput(({ params: { appId }, body: { scope } }) => ({ appId, scope })))
   .handler(async ({ context, input }) => {
     const [updatedApp] = await db
       .update(app)
@@ -191,10 +204,12 @@ const updateApp = protectedRouter
   });
 
 const deploy = protectedRouter
-  .route({
-    path: "/:appId/deploy",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/apps/{appId}/deploy",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
       body: z.object({ deploymentId: z.string(), scope: scopeSchema }),
@@ -202,7 +217,7 @@ const deploy = protectedRouter
     }),
   )
   .output(z.object({ body: AppWithCurrentDeployment }))
-  .use(requireApp, ({ params: { appId }, body: { scope } }) => ({ appId, scope }))
+  .use(requireApp.adaptInput(({ params: { appId }, body: { scope } }) => ({ appId, scope })))
   .handler(async ({ context, input }) => {
     const deploymentByPublicId = await db.query.appDeployment.findFirst({
       where: {
@@ -244,7 +259,7 @@ const deploy = protectedRouter
     };
   });
 
-export const appRouter = o.prefix("/apps").router({
+export const appRouter = o.router({
   list: listApps,
   get: getApp,
   create: createApp,

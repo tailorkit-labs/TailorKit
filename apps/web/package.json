@@ -27,7 +27,7 @@
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
-    "@orpc/tanstack-query": "^1.15.4",
+    "@orpc/tanstack-query": "catalog:",
     "@tailorkit/api": "workspace:*",
     "@tailorkit/api-platform": "workspace:*",
     "@tailorkit/api-utils": "workspace:*",

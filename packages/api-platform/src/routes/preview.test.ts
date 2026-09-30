@@ -1,5 +1,7 @@
 /* oxlint-disable require-await, typescript/no-non-null-assertion -- the in-memory KV fake implements Promise methods. */
 import { call } from "@orpc/server";
+import { OpenAPIHandler } from "@orpc/openapi/fetch";
+import { RateLimitHandlerPlugin } from "@tailorkit/api-utils/rate-limiting";
 import { app as appTable } from "@tailorkit/db/schema/apps";
 import { organization } from "@tailorkit/db/schema/auth";
 import { cliToken } from "@tailorkit/db/schema/cli-auth";
@@ -169,6 +171,31 @@ describe("platform preview lifecycle and grants", () => {
       { body: { appId: "authapp00001", deployToken: "deploy-token" } },
       { context },
     );
+
+  it("serves prefixed GET routes with validated path parameters", async () => {
+    const started = await start();
+    const handler = new OpenAPIHandler(
+      { preview: previewRouter },
+      { plugins: [new RateLimitHandlerPlugin()] },
+    );
+    const handle = (shareId: string) =>
+      handler.handle(new Request(`https://example.com/api/platform/preview/shares/${shareId}`), {
+        prefix: "/api/platform",
+        context,
+      });
+
+    const invitation = await handle(started.body.shareId);
+    expect(invitation.matched).toBe(true);
+    expect(invitation.response?.status).toBe(200);
+    await expect(invitation.response?.json()).resolves.toMatchObject({
+      appName: "Author app",
+      sessionId: started.body.sessionId,
+    });
+
+    const invalid = await handle("invalid-share-id");
+    expect(invalid.matched).toBe(true);
+    expect(invalid.response?.status).toBe(400);
+  });
 
   it("enforces author scope, active uniqueness, expiry retirement, and CLI revocation", async () => {
     await expect(

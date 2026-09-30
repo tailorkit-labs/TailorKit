@@ -38,10 +38,11 @@
   },
   "scripts": {
     "build": "vp pack src/rate-limiting.ts src/hashing.ts src/dev-delay.ts src/app-asset-url.ts --format esm --dts --clean",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vp test run"
   },
   "dependencies": {
-    "@orpc/experimental-ratelimit": "^1.15.4",
+    "@orpc/ratelimit": "catalog:",
     "@orpc/server": "catalog:",
     "@tailorkit/env": "workspace:*",
     "@tailorkit/kv": "workspace:*",

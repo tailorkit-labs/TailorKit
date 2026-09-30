@@ -85,4 +85,5 @@ export type {
   PreviewStopData,
   PreviewStopResponse,
   PreviewStopResponses,
+  Schema0,
 } from "./types.gen.js";
