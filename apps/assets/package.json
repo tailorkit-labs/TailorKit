@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "wrangler deploy --dry-run --outdir dist",
-    "check-types": "wrangler types && tsc --noEmit",
-    "types": "wrangler types",
+    "check-types": "wrangler types worker-configuration.d.ts && tsc --noEmit",
+    "types": "wrangler types worker-configuration.d.ts",
     "test": "vp test run",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"

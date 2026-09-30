@@ -39,3 +39,7 @@ pnpm --filter persistent-todo storage:verify:isolation
 ```
 
 The Wrangler transport check covers CLI migration authorization, required migrations, migration replay, separate installation data, two-client updates, mutation deduplication, wrong JWT issuer/audience, API mismatch, token renewal, persisted data and reconnect after runtime restart. The isolation check uses Wrangler with disposable state and runs adversarial code to check blocked egress, empty bindings, stripped JWTs, verified identities, isolated globals/storage, build-time isolation and persistent data after a code update.
+
+## Uploading
+
+`tailorkit deploy` uploads client code and a separate, migration-free server bundle through the normal TailorKit deployment flow. A production `apps-cloud` gateway fetches published server code privately at runtime. App developers need TailorKit credentials only. Remote schema initialization/migrations are deferred; the local example remains the full persistence/realtime demonstration.

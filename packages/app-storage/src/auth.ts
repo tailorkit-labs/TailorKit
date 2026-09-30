@@ -14,7 +14,7 @@ export interface StorageSigningOptions {
 export interface StorageTrust {
   issuer: string;
   audience: string;
-  appId: string;
+  appId?: string;
   /** Trusted host public keys, provisioned by the operator; never read from JWT headers. */
   publicKeys: { keys: (JsonWebKey & { kid: string })[] };
 }
@@ -88,7 +88,7 @@ export function storageTokenVerifier(
       const claims = access.parse(payload);
       if (
         (payload.purpose ?? "calls") !== purpose ||
-        claims.appId !== trust.appId ||
+        (trust.appId !== undefined && claims.appId !== trust.appId) ||
         claims.exp - claims.iat > 300 ||
         claims.iat > Math.floor(Date.now() / 1000)
       ) {

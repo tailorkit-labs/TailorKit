@@ -81,10 +81,7 @@ export async function inspectStorage(loaded: StorageProject): Promise<StoreDefin
   return inspectIsolated(path.join(paths.definition, "facet.js"));
 }
 export async function buildStorage(loaded: StorageProject, watch = false) {
-  if (!loaded.appId) {
-    throw new Error("Storage apps require a stable appId");
-  }
-  const appId = loaded.appId;
+  const appId = loaded.appId ?? "";
   const { config, paths, entry } = await prepareFacet(loaded);
   const migrationsDirectory = path.resolve(loaded.root, config.migrations);
   let resolveInitial: (() => void) | undefined;
@@ -103,6 +100,35 @@ export async function buildStorage(loaded: StorageProject, watch = false) {
     await writeReferences(references, path.resolve(loaded.root, config.entry), store);
     const code = await readFile(codeFile, "utf-8");
     const migrations = await readMigrations(migrationsDirectory);
+    // The uploaded bundle contains app code only. Migration histories remain local.
+    const serverEntry = path.join(paths.directory, "server-entry.ts");
+    await writeChanged(
+      serverEntry,
+      `import store from ${JSON.stringify(path.resolve(loaded.root, config.entry))};
+import { createStorageFacet } from ${JSON.stringify(fileURLToPath(new URL("./facet.ts", import.meta.url)))};
+export class AppFacet extends createStorageFacet(store, []) {};
+`,
+    );
+    await viteBuild({
+      configFile: false,
+      root: loaded.root,
+      build: {
+        ssr: serverEntry,
+        outDir: path.join(paths.directory, "server-build"),
+        emptyOutDir: true,
+        target: "esnext",
+        minify: false,
+        rollupOptions: {
+          external: ["cloudflare:workers"],
+          output: { entryFileNames: "server.js" },
+        },
+      },
+      ssr: { target: "webworker", noExternal: true },
+    });
+    await writeChanged(
+      path.join(paths.directory, "server.js"),
+      await readFile(path.join(paths.directory, "server-build", "server.js"), "utf-8"),
+    );
     const artifact = {
       code,
       codeHash: createHash("sha256").update(code).digest("hex"),
@@ -140,7 +166,7 @@ export async function buildStorage(loaded: StorageProject, watch = false) {
       JSON.stringify(
         {
           name: config.namespace,
-          main: fileURLToPath(new URL("./index.ts", import.meta.url)),
+          main: fileURLToPath(new URL("./dev.ts", import.meta.url)),
           // Wrangler resolves aliases from its project root, even with --config elsewhere.
           alias: { "app-storage-artifact": path.join(paths.directory, "artifact.json") },
           compatibility_date: "2026-08-27",

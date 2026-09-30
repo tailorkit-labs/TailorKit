@@ -2,6 +2,7 @@
 /* eslint-disable unicorn/no-await-expression-member, no-restricted-properties */
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
@@ -58,9 +59,10 @@ export class AppFacet extends DurableObject {
   };
   await writeFile(
     path.join(temporary, "entry.ts"),
-    `import { createStorageDurableObject, createStorageWorker } from ${JSON.stringify(packageEntry)};
+    `import { Effect } from ${JSON.stringify(createRequire(path.resolve(root, "../../../apps/apps-cloud/package.json")).resolve("effect"))};
+import { createStorageDurableObject, createStorageWorker } from ${JSON.stringify(packageEntry)};
 const artifact = ${JSON.stringify(artifact)};
-export class AppStorage extends createStorageDurableObject(artifact) {}
+export class AppStorage extends createStorageDurableObject(() => ({ get: () => Effect.succeed(artifact) }), true) {}
 export default createStorageWorker(artifact);`,
   );
   await build({

@@ -5,18 +5,17 @@
   "compatibility_date": "2026-08-27",
   "workers_dev": false,
   "preview_urls": false,
-  // Point this at an app's generated .tailorkit-storage/artifact.json.
-  "alias": {
-    "app-storage-artifact": "./src/artifact.json",
-  },
   "worker_loaders": [{ "binding": "LOADER" }],
   "durable_objects": {
     "bindings": [{ "name": "STORES", "class_name": "AppStorage" }],
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["AppStorage"] }],
-  // Copy the trusted host configuration from the app's generated wrangler.json.
+  // Configure trusted host keys and a platform project token (use Wrangler secrets in production).
+  "secrets": { "required": ["PLATFORM_TOKEN"] },
   "vars": {
     "STORAGE_APP_ID": "",
+    "PLATFORM_URL": "",
+    "STORAGE_SCOPE": "",
     "STORAGE_ISSUER": "",
     "STORAGE_AUDIENCE": "",
     "STORAGE_PUBLIC_KEYS": "[]",

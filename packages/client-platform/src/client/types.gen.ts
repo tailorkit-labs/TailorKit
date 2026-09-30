@@ -566,6 +566,13 @@ export type DeploymentsCreateData = {
         objectKey: "client.js";
       },
     ];
+    server?: {
+      checksum: string;
+      contentLength: number;
+      contentType: "application/javascript";
+      encoding: "utf-8";
+      objectKey: "server.js";
+    };
     logos?: {
       dark?: {
         checksum: string;
@@ -613,6 +620,24 @@ export type DeploymentsCreateResponses = {
       };
       uploadUrl: string;
     }>;
+    server?: {
+      file: {
+        id: string;
+        appDeploymentId: string;
+        objectKey: string;
+        contentType: "application/javascript" | "image/svg+xml" | "image/png" | "image/webp";
+        encoding: "utf-8" | null;
+        contentLength: number;
+        checksum: string | null;
+        status: "uploading" | "verifying" | "verified" | "failed";
+        createdAt: string;
+        updatedAt: string;
+      };
+      headers?: {
+        [key: string]: string;
+      };
+      uploadUrl: string;
+    };
     deployment: {
       id: string;
       publicId: string;
@@ -708,6 +733,36 @@ export type DeploymentsPublishResponses = {
 
 export type DeploymentsPublishResponse =
   DeploymentsPublishResponses[keyof DeploymentsPublishResponses];
+
+export type DeploymentsServerData = {
+  body: {
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
+  };
+  path: {
+    appId: string;
+  };
+  query?: never;
+  url: "/apps/{appId}/server";
+};
+
+export type DeploymentsServerResponses = {
+  /**
+   * OK
+   */
+  200: {
+    url: string;
+    checksum: string;
+    contentLength: number;
+  };
+};
+
+export type DeploymentsServerResponse =
+  DeploymentsServerResponses[keyof DeploymentsServerResponses];
 
 export type PreviewStartData = {
   body: {

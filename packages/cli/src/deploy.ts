@@ -45,6 +45,7 @@ interface DeploymentLogoUpload {
 
 interface DeploymentCreateResult {
   assets: DeploymentAssetUpload[];
+  server?: DeploymentAssetUpload;
   deployment: {
     id: string;
   };
@@ -345,11 +346,6 @@ const typecheckClientEntry = (
 // eslint-disable-next-line complexity
 export const runDeploy = async (options: DeployOptions): Promise<DeployResult> => {
   const loaded = await loadTailorKitConfig(options.configPath, options.cwd);
-  if (loaded.config.storage && !loaded.config.storage.runtimeUrl) {
-    throw new Error(
-      "Storage apps require storage.runtimeUrl for a separately provisioned storage runtime. Use tailorkit storage dev for local development. No runtime is deployed automatically.",
-    );
-  }
   let appId = loaded.config.appId;
   let createdApp = false;
 
@@ -387,34 +383,13 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
     loaded.root,
     options.outDir ?? loaded.config.build?.outDir ?? ".tailorkit",
   );
-  if (loaded.config.storage?.runtimeUrl) {
-    const remote = await fetch(new URL("/_tailorkit/storage", loaded.config.storage.runtimeUrl), {
-      signal: AbortSignal.timeout(10_000),
-    });
-    const expected = JSON.parse(
-      await readFile(
-        path.join(loaded.root, ".tailorkit-storage", "storage-manifest.json"),
-        "utf-8",
-      ),
-    ) as Record<string, unknown>;
-    const actual = (await remote.json()) as Record<string, unknown>;
-    if (
-      !remote.ok ||
-      actual.protocol !== 1 ||
-      actual.appId !== loaded.config.appId ||
-      actual.apiVersion !== expected.apiVersion ||
-      actual.codeHash !== expected.codeHash ||
-      JSON.stringify(actual.migrations) !== JSON.stringify(expected.migrations)
-    ) {
-      throw new Error(
-        "Storage runtime is incompatible with this build. Provision the matching Worker before uploading the client.",
-      );
-    }
-  }
   const manifest = await readUploadManifest(outDir, tailorkitUploadManifestSchema);
   const clientAssetPath = path.join(outDir, manifest.assets.client);
   const clientAsset = await readFile(clientAssetPath);
   const clientAssetGzip = await gzipAsync(clientAsset);
+  const serverAsset = manifest.assets.server
+    ? await readFile(path.join(loaded.root, ".tailorkit-storage", manifest.assets.server))
+    : undefined;
   const logoEntries = Object.entries(manifest.assets.logos ?? {}) as ["dark" | "light", string][];
   const logoAssets = await Promise.all(
     logoEntries.map(async ([variant, filename]) => {
@@ -481,6 +456,15 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
             objectKey: "client.js" as const,
           },
         ],
+        server: serverAsset
+          ? {
+              checksum: sha256Hex(serverAsset),
+              contentLength: serverAsset.byteLength,
+              contentType: "application/javascript" as const,
+              encoding: "utf-8" as const,
+              objectKey: "server.js" as const,
+            }
+          : undefined,
         logos:
           logoAssets.length > 0
             ? Object.fromEntries(
@@ -512,7 +496,11 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
   if (created.assets.length !== 1 || !created.assets[0]) {
     throw new Error("Deployment did not return an upload URL for the client asset.");
   }
+  if (serverAsset && !created.server) {
+    throw new Error("Deployment did not return an upload URL for the server asset.");
+  }
   await Promise.all([
+    ...(serverAsset && created.server ? [uploadAsset(created.server, serverAsset)] : []),
     uploadAsset(created.assets[0], clientAsset),
     ...logoAssets.map((logo) => {
       const upload = created.logos?.[logo.variant];
@@ -553,6 +541,15 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
         path: manifest.assets.client,
         size: clientAsset.byteLength,
       },
+      ...(serverAsset
+        ? [
+            {
+              gzipSize: (await gzipAsync(serverAsset)).byteLength,
+              path: "server/server.js",
+              size: serverAsset.byteLength,
+            },
+          ]
+        : []),
       ...uploadedLogos,
     ],
   };

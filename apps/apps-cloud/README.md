@@ -1,39 +1,47 @@
 # Cloudflare app storage
 
-This is the Cloudflare runtime and Wrangler project for app storage. It owns the supervisor, isolated Durable Object facets, binding types, Wrangler startup, and isolated build inspection. `wrangler.jsonc` points directly to `src/index.ts`; Wrangler handles bundling and watching without a custom build script or Vite configuration.
+This Wrangler project owns the shared gateway, trusted supervisor and isolated Dynamic Worker facets. `src/index.ts` is the production entry point. It contains no app code or artifact alias; adding an app does not require redeploying this Worker.
 
-The supervisor loads serialized app code into isolated Dynamic Worker facets. Each verified installation has stable SQLite storage. App code receives no namespace, supervisor data, JWT or secrets. Migrations are initiated explicitly by the CLI.
+## Code uploads and loading
+
+`tailorkit deploy` uploads the browser bundle to `deployments/<deployment>/client/client.js` and an optional server bundle to `deployments/<deployment>/server/server.js` in the existing private blob bucket. Both uploads are checksum-verified before publication. The public asset gateways only serve allowed client filenames and logos. They never serve server bundles or generate server download URLs.
+
+The supervisor verifies the host JWT, resolves the authorized app's published server through the authenticated platform API, downloads it using a 60-second private URL and verifies its SHA-256 checksum and size before loading it. The URL and platform credential stay in the supervisor. App code receives no JWT, secrets, namespace, network access or supervisor database. Each installation has a stable facet name and isolated SQLite storage; code updates restart the facet without replacing its database.
+
+Configure the deployed project's bindings:
+
+- `STORAGE_ISSUER`, `STORAGE_AUDIENCE`, `STORAGE_PUBLIC_KEYS`, `STORAGE_ORIGINS`: trusted host configuration.
+- `PLATFORM_URL`: platform API base, for example `https://tailorkit.dev/api/platform`.
+- `PLATFORM_TOKEN`: project-host API key; set using a Wrangler secret. Never give this key to app developers.
+- `STORAGE_SCOPE`: JSON platform scope used by this host installation environment.
+- `STORAGE_APP_ID`: optional additional app restriction. Leave blank to accept apps authorized by this host's signing keys and platform project/scope.
+
+This initial configuration supports multiple apps for one trusted host/project/scope. Mapping several independent hosts/projects to one gateway is future work. Keep Worker/DO namespace identities stable across updates. The underlying bucket must remain private; the asset gateways provide public client access.
+
+## Migrations are deferred remotely
+
+The uploaded `server.js` is built separately with no migration history. No migration SQL, snapshots, hashes or local artifact JSON are uploaded. Remote migration requests are rejected until a migration design is chosen. A new remote installation cannot execute database functions until its schema and runtime journal have been prepared; this change does not invent automatic schema creation. Local generated migrations and CLI commands remain available for development.
 
 ## Local development
 
-Build the SDK and the [persistent todo example](../../examples/apps/persistent-todo/README.md) first. From the repository root, run this project against that app's generated configuration:
+Build the SDK and the [persistent todo example](../../examples/apps/persistent-todo/README.md), then run:
 
 ```sh
-pnpm --filter @tailorkit/apps-cloud dev src/index.ts \
-  --config "$PWD/examples/apps/persistent-todo/.tailorkit-storage/wrangler.json" \
-  --persist-to "$PWD/examples/apps/persistent-todo/.tailorkit-storage/state" \
-  --port 8787
+pnpm --filter persistent-todo storage:dev
 ```
 
-The generated config supplies the app artifact alias, trusted host public keys and stable Worker name. The `src/index.ts` argument selects this project's entry point. Run the example's migrate, seed and host commands in another terminal. Stop any other storage runtime using port 8787 first. For app server/client watching as well, use the example's `storage:dev` command.
+The generated local Wrangler config selects `src/dev.ts`, which loads that app's local artifact for watching and local migrations. This development-only entry is separate from the production entry. Persistent local data stays in `.tailorkit-storage/state`, outside directories cleared by the app builder.
 
-## Project configuration
-
-To configure this project's own `wrangler.jsonc`, point `alias.app-storage-artifact` at an app's generated `.tailorkit-storage/artifact.json`, then copy its Worker name and `vars` from the generated `wrangler.json`. The example selects this adapter with `storage.adapter: "@tailorkit/apps-cloud/tooling"` and a stable `storage.namespace`. Keep the Worker name, DO class/namespace identity and trust settings stable across updates. Renaming this workspace does not require changing those identities.
-
-The checked-in artifact is an unconfigured placeholder. It allows clean repository builds and returns HTTP 503 until an app artifact is selected. It contains no app implementation or signing keys.
-
-Validate the configured project without deploying:
+Validate without deploying:
 
 ```sh
 pnpm --filter @tailorkit/apps-cloud build
 pnpm --filter @tailorkit/apps-cloud check-types
+pnpm --filter @tailorkit/apps-cloud test
 ```
-
-There is no automatic deployment command. See the [storage reference](../../packages/app-storage/README.md) for migration and compatibility requirements.
 
 ## Service boundaries
 
-The SDK owns the provider-neutral schema, database wrappers, query/mutation engine, HTTP/SSE protocol and Effect v4 service contracts. This app supplies Cloudflare Layers for authentication/routing, synchronous facet SQL persistence, separate notification delivery, and build/development tooling. `StorageTools` has three operations: inspect, build and start. The shared builder and CLI load the configured trusted adapter instead of importing Cloudflare APIs. Node 24 handles the adapter's TypeScript source.
+The provider-neutral SDK owns schema/database wrappers, query/mutation execution, the oRPC protocol and Effect v4 services. This app supplies Cloudflare persistence, notification delivery, authentication/routing, private artifact retrieval and build/development tools. The CLI uploads code through TailorKit credentials and never needs access to Cloudflare.
 
-Workerd remains a local development/build dependency: inspection evaluates app metadata in a network-disabled disposable isolate with a hard process timeout. It is not a self-hosted service. No Docker runtime, container configuration or standalone persistent server is included. A future runtime can implement the same services without changing app or browser APIs.
+Workerd is used only for local development and isolated metadata inspection. Self-hosted execution remains deferred.

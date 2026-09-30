@@ -80,7 +80,7 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
     }
     await writeFile(
       path.join(resolvedOutDir, "tailorkit-upload.json"),
-      `${JSON.stringify(createTailorKitUploadManifest(logoManifest), null, 2)}\n`,
+      `${JSON.stringify(createTailorKitUploadManifest(logoManifest, Boolean(loaded.config.storage)), null, 2)}\n`,
       "utf-8",
     );
   };

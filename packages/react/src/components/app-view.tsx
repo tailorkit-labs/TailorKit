@@ -133,7 +133,7 @@ function resolveAppUrl(app: TailorKitApp, baseUrl: URL, assetsBaseUrl: string | 
   }
 
   return new URL(
-    `projects/${app.projectId}/apps/${app.id}/deployments/${app.currentDeployment.id}/files/client.js`,
+    `projects/${app.projectId}/apps/${app.id}/deployments/${app.currentDeployment.id}/client/client.js`,
     toBaseUrl(assetsBaseUrl),
   );
 }

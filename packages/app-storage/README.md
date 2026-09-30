@@ -112,3 +112,9 @@ All Cloudflare-specific code and dependencies live in `apps/apps-cloud`: Worker/
 Self-hosted execution is deferred. Persistence, notification delivery, execution, authentication/routing and build/development tools remain separate service contracts so another runtime can be added without changing app APIs. Workerd is used only by the Cloudflare local development/build tools.
 
 Initial limits: no joins/index definitions, row tracking, optimistic updates, offline sync, receipt pruning or subscription hibernation. Platform provisioning, rate limits/quotas and automatic installation migration orchestration remain future work. CLI preview starts local storage; remotely shared previews still need a reachable runtime and matching trusted host configuration. Nothing is deployed automatically.
+
+### Server uploads
+
+Deployments store browser code under `client/client.js` and optional server code under `server/server.js` in the private platform blob bucket. Public asset routes only read client assets and logos. The Cloudflare supervisor resolves published code through an authenticated platform API and verifies its checksum before loading it; no app artifact is bundled into the production Worker. A private Effect `ArtifactSource` service keeps retrieval replaceable.
+
+Uploaded server bundles exclude all migration histories. Remote migrations are deferred, so remote installation schema initialization remains pending the migration design. Local Wrangler uses a separate development entry and retains existing local migration commands. See [runtime configuration](../../apps/apps-cloud/README.md).

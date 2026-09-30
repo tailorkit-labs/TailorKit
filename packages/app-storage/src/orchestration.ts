@@ -56,3 +56,11 @@ export function dispatch(request: Request, migration: boolean) {
     return yield* routing.forward(request, identity, migration);
   });
 }
+
+/** Trusted provider integration; bundle locations never enter the browser. */
+export class ArtifactSource extends Context.Service<
+  ArtifactSource,
+  {
+    get(identity: StorageIdentity): Effect.Effect<import("./runtime").StorageBundle, StorageError>;
+  }
+>()("tailorkit/storage/ArtifactSource") {}

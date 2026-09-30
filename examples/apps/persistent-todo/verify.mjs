@@ -44,7 +44,7 @@ async function start() {
     [
       wranglerBinary(),
       "dev",
-      path.resolve(root, "../../../apps/apps-cloud/src/index.ts"),
+      path.resolve(root, "../../../apps/apps-cloud/src/dev.ts"),
       "--local",
       "--config",
       path.join(root, ".tailorkit-storage/wrangler.json"),

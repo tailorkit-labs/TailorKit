@@ -7,7 +7,7 @@ const projectId = "22222222-2222-4222-8222-222222222222";
 const appId = "app000000001";
 const deploymentId = "deploy000001";
 const url = `http://localhost:3000/api/assets/t/${teamId}/p/${projectId}/a/${appId}/d/${deploymentId}/client.js`;
-const key = `teams/${teamId}/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/files/client.js`;
+const key = `teams/${teamId}/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/client/client.js`;
 const bundle = "export default 'local asset';";
 
 function storage(): Storage {
@@ -28,6 +28,29 @@ function storage(): Storage {
 afterEach(() => vi.restoreAllMocks());
 
 describe("Node asset delivery", () => {
+  it("rejects every server bundle URL before accessing private storage", async () => {
+    const backend = storage();
+    const fetch = vi.spyOn(globalThis, "fetch");
+    for (const suffix of [
+      "server.js",
+      "server/server.js",
+      "client/server.js",
+      "artifact.json",
+      "migration.sql",
+    ]) {
+      for (const method of ["GET", "HEAD", "OPTIONS"]) {
+        const response = await handleAssetRequest(
+          new Request(url.replace("client.js", suffix), { method }),
+          backend,
+        );
+        expect(response.status).toBe(404);
+      }
+    }
+    expect(backend.head).not.toHaveBeenCalled();
+    expect(backend.createDownloadUrl).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it("streams a valid object with browser-safe headers", async () => {
     const backend = storage();
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(bundle));
@@ -37,6 +60,18 @@ describe("Node asset delivery", () => {
     expect(response.headers.get("Access-Control-Allow-Origin")).toBe("*");
     expect(response.headers.get("Content-Type")).toBe("application/javascript; charset=utf-8");
     expect(response.headers.get("ETag")).toBe('"asset-etag"');
+  });
+
+  it("reads existing files/ assets without exposing server keys", async () => {
+    const backend = storage();
+    vi.mocked(backend.head).mockRejectedValueOnce({ name: "NoSuchKey" });
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(bundle));
+    const response = await handleAssetRequest(new Request(url), backend);
+    expect(await response.text()).toBe(bundle);
+    expect(backend.createDownloadUrl).toHaveBeenCalledWith({
+      key: key.replace("/client/", "/files/"),
+      expiresInSeconds: 60,
+    });
   });
 
   it("serves HEAD and OPTIONS without downloading the object", async () => {

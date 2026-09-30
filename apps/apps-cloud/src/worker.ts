@@ -12,17 +12,18 @@ import type { StorageTrust } from "@tailorkit/app-storage/auth";
 import { StorageError } from "@tailorkit/app-storage";
 import { storageError } from "@tailorkit/app-storage/runtime";
 import {
+  ArtifactSource,
   Authentication,
   InstallationRouting,
   dispatch,
 } from "@tailorkit/app-storage/orchestration";
 
-import type { StorageArtifact } from "@tailorkit/app-storage/runtime";
+import type { StorageArtifact, StorageBundle } from "@tailorkit/app-storage/runtime";
 function trust(env: StorageEnvironment): StorageTrust {
   return {
     issuer: env.STORAGE_ISSUER,
     audience: env.STORAGE_AUDIENCE,
-    appId: env.STORAGE_APP_ID,
+    appId: env.STORAGE_APP_ID || undefined,
     publicKeys: JSON.parse(env.STORAGE_PUBLIC_KEYS) as StorageTrust["publicKeys"],
   };
 }
@@ -133,8 +134,13 @@ async function migrationBody(request: Request): Promise<unknown> {
     throw new StorageError("BAD_REQUEST", "Invalid migration manifest");
   }
 }
-function migratedByCli(artifact: StorageArtifact, body: unknown) {
-  if (!body || typeof body !== "object") {
+function migratedByCli(artifact: StorageBundle, body: unknown) {
+  if (
+    !("apiVersion" in artifact) ||
+    !("migrations" in artifact) ||
+    !body ||
+    typeof body !== "object"
+  ) {
     return false;
   }
   const candidate = body as { codeHash?: string; apiVersion?: number; migrations?: unknown };
@@ -146,70 +152,81 @@ function migratedByCli(artifact: StorageArtifact, body: unknown) {
 }
 
 export function createStorageDurableObject(
-  artifact: StorageArtifact,
+  source: (env: StorageEnvironment) => ArtifactSource["Service"],
+  allowMigrations = false,
 ): new (
   ctx: DurableObjectState,
   env: StorageEnvironment,
 ) => DurableObject<StorageEnvironment> & { fetch(request: Request): Promise<Response> } {
   return class StorageSupervisor extends DurableObject<StorageEnvironment> {
     #auth: ReturnType<typeof authentication>;
+    #artifacts: ArtifactSource["Service"];
     constructor(ctx: DurableObjectState, env: StorageEnvironment) {
       super(ctx, env);
       this.#auth = authentication(env);
-      // Keep the facet name stable. New code gets a new loader key, never a new database.
-      const old = ctx.storage.kv.get<string>("codeHash");
-      if (old && old !== artifact.codeHash) {
-        ctx.facets.abort("app", "App code updated");
-      }
-      ctx.storage.kv.put("codeHash", artifact.codeHash);
+      this.#artifacts = source(env);
     }
     fetch(request: Request): Promise<Response> {
+      const ctx = this.ctx;
+      const env = this.env;
       const migration = new URL(request.url).pathname === "/_tailorkit/migrate";
       const routing = Layer.succeed(InstallationRouting, {
         forward: (incoming: Request, identity: StorageIdentity) =>
-          Effect.tryPromise({
-            try: async () => {
-              const expected = this.env.STORES.idFromName(
-                installationKey(identity, this.env.STORAGE_ISSUER),
+          Effect.gen(function* forwardToFacet() {
+            if (migration && !allowMigrations) {
+              return yield* Effect.fail(
+                new StorageError("BAD_REQUEST", "Remote migrations are deferred"),
               );
-              if (!this.ctx.id.equals(expected)) {
-                throw new StorageError("FORBIDDEN", "Installation mismatch");
-              }
-              if (migration && !migratedByCli(artifact, await migrationBody(incoming))) {
-                throw new StorageError(
-                  "INCOMPATIBLE_VERSION",
-                  "CLI artifact differs from the running app; rebuild before migrating",
+            }
+            const artifacts = yield* ArtifactSource;
+            const artifact = yield* artifacts.get(identity);
+            return yield* Effect.tryPromise({
+              try: async () => {
+                const expected = env.STORES.idFromName(
+                  installationKey(identity, env.STORAGE_ISSUER),
                 );
-              }
-              const facet = this.ctx.facets.get("app", () => {
-                // Installation is part of the cache key: app module globals never span installations.
-                const worker = this.env.LOADER.get(
-                  `${this.ctx.id.toString()}:${artifact.codeHash}`,
-                  () => ({
-                    compatibilityDate: "2026-08-27",
-                    mainModule: "app.js",
-                    modules: { "app.js": artifact.code },
-                    globalOutbound: null,
-                    env: {},
-                    limits: { cpuMs: 50, subRequests: 0 },
-                  }),
-                );
-                return { class: worker.getDurableObjectClass("AppFacet") };
-              });
-              const headers = new Headers(incoming.headers);
-              headers.delete("authorization");
-              headers.set("x-tailorkit-identity", JSON.stringify(identity));
-              // Migration requests have no user SQL; the CLI authorizes the bundled migration history.
-              const forwarded = new Request(incoming.url, {
-                method: "POST",
-                headers,
-                body: migration ? undefined : incoming.body,
-                signal: incoming.signal,
-              });
-              return authenticatedResponse(await facet.fetch(forwarded), identity.expiresAt);
-            },
-            catch: storageError,
-          }),
+                if (!ctx.id.equals(expected)) {
+                  throw new StorageError("FORBIDDEN", "Installation mismatch");
+                }
+                if (migration && !migratedByCli(artifact, await migrationBody(incoming))) {
+                  throw new StorageError(
+                    "INCOMPATIBLE_VERSION",
+                    "CLI artifact differs from the running app; rebuild before migrating",
+                  );
+                }
+                const old = ctx.storage.kv.get<string>("codeHash");
+                if (old && old !== artifact.codeHash) ctx.facets.abort("app", "App code updated");
+                ctx.storage.kv.put("codeHash", artifact.codeHash);
+                const facet = ctx.facets.get("app", () => {
+                  // Installation is part of the cache key: app module globals never span installations.
+                  const worker = env.LOADER.get(
+                    `${ctx.id.toString()}:${artifact.codeHash}`,
+                    () => ({
+                      compatibilityDate: "2026-08-27",
+                      mainModule: "app.js",
+                      modules: { "app.js": artifact.code },
+                      globalOutbound: null,
+                      env: {},
+                      limits: { cpuMs: 50, subRequests: 0 },
+                    }),
+                  );
+                  return { class: worker.getDurableObjectClass("AppFacet") };
+                });
+                const headers = new Headers(incoming.headers);
+                headers.delete("authorization");
+                headers.set("x-tailorkit-identity", JSON.stringify(identity));
+                // Migration requests have no user SQL; the CLI authorizes the bundled migration history.
+                const forwarded = new Request(incoming.url, {
+                  method: "POST",
+                  headers,
+                  body: migration ? undefined : incoming.body,
+                  signal: incoming.signal,
+                });
+                return authenticatedResponse(await facet.fetch(forwarded), identity.expiresAt);
+              },
+              catch: storageError,
+            });
+          }).pipe(Effect.provide(Layer.succeed(ArtifactSource, this.#artifacts))),
       });
       return Effect.runPromise(
         dispatch(request, migration).pipe(
@@ -222,7 +239,7 @@ export function createStorageDurableObject(
 }
 
 /** Trusted Cloudflare entry point. */
-export function createStorageWorker(artifact: StorageArtifact): {
+export function createStorageWorker(artifact?: StorageArtifact): {
   fetch(request: Request, env: StorageEnvironment): Promise<Response>;
 } {
   return {
@@ -246,10 +263,14 @@ export function createStorageWorker(artifact: StorageArtifact): {
         return Response.json(
           {
             protocol: 1,
-            appId: env.STORAGE_APP_ID,
-            apiVersion: artifact.apiVersion,
-            codeHash: artifact.codeHash,
-            migrations: artifact.migrations,
+            appId: env.STORAGE_APP_ID || undefined,
+            ...(artifact
+              ? {
+                  apiVersion: artifact.apiVersion,
+                  codeHash: artifact.codeHash,
+                  migrations: artifact.migrations,
+                }
+              : {}),
           },
           { headers: cors },
         );

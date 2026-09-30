@@ -3,6 +3,7 @@ import {
   assetHeaders,
   assetPreflight,
   isAssetMethod,
+  legacyClientKey,
   isValidAssetSize,
   parseHostedAssetRequest,
 } from "@tailorkit/asset-delivery";
@@ -40,8 +41,11 @@ export default {
       if (cached) {
         return downstreamResponse(cached, request.method);
       }
+      const legacyKey = legacyClientKey(identity);
       if (request.method === "HEAD") {
-        const object = await env.ASSETS.head(identity.key);
+        const object =
+          (await env.ASSETS.head(identity.key)) ??
+          (legacyKey ? await env.ASSETS.head(legacyKey) : null);
         if (!object || !isValidAssetSize(object.size)) {
           return assetFailure(404);
         }
@@ -56,7 +60,9 @@ export default {
           request.method,
         );
       }
-      const object = await env.ASSETS.get(identity.key);
+      const object =
+        (await env.ASSETS.get(identity.key)) ??
+        (legacyKey ? await env.ASSETS.get(legacyKey) : null);
       if (!object || !isValidAssetSize(object.size)) {
         return assetFailure(404);
       }

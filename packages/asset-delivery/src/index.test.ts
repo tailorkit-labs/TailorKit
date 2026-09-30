@@ -23,7 +23,7 @@ describe("asset delivery contract", () => {
     const expected = {
       appId,
       deploymentId,
-      key: `teams/${teamId}/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/files/client.js`,
+      key: `teams/${teamId}/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/client/client.js`,
       projectId,
       publicTeamId: teamId,
       contentType: "application/javascript",
@@ -38,7 +38,7 @@ describe("asset delivery contract", () => {
     ).toEqual(
       expect.objectContaining({
         contentType: "image/svg+xml",
-        key: expect.stringMatching(/\/files\/logo-dark\.svg$/u),
+        key: expect.stringMatching(/\/client\/logo-dark\.svg$/u),
       }),
     );
   });

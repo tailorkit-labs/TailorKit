@@ -3,6 +3,7 @@ import {
   assetHeaders,
   assetPreflight,
   isAssetMethod,
+  legacyClientKey,
   isValidAssetSize,
   parseNodeAssetRequest,
 } from "@tailorkit/asset-delivery";
@@ -39,7 +40,13 @@ export async function handleAssetRequest(
   }
 
   try {
-    const object = await storage.head({ key: identity.key });
+    let key = identity.key;
+    const object = await storage.head({ key }).catch(async (error: unknown) => {
+      const legacy = legacyClientKey(identity);
+      if (!isNotFound(error) || !legacy) throw error;
+      key = legacy;
+      return storage.head({ key });
+    });
     if (!isValidAssetSize(object.contentLength)) {
       return assetFailure(404);
     }
@@ -52,7 +59,7 @@ export async function handleAssetRequest(
       return new Response(null, { headers });
     }
     const download = await storage.createDownloadUrl({
-      key: identity.key,
+      key,
       expiresInSeconds: 60,
     });
     const upstream = await fetch(download.url, { redirect: "error" });

@@ -13,9 +13,13 @@ export type { Migration, SqlDriver, Notifications } from "./internal/driver";
 export { Execution, Persistence, NotificationDelivery, executionLayer } from "./orchestration";
 
 /** Serialized app code is data to a trusted runtime, never a live module there. */
-export interface StorageArtifact {
+export interface StorageBundle {
   readonly code: string;
   readonly codeHash: string;
+}
+
+/** Local development metadata; this artifact is never uploaded. */
+export interface StorageArtifact extends StorageBundle {
   readonly apiVersion: number;
   readonly migrations: readonly { readonly id: string; readonly hash: string }[];
 }

@@ -477,7 +477,7 @@ describe("tailorKitClient React adapter", () => {
     });
     expect(hostRecords.map((record) => record.appUrl)).toEqual([
       "http://runtime.test/apps/b.js",
-      "http://assets.test/projects/project_1/apps/a/deployments/deployment_1/files/client.js",
+      "http://assets.test/projects/project_1/apps/a/deployments/deployment_1/client/client.js",
     ]);
     expect(hostRecords.map((record) => (record.props?.layers as unknown[])?.[0])).toEqual([
       { context: { page: { title: "home" } }, path: "/home", status: "ready" },

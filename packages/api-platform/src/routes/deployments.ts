@@ -55,6 +55,11 @@ const createDeploymentAssetInput = z.object({
   objectKey: z.literal("client.js"),
 });
 
+const createDeploymentServerInput = createDeploymentAssetInput.extend({
+  objectKey: z.literal("server.js"),
+  contentLength: z.number().int().min(1).max(maxDeploymentBytes),
+});
+
 const createDeploymentLogoInput = z.object({
   ...deploymentFileMetadataShape,
   contentLength: z.number().int().min(1).max(maxLogoBytes),
@@ -65,6 +70,7 @@ const createDeploymentInput = z
   .object({
     appId: z.string(),
     assets: z.tuple([createDeploymentAssetInput]),
+    server: createDeploymentServerInput.optional(),
     logos: z
       .object({
         dark: createDeploymentLogoInput.optional(),
@@ -295,6 +301,7 @@ const createAppDeployment = protectedRouter
     z.object({
       body: z.object({
         assets: z.array(deploymentAssetUpload),
+        server: deploymentAssetUpload.optional(),
         deployment: AppDeployment,
         logos: deploymentLogoUploads.optional(),
       }),
@@ -316,7 +323,8 @@ const createAppDeployment = protectedRouter
       ...new Map(requestedLogos.map(({ asset }) => [asset.objectKey, asset])).values(),
     ];
     const requestedAssets = [
-      ...input.body.assets.map((asset) => ({ asset, kind: "deployment" as const })),
+      ...input.body.assets.map((asset) => ({ asset, kind: "client" as const })),
+      ...(input.body.server ? [{ asset: input.body.server, kind: "server" as const }] : []),
       ...uniqueLogoAssets.map((asset) => ({ asset, kind: "logo" as const })),
     ];
     const assets = await Promise.all(
@@ -326,7 +334,7 @@ const createAppDeployment = protectedRouter
         const objectKey =
           kind === "logo"
             ? `${appBaseKey}/${asset.objectKey}`
-            : `${appBaseKey}/deployments/${deploymentPublicId}/files/${asset.objectKey}`;
+            : `${appBaseKey}/deployments/${deploymentPublicId}/${kind}/${asset.objectKey}`;
         const shouldReuse =
           kind === "logo" && (await hasMatchingLogo(context.storage, asset, objectKey));
         const uploadUrl = shouldReuse
@@ -428,6 +436,10 @@ const createAppDeployment = protectedRouter
       }
       return { ...upload, uploadUrl: upload.uploadUrl };
     });
+    const serverUpload = input.body.server ? uploadedAssetByName.get("server.js") : undefined;
+    if (input.body.server && !serverUpload?.uploadUrl) {
+      throw new ORPCError("BAD_REQUEST", { message: "Failed to create server upload URL." });
+    }
     const uploadedLogos = Object.fromEntries(
       requestedLogos.map(({ asset, variant }) => {
         const upload = uploadedAssetByName.get(asset.objectKey);
@@ -441,6 +453,9 @@ const createAppDeployment = protectedRouter
     return {
       body: {
         assets: uploadedAssets,
+        ...(serverUpload?.uploadUrl
+          ? { server: { ...serverUpload, uploadUrl: serverUpload.uploadUrl } }
+          : {}),
         deployment: createdDeployment,
         ...(Object.keys(uploadedLogos).length > 0 ? { logos: uploadedLogos } : {}),
       },
@@ -577,9 +592,38 @@ const publishAppDeployment = protectedRouter
     return { body: publishedDeployment };
   });
 
+// Only the authenticated platform API can mint a short-lived private download URL.
+// This route is deliberately absent from the browser/host SDK router.
+const getServerBundle = protectedRouter
+  .meta(openapi({ path: "/apps/{appId}/server", method: "POST" }))
+  .input(
+    z.object({ params: z.object({ appId: z.string() }), body: z.object({ scope: scopeSchema }) }),
+  )
+  .output(
+    z.object({ body: z.object({ url: z.url(), checksum: z.string(), contentLength: z.number() }) }),
+  )
+  .use(requireApp.adaptInput(({ params, body }) => ({ appId: params.appId, scope: body.scope })))
+  .handler(async ({ context }) => {
+    const deployment = context.app.currentDeployment;
+    if (!deployment) throw new ORPCError("NOT_FOUND");
+    const key = `teams/${context.organization.publicId}/projects/${context.project.id}/apps/${context.app.publicId}/deployments/${deployment.publicId}/server/server.js`;
+    const file = await db.query.appDeploymentFile.findFirst({
+      where: { appDeploymentId: deployment.id, objectKey: key, status: "verified" },
+    });
+    if (!file?.checksum) throw new ORPCError("NOT_FOUND");
+    const download = await context.storage.createDownloadUrl({
+      key: file.objectKey,
+      expiresInSeconds: 60,
+    });
+    return {
+      body: { url: download.url, checksum: file.checksum, contentLength: file.contentLength },
+    };
+  });
+
 export const deploymentRouter = o.router({
   list: listAppDeployments,
   get: getAppDeployment,
   create: createAppDeployment,
   publish: publishAppDeployment,
+  server: getServerBundle,
 });

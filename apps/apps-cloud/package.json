@@ -10,7 +10,8 @@
     "build": "wrangler deploy --dry-run --outdir dist",
     "check-types": "pnpm types && tsc --noEmit",
     "types": "wrangler types src/worker-env.d.ts --env-interface CloudStorageEnvironment --strict-vars=false && node scripts/env.mjs",
-    "dev": "wrangler dev --local"
+    "dev": "wrangler dev --local",
+    "test": "vp test run"
   },
   "dependencies": {
     "@tailorkit/app-storage": "workspace:*",

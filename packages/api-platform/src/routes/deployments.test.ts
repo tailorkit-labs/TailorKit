@@ -7,6 +7,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import type { Context } from "../context";
 import { createTestDb } from "../test/pglite";
 
+vi.mock("@tailorkit/kv", () => ({ getKV: () => null }));
+
 const testState = vi.hoisted(() => ({ db: undefined as unknown }));
 
 vi.mock("@tailorkit/db", () => ({
@@ -158,6 +160,78 @@ describe("platform deployment uploads", () => {
       "Deployment app has an invalid stored scope.",
       expect.objectContaining({ appId: deployment.appId, deploymentId: deployment.id }),
     );
+  });
+
+  it("uploads client and private server code separately, verifies both, and resolves only published scoped code", async () => {
+    const context = publishContext("https://private.example/server");
+    const uploads = vi.fn(({ key }: { key: string }) =>
+      Promise.resolve({ key, uploadUrl: `https://uploads.example/${key}` }),
+    );
+    context.storage.createUploadUrl = uploads;
+    const currentApp = await db.query.app.findFirst();
+    if (!currentApp) throw new Error("Missing app");
+    const metadata = {
+      checksum: logoChecksum,
+      contentLength: 11,
+      contentType: "application/javascript" as const,
+      encoding: "utf-8" as const,
+    };
+    const created = await call(
+      deploymentRouter.create,
+      {
+        body: {
+          appId: currentApp.id,
+          scope: productionScope,
+          assets: [{ ...metadata, objectKey: "client.js" }],
+          server: { ...metadata, objectKey: "server.js" },
+        },
+      },
+      { context },
+    );
+    expect(created.body.assets[0]?.file.objectKey).toMatch(/\/client\/client\.js$/u);
+    expect(created.body.server?.file.objectKey).toMatch(/\/server\/server\.js$/u);
+    expect(uploads).toHaveBeenCalledTimes(2);
+    const lookup = { params: { appId: currentApp.id }, body: { scope: productionScope } };
+    await expect(call(deploymentRouter.server, lookup, { context })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+    expect(context.storage.createDownloadUrl).not.toHaveBeenCalled();
+    context.storage.head = vi.fn().mockResolvedValue({
+      checksumSha256: logoChecksumBase64,
+      contentLength: 11,
+      contentType: "application/javascript",
+    });
+    await call(
+      deploymentRouter.publish,
+      {
+        params: { deploymentId: created.body.deployment.id },
+        body: { scope: productionScope, rollout: true },
+      },
+      { context },
+    );
+    const resolved = await call(deploymentRouter.server, lookup, { context });
+    expect(resolved.body).toEqual({
+      url: "https://private.example/server",
+      checksum: logoChecksum,
+      contentLength: 11,
+    });
+    expect(context.storage.createDownloadUrl).toHaveBeenCalledWith({
+      key: created.body.server?.file.objectKey,
+      expiresInSeconds: 60,
+    });
+    await expect(
+      call(
+        deploymentRouter.server,
+        { ...lookup, body: { scope: { name: "environment", value: { environment: "other" } } } },
+        { context },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(context.storage.createDownloadUrl).toHaveBeenCalledOnce();
+    const files = await db.query.appDeploymentFile.findMany({
+      where: { appDeploymentId: created.body.deployment.id },
+    });
+    expect(files).toHaveLength(2);
+    expect(files.every((file) => file.status === "verified")).toBe(true);
   });
 
   it("maps reordered returned files using their generated file IDs", () => {
