@@ -12,9 +12,3 @@ export const captchaEndpoints = [
   "/email-otp/check-verification-otp",
   "/email-otp/reset-password",
 ];
-
-export const captchaProtectedRoutes = captchaEndpoints.map((endpoint) => ({
-  // BotID needs the full request path, including Better Auth's default base path.
-  path: `/api/auth${endpoint}`,
-  method: "POST" as const,
-}));

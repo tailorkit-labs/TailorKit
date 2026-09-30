@@ -1,7 +1,7 @@
 import { initBotId } from "botid/client/core";
 import { withBotId } from "botid/next/config";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { captchaProtectedRoutes } from "@tailorkit/auth/lib/captcha-endpoints";
+import { captchaEndpoints } from "@tailorkit/auth/lib/captcha-endpoints";
 import vercelConfig from "../../vercel.json";
 
 vi.mock("botid/client/core", () => ({ initBotId: vi.fn() }));
@@ -37,7 +37,9 @@ describe("auth client BotID initialization", () => {
     const { authClient } = await import("./auth-client");
     await authClient.signIn.email({ email: "user@example.com", password: "test-password" });
 
-    expect(initBotId).toHaveBeenCalledWith({ protect: captchaProtectedRoutes });
+    expect(initBotId).toHaveBeenCalledWith({
+      protect: captchaEndpoints.map((path) => ({ path: `/api/auth${path}`, method: "POST" })),
+    });
     expect(protectedFetch).toHaveBeenCalledOnce();
     expect(String(protectedFetch.mock.calls[0]?.[0])).toBe(
       "https://tailorkit.dev/api/auth/sign-in/email",

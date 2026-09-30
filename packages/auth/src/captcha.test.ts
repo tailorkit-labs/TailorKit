@@ -1,11 +1,17 @@
 import type { BetterAuthOptions } from "better-auth";
 import { betterAuth } from "better-auth/minimal";
+import { captcha } from "better-auth/plugins";
 import { checkBotId } from "botid/server";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { authCaptcha } from "./lib/captcha";
-import { captchaProtectedRoutes } from "./lib/captcha-endpoints";
+import { captchaEndpoints } from "./lib/captcha-endpoints";
 
 vi.mock("botid/server", () => ({ checkBotId: vi.fn() }));
+
+const authCaptcha = captcha({
+  provider: "vercel-botid",
+  checkBotId,
+  endpoints: captchaEndpoints,
+});
 
 const options: BetterAuthOptions = {
   baseURL: "https://tailorkit.dev",
@@ -27,21 +33,23 @@ describe("auth captcha", () => {
     vi.mocked(checkBotId).mockReset();
   });
 
-  it.each(captchaProtectedRoutes)("rejects bots on $method $path", async ({ path, method }) => {
+  it.each(captchaEndpoints)("rejects bots on %s", async (path) => {
     vi.mocked(checkBotId).mockResolvedValue({ ...humanVerdict, isHuman: false, isBot: true });
 
-    const response = await auth.handler(new Request(`https://tailorkit.dev${path}`, { method }));
+    const response = await auth.handler(
+      new Request(`https://tailorkit.dev/api/auth${path}`, { method: "POST" }),
+    );
 
     expect(response.status).toBe(403);
     expect(await response.json()).toMatchObject({ code: "VERIFICATION_FAILED" });
     expect(checkBotId).toHaveBeenCalledOnce();
   });
 
-  it.each(captchaProtectedRoutes)("allows humans on $method $path", async ({ path, method }) => {
+  it.each(captchaEndpoints)("allows humans on %s", async (path) => {
     vi.mocked(checkBotId).mockResolvedValue(humanVerdict);
 
     const result = await authCaptcha.onRequest(
-      new Request(`https://tailorkit.dev${path}`, { method }),
+      new Request(`https://tailorkit.dev/api/auth${path}`, { method: "POST" }),
       await auth.$context,
     );
 

@@ -12,7 +12,8 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { createAuthMiddleware } from "better-auth/api";
 import { deleteSessionCookie } from "better-auth/cookies";
 import { waitUntil as vercelWaitUntil } from "@vercel/functions";
-import { haveIBeenPwned } from "better-auth/plugins";
+import { captcha, haveIBeenPwned } from "better-auth/plugins";
+import { checkBotId } from "botid/server";
 import { emailOTP } from "better-auth/plugins/email-otp";
 import { organization } from "better-auth/plugins/organization";
 import { oAuthProxy } from "better-auth/plugins/oauth-proxy";
@@ -22,7 +23,7 @@ import { apiKey } from "@better-auth/api-key";
 import { dash } from "@better-auth/infra";
 import { passkey } from "@better-auth/passkey";
 import { initializePublicTeamId, publicTeamIdField } from "./lib/public-team-id";
-import { authCaptcha } from "./lib/captcha";
+import { captchaEndpoints } from "./lib/captcha-endpoints";
 
 void initializeObservability("tailorkit-web");
 
@@ -174,7 +175,11 @@ function buildAuth() {
     },
     socialProviders,
     plugins: [
-      authCaptcha,
+      captcha({
+        provider: "vercel-botid",
+        checkBotId,
+        endpoints: captchaEndpoints,
+      }),
       haveIBeenPwned(),
       passkey({
         rpName: "TailorKit",
