@@ -1,0 +1,55 @@
+packages/app-agent/agent/skills/tailorkit-apps/references/platform.md
+  s_8a25a8f14a6368::t_0d4966e2956831 1-44
+packages/app-agent/README.md
+  s_8a25a8f14a6368::t_0d4966e2956831 1-170
+packages/app-agent/.gitignore
+  s_8a25a8f14a6368::t_ada88236bf9c15 1-2
+packages/app-agent/LICENSE.md
+  s_8a25a8f14a6368::t_fe4ad6ce6e6990 1-87
+packages/app-agent/agent/agent.ts
+  s_8a25a8f14a6368::t_1cd410f300ecf4 1-5
+packages/app-agent/agent/channels/eve.ts
+  s_8a25a8f14a6368::t_3d797ae00af236 1-7
+packages/app-agent/agent/instructions.md
+  s_8a25a8f14a6368::t_e7629cb9ff0ceb 1-60
+packages/app-agent/agent/lib/package-policy.ts
+  s_8a25a8f14a6368::t_65769b0cad1de8 1-5
+packages/app-agent/agent/sandbox/sandbox.ts
+  s_8a25a8f14a6368::t_ae39b79da1c600 1-24
+packages/app-agent/agent/skills/tailorkit-apps/SKILL.md
+  s_8a25a8f14a6368::t_daac60fc9952eb 1-60
+packages/app-agent/agent/skills/tailorkit-apps/references/data-and-access.md
+  s_8a25a8f14a6368::t_5a75474727a6e1 1-47
+packages/app-agent/agent/skills/tailorkit-apps/references/layout.md
+  s_8a25a8f14a6368::t_fd13177af41cf2 1-91
+packages/app-agent/agent/skills/tailorkit-apps/references/preact.md
+  s_8a25a8f14a6368::t_a520d51b8f508a 1-164
+packages/app-agent/agent/skills/tailorkit-apps/references/verification.md
+  s_8a25a8f14a6368::t_b07f54096e0e85 1-75
+packages/app-agent/agent/tools/create-app.ts
+  s_8a25a8f14a6368::t_8072a7d72b8adc 1-79
+packages/app-agent/package.json
+  s_8a25a8f14a6368::t_c3d6dcedd22a9a 1-28
+packages/app-agent/tsconfig.json
+  s_8a25a8f14a6368::t_6e6a512cbad7db 1-10
+packages/app-agent/turbo.json
+  s_8a25a8f14a6368::t_d5896482c14396 1-8
+pnpm-lock.yaml
+  s_8a25a8f14a6368::t_e534a74c20154b 1048-1069,1656-1661,1668-1673,1678-1681,6443-6448,7549-7574,10034-10037,10467-10473,10483-10491,10496-10499,15370-15376,16480-16487,19590-19591
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "50f92fbee5fa74445d76abb61d00a73b91b069ac",
+  "prompts": {},
+  "sessions": {
+    "s_8a25a8f14a6368": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0efc9-75ef-7c50-ac1b-ad17d4382fda",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
