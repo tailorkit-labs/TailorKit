@@ -1,0 +1,125 @@
+packages/core/src/server/routes/deployments.ts
+  s_6ba0854cdb659c::t_07b2597bd73580 72-77
+  s_6ba0854cdb659c::t_0becb90358815a 24-25,85
+apps/assets/src/index.test.ts
+  s_6ba0854cdb659c::t_840d3b46716914 43,52,56-63,85
+  s_6ba0854cdb659c::t_07b2597bd73580 44-51,53-55
+  s_6ba0854cdb659c::t_0becb90358815a 10
+  s_6ba0854cdb659c::t_1504a311aa8728 82-84
+  s_6ba0854cdb659c::t_3895ae8f62688a 86
+  s_6ba0854cdb659c::t_ade20035046f53 80-81
+apps/apps-cloud/src/dev.ts
+  s_6ba0854cdb659c::t_31c28aadb25003 1-5,10-11
+  s_6ba0854cdb659c::t_07b2597bd73580 6-9
+apps/apps-cloud/src/artifact-source.test.ts
+  s_6ba0854cdb659c::t_840d3b46716914 1-8,14,26-29,34,43-48,53,56-67,73,77-81,85-88
+  s_6ba0854cdb659c::t_07b2597bd73580 9-13,15-25,30-33,36-42,49-52,54-55,68-72,74-76,82-84
+  s_6ba0854cdb659c::t_be428c5c9cb0dc 35
+packages/react/src/components/app-view.tsx
+  s_6ba0854cdb659c::t_0becb90358815a 136
+packages/client-platform/src/client/index.ts
+  s_6ba0854cdb659c::t_e7f83e221b2fee 19,74-76
+packages/asset-delivery/src/index.ts
+  s_6ba0854cdb659c::t_0becb90358815a 56
+  s_6ba0854cdb659c::t_8dbfd2de7259f5 157-161
+apps/assets/src/index.ts
+  s_6ba0854cdb659c::t_07b2597bd73580 46-48,63-65
+  s_6ba0854cdb659c::t_189170f7ebf6df 6,44
+apps/apps-cloud/package.json
+  s_6ba0854cdb659c::t_840d3b46716914 13-14
+packages/api-platform/src/routes/deployments.test.ts
+  s_6ba0854cdb659c::t_b0489e88057b74 199-203
+  s_6ba0854cdb659c::t_07b2597bd73580 167-197,204-232
+  s_6ba0854cdb659c::t_e9401c32a43268 10-11,165-166,198,233-236
+packages/cli/src/deploy.test.ts
+  s_6ba0854cdb659c::t_07b2597bd73580 7-89,92
+  s_6ba0854cdb659c::t_496675e360e649 1-6,90-91
+packages/asset-delivery/src/index.test.ts
+  s_6ba0854cdb659c::t_0becb90358815a 26
+  s_6ba0854cdb659c::t_5bf072b7da9c16 41
+apps/apps-cloud/src/tooling.ts
+  s_6ba0854cdb659c::t_07b2597bd73580 105-107,110-111,121-124,128-131
+  s_6ba0854cdb659c::t_31c28aadb25003 103-104,108-109,112-120,125-127,169
+  s_6ba0854cdb659c::t_8baa05c111644b 84
+packages/app-storage/src/auth.ts
+  s_6ba0854cdb659c::t_31c28aadb25003 17,91
+packages/app-storage/src/orchestration.ts
+  s_6ba0854cdb659c::t_31c28aadb25003 59-60
+  s_6ba0854cdb659c::t_07b2597bd73580 61-63,65-66
+  s_6ba0854cdb659c::t_25815bc6dc23dd 64
+packages/api-platform/src/routes/deployments.ts
+  s_6ba0854cdb659c::t_0becb90358815a 58-62,73,304,326-327,337
+  s_6ba0854cdb659c::t_07b2597bd73580 456-458,595-620
+  s_6ba0854cdb659c::t_a49b0af26a7104 439-442,621-622,628
+packages/app/src/builder/index.ts
+  s_6ba0854cdb659c::t_0becb90358815a 83
+packages/app/src/builder/upload-manifest.ts
+  s_6ba0854cdb659c::t_0becb90358815a 6,27,32
+apps/apps-cloud/src/worker.ts
+  s_6ba0854cdb659c::t_31c28aadb25003 15,21,26,137-143,155-156,163,167,170-171,175-176,180-183,228,242,266
+  s_6ba0854cdb659c::t_07b2597bd73580 177-178,184-186,188-197,199-202,204-227,267-273
+  s_6ba0854cdb659c::t_b0489e88057b74 198
+  s_6ba0854cdb659c::t_840d3b46716914 229
+  s_6ba0854cdb659c::t_6df7b25a7a1455 203
+apps/apps-cloud/src/artifact-source.ts
+  s_6ba0854cdb659c::t_07b2597bd73580 12-38,40,48-49,51-75,79-86,90-92,94-101
+  s_6ba0854cdb659c::t_b0489e88057b74 76-78,88-89
+  s_6ba0854cdb659c::t_000f01a062c885 9-11
+  s_6ba0854cdb659c::t_ee432cfcebbb46 39
+  s_6ba0854cdb659c::t_443a9bf934ca5c 41-43,45-47
+  s_6ba0854cdb659c::t_c598b1237a6f77 50
+  s_6ba0854cdb659c::t_599e53342896d9 87
+  s_6ba0854cdb659c::t_6939fa7c0d80a2 93
+  s_6ba0854cdb659c::t_013d65accb7da0 102-103
+packages/cli/src/deploy.ts
+  s_6ba0854cdb659c::t_07b2597bd73580 459-467,544-552
+  s_6ba0854cdb659c::t_0becb90358815a 48,390-392,499-501,503
+packages/client-platform/src/client/types.gen.ts
+  s_6ba0854cdb659c::t_e7f83e221b2fee 569-575,623-640,737-765
+  s_6ba0854cdb659c::t_be6ab27989fc21 766
+packages/api-platform/src/assets.test.ts
+  s_6ba0854cdb659c::t_0becb90358815a 10
+  s_6ba0854cdb659c::t_b0489e88057b74 71-74
+  s_6ba0854cdb659c::t_840d3b46716914 31-33,41,46-53,66,75
+  s_6ba0854cdb659c::t_07b2597bd73580 34-40,42-45
+  s_6ba0854cdb659c::t_9b5c18e9b86ad9 65,67-70,76
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_6ba0854cdb659c::t_0becb90358815a 480
+apps/apps-cloud/wrangler.jsonc
+  s_6ba0854cdb659c::t_31c28aadb25003 13-14,17-18
+packages/client-platform/src/client/sdk.gen.ts
+  s_6ba0854cdb659c::t_e7f83e221b2fee 42-43,251-258
+  s_6ba0854cdb659c::t_e079e7afe585eb 259-262
+apps/apps-cloud/src/index.ts
+  s_6ba0854cdb659c::t_3d7d6691886dc7 1,4-5
+examples/apps/persistent-todo/verify.mjs
+  s_6ba0854cdb659c::t_326c8adf310f43 47
+packages/api-platform/openapi.json
+  s_6ba0854cdb659c::t_30ed81c9f0858b 2212-2244,2430-2532,2986-3061
+packages/api-platform/src/assets.ts
+  s_6ba0854cdb659c::t_67a6c284abfa8c 6,43-49,62
+apps/apps-cloud/README.md
+  s_6ba0854cdb659c::t_e365fd8e340f64 3,5,7,9,11,13-17,19,21,23,25-35,40,45,47
+examples/apps/persistent-todo/README.md
+  s_6ba0854cdb659c::t_8b82ace239704c 42-45
+examples/apps/persistent-todo/verify-isolation.mjs
+  s_6ba0854cdb659c::t_b04eb5d4d9e8aa 5,62-63,65
+packages/app-storage/README.md
+  s_6ba0854cdb659c::t_91b7714eb89ba3 115-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "928bb87a7411bde2b67ea7b1ad3d1c007e550e3b",
+  "prompts": {},
+  "sessions": {
+    "s_6ba0854cdb659c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f111-6fe2-7f91-ab5f-14a741f20094",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
