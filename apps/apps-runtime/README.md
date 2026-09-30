@@ -40,10 +40,11 @@ The todo test fixture initializes its disposable database using the existing Dri
 
 To run the gateway against a development platform, copy `.dev.vars.example` to `.dev.vars`, fill in trusted keys and the development project's private platform token, and set the R2 bucket in `wrangler.jsonc` to the same private bucket used by the platform blob provider.
 
-For local Wrangler, seed the exact server object key returned by the platform metadata route:
+App bundles are uploaded and published with `tailorkit deploy`. The CLI obtains private upload URLs from the platform and uploads both client and optional server code. When the platform blob provider uses R2, both files go into that R2 bucket. The runtime's `BUNDLES` binding must point to the same bucket.
+
+`wrangler dev --local` uses a separate local R2 store; ordinary TailorKit deployments do not populate it. Use `verify` for the complete local runtime demonstration: its test fixtures populate disposable R2 directly, without a seed command.
 
 ```sh
-pnpm --filter @tailorkit/apps-runtime seed 'your-development-bucket/teams/.../deployments/.../server/server.js' /absolute/path/server.js
 pnpm --filter @tailorkit/apps-runtime dev
 ```
 

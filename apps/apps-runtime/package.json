@@ -10,7 +10,6 @@
     "dev": "wrangler dev --local --persist-to .tailorkit/state",
     "test": "vp test run && pnpm verify",
     "reset": "node scripts/reset.mjs",
-    "seed": "node scripts/seed.mjs",
     "verify": "pnpm build && node scripts/verify.mjs"
   },
   "dependencies": {
