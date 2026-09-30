@@ -16,7 +16,6 @@ import { Effect } from "effect";
 import { StorageError } from "@tailorkit/app-storage";
 import { issueStorageToken } from "@tailorkit/app-storage/auth";
 import worker, { AppInstallation, verifier } from "./index";
-import type { RuntimeEnvironment } from "./env";
 
 // Node requires a duplex hint for request streams; workerd does not.
 const NativeRequest = globalThis.Request;
@@ -110,7 +109,7 @@ function setup() {
     STORAGE_ORIGINS: '["https://host.test"]',
     STORES: { getByName, idFromName },
     LOADER: { get: load },
-  } as unknown as RuntimeEnvironment;
+  } as unknown as Env;
 
   return {
     env,

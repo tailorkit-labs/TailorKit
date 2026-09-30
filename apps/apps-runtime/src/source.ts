@@ -3,7 +3,6 @@ import { z } from "zod";
 import { StorageError } from "@tailorkit/app-storage";
 import { storageError } from "@tailorkit/app-storage/runtime";
 import type { DeploymentSource } from "./runtime";
-import type { RuntimeEnvironment } from "./env";
 import { readBounded } from "./http";
 
 const metadata = z.object({
@@ -22,7 +21,7 @@ const metadata = z.object({
 });
 /** Only this trusted service sees platform credentials or the private R2 binding. */
 export function deploymentSource(
-  env: Pick<RuntimeEnvironment, "PLATFORM_URL" | "PLATFORM_TOKEN" | "STORAGE_SCOPE"> & {
+  env: Pick<Env, "PLATFORM_URL" | "PLATFORM_TOKEN" | "STORAGE_SCOPE"> & {
     BUNDLES: { get(key: string): Promise<{ body: ReadableStream<Uint8Array> } | null> };
   },
 ): DeploymentSource["Service"] {

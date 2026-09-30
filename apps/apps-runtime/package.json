@@ -6,7 +6,7 @@
   "scripts": {
     "build": "wrangler deploy --dry-run --outdir dist",
     "check-types": "pnpm types && tsc --noEmit",
-    "types": "wrangler types src/worker-env.d.ts --env-interface CloudRuntimeEnvironment --strict-vars=false && node scripts/env.mjs",
+    "types": "wrangler types src/worker-env.d.ts --env-interface Env --strict-vars=false",
     "dev": "wrangler dev --local --persist-to .tailorkit/state",
     "test": "vp test run && pnpm verify",
     "reset": "node scripts/reset.mjs",

@@ -4,7 +4,6 @@ import { bearerToken, storageTokenVerifier } from "@tailorkit/app-storage/auth";
 import type { StorageTrust } from "@tailorkit/app-storage/auth";
 import { StorageError } from "@tailorkit/app-storage";
 import { storageError } from "@tailorkit/app-storage/runtime";
-import type { RuntimeEnvironment } from "./env";
 import { deploymentSource } from "./source";
 import {
   DeploymentSource,
@@ -16,7 +15,7 @@ import {
 } from "./runtime";
 import { authenticatedResponse, errorResponse, readBounded } from "./http";
 
-export function verifier(env: RuntimeEnvironment) {
+export function verifier(env: Env) {
   if (!env.STORAGE_PROJECT_ID) throw new Error("Configure the trusted project");
   return storageTokenVerifier({
     issuer: env.STORAGE_ISSUER,
@@ -28,7 +27,7 @@ export function verifier(env: RuntimeEnvironment) {
 }
 
 /** Trusted supervisor. The fixed facet name preserves SQLite when its code changes. */
-export class AppInstallation extends DurableObject<RuntimeEnvironment> {
+export class AppInstallation extends DurableObject<Env> {
   #queue = new RequestQueue();
   #verify = verifier(this.env);
   #source = deploymentSource(this.env);
@@ -111,7 +110,7 @@ export class AppInstallation extends DurableObject<RuntimeEnvironment> {
 }
 
 export default {
-  async fetch(request: Request, env: RuntimeEnvironment): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     const origin = request.headers.get("origin");
     const origins = JSON.parse(env.STORAGE_ORIGINS) as string[];
     if (origin && !origins.includes(origin))
@@ -149,4 +148,4 @@ export default {
     cors.forEach((value, key) => headers.set(key, value));
     return new Response(response.body, { status: response.status, headers });
   },
-} satisfies ExportedHandler<RuntimeEnvironment>;
+} satisfies ExportedHandler<Env>;
