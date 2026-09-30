@@ -23,3 +23,23 @@ defineClient({ slots: { panel: { "/unknown": false } } });
 defineClient({ slots: { navbar: { "/users": users } } });
 // @ts-expect-error Opt-outs must reference a view supported by this slot too.
 defineClient({ slots: { navbar: { "/users": false } } });
+
+createView("/", {
+  component: () => null,
+  // @ts-expect-error Apps cannot provide loading components for host context.
+  loading: () => null,
+});
+createView("/", {
+  component: () => null,
+  // @ts-expect-error Apps cannot provide error components for host context.
+  error: () => null,
+});
+
+// Internal loading and error states remain valid without context.
+root.component({ view: "/", status: "loading" });
+root.component({ view: "/", status: "error" });
+root.component({ view: "/", status: "ready", context: { workspaceId: "w1" } });
+// @ts-expect-error Non-ready states must not expose context.
+root.component({ view: "/", status: "loading", context: { workspaceId: "w1" } });
+// @ts-expect-error Non-ready states must not expose context.
+root.component({ view: "/", status: "error", context: { workspaceId: "w1" } });
