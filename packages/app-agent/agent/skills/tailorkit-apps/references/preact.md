@@ -101,13 +101,18 @@ const selected = items.find((item) => item.id === selectedId) ?? null;
 ```
 
 Keep the query and selection ID as state. Filtering and totals are derived.
-In a write-success callback, update from the current list:
+In a write-success callback, upsert the confirmed record into the current list:
 
 ```ts
-setItems((current) => current.map((item) => (item.id === saved.id ? saved : item)));
+setItems((current) =>
+  current.some((item) => item.id === saved.id)
+    ? current.map((item) => (item.id === saved.id ? saved : item))
+    : [...current, saved],
+);
 ```
 
-Do not replace newer changes with a list captured before an async request.
+This replaces an edited record or appends a newly created record. Do not replace
+newer changes with a list captured before an async request.
 
 ### Scope a read to the current record
 

@@ -34,10 +34,12 @@ Run relevant existing tests. Add focused tests for meaningful state transitions
 or domain logic when needed; do not add tests that merely repeat the implementation.
 Mocks establish app behavior, not real CORS, authentication, or persistence.
 
-If an already configured host preview is available and the user requests it,
-exercise the real view and integration there. CLI preview transfers code and can
-require an earlier deployment. Do not deploy or login to unlock it. Local
-HTML rendering is not equivalent to the host's sandbox.
+If a host preview is already open and the user requests it, exercise the real
+view and integration there. Use only that already-open preview; never invoke
+`tailorkit preview` or a script that starts it from this workflow. The CLI starts
+a remote preview session and uploads build artifacts. If no preview is open,
+finish local checks and report runtime verification pending. Do not deploy or
+log in to unlock it. Local HTML rendering is not equivalent to the host's sandbox.
 
 ## Diagnose and finish
 
