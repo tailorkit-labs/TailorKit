@@ -1,3 +1,4 @@
+import { openapi } from "@orpc/openapi";
 import { ORPCError, os } from "@orpc/server";
 import { devDelayMiddleware } from "@tailorkit/api-utils/dev-delay";
 import { createRatelimiter, ratelimitMiddleware } from "@tailorkit/api-utils/rate-limiting";
@@ -34,10 +35,12 @@ async function findAppInScopes(projectId: string, appId: string, scopes: Canonic
   return app;
 }
 
-export const o = os.$context<Context>().$route({
-  inputStructure: "detailed",
-  outputStructure: "detailed",
-});
+export const o = os.$context<Context>().meta(
+  openapi({
+    inputStructure: "detailed",
+    outputStructure: "detailed",
+  }),
+);
 
 export const protectedRouter = o
   .use(devDelayMiddleware)

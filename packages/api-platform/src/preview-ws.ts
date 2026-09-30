@@ -1,4 +1,4 @@
-import { eventIterator, ORPCError, os } from "@orpc/server";
+import { asyncIteratorObject, ORPCError, os } from "@orpc/server";
 import type { RouterClient } from "@orpc/server";
 import { db } from "@tailorkit/db";
 import { getKV } from "@tailorkit/kv";
@@ -161,7 +161,9 @@ const heartbeat = o.output(z.object({ accepted: z.literal(true) })).handler(asyn
   return { accepted: true as const };
 });
 
-const subscribe = o.output(eventIterator(event)).handler(async function* subscribe({ context }) {
+const subscribe = o.output(asyncIteratorObject(event)).handler(async function* subscribe({
+  context,
+}) {
   requireFreshViewerToken(context);
   const store = await requireRole(context, "viewer");
   let wake: (() => void) | undefined;

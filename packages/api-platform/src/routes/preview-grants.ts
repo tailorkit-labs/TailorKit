@@ -1,3 +1,4 @@
+import { openapi } from "@orpc/openapi";
 import { randomBytes } from "node:crypto";
 import { ORPCError } from "@orpc/server";
 import { db } from "@tailorkit/db";
@@ -39,7 +40,7 @@ const grantSchema = z.object({
 type Grant = z.infer<typeof grantSchema>;
 
 export const invitation = protectedRouter
-  .route({ path: "/shares/:shareId", method: "GET" })
+  .meta(openapi({ path: "/shares/{shareId}", method: "GET" }))
   .input(z.object({ params: z.object({ shareId: opaqueId }) }))
   .output(
     z.object({ body: z.object({ appName: z.string(), expiresAt: z.date(), sessionId: z.uuid() }) }),
@@ -64,7 +65,7 @@ export const invitation = protectedRouter
   });
 
 export const accept = protectedRouter
-  .route({ path: "/shares/:shareId/accept", method: "POST" })
+  .meta(openapi({ path: "/shares/{shareId}/accept", method: "POST" }))
   .input(
     z.object({
       params: z.object({ shareId: opaqueId }),
@@ -110,7 +111,7 @@ const previewMetadata = z.object({
 });
 
 export const accepted = protectedRouter
-  .route({ path: "/grants/resolve", method: "POST" })
+  .meta(openapi({ path: "/grants/resolve", method: "POST" }))
   .input(
     z.object({
       body: z.object({ grantIds: z.array(opaqueId).max(20), scopes: scopesSchema }),

@@ -1,3 +1,4 @@
+import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { maxDeploymentBytes } from "@tailorkit/asset-delivery";
 import {
@@ -218,17 +219,19 @@ function hexToBase64(hex: string): string {
 }
 
 const listAppDeployments = protectedRouter
-  .route({
-    path: "/list",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/deployments/list",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
       body: paginationQuery.extend({ appId: z.string(), scopes: scopesSchema }),
     }),
   )
   .output(paginatedOutput(AppDeployment))
-  .use(requireAppInScopes, ({ body: { appId, scopes } }) => ({ appId, scopes }))
+  .use(requireAppInScopes.adaptInput(({ body: { appId, scopes } }) => ({ appId, scopes })))
   .handler(async ({ context, input }) => {
     const { page, pageSize } = input.body;
     const deployments = await db.query.appDeployment.findMany({
@@ -255,10 +258,12 @@ const listAppDeployments = protectedRouter
   });
 
 const getAppDeployment = protectedRouter
-  .route({
-    path: "/:deploymentId/lookup",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/deployments/{deploymentId}/lookup",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
       params: z.object({ deploymentId: z.string() }),
@@ -266,17 +271,21 @@ const getAppDeployment = protectedRouter
     }),
   )
   .output(z.object({ body: AppDeployment }))
-  .use(requireDeployment, ({ params: { deploymentId }, body: { scopes } }) => ({
-    deploymentId,
-    scopes,
-  }))
+  .use(
+    requireDeployment.adaptInput(({ params: { deploymentId }, body: { scopes } }) => ({
+      deploymentId,
+      scopes,
+    })),
+  )
   .handler(({ context }) => ({ body: context.deployment }));
 
 const createAppDeployment = protectedRouter
-  .route({
-    path: "/",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/deployments",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
       body: createDeploymentInput,
@@ -291,7 +300,7 @@ const createAppDeployment = protectedRouter
       }),
     }),
   )
-  .use(requireApp, ({ body: { appId, scope } }) => ({ appId, scope }))
+  .use(requireApp.adaptInput(({ body: { appId, scope } }) => ({ appId, scope })))
   .handler(async ({ context, input }) => {
     const deploymentId = crypto.randomUUID();
     const deploymentPublicId = createPublicId();
@@ -439,10 +448,12 @@ const createAppDeployment = protectedRouter
   });
 
 const publishAppDeployment = protectedRouter
-  .route({
-    path: "/:deploymentId",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/deployments/{deploymentId}",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
       body: z.object({
@@ -453,10 +464,12 @@ const publishAppDeployment = protectedRouter
     }),
   )
   .output(z.object({ body: AppDeployment }))
-  .use(requireDeployment, ({ body: { scope }, params: { deploymentId } }) => ({
-    deploymentId,
-    scope,
-  }))
+  .use(
+    requireDeployment.adaptInput(({ body: { scope }, params: { deploymentId } }) => ({
+      deploymentId,
+      scope,
+    })),
+  )
   .handler(async ({ context, input }) => {
     const { deployment } = context;
     const files = await db.query.appDeploymentFile.findMany({
@@ -564,7 +577,7 @@ const publishAppDeployment = protectedRouter
     return { body: publishedDeployment };
   });
 
-export const deploymentRouter = o.prefix("/deployments").router({
+export const deploymentRouter = o.router({
   list: listAppDeployments,
   get: getAppDeployment,
   create: createAppDeployment,

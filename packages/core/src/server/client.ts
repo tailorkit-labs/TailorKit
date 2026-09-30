@@ -11,7 +11,9 @@ export interface TailorKitClientOptions {
 }
 
 export function createTailorKitClient(options: TailorKitClientOptions): TailorKitRouterClient {
+  const url = URL.canParse(options.url) ? new URL(options.url) : undefined;
   const link = new RPCLink({
+    origin: url?.origin,
     async fetch(url, init) {
       const configuredHeaders = await (typeof options.headers === "function"
         ? options.headers()
@@ -27,8 +29,21 @@ export function createTailorKitClient(options: TailorKitClientOptions): TailorKi
       });
     },
     method: "POST",
-    url: options.url,
+    url: (url ? `${url.pathname}${url.search}${url.hash}` : options.url) as `/${string}`,
   });
 
-  return createORPCClient(link) as TailorKitRouterClient;
+  const client = createORPCClient<TailorKitRouterClient>(link);
+
+  return {
+    // oRPC v2 reserves `call` on recursive proxies for Function.prototype.call.
+    actions: {
+      call: createORPCClient<TailorKitRouterClient["actions"]["call"]>(link, {
+        path: ["actions", "call"],
+      }),
+    },
+    apps: client.apps,
+    cliAuth: client.cliAuth,
+    deployments: client.deployments,
+    preview: client.preview,
+  };
 }

@@ -1,3 +1,4 @@
+import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { hashSecret } from "@tailorkit/api-utils/hashing";
 import { getBaseUrl } from "@tailorkit/env";
@@ -55,7 +56,7 @@ async function getValidCliToken(projectId: string, deployToken: string) {
 }
 
 const startPreview = protectedRouter
-  .route({ path: "/start", method: "POST" })
+  .meta(openapi({ path: "/start", method: "POST" }))
   .input(
     z.object({
       body: z.object({
@@ -244,7 +245,7 @@ const startPreview = protectedRouter
   });
 
 const stopPreview = protectedRouter
-  .route({ path: "/:sessionId/stop", method: "POST" })
+  .meta(openapi({ path: "/{sessionId}/stop", method: "POST" }))
   .input(
     z.object({
       body: z.object({ deployToken: z.string().min(1) }),
@@ -296,5 +297,5 @@ const stopPreview = protectedRouter
   });
 
 export const previewRouter = o
-  .prefix("/preview")
+  .meta(openapi({ prefix: "/preview" }))
   .router({ start: startPreview, stop: stopPreview, ...previewGrantRoutes });

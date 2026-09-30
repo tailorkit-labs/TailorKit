@@ -61,7 +61,7 @@ type OrgPermissions = Partial<{
  * // with permission check + input mapping
  * protectedProcedure
  *   .input(z.object({ slug: z.string() }))
- *   .use(requireOrg({ member: ["invite"] }), input => ({ orgSlug: input.slug }))
+ *   .use(requireOrg({ member: ["invite"] }).adaptInput(input => ({ orgSlug: input.slug })))
  *   .handler(async ({ context }) => context.org)
  */
 export function requireOrg(permissions?: OrgPermissions) {

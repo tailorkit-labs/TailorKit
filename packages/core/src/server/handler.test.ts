@@ -205,6 +205,33 @@ describe("createTailorKitServer", () => {
     });
   });
 
+  it.each(["https://example.com/api/tailorkit?deployment=test", "/api/tailorkit?deployment=test"])(
+    "preserves the RPC URL and headers for %s",
+    async (url) => {
+      const requests: Request[] = [];
+      const client = createTailorKitClient({
+        url,
+        headers: () => ({ authorization: "Bearer host-token" }),
+        fetch: (input, init) => {
+          const request = new Request(new URL(String(input), "https://example.com"), init);
+          requests.push(request);
+          return Promise.resolve(
+            optionalSchemaTailor.handler(request, {
+              authenticate: () => ({ scopes: { org: { tenant: "test" } } }),
+            }),
+          );
+        },
+      });
+
+      await expect(client.actions.call({ path: "nested.ping" })).resolves.toEqual({ ping: "pong" });
+      expect(requests[0]?.url).toBe(
+        "https://example.com/api/tailorkit/actions/call?deployment=test",
+      );
+      expect(requests[0]?.headers.get("authorization")).toBe("Bearer host-token");
+      expect(requests[0]?.headers.get("content-type")).toContain("application/json");
+    },
+  );
+
   it("dispatches nested actions without input or output schemas", async () => {
     const client = createTailorKitClient({
       fetch: (request, init) => {
@@ -551,7 +578,10 @@ describe("createTailorKitServer", () => {
             ? new Request(request, { headers: { authorization: "Bearer host-token" } })
             : new Request(request, {
                 ...init,
-                headers: { ...init?.headers, authorization: "Bearer host-token" },
+                headers: new Headers([
+                  ...new Headers(init?.headers).entries(),
+                  ["authorization", "Bearer host-token"],
+                ]),
               });
         hostRequests.push(hostRequest);
 
@@ -611,7 +641,10 @@ describe("createTailorKitServer", () => {
             ? new Request(request, { headers: { authorization: "Bearer cli-token" } })
             : new Request(request, {
                 ...init,
-                headers: { ...init?.headers, authorization: "Bearer cli-token" },
+                headers: new Headers([
+                  ...new Headers(init?.headers).entries(),
+                  ["authorization", "Bearer cli-token"],
+                ]),
               });
         hostRequests.push(hostRequest);
 
