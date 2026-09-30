@@ -9,7 +9,6 @@
     "types": "wrangler types src/worker-env.d.ts --env-interface Env --strict-vars=false",
     "dev": "wrangler dev --local --persist-to .tailorkit/state",
     "test": "vp test run && pnpm verify",
-    "reset": "node scripts/reset.mjs",
     "verify": "pnpm build && node scripts/verify.mjs"
   },
   "dependencies": {

@@ -50,11 +50,7 @@ pnpm --filter @tailorkit/apps-runtime dev
 
 Wrangler watches runtime/server changes. App code is rebuilt and uploaded through the existing app builder/CLI, then published through the existing deployment flow. Changing local runtime code does not publish an app deployment.
 
-DO/R2 state lives in `apps/apps-runtime/.tailorkit/state`, outside app builder output. Stop the dev process before resetting:
-
-```sh
-pnpm --filter @tailorkit/apps-runtime reset
-```
+DO/R2 state lives in `apps/apps-runtime/.tailorkit/state`, outside app builder output.
 
 Local compatibility uses the date supported by the repository's pinned workerd. No production deployment is performed by these commands.
 
