@@ -19,7 +19,7 @@ export function createTailorKitClient(options: TailorKitClientOptions): TailorKi
         ? options.headers()
         : options.headers);
       const headers = new Headers(configuredHeaders);
-      new Headers((init as RequestInit | undefined)?.headers).forEach((value, key) => {
+      new Headers(init.headers).forEach((value, key) => {
         headers.set(key, value);
       });
 
@@ -28,22 +28,8 @@ export function createTailorKitClient(options: TailorKitClientOptions): TailorKi
         headers,
       });
     },
-    method: "POST",
     url: (url ? `${url.pathname}${url.search}${url.hash}` : options.url) as `/${string}`,
   });
 
-  const client = createORPCClient<TailorKitRouterClient>(link);
-
-  return {
-    // oRPC v2 reserves `call` on recursive proxies for Function.prototype.call.
-    actions: {
-      call: createORPCClient<TailorKitRouterClient["actions"]["call"]>(link, {
-        path: ["actions", "call"],
-      }),
-    },
-    apps: client.apps,
-    cliAuth: client.cliAuth,
-    deployments: client.deployments,
-    preview: client.preview,
-  };
+  return createORPCClient<TailorKitRouterClient>(link);
 }

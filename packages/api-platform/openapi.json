@@ -8,7 +8,7 @@
       "url": "https://tailorkit.dev/api/platform"
     }
   ],
-  "openapi": "3.1.1",
+  "openapi": "3.2.0",
   "components": {
     "schemas": {
       "__schema0": {

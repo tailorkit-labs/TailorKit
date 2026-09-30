@@ -174,13 +174,26 @@ describe("createTailorKitServer", () => {
     });
 
     await expect(
-      client.actions.call({ input: { title: "Ship it" }, path: "todo.create" }),
+      client.actions.execute({ input: { title: "Ship it" }, path: "todo.create" }),
     ).resolves.toEqual({
       id: "user_1:1",
       orgId: "org_1",
       title: "Ship it",
     });
     expect(requests[0]?.method).toBe("POST");
+  });
+
+  it("does not expose the old action RPC endpoint", async () => {
+    const response = await optionalSchemaTailor.handler(
+      new Request("https://example.com/api/tailorkit/actions/call", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ json: { path: "nested.ping" } }),
+      }),
+      { authenticate: () => ({ scopes: { org: { tenant: "test" } } }) },
+    );
+
+    expect(response.status).toBe(404);
   });
 
   it("infers handler context from implemented actions", async () => {
@@ -200,7 +213,7 @@ describe("createTailorKitServer", () => {
       url: "https://example.com/api/tailorkit",
     });
 
-    await expect(client.actions.call({ input: {}, path: "ping" })).resolves.toEqual({
+    await expect(client.actions.execute({ input: {}, path: "ping" })).resolves.toEqual({
       userId: "user_1",
     });
   });
@@ -213,7 +226,11 @@ describe("createTailorKitServer", () => {
         url,
         headers: () => ({ authorization: "Bearer host-token" }),
         fetch: (input, init) => {
-          const request = new Request(new URL(String(input), "https://example.com"), init);
+          expect(String(input)).toBe(`${url.split("?")[0]}/actions/execute?deployment=test`);
+          const request = new Request(
+            url.startsWith("/") ? new URL(String(input), "https://example.com") : input,
+            init,
+          );
           requests.push(request);
           return Promise.resolve(
             optionalSchemaTailor.handler(request, {
@@ -223,9 +240,11 @@ describe("createTailorKitServer", () => {
         },
       });
 
-      await expect(client.actions.call({ path: "nested.ping" })).resolves.toEqual({ ping: "pong" });
+      await expect(client.actions.execute({ path: "nested.ping" })).resolves.toEqual({
+        ping: "pong",
+      });
       expect(requests[0]?.url).toBe(
-        "https://example.com/api/tailorkit/actions/call?deployment=test",
+        "https://example.com/api/tailorkit/actions/execute?deployment=test",
       );
       expect(requests[0]?.headers.get("authorization")).toBe("Bearer host-token");
       expect(requests[0]?.headers.get("content-type")).toContain("application/json");
@@ -246,7 +265,9 @@ describe("createTailorKitServer", () => {
       url: "https://example.com/api/tailorkit",
     });
 
-    await expect(client.actions.call({ input: undefined, path: "nested.ping" })).resolves.toEqual({
+    await expect(
+      client.actions.execute({ input: undefined, path: "nested.ping" }),
+    ).resolves.toEqual({
       ping: "pong",
     });
   });
@@ -265,7 +286,7 @@ describe("createTailorKitServer", () => {
       url: "https://example.com/api/tailorkit",
     });
 
-    await expect(client.actions.call({ input: undefined, path: "nested.ping" })).rejects.toThrow(
+    await expect(client.actions.execute({ input: undefined, path: "nested.ping" })).rejects.toThrow(
       /Unauthorized/u,
     );
   });
@@ -288,7 +309,7 @@ describe("createTailorKitServer", () => {
     });
 
     await expect(
-      client.actions.call({ input: { title: "" }, path: "todo.create" }),
+      client.actions.execute({ input: { title: "" }, path: "todo.create" }),
     ).rejects.toThrow(/Invalid TailorKit payload/u);
   });
 
@@ -306,9 +327,9 @@ describe("createTailorKitServer", () => {
       url: "https://example.com/api/tailorkit",
     });
 
-    await expect(client.actions.call({ input: undefined, path: "invalidOutput" })).rejects.toThrow(
-      /Invalid TailorKit payload/u,
-    );
+    await expect(
+      client.actions.execute({ input: undefined, path: "invalidOutput" }),
+    ).rejects.toThrow(/Invalid TailorKit payload/u);
   });
 
   it("serializes action definitions without handlers or omitted schemas", () => {

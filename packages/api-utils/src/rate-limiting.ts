@@ -11,7 +11,7 @@ import type { Context, MiddlewareOptions } from "@orpc/server";
 
 export { RateLimitHandlerPlugin } from "@orpc/ratelimit";
 
-export function createRatelimiter({
+export function createRateLimiter({
   maxRequests,
   window,
 }: {

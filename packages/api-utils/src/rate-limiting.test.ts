@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({ getKV: vi.fn() }));
 vi.mock("@tailorkit/kv", () => ({ getKV: mocks.getKV }));
 vi.mock("#env", () => ({ env: { NODE_ENV: "test" } }));
 
-const { createRatelimiter, ratelimitMiddleware, RateLimitHandlerPlugin } =
+const { createRateLimiter, ratelimitMiddleware, RateLimitHandlerPlugin } =
   await import("./rate-limiting");
 
 beforeEach(() => {
@@ -16,7 +16,7 @@ beforeEach(() => {
 it("uses the existing ioredis connection with prefixed keys and a millisecond window", async () => {
   const evalScript = vi.fn().mockResolvedValue([2, 900]);
   mocks.getKV.mockReturnValue({ type: "redis", engine: { eval: evalScript } });
-  const limiter = createRatelimiter({ maxRequests: 3, window: 1000 });
+  const limiter = createRateLimiter({ maxRequests: 3, window: 1000 });
 
   await expect(limiter.limit("user:1", { weight: 2 })).resolves.toMatchObject({
     success: true,
@@ -39,7 +39,7 @@ it("uses the existing ioredis connection with prefixed keys and a millisecond wi
 });
 
 it("deduplicates the limiter per request and returns HTTP 429 with retry headers", async () => {
-  const limiter = createRatelimiter({ maxRequests: 1, window: 60_000 });
+  const limiter = createRateLimiter({ maxRequests: 1, window: 60_000 });
   const limit = vi.spyOn(limiter, "limit");
   const middleware = ratelimitMiddleware(limiter, () => "user:1");
   const handler = new RPCHandler(

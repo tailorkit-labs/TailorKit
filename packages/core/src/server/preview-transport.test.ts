@@ -62,6 +62,6 @@ it("round trips preview calls, full upload chunks, and streamed events over the 
     await Promise.all(pending);
   } finally {
     await handler.close(peer);
-    events.dispatchEvent(new CloseEvent("close"));
+    events.dispatchEvent(new Event("close"));
   }
 });

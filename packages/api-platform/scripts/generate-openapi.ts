@@ -14,7 +14,6 @@ const generator = new OpenAPIGenerator({
 const { platformRouter } = await import("../src/index");
 
 const spec = await generator.generate(platformRouter, {
-  version: "3.1.1",
   base: {
     info: {
       title: "Tailorkit Platform API",
