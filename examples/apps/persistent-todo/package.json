@@ -7,7 +7,7 @@
     "#tailorkit": "./src/tailorkit.gen.ts"
   },
   "scripts": {
-    "build": "tailorkit build",
+    "build": "node prepare.mjs && tailorkit build",
     "check-types": "tsc --noEmit",
     "storage:init": "tailorkit storage init-dev",
     "storage:generate": "tailorkit storage generate",

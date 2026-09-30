@@ -11,7 +11,7 @@ pnpm --filter persistent-todo storage:init
 pnpm --filter persistent-todo build
 ```
 
-`storage:init` creates ignored loopback development signing keys. Run it once. The initial Drizzle migration is already committed; run `pnpm --filter persistent-todo storage:generate` after editing the schema, then rebuild.
+`storage:init` creates ignored loopback development signing keys. Run it once. The example build also initializes missing keys on a clean checkout, including CI. The initial Drizzle migration is already committed; run `pnpm --filter persistent-todo storage:generate` after editing the schema, then rebuild.
 
 Start the runtime and the example host in separate terminals:
 
