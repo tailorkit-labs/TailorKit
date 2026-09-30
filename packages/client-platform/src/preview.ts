@@ -120,7 +120,9 @@ export interface PreviewWebSocketClient {
 
 /** Validates every preview WebSocket request, response, and streamed event. */
 export function createPreviewWebSocketClient(websocket: WebSocket): PreviewWebSocketClient {
-  const rpc = createORPCClient(new RPCLink({ websocket })) as unknown as PreviewWebSocketClient;
+  const rpc = createORPCClient(
+    new RPCLink({ connect: () => websocket }),
+  ) as unknown as PreviewWebSocketClient;
   return {
     beginBuild: async (input) => buildIdOutput.parse(await rpc.beginBuild(beginInput.parse(input))),
     uploadChunk: async (input) =>

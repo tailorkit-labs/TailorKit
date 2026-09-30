@@ -88,7 +88,7 @@ const hooks = defineHooks({
     if (!context) {
       return peer.close();
     }
-    return handler.message(peer, message, { context });
+    await handler.message(peer, message, { context });
   },
   close(peer) {
     handler.close(peer);

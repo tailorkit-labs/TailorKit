@@ -1,5 +1,7 @@
 import type { ORPCError } from "@orpc/server";
 import { call } from "@orpc/server";
+import { OpenAPIHandler } from "@orpc/openapi/fetch";
+import { RateLimitHandlerPlugin } from "@tailorkit/api-utils/rate-limiting";
 import { app as appTable, appDeployment, appDeploymentFile } from "@tailorkit/db/schema/apps";
 import { organization, user } from "@tailorkit/db/schema/auth";
 import { project as projectTable } from "@tailorkit/db/schema/project";
@@ -109,6 +111,41 @@ describe("platform appRouter", () => {
   afterEach(async () => {
     await client.close();
     vi.clearAllMocks();
+  });
+
+  it("serves the existing OpenAPI create and lookup URLs with detailed inputs", async () => {
+    const handler = new OpenAPIHandler(
+      { apps: appRouter },
+      { plugins: [new RateLimitHandlerPlugin()] },
+    );
+    const handle = (path: string, body: unknown) =>
+      handler.handle(
+        new Request(`https://example.com/api/platform${path}`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+        }),
+        { prefix: "/api/platform", context: createContext() },
+      );
+
+    const created = await handle("/apps", {
+      name: "Compiler",
+      description: null,
+      scope: productionScope,
+    });
+    expect(created.response?.status).toBe(200);
+    expect(created.response?.headers.get("ratelimit-limit")).toBe("100");
+    const app = (await created.response?.json()) as { id: string };
+
+    const found = await handle(`/apps/${app.id}/lookup`, { scopes: [productionScope] });
+    expect(found.response?.status).toBe(200);
+    await expect(found.response?.json()).resolves.toMatchObject({ id: app.id, name: "Compiler" });
+
+    const missing = await handle("/apps/missing/lookup", { scopes: [productionScope] });
+    expect(missing.response?.status).toBe(404);
+    const error = await missing.response?.json();
+    expect(error).toMatchObject({ code: "NOT_FOUND" });
+    expect(error).not.toHaveProperty("status");
   });
 
   it("creates and lists apps within the authenticated project and scope", async () => {

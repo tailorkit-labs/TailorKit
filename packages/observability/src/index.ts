@@ -4,7 +4,7 @@ import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { PgInstrumentation } from "@opentelemetry/instrumentation-pg";
 import { UndiciInstrumentation } from "@opentelemetry/instrumentation-undici";
 import { ParentBasedSampler, TraceIdRatioBasedSampler } from "@opentelemetry/sdk-trace-base";
-import { ORPCInstrumentation } from "@orpc/otel";
+import { ORPCInstrumentation } from "@orpc/opentelemetry";
 import { env } from "#env";
 
 interface TelemetryState {

@@ -174,7 +174,7 @@ describe("createTailorKitServer", () => {
     });
 
     await expect(
-      client.actions.call({ input: { title: "Ship it" }, path: "todo.create" }),
+      client.actions.execute({ input: { title: "Ship it" }, path: "todo.create" }),
     ).resolves.toEqual({
       id: "user_1:1",
       orgId: "org_1",
@@ -200,10 +200,43 @@ describe("createTailorKitServer", () => {
       url: "https://example.com/api/tailorkit",
     });
 
-    await expect(client.actions.call({ input: {}, path: "ping" })).resolves.toEqual({
+    await expect(client.actions.execute({ input: {}, path: "ping" })).resolves.toEqual({
       userId: "user_1",
     });
   });
+
+  it.each(["https://example.com/api/tailorkit?deployment=test", "/api/tailorkit?deployment=test"])(
+    "preserves the RPC URL and headers for %s",
+    async (url) => {
+      const requests: Request[] = [];
+      const client = createTailorKitClient({
+        url,
+        headers: () => ({ authorization: "Bearer host-token" }),
+        fetch: (input, init) => {
+          expect(String(input)).toBe(`${url.split("?")[0]}/actions/execute?deployment=test`);
+          const request = new Request(
+            url.startsWith("/") ? new URL(String(input), "https://example.com") : input,
+            init,
+          );
+          requests.push(request);
+          return Promise.resolve(
+            optionalSchemaTailor.handler(request, {
+              authenticate: () => ({ scopes: { org: { tenant: "test" } } }),
+            }),
+          );
+        },
+      });
+
+      await expect(client.actions.execute({ path: "nested.ping" })).resolves.toEqual({
+        ping: "pong",
+      });
+      expect(requests[0]?.url).toBe(
+        "https://example.com/api/tailorkit/actions/execute?deployment=test",
+      );
+      expect(requests[0]?.headers.get("authorization")).toBe("Bearer host-token");
+      expect(requests[0]?.headers.get("content-type")).toContain("application/json");
+    },
+  );
 
   it("dispatches nested actions without input or output schemas", async () => {
     const client = createTailorKitClient({
@@ -219,7 +252,9 @@ describe("createTailorKitServer", () => {
       url: "https://example.com/api/tailorkit",
     });
 
-    await expect(client.actions.call({ input: undefined, path: "nested.ping" })).resolves.toEqual({
+    await expect(
+      client.actions.execute({ input: undefined, path: "nested.ping" }),
+    ).resolves.toEqual({
       ping: "pong",
     });
   });
@@ -238,7 +273,7 @@ describe("createTailorKitServer", () => {
       url: "https://example.com/api/tailorkit",
     });
 
-    await expect(client.actions.call({ input: undefined, path: "nested.ping" })).rejects.toThrow(
+    await expect(client.actions.execute({ input: undefined, path: "nested.ping" })).rejects.toThrow(
       /Unauthorized/u,
     );
   });
@@ -261,7 +296,7 @@ describe("createTailorKitServer", () => {
     });
 
     await expect(
-      client.actions.call({ input: { title: "" }, path: "todo.create" }),
+      client.actions.execute({ input: { title: "" }, path: "todo.create" }),
     ).rejects.toThrow(/Invalid TailorKit payload/u);
   });
 
@@ -279,9 +314,9 @@ describe("createTailorKitServer", () => {
       url: "https://example.com/api/tailorkit",
     });
 
-    await expect(client.actions.call({ input: undefined, path: "invalidOutput" })).rejects.toThrow(
-      /Invalid TailorKit payload/u,
-    );
+    await expect(
+      client.actions.execute({ input: undefined, path: "invalidOutput" }),
+    ).rejects.toThrow(/Invalid TailorKit payload/u);
   });
 
   it("serializes action definitions without handlers or omitted schemas", () => {
@@ -551,7 +586,10 @@ describe("createTailorKitServer", () => {
             ? new Request(request, { headers: { authorization: "Bearer host-token" } })
             : new Request(request, {
                 ...init,
-                headers: { ...init?.headers, authorization: "Bearer host-token" },
+                headers: new Headers([
+                  ...new Headers(init?.headers).entries(),
+                  ["authorization", "Bearer host-token"],
+                ]),
               });
         hostRequests.push(hostRequest);
 
@@ -611,7 +649,10 @@ describe("createTailorKitServer", () => {
             ? new Request(request, { headers: { authorization: "Bearer cli-token" } })
             : new Request(request, {
                 ...init,
-                headers: { ...init?.headers, authorization: "Bearer cli-token" },
+                headers: new Headers([
+                  ...new Headers(init?.headers).entries(),
+                  ["authorization", "Bearer cli-token"],
+                ]),
               });
         hostRequests.push(hostRequest);
 
