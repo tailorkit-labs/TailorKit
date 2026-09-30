@@ -14,12 +14,14 @@ const deployment = {
     .join(""),
   contentLength: code.length,
 };
+
 const identity = {
   ...deployment,
   installationId: "one",
   userId: "user",
   expiresAt: Date.now() + 120_000,
 };
+
 const setup = (contents: string | null = code) => {
   const get = vi.fn(async () =>
     contents === null ? null : { body: new Response(contents).body! },
@@ -34,7 +36,9 @@ const setup = (contents: string | null = code) => {
     }),
   };
 };
+
 afterEach(() => vi.restoreAllMocks());
+
 it("resolves authorized metadata separately from R2 code and never follows redirects with credentials", async () => {
   const fetch = vi
     .spyOn(globalThis, "fetch")
@@ -50,6 +54,7 @@ it("resolves authorized metadata separately from R2 code and never follows redir
   expect(get).toHaveBeenCalledWith(deployment.objectKey);
   expect(fetch).toHaveBeenCalledOnce();
 });
+
 it.each([null, "tampered", `${code} extra`])(
   "rejects missing, corrupted and oversized R2 code: %s",
   async (contents) => {

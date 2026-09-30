@@ -6,6 +6,6 @@ const bindings = generated
   .replace(/DurableObjectNamespace<[^;]+>/u, "DurableObjectNamespace")
   .replaceAll("\t", "  ");
 await writeFile(
-  new URL("../src/env.ts", import.meta.url),
+  new URL("../src/cloudflare/env.ts", import.meta.url),
   `// Generated from wrangler.jsonc by scripts/env.mjs.\nexport interface RuntimeEnvironment {${bindings}\n}\n`,
 );

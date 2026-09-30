@@ -7,6 +7,7 @@ export interface RuntimeIdentity extends StorageIdentity {
   readonly projectId: string;
   readonly deploymentId: string;
 }
+
 export interface ServerDeployment {
   projectId: string;
   appId: string;
@@ -15,6 +16,7 @@ export interface ServerDeployment {
   checksum: string;
   contentLength: number;
 }
+
 export class DeploymentSource extends Context.Service<
   DeploymentSource,
   {
@@ -22,6 +24,7 @@ export class DeploymentSource extends Context.Service<
     code(deployment: ServerDeployment): Effect.Effect<string, StorageError>;
   }
 >()("tailorkit/apps-runtime/DeploymentSource") {}
+
 export class FacetExecution extends Context.Service<
   FacetExecution,
   {
@@ -43,6 +46,7 @@ export function runtimeIdentity(identity: StorageIdentity): RuntimeIdentity {
 export function installationName(identity: RuntimeIdentity, issuer: string) {
   return JSON.stringify([issuer, identity.projectId, identity.appId, identity.installationId]);
 }
+
 export function execute(request: Request, identity: RuntimeIdentity) {
   return Effect.gen(function* executeRequest() {
     const source = yield* DeploymentSource;
