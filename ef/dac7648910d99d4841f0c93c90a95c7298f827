@@ -1,0 +1,27 @@
+.changeset/quiet-views-render-ready.md
+  s_2f5f92a190b31e::t_097aeaa039e688 1-5
+apps/docs/content/docs/(guides)/views.mdx
+  s_2f5f92a190b31e::t_9c1b680c2a6046 250-252
+apps/docs/content/docs/(writing-apps)/client.mdx
+  s_2f5f92a190b31e::t_36bd5645e9aca4 42-45
+packages/app/src/index.ts
+  s_2f5f92a190b31e::t_d22ae2ce08c497 124-125
+packages/app/src/slots.test-d.ts
+  s_2f5f92a190b31e::t_f561485b6842de 26-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "efdac7648910d99d4841f0c93c90a95c7298f827",
+  "prompts": {},
+  "sessions": {
+    "s_2f5f92a190b31e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f007-b16c-7441-bdb8-90219c9af0f3",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
