@@ -8,7 +8,7 @@
   "worker_loaders": [{ "binding": "LOADER" }],
   "r2_buckets": [{ "binding": "BUNDLES", "bucket_name": "tailorkit-app-assets-prod" }],
   "durable_objects": { "bindings": [{ "name": "STORES", "class_name": "AppInstallation" }] },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["AppInstallation"] }],
+  "exports": { "AppInstallation": { "type": "durable-object", "storage": "sqlite" } },
   "secrets": { "required": ["PLATFORM_TOKEN"] },
   "vars": {
     "PLATFORM_URL": "",
