@@ -116,19 +116,13 @@ export const createView = <const TPath extends AppViewPath>(
   path: TPath,
   options: {
     component: View<Record<string, never>>;
-    error?: View<Record<string, never>>;
-    loading?: View<Record<string, never>>;
   },
 ): ViewDefinition<TPath> => {
   const Context = createContext<ViewContext<TPath> | null>(null);
 
   const View = (props: ViewRuntimeProps<TPath>) => {
-    if (props.status === "loading") {
-      return options.loading ? h(options.loading as ComponentType<object>, {}) : null;
-    }
-
-    if (props.status === "error") {
-      return options.error ? h(options.error as ComponentType<object>, {}) : null;
+    if (props.status !== "ready") {
+      return null;
     }
 
     return h(

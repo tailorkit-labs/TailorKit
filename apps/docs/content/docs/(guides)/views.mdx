@@ -247,8 +247,9 @@ then combine readiness for that view and its ancestors. Errors take priority
 over loading. Descendant loading does not block a parent view in another
 slot. Loading never triggers fallback to a different implementation.
 
-Apps can provide `loading` and `error` components to `createView`; omitted
-handlers render nothing. `useContext()` is available only to the ready component.
+Loading and error remain host context states, but app views render nothing in
+either state. `createView` accepts only the ready `component`, with no app-provided
+loading or error components. `useContext()` is available only to the ready component.
 
 Call the hook before early returns. When using Suspense or router loaders,
 publish the loading/error view from a boundary that actually mounts in that
