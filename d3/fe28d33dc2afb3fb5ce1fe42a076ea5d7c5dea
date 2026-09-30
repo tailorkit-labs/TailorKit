@@ -1,0 +1,112 @@
+apps/apps-cloud/wrangler.jsonc
+  s_6ba0854cdb659c::t_71f7711670ead0 1-26
+packages/app/src/config/config.ts
+  s_6ba0854cdb659c::t_128146876adc4e 20-22
+packages/tailorkit/package.json
+  s_6ba0854cdb659c::t_71f7711670ead0 68
+apps/apps-cloud/tsconfig.json
+  s_6ba0854cdb659c::t_71f7711670ead0 1-3,5-11,13
+  s_6ba0854cdb659c::t_21352f3710d012 4,12
+apps/apps-cloud/src/inspect.ts
+  s_6ba0854cdb659c::t_71f7711670ead0 1-120
+apps/apps-cloud/.gitignore
+  s_6ba0854cdb659c::t_71f7711670ead0 1-2
+packages/app-storage/src/runtime.ts
+  s_6ba0854cdb659c::t_3ac40d320f2ac4 1-10,12-56,62-66,82-92,95-98
+  s_6ba0854cdb659c::t_641993d6fc1c4c 11,57-61,67-81,93-94
+packages/app-storage/src/orchestration.test.ts
+  s_6ba0854cdb659c::t_3c375607a9df8a 3-4,14-27,29-47,49-58,60-63
+  s_6ba0854cdb659c::t_f0f9529ae92a36 28,48,59
+packages/app-storage/src/internal/transport.ts
+  s_6ba0854cdb659c::t_3ac40d320f2ac4 6-7,25
+apps/apps-cloud/src/index.ts
+  s_6ba0854cdb659c::t_71f7711670ead0 1-14
+.changeset/pluggable-app-storage.md
+  s_6ba0854cdb659c::t_ce56a0a01340c4 11
+examples/apps/persistent-todo/README.md
+  s_6ba0854cdb659c::t_ce56a0a01340c4 30,41
+examples/apps/persistent-todo/verify-isolation.mjs
+  s_6ba0854cdb659c::t_478bd1815095bf 12-13,31,80-86,88,92,94-101,104-108,111,113-115,119
+  s_6ba0854cdb659c::t_ec3d5c4c6cbd47 42,199,206-207,209-214,219-221,223
+  s_6ba0854cdb659c::t_eceba0ae622e57 87,102,109-110,222
+examples/apps/persistent-todo/tailorkit.config.ts
+  s_6ba0854cdb659c::t_128146876adc4e 7-8
+apps/apps-cloud/src/artifact.d.ts
+  s_6ba0854cdb659c::t_71f7711670ead0 1-4
+apps/apps-cloud/LICENSE.md
+  s_6ba0854cdb659c::t_21352f3710d012 1-87
+apps/apps-cloud/README.md
+  s_6ba0854cdb659c::t_ce56a0a01340c4 1-39
+packages/app/src/builder/index.ts
+  s_6ba0854cdb659c::t_128146876adc4e 13-18,20,127-128
+  s_6ba0854cdb659c::t_a0d9ca20716525 19
+apps/apps-cloud/src/tooling.ts
+  s_6ba0854cdb659c::t_641993d6fc1c4c 213-215
+  s_6ba0854cdb659c::t_a9b900ff094066 1-4,6-14,16-21,30-212,216-230,232,234-248,250-254,256-264,266-273
+  s_6ba0854cdb659c::t_0c82dc49810bf1 5,22-29
+  s_6ba0854cdb659c::t_37080ca26f2326 15,231,233,249,255,265
+apps/apps-cloud/src/facet.ts
+  s_6ba0854cdb659c::t_466a36649b8ad3 1-8,10-11,13-36,38-43,45-52,54-58
+  s_6ba0854cdb659c::t_641993d6fc1c4c 9,12
+  s_6ba0854cdb659c::t_7efb29f45bfd6a 37,44,53
+packages/app-storage/README.md
+  s_6ba0854cdb659c::t_ce56a0a01340c4 38,104,108,110,112,114
+packages/cli/src/preview.ts
+  s_6ba0854cdb659c::t_14c9d6b811114a 183
+  s_6ba0854cdb659c::t_ec4a8aa04941d0 14
+packages/app-storage/src/orchestration.ts
+  s_6ba0854cdb659c::t_3ac40d320f2ac4 17-18
+packages/cli/src/preview-startup.test.ts
+  s_6ba0854cdb659c::t_ec4a8aa04941d0 16-17,21-22,24,46,55-62
+  s_6ba0854cdb659c::t_e3b13b99377b03 23,63-64
+packages/app-storage/package.json
+  s_6ba0854cdb659c::t_71f7711670ead0 34-36,43-45
+apps/apps-cloud/src/env.ts
+  s_6ba0854cdb659c::t_7c2ae7a3434048 1-10
+packages/app-storage/src/tooling.ts
+  s_6ba0854cdb659c::t_1d7409802d0877 6,45
+  s_6ba0854cdb659c::t_128146876adc4e 9-44,46-54,134,137
+packages/cli/src/storage.ts
+  s_6ba0854cdb659c::t_14c9d6b811114a 113-114,116,119-124
+  s_6ba0854cdb659c::t_859da4cdce8a90 14,26-30,106
+packages/app-storage/src/internal/runtime.test.ts
+  s_6ba0854cdb659c::t_3c375607a9df8a 8,16,301-307,309,319
+  s_6ba0854cdb659c::t_9efed095112670 308
+apps/apps-cloud/scripts/env.mjs
+  s_6ba0854cdb659c::t_71f7711670ead0 1-11
+examples/apps/persistent-todo/verify.mjs
+  s_6ba0854cdb659c::t_478bd1815095bf 12,42-65,92,232
+apps/apps-cloud/src/artifact.json
+  s_6ba0854cdb659c::t_21352f3710d012 1-6
+packages/app/src/builder/storage.ts
+  s_6ba0854cdb659c::t_14c9d6b811114a 31-34
+  s_6ba0854cdb659c::t_859da4cdce8a90 6,8,20,22,24-25,27,29-30,40,42-43,48-51,53,57-58,60-64,66-67,69
+  s_6ba0854cdb659c::t_dfb20a939096ce 35,59,68
+apps/apps-cloud/package.json
+  s_6ba0854cdb659c::t_71f7711670ead0 1-5,9-21,23,26-27
+  s_6ba0854cdb659c::t_21352f3710d012 6-8,22,24-25
+apps/apps-cloud/src/worker.ts
+  s_6ba0854cdb659c::t_641993d6fc1c4c 12-13
+  s_6ba0854cdb659c::t_a9b900ff094066 1-11,14-16,18-287
+  s_6ba0854cdb659c::t_17f570ba644578 17
+examples/apps/persistent-todo/package.json
+  s_6ba0854cdb659c::t_a90a58f368d2ac 35
+pnpm-lock.yaml
+  s_6ba0854cdb659c::t_a6d049e84bcb9b 311,316-321,323-325,329-334,780-782
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d3fe28d33dc2afb3fb5ce1fe42a076ea5d7c5dea",
+  "prompts": {},
+  "sessions": {
+    "s_6ba0854cdb659c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f111-6fe2-7f91-ab5f-14a741f20094",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
