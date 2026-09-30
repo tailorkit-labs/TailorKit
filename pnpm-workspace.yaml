@@ -13,6 +13,7 @@ packages:
 catalog:
   "@ai-sdk/react": ^3.0.192
   "@orpc/client": 2.0.0-beta.40
+  "@orpc/contract": 2.0.0-beta.40
   "@orpc/opentelemetry": 2.0.0-beta.40
   "@orpc/openapi": 2.0.0-beta.40
   "@orpc/ratelimit": 2.0.0-beta.40

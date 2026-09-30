@@ -1,0 +1,11 @@
+{
+  "name": "@tailorkit/storage-docker",
+  "private": true,
+  "license": "BUSL-1.1",
+  "type": "module",
+  "scripts": {
+    "build": "node --check entrypoint.mjs",
+    "dev": "docker compose up --build",
+    "image:build": "docker build -t tailorkit-storage:local ."
+  }
+}

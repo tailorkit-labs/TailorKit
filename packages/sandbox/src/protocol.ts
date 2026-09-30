@@ -64,7 +64,25 @@ export type RemotePatch =
       op: "setCallbacks";
     };
 
+const storageRequest = z.strictObject({
+  id: z.string().min(1).max(128),
+  op: z.enum(["query", "mutate", "subscribe", "cancel"]),
+  name: z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,63}$/u),
+  input: z.unknown(),
+  apiVersion: z.number().int().positive(),
+  requestId: z.uuid().optional(),
+});
+export type StorageBridgeRequest = z.output<typeof storageRequest>;
+const storageResult = z.strictObject({
+  id: z.string().min(1).max(128),
+  value: z.unknown().optional(),
+  error: z.strictObject({ code: z.string(), message: z.string() }).optional(),
+  status: z.enum(["connecting", "ready", "reconnecting"]).optional(),
+});
+export type StorageBridgeResult = z.output<typeof storageResult>;
+
 export const HostToIframePayload = z.discriminatedUnion("type", [
+  z.strictObject({ type: z.literal("storageResult"), data: storageResult }),
   z.strictObject({
     data: z.strictObject({
       appSource: z.string(),
@@ -153,6 +171,7 @@ const RemotePatchSchema: z.ZodType<RemotePatch> = z.discriminatedUnion("op", [
 ]);
 
 export const IframeToHostPayload = z.discriminatedUnion("type", [
+  z.strictObject({ type: z.literal("storageRequest"), data: storageRequest }),
   z.strictObject({ type: z.literal("ready") }),
   z.strictObject({
     data: z.strictObject({

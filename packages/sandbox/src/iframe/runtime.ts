@@ -1,3 +1,5 @@
+import { createIframeStorage } from "./storage";
+import type { StorageClient } from "@tailorkit/app-storage";
 import { iframeReadyType, sandboxMessageType } from "../bridge";
 import { readElementProps } from "../host/serialize";
 import type {
@@ -37,6 +39,9 @@ export function startIframeRuntime(options: {
       parentWindow.postMessage({ channel, payload, type: sandboxMessageType }, "*");
     }
   };
+  const storage = createIframeStorage((data) => send({ type: "storageRequest", data }));
+  const storageGlobal = globalThis as typeof globalThis & { __tailorkitStorage?: StorageClient };
+  storageGlobal.__tailorkitStorage = storage.client;
   const sendError = (error: unknown) =>
     send({
       data: { message: error instanceof Error ? error.stack || error.message : String(error) },
@@ -146,7 +151,9 @@ export function startIframeRuntime(options: {
       return;
     }
     const payload = event.data.payload as HostToIframePayload;
-    if (payload?.type === "init") {
+    if (payload?.type === "storageResult") {
+      storage.receive(payload.data);
+    } else if (payload?.type === "init") {
       pendingLoad = pendingLoad.then(() => loadApp(payload.data)).catch(sendError);
     } else if (payload?.type === "dispatchCallback") {
       const target = nodes.get(payload.data.nodeId)?.deref();
@@ -168,6 +175,10 @@ export function startIframeRuntime(options: {
   parentWindow.postMessage({ channel, type: iframeReadyType }, "*");
   send({ type: "ready" });
   return () => {
+    storage.close();
+    if (storageGlobal.__tailorkitStorage === storage.client) {
+      delete storageGlobal.__tailorkitStorage;
+    }
     destroyed = true;
     observer.disconnect();
     window.removeEventListener("message", handleMessage);

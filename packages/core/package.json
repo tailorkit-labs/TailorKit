@@ -60,8 +60,10 @@
   },
   "dependencies": {
     "@orpc/client": "catalog:",
+    "@orpc/contract": "catalog:",
     "@orpc/server": "catalog:",
     "@standard-schema/spec": "^1.1.0",
+    "@tailorkit/app-storage": "workspace:*",
     "@tailorkit/client-platform": "workspace:*",
     "zod": "^4.6.5"
   },

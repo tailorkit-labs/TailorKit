@@ -1,3 +1,4 @@
+import type { HostStorageOptions } from "./storage";
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { ClientOptions as PlatformClientOptions } from "@tailorkit/client-platform/client/types.gen";
 import type { TailorKitRouter } from "./router";
@@ -35,6 +36,8 @@ export interface TailorKitServerBaseOptions<
   /** Optional custom asset origin. Hosted apps receive a tenant-viewd clientPath from TailorKit automatically. */
   assetsBaseUrl?: string;
   basePath?: string;
+  /** Optional app SQLite runtime authentication, separate from platform storage. */
+  storage?: HostStorageOptions;
   /**
    * Configuration for browser-based TailorKit CLI authentication.
    */
@@ -110,7 +113,7 @@ export type TailorKitJsonValue =
   | { [key: string]: TailorKitJsonValue };
 
 /** A JSON object that identifies one named app scope. */
-export type TailorKitScope = { [key: string]: TailorKitJsonValue };
+export type TailorKitScope = Record<string, TailorKitJsonValue>;
 
 export interface TailorKitNamedScope {
   name: string;

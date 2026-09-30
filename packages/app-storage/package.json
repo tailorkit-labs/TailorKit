@@ -1,0 +1,75 @@
+{
+  "name": "@tailorkit/app-storage",
+  "version": "0.1.0-beta.15",
+  "license": "Apache-2.0",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "import": "./dist/auth.js"
+    },
+    "./host": {
+      "types": "./dist/host.d.ts",
+      "import": "./dist/host.js"
+    },
+    "./cloudflare": {
+      "types": "./dist/cloudflare.d.ts",
+      "import": "./dist/cloudflare.js"
+    },
+    "./tooling": {
+      "types": "./dist/tooling.d.ts",
+      "import": "./dist/tooling.js"
+    },
+    "./facet": {
+      "types": "./dist/facet.d.ts",
+      "import": "./dist/facet.js"
+    },
+    "./orchestration": {
+      "types": "./dist/orchestration.d.ts",
+      "import": "./dist/orchestration.js"
+    },
+    "./selfhost": {
+      "types": "./dist/selfhost.d.ts",
+      "import": "./dist/selfhost.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "pnpm types && tsup src/index.ts src/server.ts src/auth.ts src/host.ts src/cloudflare.ts src/tooling.ts src/facet.ts src/orchestration.ts src/selfhost.ts --format esm --target node20 --external cloudflare:workers --clean && tsc -p tsconfig.build.json",
+    "check-types": "pnpm types && tsc --noEmit",
+    "test": "pnpm types && vp test run",
+    "types": "wrangler types src/worker-env.d.ts --env-interface StorageEnvironment --strict-vars=false && node scripts/env.mjs"
+  },
+  "dependencies": {
+    "@orpc/client": "catalog:",
+    "@orpc/server": "catalog:",
+    "@standard-schema/spec": "^1.1.0",
+    "drizzle-kit": "1.0.0-rc.4-5d5b77c",
+    "drizzle-orm": "catalog:",
+    "effect": "4.0.0-rc.117",
+    "jose": "6.2.12",
+    "workerd": "1.20260921.1",
+    "wrangler": "4.137.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@tailorkit/config": "workspace:*",
+    "@types/node": "catalog:",
+    "tsup": "^8.5.1",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

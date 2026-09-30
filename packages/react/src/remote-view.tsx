@@ -1,3 +1,4 @@
+import type { StorageClient } from "@tailorkit/app-storage";
 /* oxlint-disable react(invariant) */
 
 import {
@@ -53,6 +54,7 @@ class RemoteErrorBoundary extends Component<RemoteErrorBoundaryProps, RemoteErro
 interface RemoteViewHostProps {
   appUrl: string | URL;
   sourceText?: string;
+  storage?: StorageClient;
   components: Record<string, unknown>;
   createIframe?: () => HTMLIFrameElement;
   props?: Record<string, unknown>;
@@ -61,6 +63,7 @@ interface RemoteViewHostProps {
 export function RemoteViewHost({
   appUrl,
   sourceText,
+  storage,
   components,
   createIframe,
   props,
@@ -115,6 +118,7 @@ export function RemoteViewHost({
     const host = createIframeUiHost(appUrl, {
       createIframe,
       sourceText,
+      storage,
       onError: (error) => {
         console.error("TailorKit remote app failed", error);
         setError(error);
@@ -144,7 +148,7 @@ export function RemoteViewHost({
       hostRef.current = null;
       host.destroy();
     };
-  }, [appUrl, createIframe, sourceText, store]);
+  }, [appUrl, createIframe, sourceText, storage, store]);
 
   if (status === "error" && error) {
     return createElement("div", null, formatError(error));

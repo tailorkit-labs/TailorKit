@@ -37,6 +37,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@tailorkit/app-storage": "workspace:*",
     "@tailorkit/core": "workspace:*",
     "cosmiconfig": "^10.0.1",
     "vite": "catalog:",

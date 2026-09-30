@@ -6,7 +6,11 @@ import type { LogoContentType } from "@tailorkit/asset-delivery/logo-validation"
 import { build as viteBuild } from "vite";
 import { loadTailorKitConfig } from "../config/loader";
 import { assertSupportedPreactVersion } from "../preact-version";
+import { buildStorage, storagePaths } from "./storage";
+
 import { createTailorKitUploadManifest } from "./upload-manifest";
+
+export { buildStorage, inspectStorage, generateStorageModel, storagePaths } from "./storage";
 
 export {
   createTailorKitUploadManifest,
@@ -26,6 +30,8 @@ export interface BuildAppOptions {
   watch?: boolean;
 }
 
+// Keep the request/build lifecycle and its failure paths together.
+// eslint-disable-next-line complexity
 export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> => {
   const loaded = await loadTailorKitConfig(options.configPath, options.cwd);
   const entry = options.entry ?? loaded.config.client?.entry ?? "./src/client.ts";
@@ -35,6 +41,16 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
   assertSupportedPreactVersion(preactVersion);
 
   const resolvedOutDir = path.resolve(loaded.root, outDir);
+  if (loaded.config.storage) {
+    const paths = storagePaths(loaded);
+    if (
+      paths.directory === resolvedOutDir ||
+      !path.relative(resolvedOutDir, paths.directory).startsWith("..")
+    ) {
+      throw new Error("App build output would clear persistent storage state");
+    }
+  }
+  const storageWatcher = await buildStorage(loaded, options.watch);
   const writeBuildExtras = async (): Promise<void> => {
     const logoManifest: { dark?: string; light?: string } = {};
     for (const variant of ["light", "dark"] as const) {
@@ -98,6 +114,26 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
     oxc: { jsx: { importSource: "preact" } },
     plugins: [
       {
+        name: "tailorkit-browser-server-boundary",
+        resolveId(id, importer) {
+          if (
+            /^@tailorkit\/app-storage\/(?:server|auth|cloudflare|tooling|facet|orchestration|selfhost)$/u.test(
+              id,
+            ) ||
+            /^tailorkit\/app\/storage\/(?:server|auth|cloudflare)$/u.test(id) ||
+            (loaded.config.storage &&
+              importer &&
+              path.resolve(path.dirname(importer), id) ===
+                path.resolve(loaded.root, loaded.config.storage.entry))
+          ) {
+            throw new Error(
+              "Storage server implementations cannot be imported into a browser bundle. Use storage.gen.ts references.",
+            );
+          }
+          return null;
+        },
+      },
+      {
         name: "tailorkit-preview-build-ready",
         async closeBundle() {
           try {
@@ -131,6 +167,11 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
       },
     ],
     root: loaded.root,
+  }).catch(async (error: unknown) => {
+    if (storageWatcher && typeof storageWatcher === "object" && "close" in storageWatcher) {
+      await (storageWatcher as { close(): Promise<void> }).close();
+    }
+    throw error;
   });
   if (options.watch) {
     if (result && typeof result === "object" && "on" in result) {
@@ -144,9 +185,40 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
         }
       });
     }
-    await firstBuild;
+    try {
+      await firstBuild;
+    } catch (error) {
+      if (result && typeof result === "object" && "close" in result) {
+        await (result as { close(): Promise<void> }).close();
+      }
+      if (storageWatcher && typeof storageWatcher === "object" && "close" in storageWatcher) {
+        await (storageWatcher as { close(): Promise<void> }).close();
+      }
+      throw error;
+    }
   }
 
+  if (
+    options.watch &&
+    result &&
+    typeof result === "object" &&
+    "close" in result &&
+    storageWatcher &&
+    typeof storageWatcher === "object" &&
+    "close" in storageWatcher
+  ) {
+    const clientWatcher = result as {
+      close(): Promise<void>;
+      on(name: string, listener: (...args: unknown[]) => void): void;
+    };
+    return {
+      on: clientWatcher.on.bind(clientWatcher),
+      async close() {
+        await clientWatcher.close();
+        await (storageWatcher as { close(): Promise<void> }).close();
+      },
+    };
+  }
   return result;
 };
 

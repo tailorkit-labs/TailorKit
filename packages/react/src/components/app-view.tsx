@@ -1,3 +1,4 @@
+import { createHostStorageClient } from "@tailorkit/app-storage/host";
 import { useCallback, useEffect, useId, useMemo, useRef, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import { isViewAncestor } from "@tailorkit/core/views";
@@ -18,6 +19,10 @@ export const AppView = ({
   const { store, client } = useTailorRootContext("AppView");
   const { theme, components: wrappedComponents } = client;
   const reactId = useId();
+  const storage = useMemo(
+    () => createHostStorageClient({ baseUrl: store.baseUrl, appId: app.id }),
+    [store.baseUrl, app.id],
+  );
   const currentView = useSyncExternalStore(
     store.views.subscribe,
     store.views.getSnapshot,
@@ -108,6 +113,7 @@ export const AppView = ({
             appUrl ?? new URL(`preview/${previewSessionId}/client.js`, store.baseUrl)
           ).toString()}
           sourceText={previewSnapshot.source ?? undefined}
+          storage={storage}
           components={wrappedComponents}
           createIframe={createIframe}
           props={runtimeProps}

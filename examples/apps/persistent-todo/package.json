@@ -1,0 +1,44 @@
+{
+  "name": "persistent-todo",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "imports": {
+    "#tailorkit": "./src/tailorkit.gen.ts"
+  },
+  "scripts": {
+    "build": "tailorkit build",
+    "check-types": "tsc --noEmit",
+    "storage:init": "tailorkit storage init-dev",
+    "storage:generate": "tailorkit storage generate",
+    "storage:dev": "tailorkit storage dev",
+    "storage:seed": "tailorkit storage seed",
+    "storage:reset": "tailorkit storage reset",
+    "dev:host": "vp dev --host localhost --port 5011",
+    "storage:verify": "node verify.mjs",
+    "storage:migrate": "tailorkit storage migrate --installation demo",
+    "storage:docker": "tailorkit storage dev --provider docker",
+    "storage:verify:docker": "node verify.mjs --docker",
+    "storage:verify:isolation": "node verify-isolation.mjs"
+  },
+  "dependencies": {
+    "@tailorkit/app": "workspace:*",
+    "@tailorkit/app-storage": "workspace:*",
+    "@tailorkit/core": "workspace:*",
+    "@tailorkit/react": "workspace:*",
+    "@tailorkit/ui": "workspace:*",
+    "preact": "^10.29.8",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tailorkit": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@tailorkit/cli": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}

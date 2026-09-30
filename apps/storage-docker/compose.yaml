@@ -1,0 +1,20 @@
+services:
+  storage:
+    build: .
+    image: tailorkit-storage:local
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - ${TAILORKIT_STORAGE_ARTIFACT:?Set the absolute generated docker artifact directory}:/app:ro
+      - storage-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 256m
+    cpus: 1
+    pids_limit: 64
+    restart: unless-stopped
+volumes:
+  storage-data:

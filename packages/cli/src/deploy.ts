@@ -341,8 +341,15 @@ const typecheckClientEntry = (
   };
 };
 
+// Keep the request/build lifecycle and its failure paths together.
+// eslint-disable-next-line complexity
 export const runDeploy = async (options: DeployOptions): Promise<DeployResult> => {
   const loaded = await loadTailorKitConfig(options.configPath, options.cwd);
+  if (loaded.config.storage && !loaded.config.storage.runtimeUrl) {
+    throw new Error(
+      "Storage apps require storage.runtimeUrl for a separately provisioned storage runtime. Use tailorkit storage dev for local development. No runtime is deployed automatically.",
+    );
+  }
   let appId = loaded.config.appId;
   let createdApp = false;
 
@@ -380,6 +387,30 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
     loaded.root,
     options.outDir ?? loaded.config.build?.outDir ?? ".tailorkit",
   );
+  if (loaded.config.storage?.runtimeUrl) {
+    const remote = await fetch(new URL("/_tailorkit/storage", loaded.config.storage.runtimeUrl), {
+      signal: AbortSignal.timeout(10_000),
+    });
+    const expected = JSON.parse(
+      await readFile(
+        path.join(loaded.root, ".tailorkit-storage", "storage-manifest.json"),
+        "utf-8",
+      ),
+    ) as Record<string, unknown>;
+    const actual = (await remote.json()) as Record<string, unknown>;
+    if (
+      !remote.ok ||
+      actual.protocol !== 1 ||
+      actual.appId !== loaded.config.appId ||
+      actual.apiVersion !== expected.apiVersion ||
+      actual.codeHash !== expected.codeHash ||
+      JSON.stringify(actual.migrations) !== JSON.stringify(expected.migrations)
+    ) {
+      throw new Error(
+        "Storage runtime is incompatible with this build. Provision the matching Worker before uploading the client.",
+      );
+    }
+  }
   const manifest = await readUploadManifest(outDir, tailorkitUploadManifestSchema);
   const clientAssetPath = path.join(outDir, manifest.assets.client);
   const clientAsset = await readFile(clientAssetPath);

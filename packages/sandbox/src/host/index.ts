@@ -1,3 +1,5 @@
+import type { StorageClient } from "@tailorkit/app-storage";
+import { functionReference, StorageError } from "@tailorkit/app-storage";
 import { HostToIframePayload, IframeToHostPayload } from "../protocol.js";
 import type { HostToIframePayload as HostToIframePayloadType } from "../protocol.js";
 import { createRemoteUiStore } from "./store.js";
@@ -27,6 +29,8 @@ export interface IframeUiHostOptions {
   props?: Record<string, unknown>;
   /** Complete source for a committed preview revision. */
   sourceText?: string;
+  /** Bound by the host SDK to this app installation; never supplied by the iframe. */
+  storage?: StorageClient;
 }
 
 export function createIframeUiHost(
@@ -42,6 +46,8 @@ export function createIframeUiHost(
   const channel = createChannelId();
   const fetchImplementation = options.fetch ?? globalThis.fetch;
   const resolvedAppUrl = toUrl(appUrl);
+  const storageSubscriptions = new Map<string, () => void>();
+  const storageCalls = new Set<string>();
   const queuedPayloads: HostToIframePayloadType[] = [];
   let appSourcePromise: Promise<string> | null = null;
   let destroyed = false;
@@ -100,6 +106,78 @@ export function createIframeUiHost(
       reportError(new Error(`Invalid sandbox message: ${result.error.message}`));
       return;
     }
+    if (result.data.type === "storageRequest") {
+      const data = result.data.data;
+      const reply = (
+        result: Omit<Extract<HostToIframePayloadType, { type: "storageResult" }>["data"], "id">,
+      ) => {
+        if (!destroyed) {
+          postToIframe({ type: "storageResult", data: { id: data.id, ...result } });
+        }
+      };
+      const fail = (error: unknown) => {
+        const failure =
+          error instanceof StorageError
+            ? error
+            : new StorageError("INTERNAL_SERVER_ERROR", "Storage operation failed");
+        reply({ error: { code: failure.code, message: failure.message } });
+      };
+      if (data.op === "cancel") {
+        storageSubscriptions.get(data.id)?.();
+        storageSubscriptions.delete(data.id);
+        return;
+      }
+      if (storageCalls.has(data.id) || storageSubscriptions.has(data.id)) {
+        return;
+      }
+      if (!options.storage) {
+        fail(new StorageError("UNAVAILABLE", "App storage is not configured"));
+        return;
+      }
+      let size: number;
+      try {
+        size = JSON.stringify(data).length;
+      } catch {
+        fail(new StorageError("BAD_REQUEST", "Storage input must be JSON"));
+        return;
+      }
+      if (storageCalls.size + storageSubscriptions.size >= 128 || size > 1024 * 1024) {
+        fail(new StorageError("BAD_REQUEST", "Storage bridge limit exceeded"));
+        return;
+      }
+      try {
+        if (data.op === "subscribe") {
+          const stop = options.storage.subscribe(
+            functionReference(data.name, "query", data.apiVersion),
+            data.input,
+            (value) => reply({ value }),
+            { onError: fail, onStatus: (status) => reply({ status }) },
+          );
+          storageSubscriptions.set(data.id, stop);
+        } else {
+          storageCalls.add(data.id);
+          const call =
+            data.op === "query"
+              ? options.storage.query(
+                  functionReference(data.name, "query", data.apiVersion),
+                  data.input,
+                )
+              : options.storage.mutate(
+                  functionReference(data.name, "mutation", data.apiVersion),
+                  data.input,
+                  { requestId: data.requestId },
+                );
+          void call
+            .then((value) => reply({ value }))
+            .catch(fail)
+            .finally(() => storageCalls.delete(data.id));
+        }
+      } catch (error) {
+        storageCalls.delete(data.id);
+        fail(error);
+      }
+      return;
+    }
     try {
       store.handleSandboxMessage(result.data);
     } catch (error) {
@@ -117,6 +195,11 @@ export function createIframeUiHost(
       }
       destroyed = true;
       queuedPayloads.length = 0;
+      for (const stop of storageSubscriptions.values()) {
+        stop();
+      }
+      storageSubscriptions.clear();
+      storageCalls.clear();
       window.removeEventListener("message", handleMessage);
       iframe.remove();
     },

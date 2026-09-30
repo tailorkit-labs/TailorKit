@@ -8,6 +8,14 @@ import { runDeploy } from "./deploy";
 import { generateTypes } from "./generator/types";
 import { runInit } from "./init";
 import { toPreviewOptions, runPreview } from "./preview";
+import {
+  generateStorage,
+  initStorageDev,
+  migrateStorage,
+  resetStorage,
+  runStorageDev,
+  seedStorage,
+} from "./storage";
 import { openUrlInBrowser } from "./utils/open-browser";
 
 declare const __TAILORKIT_VERSION__: string;
@@ -302,6 +310,45 @@ cli
     } catch (error) {
       log.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
+    }
+  });
+
+cli
+  .command("storage <action>", "App storage: init-dev, generate, migrate, dev, seed, reset")
+  .option("--config <path>", "Path to TailorKit config")
+  .option("--name <name>", "Migration name or seed mutation name")
+  .option("--installation <id>", "Installation to migrate (required), or seed (default: demo)")
+  .option("--key-file <path>", "Local host development signing key")
+  .option("--url <url>", "Runtime URL for migrations")
+  .option("--token-file <path>", "Operator-issued migration JWT (remote runtimes)")
+  .option("--provider <name>", "Local runtime: cloudflare or docker", { default: "cloudflare" })
+  .action(async (action: string, options: Record<string, unknown>) => {
+    try {
+      const commands: Record<string, typeof generateStorage> = {
+        generate: generateStorage,
+        migrate: migrateStorage,
+        "init-dev": initStorageDev,
+        dev: runStorageDev,
+        seed: seedStorage,
+        reset: resetStorage,
+      };
+      const command = commands[action];
+      if (!command) {
+        throw new Error("Use storage init-dev, generate, migrate, dev, seed, or reset");
+      }
+      await command({
+        cwd: String(options.cwd ?? "."),
+        configPath: options.config as string | undefined,
+        name: options.name as string | undefined,
+        installation: options.installation as string | undefined,
+        keyFile: options.keyFile as string | undefined,
+        url: options.url as string | undefined,
+        tokenFile: options.tokenFile as string | undefined,
+        provider: options.provider as "cloudflare" | "docker",
+      });
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
     }
   });
 

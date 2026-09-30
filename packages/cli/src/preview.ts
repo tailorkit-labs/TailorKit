@@ -11,6 +11,7 @@ import type {
 import { createTailorKitClient } from "@tailorkit/core/server";
 import pc from "picocolors";
 import { z } from "zod";
+import { startStorageRuntime } from "./storage";
 import { getDeployToken, runWhoami } from "./auth";
 
 const chunkBytes = 256 * 1024;
@@ -172,7 +173,14 @@ export async function runPreview(options: PreviewOptions): Promise<void> {
   }
   const { buildApp } = await import("@tailorkit/app/builder");
   const watcher = await buildApp({ ...options, watch: true });
+  const storageRuntime = await startStorageRuntime(loaded).catch(async (error) => {
+    if (watcher && typeof watcher === "object" && "close" in watcher) {
+      await (watcher as { close(): Promise<void> }).close();
+    }
+    throw error;
+  });
   const closeWatcher = async (): Promise<void> => {
+    storageRuntime.close();
     if (watcher && typeof watcher === "object" && "close" in watcher) {
       await (watcher as { close: () => Promise<void> | void }).close();
     }

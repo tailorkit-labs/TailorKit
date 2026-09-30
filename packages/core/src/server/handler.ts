@@ -1,3 +1,4 @@
+import { handleStorageSession } from "./storage";
 import { RPCHandler } from "@orpc/server/fetch";
 import { appsList, previewAccepted } from "@tailorkit/client-platform/client";
 import { createClient } from "@tailorkit/client-platform/client/client/index";
@@ -113,6 +114,9 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
     };
     const url = new URL(request.url);
     const previewPrefix = `${basePath}/preview/`;
+    if (url.pathname === `${basePath}/storage/session` && options.storage) {
+      return handleStorageSession(request, options.storage, authenticate);
+    }
     if (url.pathname === `${basePath}/schema`) {
       return Response.json(schema.serialize());
     }

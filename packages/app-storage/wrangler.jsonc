@@ -1,0 +1,16 @@
+{
+  "name": "tailorkit-storage-tests",
+  "main": "src/test-worker.ts",
+  "compatibility_date": "2026-08-27",
+  "compatibility_flags": ["nodejs_compat"],
+  "worker_loaders": [{ "binding": "LOADER" }],
+  "durable_objects": { "bindings": [{ "name": "STORES", "class_name": "AppStorage" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["AppStorage"] }],
+  "vars": {
+    "STORAGE_APP_ID": "test-app",
+    "STORAGE_ISSUER": "http://localhost:3000",
+    "STORAGE_AUDIENCE": "tailorkit-storage",
+    "STORAGE_PUBLIC_KEYS": "{\"keys\":[]}",
+    "STORAGE_ORIGINS": "[\"http://localhost:3000\"]",
+  },
+}
