@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { databaseScope } from "./database";
-import type { Persistence } from "./database";
+import { databaseScope } from "../database/driver";
+import type { Persistence } from "../database/driver";
 import type { AppDefinition, Identity } from "./functions";
-import { AppError } from "./errors";
+import { AppError } from "../errors";
 
 export const invocationSchema = z.strictObject({
   name: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/u),

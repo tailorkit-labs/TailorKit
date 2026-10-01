@@ -25,6 +25,14 @@ Handlers receive validated `args`, `db`, and verified `identity` (`userId`, `pro
 
 Schema exports include `table`, `text`, `integer`, `real`, `boolean` and common comparison/order operators. This is a small supported surface. Apps can import Drizzle for advanced configurations, but those features are not guaranteed to work with tracking or this driver.
 
+## Source layout
+
+- `src/database/`: SQLite schema builders, database types and the tracked Drizzle driver.
+- `src/server/`: query/mutation definitions, atomic execution, realtime coordination and server RPC transport. Tests live beside the implementation.
+- `src/client/`: browser WebSocket connection, typed references and the host JWT session provider.
+
+The root `index.ts`, `client.ts` and `runtime.ts` files expose the existing public entry points. `errors.ts` is shared by the client and server. Cloudflare-specific adapters remain in `apps/apps-runtime`.
+
 ## Build and upload
 
 Add `server: { entry: "./src/server.ts", references: "./src/server.gen.ts" }` to `tailorkit.config.ts` (these paths are defaults). `tailorkit build` emits `.tailorkit-server/server.js`, the isolated Cloudflare facet, and generates typed references. References import the server module **only as a TypeScript type**; no implementation is evaluated or bundled in the browser. The browser builder rejects server implementation imports.

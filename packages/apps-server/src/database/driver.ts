@@ -9,8 +9,8 @@ import type { SelectedFieldsOrdered } from "drizzle-orm/sqlite-core/query-builde
 import type { Query } from "drizzle-orm";
 import { fillPlaceholders } from "drizzle-orm";
 import { makeDefaultQueryMapper } from "drizzle-orm/utils";
-import { AppError } from "./errors";
-import type { MutationDatabase } from "./functions";
+import { AppError } from "../errors";
+import type { MutationDatabase } from "./types";
 
 export interface SqlResult {
   columns: string[];

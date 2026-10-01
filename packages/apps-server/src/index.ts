@@ -1,11 +1,6 @@
-export { defineApp, query, mutation } from "./functions";
-export type {
-  Identity,
-  FunctionDefinition,
-  QueryDatabase,
-  MutationDatabase,
-  AppDefinition,
-} from "./functions";
+export { defineApp, query, mutation } from "./server/functions";
+export type { QueryDatabase, MutationDatabase } from "./database/types";
+export type { Identity, FunctionDefinition, AppDefinition } from "./server/functions";
 export {
   table,
   text,
@@ -26,6 +21,6 @@ export {
   isNull,
   isNotNull,
   inArray,
-} from "./schema";
+} from "./database/schema";
 export { AppError } from "./errors";
 export type { ErrorCode } from "./errors";

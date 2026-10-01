@@ -3,7 +3,7 @@ import { RPCHandler } from "@orpc/server/websocket";
 import { z } from "zod";
 import { invocationSchema } from "./execution";
 import type { Identity } from "./functions";
-import { appError } from "./errors";
+import { appError } from "../errors";
 import { createRealtime } from "./realtime";
 
 function wireError(error: unknown) {

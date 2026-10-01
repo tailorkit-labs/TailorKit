@@ -1,5 +1,5 @@
-import { AppError } from "./errors";
-import type { Session } from "./client";
+import { AppError } from "../errors";
+import type { Session } from "./connection";
 
 /** Host-owned provider: project credentials never cross into the sandbox. */
 export function createSessionProvider(options: {

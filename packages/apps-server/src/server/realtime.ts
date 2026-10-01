@@ -1,6 +1,6 @@
 import type { Identity } from "./functions";
 import type { ExecutionResult, MutationResult, Invocation } from "./execution";
-import { AppError } from "./errors";
+import { AppError } from "../errors";
 
 /** Persistence/execution and delivery are deliberately independent. */
 export interface Execution {

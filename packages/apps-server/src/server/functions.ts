@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core";
+import type { QueryDatabase, MutationDatabase } from "../database/types";
 
 export interface Identity {
   readonly userId: string;
@@ -10,9 +10,6 @@ export interface Identity {
   readonly expiresAt: number;
 }
 
-type Database = BaseSQLiteDatabase<"sync", { changes: number }>;
-export type QueryDatabase = Pick<Database, "select" | "selectDistinct">;
-export type MutationDatabase = QueryDatabase & Pick<Database, "insert" | "update" | "delete">;
 export interface FunctionDefinition<K extends "query" | "mutation", A extends z.ZodType, O> {
   readonly kind: K;
   readonly args: A;

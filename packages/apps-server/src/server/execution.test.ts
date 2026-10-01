@@ -1,9 +1,9 @@
 import { DatabaseSync } from "node:sqlite";
 import { afterEach, expect, it } from "vite-plus/test";
 import { z } from "zod";
-import { table, text, boolean, eq, defineApp, query, mutation } from "./index";
+import { table, text, boolean, eq, defineApp, query, mutation } from "../index";
 import { createExecution } from "./execution";
-import type { Persistence } from "./database";
+import type { Persistence } from "../database/driver";
 
 const todos = table("todos", {
   id: text().primaryKey(),
