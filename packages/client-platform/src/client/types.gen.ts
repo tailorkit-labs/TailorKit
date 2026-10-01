@@ -766,12 +766,7 @@ export type DeploymentsServerResponse =
 
 export type DeploymentsRuntimeData = {
   body: {
-    scope: {
-      name: string;
-      value: {
-        [key: string]: Schema0;
-      };
-    };
+    [key: string]: unknown;
   };
   path: {
     appId: string;

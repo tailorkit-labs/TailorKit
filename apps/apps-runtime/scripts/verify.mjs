@@ -42,9 +42,7 @@ const options = {
   r2Buckets: { BUNDLES: "private-apps" },
   bindings: {
     PLATFORM_URL: "https://platform.test/api/platform",
-    PLATFORM_TOKEN: "private-key",
-    STORAGE_SCOPE: "{}",
-    STORAGE_PROJECT_ID: "project",
+    RUNTIME_SERVICE_TOKEN: "private-key",
     STORAGE_ISSUER: signing.issuer,
     STORAGE_AUDIENCE: signing.audience,
     STORAGE_PUBLIC_KEYS: JSON.stringify(publicKeys),
@@ -273,8 +271,12 @@ try {
   assert.equal(two.globals, 1);
   assert.equal((await (await invoke("one")).json()).writes, 2);
   const before = metadataReads;
-  assert.equal((await invoke("one", "v1", { projectId: "other" })).status, 401);
-  assert.equal(metadataReads, before);
+  assert.equal((await invoke("one", "v1", { projectId: "other" })).status, 403);
+  assert.equal(metadataReads, before + 1);
+  published = { ...published, projectId: "other" };
+  const otherProject = await (await invoke("one", "v1", { projectId: "other" })).json();
+  assert.equal(otherProject.writes, 1);
+  assert.equal(otherProject.globals, 1);
   published = { ...published, projectId: "other" };
   assert.equal((await invoke("one")).status, 403);
   await publish(2);

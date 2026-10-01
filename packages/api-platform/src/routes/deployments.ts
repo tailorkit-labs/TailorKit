@@ -623,9 +623,7 @@ const getServerBundle = protectedRouter
 // Trusted runtime metadata: return the authorized private R2 key without minting a download URL.
 const getRuntimeBundle = protectedRouter
   .meta(openapi({ path: "/apps/{appId}/runtime", method: "POST" }))
-  .input(
-    z.object({ params: z.object({ appId: z.string() }), body: z.object({ scope: scopeSchema }) }),
-  )
+  .input(z.object({ params: z.object({ appId: z.string() }), body: z.object({}) }))
   .output(
     z.object({
       body: z.object({
@@ -638,7 +636,21 @@ const getRuntimeBundle = protectedRouter
       }),
     }),
   )
-  .use(requireApp.adaptInput(({ params, body }) => ({ appId: params.appId, scope: body.scope })))
+  .use(
+    o
+      .middleware(async ({ context, next }, input: { appId: string }) => {
+        if (!context.runtimeService) throw new ORPCError("FORBIDDEN");
+
+        const app = await db.query.app.findFirst({
+          where: { id: input.appId, projectId: context.project.id },
+          with: { currentDeployment: { where: { status: "published" } } },
+        });
+        if (!app) throw new ORPCError("NOT_FOUND");
+
+        return next({ context: { ...context, app } });
+      })
+      .adaptInput(({ params }) => ({ appId: params.appId })),
+  )
   .handler(async ({ context }) => {
     const deployment = context.app.currentDeployment;
     if (!deployment) throw new ORPCError("NOT_FOUND");

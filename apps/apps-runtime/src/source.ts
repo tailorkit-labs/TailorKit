@@ -21,7 +21,7 @@ const metadata = z.object({
 });
 /** Only this trusted service sees platform credentials or the private R2 binding. */
 export function deploymentSource(
-  env: Pick<Env, "PLATFORM_URL" | "PLATFORM_TOKEN" | "STORAGE_SCOPE"> & {
+  env: Pick<Env, "PLATFORM_URL" | "RUNTIME_SERVICE_TOKEN"> & {
     BUNDLES: { get(key: string): Promise<{ body: ReadableStream<Uint8Array> } | null> };
   },
 ): DeploymentSource["Service"] {
@@ -38,10 +38,11 @@ export function deploymentSource(
             {
               method: "POST",
               headers: {
-                authorization: `Bearer ${env.PLATFORM_TOKEN}`,
+                authorization: `Bearer ${env.RUNTIME_SERVICE_TOKEN}`,
                 "content-type": "application/json",
+                "x-tailorkit-project-id": identity.projectId,
               },
-              body: JSON.stringify({ scope: JSON.parse(env.STORAGE_SCOPE) }),
+              body: JSON.stringify({}),
               redirect: "manual",
               signal: AbortSignal.timeout(10_000),
             },

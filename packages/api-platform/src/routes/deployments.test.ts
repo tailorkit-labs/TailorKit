@@ -209,7 +209,27 @@ describe("platform deployment uploads", () => {
       },
       { context },
     );
-    const runtime = await call(deploymentRouter.runtime, lookup, { context });
+    await expect(
+      call(deploymentRouter.runtime, { params: lookup.params, body: {} }, { context }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    const runtime = await call(
+      deploymentRouter.runtime,
+      { params: lookup.params, body: {} },
+      { context: { ...context, runtimeService: true } },
+    );
+    await expect(
+      call(
+        deploymentRouter.runtime,
+        { params: lookup.params, body: {} },
+        {
+          context: {
+            ...context,
+            runtimeService: true,
+            project: { ...context.project, id: "33333333-3333-4333-8333-333333333333" },
+          },
+        },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
     expect(runtime.body).toEqual({
       projectId: context.project.id,
       appId: currentApp.id,

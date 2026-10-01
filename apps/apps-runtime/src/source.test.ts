@@ -31,8 +31,7 @@ const setup = (contents: string | null = code) => {
     get,
     source: deploymentSource({
       PLATFORM_URL: "https://platform.test/api/platform",
-      PLATFORM_TOKEN: "private",
-      STORAGE_SCOPE: "{}",
+      RUNTIME_SERVICE_TOKEN: "private",
       BUNDLES: { get },
     }),
   };
@@ -48,7 +47,7 @@ it("resolves authorized metadata separately from R2 code and never follows redir
   expect(await Effect.runPromise(source.current(identity))).toEqual(deployment);
   expect(get).not.toHaveBeenCalled();
   expect(fetch.mock.calls[0]?.[1]).toMatchObject({
-    headers: { authorization: "Bearer private" },
+    headers: { authorization: "Bearer private", "x-tailorkit-project-id": "project" },
     redirect: "manual",
   });
   expect(await Effect.runPromise(source.code(deployment))).toBe(code);

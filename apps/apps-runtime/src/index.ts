@@ -16,11 +16,9 @@ import {
 import { authenticatedResponse, errorResponse, readBounded } from "./http";
 
 export function verifier(env: Env) {
-  if (!env.STORAGE_PROJECT_ID) throw new Error("Configure the trusted project");
   return storageTokenVerifier({
     issuer: env.STORAGE_ISSUER,
     audience: env.STORAGE_AUDIENCE,
-    projectId: env.STORAGE_PROJECT_ID,
     requireDeployment: true,
     publicKeys: JSON.parse(env.STORAGE_PUBLIC_KEYS) as StorageTrust["publicKeys"],
   });

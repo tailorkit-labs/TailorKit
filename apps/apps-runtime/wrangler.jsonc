@@ -9,11 +9,9 @@
   "r2_buckets": [{ "binding": "BUNDLES", "bucket_name": "tailorkit-app-assets-prod" }],
   "durable_objects": { "bindings": [{ "name": "STORES", "class_name": "AppInstallation" }] },
   "exports": { "AppInstallation": { "type": "durable-object", "storage": "sqlite" } },
-  "secrets": { "required": ["PLATFORM_TOKEN"] },
+  "secrets": { "required": ["RUNTIME_SERVICE_TOKEN"] },
   "vars": {
     "PLATFORM_URL": "",
-    "STORAGE_SCOPE": "",
-    "STORAGE_PROJECT_ID": "",
     "STORAGE_ISSUER": "",
     "STORAGE_AUDIENCE": "",
     "STORAGE_PUBLIC_KEYS": "{\"keys\":[]}",

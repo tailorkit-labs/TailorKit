@@ -4,7 +4,7 @@
 
 The host authorizes an installation and signs a short-lived ES256 JWT containing `userId` (JWT `sub`), `projectId`, `appId`, `installationId` and `deploymentId`. Configure the host SDK's `storage.resolveInstallation` to return these **canonical database IDs**, the stable installation ID and this runtime's `/rpc` URL. Resolve deployment access on the host server; sandboxed apps still use the storage bridge and never receive platform credentials.
 
-For each request, the gateway verifies the token's signature, issuer, audience, expiry and configured project. It routes to a supervisor named `[issuer, projectId, appId, installationId]`. The supervisor verifies authentication again and asks the authenticated platform API (`POST /apps/{appId}/runtime`, with the configured scope) for the currently published, verified bundle. A different app/project is forbidden; an old deployment returns `INCOMPATIBLE_VERSION` and requires reloading the app.
+For each request, the gateway verifies the token's signature, issuer, audience, expiry and required project/deployment claims. It routes to a supervisor named `[issuer, projectId, appId, installationId]`. The supervisor verifies authentication again and asks the authenticated platform API (`POST /apps/{appId}/runtime`, with the signed project ID) for the currently published, verified bundle. A different app/project is forbidden; an old deployment returns `INCOMPATIBLE_VERSION` and requires reloading the app.
 
 The supervisor reads the exact private R2 key returned by the platform, verifies its size and SHA-256, and loads `AppFacet` using Dynamic Workers. Its loader key includes the installation, deployment and checksum. The dynamic code has no platform bindings or credentials and no outbound network access. The supervisor overwrites the identity header and removes the JWT.
 
@@ -13,6 +13,10 @@ Each installation uses the fixed facet name `app`. Updating code aborts the old 
 Request admission is serialized through an installation-local queue, including publication lookup, but streaming responses release that queue immediately. The supervisor ends subscriptions at token expiry; the existing host client refreshes authentication and reconnects with a fresh query snapshot.
 
 `DeploymentSource` and `FacetExecution` are private Effect v4 services. Shared app query/mutation execution already receives separate persistence and notification services; neither apps nor browser clients need Effect. Provider services can be substituted in tests or a future self-hosted implementation without changing the app API.
+
+The runtime has no fixed project or environment scope. `projectId` comes from the verified JWT and remains part of the stable installation identity.
+
+Configure the same private service credential as `RUNTIME_SERVICE_TOKEN` on this worker and `APP_RUNTIME_SERVICE_TOKEN` on the platform server (at least 32 characters). It authorizes **only** the published bundle metadata endpoint; it cannot upload, publish or call other platform APIs. The platform checks the requested app belongs to the project before returning its private R2 key. This credential stays in trusted infrastructure and is never given to app developers or dynamic code.
 
 ## Code layout
 
@@ -38,7 +42,7 @@ pnpm --filter @tailorkit/apps-runtime verify
 
 The todo test fixture initializes its disposable database using the existing Drizzle-generated migration; **production uploads contain no migrations**.
 
-To run the gateway against a development platform, copy `.dev.vars.example` to `.dev.vars`, fill in trusted keys and the development project's private platform token, and set the R2 bucket in `wrangler.jsonc` to the same private bucket used by the platform blob provider.
+To run the gateway against a development platform, copy `.dev.vars.example` to `.dev.vars`, fill in trusted keys and the private runtime service token, and set the R2 bucket in `wrangler.jsonc` to the same private bucket used by the platform blob provider.
 
 App bundles are uploaded and published with `tailorkit deploy`. The CLI obtains private upload URLs from the platform and uploads both client and optional server code. When the platform blob provider uses R2, both files go into that R2 bucket. The runtime's `BUNDLES` binding must point to the same bucket.
 
@@ -57,7 +61,7 @@ Local compatibility uses the date supported by the repository's pinned workerd. 
 ## Current limits
 
 - Remote migration distribution and authorization remain intentionally undecided. A fresh uploaded SDK app returns a migration-required error until a schema initialization path is provided. This worker has no remote migration endpoint and stores no migration artifacts. Local migration tooling remains in `apps-cloud`.
-- One trusted host/project is configured per runtime. The host remains responsible for installation membership and issuing tokens for the deployment actually loaded by the client.
+- The runtime accepts any project authorized by its configured trusted host issuer/signing keys. The host must authorize project/app/installation membership before issuing a JWT and select the deployment actually loaded by the client. Independent host issuers/key registries remain future work.
 - Published metadata is checked on every request. Platform metadata must be available; verified code is cached per warm installation and read from R2 again after a cold restart.
 - Updates stop existing subscriptions; clients reload for a deployment change. Schema compatibility across updates remains the app developer's responsibility.
 - Runtime limits constrain CPU and subrequests; quotas, abuse accounting and facet/database lifecycle cleanup are future work. Untrusted apps can break their own schema or invalidation tracking.

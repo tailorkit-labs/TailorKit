@@ -15,7 +15,7 @@ vi.mock("cloudflare:workers", () => ({
 import { Effect } from "effect";
 import { StorageError } from "@tailorkit/app-storage";
 import { issueStorageToken } from "@tailorkit/app-storage/auth";
-import worker, { AppInstallation, verifier } from "./index";
+import worker, { AppInstallation } from "./index";
 
 // Node requires a duplex hint for request streams; workerd does not.
 const NativeRequest = globalThis.Request;
@@ -99,12 +99,11 @@ function setup() {
     return { getDurableObjectClass: getClass };
   });
   const routeFetch = vi.fn(async (_request: Request) => new Response("forwarded", { status: 202 }));
-  const getByName = vi.fn(() => ({ fetch: routeFetch }));
+  const getByName = vi.fn((_name: string) => ({ fetch: routeFetch }));
   const idFromName = vi.fn(() => id);
   const env = {
     STORAGE_ISSUER: signing.issuer,
     STORAGE_AUDIENCE: signing.audience,
-    STORAGE_PROJECT_ID: "project",
     STORAGE_PUBLIC_KEYS: JSON.stringify(publicKeys),
     STORAGE_ORIGINS: '["https://host.test"]',
     STORES: { getByName, idFromName },
@@ -194,7 +193,7 @@ it("authenticates and forwards a bounded RPC body with CORS and stable installat
   expect(await routeFetch.mock.calls[0][0].text()).toBe("{}");
 });
 
-it.each([{}, { projectId: "other" }, { deploymentId: undefined }, { projectId: undefined }])(
+it.each([{}, { deploymentId: undefined }, { projectId: undefined }])(
   "rejects unauthorized or incomplete runtime identities: %j",
   async (access) => {
     const { env, getByName } = setup();
@@ -229,10 +228,15 @@ it("maps forwarding failures to a sanitized response with allowed-origin CORS", 
   expect(response.headers.get("access-control-allow-origin")).toBe("https://host.test");
 });
 
-it("requires trusted project configuration", () => {
-  const { env } = setup();
+it("accepts different signed projects and routes them to distinct installations", async () => {
+  const { env, getByName } = setup();
 
-  expect(() => verifier({ ...env, STORAGE_PROJECT_ID: "" })).toThrow("trusted project");
+  expect((await worker.fetch(await request(), env)).status).toBe(202);
+  expect((await worker.fetch(await request({ projectId: "other" }), env)).status).toBe(202);
+  expect(getByName.mock.calls.map(([name]) => name)).toEqual([
+    JSON.stringify([signing.issuer, "project", "app", "one"]),
+    JSON.stringify([signing.issuer, "other", "app", "one"]),
+  ]);
 });
 
 it("loads isolated code, strips caller headers and caches a warm deployment", async () => {
