@@ -19,6 +19,8 @@ import type {
   AppsGetResponses,
   AppsListData,
   AppsListResponses,
+  AppsRuntimeSessionData,
+  AppsRuntimeSessionResponses,
   AppsUpdateData,
   AppsUpdateResponses,
   CliAuthApproveData,
@@ -72,6 +74,18 @@ export type Options<
    */
   meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
+
+export const appsRuntimeSession = <ThrowOnError extends boolean = false>(
+  options: Options<AppsRuntimeSessionData, ThrowOnError>,
+): RequestResult<AppsRuntimeSessionResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<AppsRuntimeSessionResponses, unknown, ThrowOnError>({
+    url: "/apps/{appId}/runtime/session",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
 
 export const appsList = <ThrowOnError extends boolean = false>(
   options: Options<AppsListData, ThrowOnError>,

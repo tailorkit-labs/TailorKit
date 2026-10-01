@@ -3,11 +3,21 @@ import { z } from "zod";
 import { StorageError } from "./errors";
 import type { StorageIdentity } from "./server";
 
+/** Fixed audience for the hosted app runtime. */
+export const APP_RUNTIME_AUDIENCE = "tailorkit-apps-runtime";
+
+export function appRuntimeIssuer(platformUrl: string) {
+  const url = new URL(platformUrl);
+  if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash)
+    throw new Error("Platform URL requires HTTPS and no credentials, query or fragment");
+  return url.href.replace(/\/$/u, "");
+}
+
 export interface StorageSigningOptions {
   issuer: string;
   audience: string;
   keyId: string;
-  /** ES256 private key. Keep this in the host server only. */
+  /** ES256 private key. Keep this in the trusted issuing server only. */
   privateKey: CryptoKey | JsonWebKey;
   lifetimeSeconds?: number;
 }
@@ -17,7 +27,7 @@ export interface StorageTrust {
   appId?: string;
   projectId?: string;
   requireDeployment?: boolean;
-  /** Trusted host public keys, provisioned by the operator; never read from JWT headers. */
+  /** Trusted issuer public keys, provisioned by the operator; never read from JWT headers. */
   publicKeys: { keys: (JsonWebKey & { kid: string })[] };
 }
 const access = z.object({

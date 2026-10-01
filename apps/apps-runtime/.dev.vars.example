@@ -1,6 +1,2 @@
 PLATFORM_URL=https://your-development-platform.example/api/platform
 RUNTIME_SERVICE_TOKEN=shared-private-runtime-service-token-at-least-32-characters
-STORAGE_ISSUER=https://your-host.example
-STORAGE_AUDIENCE=tailorkit-apps-runtime
-STORAGE_PUBLIC_KEYS={"keys":[{"kty":"EC","crv":"P-256","kid":"host-key","x":"public-key-x","y":"public-key-y"}]}
-STORAGE_ORIGINS=["http://localhost:5011"]

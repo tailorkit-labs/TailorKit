@@ -1,19 +1,18 @@
 // Test fixtures use promise-shaped callbacks and assertions on known fixture values.
 /* eslint-disable require-await, typescript/no-non-null-assertion, unicorn/no-await-expression-member */
 import { expect, it, vi } from "vite-plus/test";
-import { storageTokenVerifier } from "@tailorkit/app-storage/auth";
-import { handleStorageSession } from "./storage";
+import { handleStorageSession as rawHandleStorageSession } from "./storage";
 
-const { publicKey, privateKey } = await crypto.subtle.generateKey(
-  { name: "ECDSA", namedCurve: "P-256" },
-  true,
-  ["sign", "verify"],
-);
+const issueSession = vi.fn(async () => ({
+  token: "platform-issued-token",
+  expiresAt: Date.now() + 120_000,
+}));
+const handleStorageSession = (
+  request: Parameters<typeof rawHandleStorageSession>[0],
+  options: Parameters<typeof rawHandleStorageSession>[1],
+  authenticate: Parameters<typeof rawHandleStorageSession>[2],
+) => rawHandleStorageSession(request, options, authenticate, issueSession);
 const options = {
-  privateKey,
-  keyId: "host-key",
-  issuer: "https://host.test",
-  audience: "storage",
   resolveInstallation: vi.fn(({ appId }: { appId: string }) =>
     appId === "installed-app"
       ? {
@@ -41,18 +40,15 @@ it("issues a short-lived token only after host authorization using verified scop
   expect(response.status).toBe(200);
   expect(response.headers.get("cache-control")).toBe("no-store");
   const session = await response.json();
-  const verify = storageTokenVerifier({
-    ...options,
-    appId: "installed-app",
-    publicKeys: {
-      keys: [{ ...(await crypto.subtle.exportKey("jwk", publicKey)), kid: "host-key" }],
-    },
-  });
-  expect(await verify(session.token)).toMatchObject({
-    userId: "verified-user",
-    installationId: "host-installation",
-    appId: "installed-app",
-  });
+  expect(session.token).toBe("platform-issued-token");
+  expect(issueSession).toHaveBeenCalledWith(
+    expect.objectContaining({
+      userId: "verified-user",
+      installationId: "host-installation",
+      appId: "installed-app",
+    }),
+    { workspace: { id: "authorized-workspace" } },
+  );
   expect(options.resolveInstallation).toHaveBeenCalledWith(
     expect.objectContaining({ scopes: { workspace: { id: "authorized-workspace" } } }),
   );

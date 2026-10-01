@@ -1,5 +1,3 @@
-import { issueStorageToken } from "@tailorkit/app-storage/auth";
-import type { StorageSigningOptions } from "@tailorkit/app-storage/auth";
 import type { TailorKitScopes } from "./types";
 
 export interface HostStorageAccess {
@@ -12,7 +10,7 @@ export interface HostStorageAccess {
   url: string;
 }
 
-export interface HostStorageOptions extends StorageSigningOptions {
+export interface HostStorageOptions {
   /** Authorize membership and resolve a stable installation from the host's verified scopes.
    * Return null for unauthorized apps. The client cannot choose a storage ID or runtime URL.
    */
@@ -28,6 +26,10 @@ export async function handleStorageSession(
   request: Request,
   options: HostStorageOptions,
   authenticate: (input: { request: Request }) => Promise<{ scopes: TailorKitScopes } | null>,
+  issueSession: (
+    access: HostStorageAccess,
+    scopes: TailorKitScopes,
+  ) => Promise<{ token: string; expiresAt: number }>,
 ) {
   const headers = { "cache-control": "no-store" };
   const origin = request.headers.get("origin");
@@ -97,6 +99,6 @@ export async function handleStorageSession(
   ) {
     throw new Error("Storage runtime URLs require HTTPS (or loopback for local development)");
   }
-  const session = await issueStorageToken(options, access);
+  const session = await issueSession(access, viewer.scopes);
   return Response.json({ ...session, url: access.url }, { headers });
 }

@@ -84,7 +84,11 @@ export function createStorageClient(options: StorageClientOptions): StorageClien
         fetch: async (target, init) => {
           const headers = new Headers(init.headers);
           headers.set("authorization", `Bearer ${auth.token}`);
-          const response = await (options.fetch ?? fetch)(target, { ...init, headers });
+          const response = await (options.fetch ?? fetch)(target, {
+            ...init,
+            credentials: "omit",
+            headers,
+          });
           // Authentication can fail at the Worker boundary before the oRPC codec runs.
           if (response.status === 401) {
             throw new StorageError("UNAUTHORIZED", "Storage token expired or rejected");

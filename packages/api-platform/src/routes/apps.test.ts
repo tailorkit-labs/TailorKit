@@ -12,7 +12,10 @@ import { createTestDb } from "../test/pglite";
 
 const testState = vi.hoisted(() => ({
   db: undefined as unknown,
+  issueToken: vi.fn(async () => ({ token: "platform-token", expiresAt: Date.now() + 120_000 })),
 }));
+
+vi.mock("@tailorkit/kv", () => ({ getKV: () => undefined }));
 
 vi.mock("@tailorkit/db", () => ({
   createDb: () => testState.db,
@@ -20,6 +23,8 @@ vi.mock("@tailorkit/db", () => ({
     return testState.db;
   },
 }));
+
+vi.mock("../app-runtime-auth", () => ({ issueAppRuntimeToken: testState.issueToken }));
 
 const { appRouter } = await import("./apps");
 const { canonicalizeScope } = await import("../scope");
@@ -405,6 +410,44 @@ describe("platform appRouter", () => {
       { context },
     );
     expect(deployed.body.currentDeployment?.id).toBe(deployment.id);
+
+    const input = {
+      params: { appId: created.publicId },
+      body: {
+        scopes: [productionScope],
+        userId: "verified-user",
+        installationId: "installation",
+        deploymentId: deployment.id,
+      },
+    };
+    const session = await call(appRouter.runtimeSession, input, { context });
+    expect(session.body.token).toBe("platform-token");
+    expect(testState.issueToken).toHaveBeenCalledWith({
+      userId: "verified-user",
+      installationId: "installation",
+      appId: created.id,
+      projectId,
+      deploymentId: deployment.id,
+    });
+    await expect(
+      call(
+        appRouter.runtimeSession,
+        { ...input, body: { ...input.body, scopes: [stagingScope] } },
+        { context },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(
+      call(appRouter.runtimeSession, input, {
+        context: { ...context, project: { ...context.project, id: otherProjectId } },
+      }),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(
+      call(
+        appRouter.runtimeSession,
+        { ...input, body: { ...input.body, deploymentId: "old" } },
+        { context },
+      ),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
 
     const deleted = await call(
       appRouter.delete,

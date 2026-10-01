@@ -1050,6 +1050,9 @@ importers:
       '@tailorkit/api-utils':
         specifier: workspace:*
         version: link:../api-utils
+      '@tailorkit/app-storage':
+        specifier: workspace:*
+        version: link:../app-storage
       '@tailorkit/asset-delivery':
         specifier: workspace:*
         version: link:../asset-delivery

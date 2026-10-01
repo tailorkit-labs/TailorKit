@@ -1,3 +1,4 @@
+import { appRuntimeKeysResponse } from "@tailorkit/api-platform/app-runtime-auth";
 import { onError } from "@orpc/server";
 import { createContext } from "@tailorkit/api-platform/context";
 import { platformRouter } from "@tailorkit/api-platform";
@@ -27,6 +28,9 @@ async function handle({ request }: { request: Request }) {
     "tailorkit.adapter": "orpc-openapi",
     "tailorkit.package": "apps-web",
   });
+
+  if (request.method === "GET" && new URL(request.url).pathname === "/api/platform/runtime/keys")
+    return appRuntimeKeysResponse();
 
   const context = await createContext({ request }).catch((error) => {
     recordException(error, { "tailorkit.adapter": "orpc-openapi" });

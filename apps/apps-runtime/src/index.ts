@@ -1,7 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { Effect, Layer } from "effect";
-import { bearerToken, storageTokenVerifier } from "@tailorkit/app-storage/auth";
-import type { StorageTrust } from "@tailorkit/app-storage/auth";
+import { bearerToken, appRuntimeIssuer } from "@tailorkit/app-storage/auth";
+import { verifier } from "./auth";
 import { StorageError } from "@tailorkit/app-storage";
 import { storageError } from "@tailorkit/app-storage/runtime";
 import { deploymentSource } from "./source";
@@ -15,15 +15,6 @@ import {
 } from "./runtime";
 import { authenticatedResponse, errorResponse, readBounded } from "./http";
 
-export function verifier(env: Env) {
-  return storageTokenVerifier({
-    issuer: env.STORAGE_ISSUER,
-    audience: env.STORAGE_AUDIENCE,
-    requireDeployment: true,
-    publicKeys: JSON.parse(env.STORAGE_PUBLIC_KEYS) as StorageTrust["publicKeys"],
-  });
-}
-
 /** Trusted supervisor. The fixed facet name preserves SQLite when its code changes. */
 export class AppInstallation extends DurableObject<Env> {
   #queue = new RequestQueue();
@@ -36,7 +27,7 @@ export class AppInstallation extends DurableObject<Env> {
       try {
         const identity = runtimeIdentity(await this.#verify(bearerToken(request)));
         const expected = this.env.STORES.idFromName(
-          installationName(identity, this.env.STORAGE_ISSUER),
+          installationName(identity, appRuntimeIssuer(this.env.PLATFORM_URL)),
         );
         if (!this.ctx.id.equals(expected))
           throw new StorageError("FORBIDDEN", "Installation mismatch");
@@ -109,17 +100,12 @@ export class AppInstallation extends DurableObject<Env> {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const origin = request.headers.get("origin");
-    const origins = JSON.parse(env.STORAGE_ORIGINS) as string[];
-    if (origin && !origins.includes(origin))
-      return errorResponse(new StorageError("FORBIDDEN", "Forbidden origin"));
     const cors = new Headers({
       "cache-control": "no-store",
-      vary: "Origin",
+      "access-control-allow-origin": "*",
       "access-control-allow-methods": "POST, OPTIONS",
       "access-control-allow-headers": "authorization, content-type",
     });
-    if (origin) cors.set("access-control-allow-origin", origin);
 
     let response: Response;
     try {
@@ -129,7 +115,9 @@ export default {
       else {
         const identity = runtimeIdentity(await verifier(env)(bearerToken(request)));
         const bytes = await readBounded(request, 1024 * 1024);
-        response = await env.STORES.getByName(installationName(identity, env.STORAGE_ISSUER)).fetch(
+        response = await env.STORES.getByName(
+          installationName(identity, appRuntimeIssuer(env.PLATFORM_URL)),
+        ).fetch(
           new Request(request.url, {
             method: "POST",
             headers: request.headers,

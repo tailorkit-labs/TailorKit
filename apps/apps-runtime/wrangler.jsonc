@@ -12,10 +12,6 @@
   "secrets": { "required": ["RUNTIME_SERVICE_TOKEN"] },
   "vars": {
     "PLATFORM_URL": "",
-    "STORAGE_ISSUER": "",
-    "STORAGE_AUDIENCE": "",
-    "STORAGE_PUBLIC_KEYS": "{\"keys\":[]}",
-    "STORAGE_ORIGINS": "[]",
   },
   "observability": { "enabled": true, "traces": { "enabled": true } },
 }

@@ -1,3 +1,4 @@
+import { issueStorageToken } from "@tailorkit/app-storage/auth";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { createTailorKitServer } from "@tailorkit/core/server";
@@ -20,11 +21,31 @@ const hostOptions = {
   },
   contexts: { "/": z.object({}) },
   slots: { panel: { views: ["/"] } },
+  // This loopback fixture substitutes the platform issuer for the legacy local gateway.
+  $internal: {
+    platformFetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      if (!request.url.endsWith("/apps/persistent-todo-demo/runtime/session"))
+        throw new Error("Unexpected fixture platform request");
+      const body = (await request.json()) as { userId: string; installationId: string };
+      return Response.json(
+        await issueStorageToken(
+          {
+            issuer: "http://localhost:5011",
+            audience: "tailorkit-storage",
+            keyId: "local-dev",
+            privateKey,
+          },
+          {
+            userId: body.userId,
+            installationId: body.installationId,
+            appId: "persistent-todo-demo",
+          },
+        ),
+      );
+    },
+  },
   storage: {
-    issuer: "http://localhost:5011",
-    audience: "tailorkit-storage",
-    keyId: "local-dev",
-    privateKey,
     resolveInstallation: ({
       appId,
       scopes,
@@ -33,7 +54,13 @@ const hostOptions = {
       scopes: Record<string, Record<string, unknown>>;
     }) =>
       appId === "persistent-todo-demo" && scopes.workspace?.id === "demo"
-        ? { userId: "local-user", appId, installationId: "demo", url: "http://localhost:8787/rpc" }
+        ? {
+            userId: "local-user",
+            appId,
+            installationId: "demo",
+            deploymentId: "local",
+            url: "http://localhost:8787/rpc",
+          }
         : null,
   },
 } as const;

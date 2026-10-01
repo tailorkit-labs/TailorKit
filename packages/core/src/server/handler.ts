@@ -1,6 +1,6 @@
 import { handleStorageSession } from "./storage";
 import { RPCHandler } from "@orpc/server/fetch";
-import { appsList, previewAccepted } from "@tailorkit/client-platform/client";
+import { appsList, appsRuntimeSession, previewAccepted } from "@tailorkit/client-platform/client";
 import { createClient } from "@tailorkit/client-platform/client/client/index";
 import type {
   NoComponentFieldCallbackConflicts,
@@ -115,7 +115,32 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
     const url = new URL(request.url);
     const previewPrefix = `${basePath}/preview/`;
     if (url.pathname === `${basePath}/storage/session` && options.storage) {
-      return handleStorageSession(request, options.storage, authenticate);
+      return handleStorageSession(
+        request,
+        options.storage,
+        authenticate,
+        async (access, scopes) => {
+          if (!access.deploymentId)
+            throw new Error("Storage access requires a published deployment ID");
+          const headers = await (typeof platformHeaders === "function"
+            ? platformHeaders()
+            : platformHeaders);
+          const session = await appsRuntimeSession({
+            client: platform,
+            responseStyle: "fields",
+            throwOnError: true,
+            headers,
+            path: { appId: access.appId },
+            body: {
+              userId: access.userId,
+              installationId: access.installationId,
+              deploymentId: access.deploymentId,
+              scopes: Object.entries(scopes).map(([name, value]) => ({ name, value })),
+            },
+          });
+          return session.data;
+        },
+      );
     }
     if (url.pathname === `${basePath}/schema`) {
       return Response.json(schema.serialize());

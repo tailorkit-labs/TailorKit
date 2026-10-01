@@ -14,6 +14,38 @@ export type Schema0 =
       [key: string]: Schema0;
     };
 
+export type AppsRuntimeSessionData = {
+  body: {
+    scopes: Array<{
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    }>;
+    userId: string;
+    installationId: string;
+    deploymentId: string;
+  };
+  path: {
+    appId: string;
+  };
+  query?: never;
+  url: "/apps/{appId}/runtime/session";
+};
+
+export type AppsRuntimeSessionResponses = {
+  /**
+   * OK
+   */
+  200: {
+    token: string;
+    expiresAt: number;
+  };
+};
+
+export type AppsRuntimeSessionResponse =
+  AppsRuntimeSessionResponses[keyof AppsRuntimeSessionResponses];
+
 export type AppsListData = {
   body: {
     page?: number;

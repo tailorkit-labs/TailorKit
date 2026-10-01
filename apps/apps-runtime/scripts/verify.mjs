@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { build } from "vite";
 import { createStorageClient, functionReference } from "@tailorkit/app-storage";
-import { issueStorageToken } from "@tailorkit/app-storage/auth";
+import { issueStorageToken, APP_RUNTIME_AUDIENCE } from "@tailorkit/app-storage/auth";
 
 // Exercise precisely the workerd/Miniflare version bundled with this project's Wrangler.
 const require = createRequire(import.meta.url);
@@ -21,8 +21,8 @@ const keys = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256
   "verify",
 ]);
 const signing = {
-  issuer: "https://host.test",
-  audience: "apps-runtime",
+  issuer: "https://platform.test/api/platform",
+  audience: APP_RUNTIME_AUDIENCE,
   keyId: "test",
   privateKey: keys.privateKey,
 };
@@ -43,12 +43,9 @@ const options = {
   bindings: {
     PLATFORM_URL: "https://platform.test/api/platform",
     RUNTIME_SERVICE_TOKEN: "private-key",
-    STORAGE_ISSUER: signing.issuer,
-    STORAGE_AUDIENCE: signing.audience,
-    STORAGE_PUBLIC_KEYS: JSON.stringify(publicKeys),
-    STORAGE_ORIGINS: "[]",
   },
   outboundService: async (request) => {
+    if (request.url === `${signing.issuer}/runtime/keys`) return Response.json(publicKeys);
     assert.equal(request.url, "https://platform.test/api/platform/apps/app/runtime");
     assert.equal(request.headers.get("authorization"), "Bearer private-key");
     metadataReads++;

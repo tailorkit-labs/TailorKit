@@ -14,7 +14,7 @@ vi.mock("cloudflare:workers", () => ({
 
 import { Effect } from "effect";
 import { StorageError } from "@tailorkit/app-storage";
-import { issueStorageToken } from "@tailorkit/app-storage/auth";
+import { issueStorageToken, APP_RUNTIME_AUDIENCE } from "@tailorkit/app-storage/auth";
 import worker, { AppInstallation } from "./index";
 
 // Node requires a duplex hint for request streams; workerd does not.
@@ -45,8 +45,8 @@ const keys = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256
   "verify",
 ]);
 const signing = {
-  issuer: "https://host.test",
-  audience: "runtime",
+  issuer: "https://platform.test/api/platform",
+  audience: APP_RUNTIME_AUDIENCE,
   keyId: "host",
   privateKey: keys.privateKey,
 };
@@ -76,6 +76,10 @@ beforeEach(() => {
 });
 
 function setup() {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => Response.json(publicKeys)),
+  );
   let version: string | undefined;
   const facetFetch = vi.fn(async (_request: Request) => new Response("result"));
   const startup = vi.fn();
@@ -102,10 +106,7 @@ function setup() {
   const getByName = vi.fn((_name: string) => ({ fetch: routeFetch }));
   const idFromName = vi.fn(() => id);
   const env = {
-    STORAGE_ISSUER: signing.issuer,
-    STORAGE_AUDIENCE: signing.audience,
-    STORAGE_PUBLIC_KEYS: JSON.stringify(publicKeys),
-    STORAGE_ORIGINS: '["https://host.test"]',
+    PLATFORM_URL: signing.issuer,
     STORES: { getByName, idFromName },
     LOADER: { get: load },
   } as unknown as Env;
@@ -144,9 +145,7 @@ async function request(overrides = {}, path = "/rpc/query", body = "{}") {
 it("answers a preflight without accessing authentication or storage", async () => {
   const response = await worker.fetch(
     new Request("https://runtime.test/rpc/query", { method: "OPTIONS" }),
-    {
-      STORAGE_ORIGINS: "[]",
-    } as Parameters<typeof worker.fetch>[1],
+    {} as Parameters<typeof worker.fetch>[1],
   );
 
   expect(response.status).toBe(204);
@@ -167,7 +166,7 @@ it.each(["GET", "POST"])(
   },
 );
 
-it("rejects disallowed origins before authentication", async () => {
+it("requires a token even when any origin is allowed", async () => {
   const { env, getByName } = setup();
   const response = await worker.fetch(
     new Request("https://runtime.test/rpc/query", {
@@ -177,7 +176,7 @@ it("rejects disallowed origins before authentication", async () => {
     env,
   );
 
-  expect(response.status).toBe(403);
+  expect(response.status).toBe(401);
   expect(getByName).not.toHaveBeenCalled();
 });
 
@@ -186,8 +185,8 @@ it("authenticates and forwards a bounded RPC body with CORS and stable installat
   const response = await worker.fetch(await request(), env);
 
   expect(response.status).toBe(202);
-  expect(response.headers.get("access-control-allow-origin")).toBe("https://host.test");
-  expect(response.headers.get("vary")).toBe("Origin");
+  expect(response.headers.get("access-control-allow-origin")).toBe("*");
+  expect(response.headers.get("access-control-allow-credentials")).toBeNull();
   expect(response.headers.get("cache-control")).toBe("no-store");
   expect(getByName).toHaveBeenCalledWith(JSON.stringify([signing.issuer, "project", "app", "one"]));
   expect(await routeFetch.mock.calls[0][0].text()).toBe("{}");
@@ -225,7 +224,7 @@ it("maps forwarding failures to a sanitized response with allowed-origin CORS", 
 
   expect(response.status).toBe(500);
   expect(await response.text()).not.toContain("private details");
-  expect(response.headers.get("access-control-allow-origin")).toBe("https://host.test");
+  expect(response.headers.get("access-control-allow-origin")).toBe("*");
 });
 
 it("accepts different signed projects and routes them to distinct installations", async () => {

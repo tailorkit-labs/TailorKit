@@ -1,3 +1,4 @@
+import { issueAppRuntimeToken } from "../app-runtime-auth";
 import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { db } from "@tailorkit/db";
@@ -259,7 +260,41 @@ const deploy = protectedRouter
     };
   });
 
+// Hosts authenticate with their project key and assert membership using verified scopes.
+const runtimeSession = protectedRouter
+  .meta(openapi({ path: "/apps/{appId}/runtime/session", method: "POST" }))
+  .input(
+    z.object({
+      params: z.object({ appId: z.string().min(1).max(256) }),
+      body: z.object({
+        scopes: scopesSchema,
+        userId: z.string().min(1).max(256),
+        installationId: z.string().min(1).max(256),
+        deploymentId: z.string().min(1).max(256),
+      }),
+    }),
+  )
+  .output(z.object({ body: z.object({ token: z.string(), expiresAt: z.number() }) }))
+  .use(
+    requireAppInScopes.adaptInput(({ params: { appId }, body: { scopes } }) => ({ appId, scopes })),
+  )
+  .handler(async ({ context, input }) => {
+    const deployment = context.app.currentDeployment;
+    if (!deployment || deployment.id !== input.body.deploymentId)
+      throw new ORPCError("CONFLICT", { message: "App deployment changed; reload the app." });
+    return {
+      body: await issueAppRuntimeToken({
+        userId: input.body.userId,
+        installationId: input.body.installationId,
+        projectId: context.project.id,
+        appId: context.app.id,
+        deploymentId: deployment.id,
+      }),
+    };
+  });
+
 export const appRouter = o.router({
+  runtimeSession,
   list: listApps,
   get: getApp,
   create: createApp,
