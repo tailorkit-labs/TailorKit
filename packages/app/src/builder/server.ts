@@ -24,10 +24,11 @@ export async function buildServer(
       .then(() => shipped)
       .catch(() => new URL("../../../../apps/apps-runtime/src/facet.ts", import.meta.url)),
   );
+  const actionWorker = path.join(path.dirname(facet), "action-worker.ts");
   const entry = path.join(directory, "entry.mjs");
   await writeFile(
     entry,
-    `import app from ${JSON.stringify(path.resolve(loaded.root, config.entry))};\nimport { createAppFacet } from ${JSON.stringify(facet)};\nexport class AppFacet extends createAppFacet(app) {}\n`,
+    `import app from ${JSON.stringify(path.resolve(loaded.root, config.entry))};\nimport { createAppFacet } from ${JSON.stringify(facet)};\nimport { createAppActions } from ${JSON.stringify(actionWorker)};\nexport class AppFacet extends createAppFacet(app) {}\nexport default class AppActions extends createAppActions(app) {}\n`,
   );
   const references = `import { reference } from "@tailorkit/apps-server/client";\nimport type { References } from "@tailorkit/apps-server/client";\nimport type app from ${JSON.stringify(relativeModule(path.dirname(path.resolve(loaded.root, config.references)), path.resolve(loaded.root, config.entry)))};\nexport const api = new Proxy(\n  {},\n  {\n    get(_target, name) {\n      return reference(String(name), "query");\n    },\n  },\n) as References<typeof app.functions>;\n`;
   // The kind is type-only for dispatch: the server enforces the actual function kind.

@@ -1,10 +1,16 @@
-import { createRealtime, createRpcConnection } from "@tailorkit/apps-server/runtime";
+import {
+  createRealtime,
+  createRpcConnection,
+  invocationSchema,
+} from "@tailorkit/apps-server/runtime";
 import type { Invocation, ExecutionResult, MutationResult } from "@tailorkit/apps-server/runtime";
 import type { Identity } from "@tailorkit/apps-server";
 import { z } from "zod";
 import { DurableObject } from "cloudflare:workers";
 import { Effect, Layer } from "effect";
 import { bearerToken, appRuntimeIssuer } from "@tailorkit/app-storage/auth";
+import { ActionLeases, abortable } from "./actions";
+export { ActionBridge } from "./actions";
 import { verifier } from "./auth";
 import { StorageError } from "@tailorkit/app-storage";
 import { storageError } from "@tailorkit/app-storage/runtime";
@@ -12,6 +18,8 @@ import { deploymentSource } from "./source";
 import {
   DeploymentSource,
   FacetExecution,
+  ActionExecution,
+  executeAction,
   RequestQueue,
   execute,
   installationName,
@@ -22,6 +30,7 @@ import { authenticatedResponse, errorResponse, readBounded } from "./http";
 /** Trusted supervisor. The fixed facet name preserves SQLite when its code changes. */
 export class AppInstallation extends DurableObject<Env> {
   #queue = new RequestQueue();
+  #actions = new ActionLeases();
   #verify = verifier(this.env);
   #source = deploymentSource(this.env);
   #cached?: { version: string; code: string };
@@ -112,16 +121,22 @@ export class AppInstallation extends DurableObject<Env> {
   }
 
   async #invoke(
-    input: Invocation & { requestId?: string },
+    input: Invocation & { requestId?: string; actionId?: string },
     identity: Identity,
     kind: "query" | "mutation",
   ) {
     return this.#queue.run(async () => {
+      if (input.actionId) this.#actions.access(input.actionId, false);
       const response = await this.#run(
         new Request("https://app.internal/invoke", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ ...input, kind }),
+          body: JSON.stringify({
+            name: input.name,
+            args: input.args,
+            requestId: input.requestId,
+            kind,
+          }),
         }),
         identity,
       );
@@ -142,6 +157,96 @@ export class AppInstallation extends DurableObject<Env> {
     });
   }
 
+  /** These RPC methods are exposed only through installation-bound action capabilities. */
+  actionAccess(actionId: string) {
+    return this.#actions.access(actionId).deadline;
+  }
+  actionCall(actionId: string, kind: "query" | "mutation", raw: unknown) {
+    const { identity } = this.#actions.access(actionId);
+    const input = (
+      kind === "query" ? invocationSchema : invocationSchema.extend({ requestId: z.uuid() })
+    ).parse(raw);
+    if (new TextEncoder().encode(JSON.stringify(input)).byteLength > 1024 * 1024)
+      throw new StorageError("BAD_REQUEST", "Action input too large");
+    const scoped = { ...input, actionId };
+    return kind === "query"
+      ? this.#realtime.query(scoped, identity)
+      : this.#realtime.mutate(
+          { ...scoped, requestId: (input as Invocation & { requestId: string }).requestId },
+          identity,
+        );
+  }
+
+  #action(input: Invocation, identity: Identity, signal?: AbortSignal) {
+    // Actions stay outside both queues: callbacks can execute DB operations while external I/O waits.
+    const provider = Layer.succeed(ActionExecution, {
+      run: (invocation, access, deployment) =>
+        Effect.tryPromise({
+          try: async () => {
+            const lease = this.#actions.open(access, signal);
+            try {
+              const version = `${deployment.deploymentId}:${deployment.checksum}`;
+              const code =
+                this.#cached?.version === version
+                  ? this.#cached.code
+                  : await Effect.runPromise(this.#source.code(deployment));
+              lease.signal.throwIfAborted();
+              const bridge = this.ctx.exports.ActionBridge({
+                props: {
+                  installationName: installationName(
+                    access,
+                    appRuntimeIssuer(this.env.PLATFORM_URL),
+                  ),
+                  actionId: lease.id,
+                },
+              });
+              const worker = this.env.LOADER.load({
+                compatibilityDate: "2026-09-21",
+                mainModule: "app.js",
+                modules: { "app.js": code },
+                env: { DATABASE: bridge },
+                globalOutbound: bridge,
+                limits: { cpuMs: 50, subRequests: 64 },
+              });
+              const response = await abortable(
+                worker.getEntrypoint().fetch(
+                  new Request("https://app.internal/action", {
+                    method: "POST",
+                    headers: {
+                      "content-type": "application/json",
+                      "x-tailorkit-identity": JSON.stringify(access),
+                    },
+                    body: JSON.stringify(invocation),
+                    signal: lease.signal,
+                  }),
+                ),
+                lease.signal,
+              );
+              const result = JSON.parse(
+                new TextDecoder().decode(
+                  await abortable(readBounded(response, 1024 * 1024), lease.signal),
+                ),
+              );
+              if (!response.ok)
+                throw new StorageError(
+                  result.code ?? "INTERNAL_SERVER_ERROR",
+                  result.message ?? "Action failed",
+                );
+              return result.value;
+            } finally {
+              lease.close();
+            }
+          },
+          catch: storageError,
+        }),
+    });
+    return Effect.runPromise(
+      executeAction(input, identity).pipe(
+        Effect.provide(Layer.merge(Layer.succeed(DeploymentSource, this.#source), provider)),
+      ),
+    );
+  }
+
   async #open(_request: Request, identity: Identity) {
     const current = await Effect.runPromise(this.#source.current(identity));
     if (current.projectId !== identity.projectId || current.appId !== identity.appId)
@@ -154,7 +259,9 @@ export class AppInstallation extends DurableObject<Env> {
     const [client, server] = [pair[0], pair[1]];
     server.accept();
     this.#connections.add(server);
-    const rpc = createRpcConnection(this.#realtime, server, identity);
+    const rpc = createRpcConnection(this.#realtime, server, identity, (input, access, signal) =>
+      this.#action(input, access, signal),
+    );
     const expiry = setTimeout(
       () => server.close(1008, "Authentication expired"),
       Math.max(0, identity.expiresAt - Date.now()),

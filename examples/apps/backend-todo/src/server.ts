@@ -1,8 +1,22 @@
-import { AppError, defineApp, eq, mutation, query } from "@tailorkit/apps-server";
+import { AppError, defineApp, eq, mutation, query, action } from "@tailorkit/apps-server";
 import { z } from "zod";
 import { todos } from "./schema";
+import { api } from "./server.gen";
+type Todo = typeof todos.$inferSelect;
 
 export default defineApp({
+  importTodo: action({
+    args: z.object({ url: z.url() }),
+    async handler({ args, runQuery, runMutation, signal }): Promise<Todo> {
+      await runQuery(api.list, {});
+      const response = await fetch(args.url, { signal });
+      if (!response.ok) throw new AppError("UNAVAILABLE", "External API failed");
+      const data = z
+        .object({ title: z.string().trim().min(1).max(500) })
+        .parse(await response.json());
+      return runMutation(api.add, { text: data.title });
+    },
+  }),
   list: query({
     args: z.object({}),
     handler: ({ db }) => db.select().from(todos).orderBy(todos.id).limit(1000).all(),

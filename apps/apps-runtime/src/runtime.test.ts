@@ -4,6 +4,8 @@ import { expect, it, vi } from "vite-plus/test";
 import {
   DeploymentSource,
   FacetExecution,
+  ActionExecution,
+  executeAction,
   RequestQueue,
   execute,
   installationName,
@@ -142,4 +144,47 @@ it("rejects a token that expired while resolving its deployment before execution
 
   expect(result).toBe("UNAUTHORIZED");
   expect(forward).not.toHaveBeenCalled();
+});
+
+it.each([
+  ["projectId", "other", "FORBIDDEN"],
+  ["appId", "other", "FORBIDDEN"],
+  ["deploymentId", "v2", "INCOMPATIBLE_VERSION"],
+] as const)("authorizes action %s before invoking its provider", async (field, value, code) => {
+  const run = vi.fn(() => Effect.succeed("done"));
+  const result = await Effect.runPromise(
+    executeAction({ name: "import", args: {} }, identity).pipe(
+      Effect.provide(
+        Layer.merge(
+          Layer.succeed(DeploymentSource, {
+            current: () => Effect.succeed({ ...deployment, [field]: value }),
+            code: () => Effect.succeed("code"),
+          }),
+          Layer.succeed(ActionExecution, { run }),
+        ),
+      ),
+      Effect.catch((error) => Effect.succeed(error.code)),
+    ),
+  );
+  expect(result).toBe(code);
+  expect(run).not.toHaveBeenCalled();
+});
+it("runs actions through the replaceable action service without a facet service", async () => {
+  const input = { name: "import", args: { value: 1 } };
+  const run = vi.fn(() => Effect.succeed("done"));
+  const result = await Effect.runPromise(
+    executeAction(input, identity).pipe(
+      Effect.provide(
+        Layer.merge(
+          Layer.succeed(DeploymentSource, {
+            current: () => Effect.succeed(deployment),
+            code: () => Effect.succeed("code"),
+          }),
+          Layer.succeed(ActionExecution, { run }),
+        ),
+      ),
+    ),
+  );
+  expect(result).toBe("done");
+  expect(run).toHaveBeenCalledWith(input, identity, deployment);
 });

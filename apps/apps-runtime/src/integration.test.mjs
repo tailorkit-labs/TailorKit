@@ -35,6 +35,9 @@ it("runs isolated app backends with persistent SQLite and two-client realtime up
     keys: [{ ...(await crypto.subtle.exportKey("jwk", keys.publicKey)), kid: "test" }],
   };
   let published;
+  let externalCalls = 0;
+  let releaseExternal;
+  let pendingExternal;
   let metadataReads = 0;
   const options = {
     name: "tailorkit-runtime-test",
@@ -50,6 +53,17 @@ it("runs isolated app backends with persistent SQLite and two-client realtime up
       RUNTIME_SERVICE_TOKEN: "private-key",
     },
     outboundService: async (request) => {
+      if (request.url.startsWith("https://third-party.test/")) {
+        externalCalls++;
+        assert.equal(request.headers.get("authorization"), null);
+        if (request.url.endsWith("/redirect"))
+          return new Response(null, {
+            status: 302,
+            headers: { location: "https://127.0.0.1/private" },
+          });
+        if (request.url.endsWith("/slow")) await pendingExternal;
+        return Response.json({ title: "Imported from external API" });
+      }
       if (request.url === `${signing.issuer}/runtime/keys`) return Response.json(publicKeys);
       assert.equal(request.url, "https://platform.test/api/platform/apps/app/runtime");
       assert.equal(request.headers.get("authorization"), "Bearer private-key");
@@ -129,6 +143,20 @@ export class AppFacet extends DurableObject {
     const setup = websocket
       ? `import app from ${JSON.stringify(path.join(repo, "examples/apps/backend-todo/src/server.ts"))};
 import { createAppFacet } from ${JSON.stringify(path.join(repo, "apps/apps-runtime/src/facet.ts"))};
+import { createAppActions } from ${JSON.stringify(path.join(repo, "apps/apps-runtime/src/action-worker.ts"))};
+import { defineApp, action, AppError } from ${JSON.stringify(path.join(repo, "packages/apps-server/dist/index.js"))};
+import { reference } from ${JSON.stringify(path.join(repo, "packages/apps-server/dist/client.js"))};
+import { env } from "cloudflare:workers";
+let globals = 0;
+const actionApp = defineApp({ ...app.functions,
+  isolation: action({ args: app.functions.list.args, handler: context => ({ bindings: Object.keys(env), db: "db" in context, globals: ++globals, userId: context.identity.userId }) }),
+  failAfterWrite: action({ args: app.functions.list.args, async handler({ runMutation }) {
+    await runMutation(reference("add", "mutation"), { text: "Committed before the action failed" });
+    throw new AppError("CONFLICT", "Intentional action failure");
+  } }),
+  forgedScope: action({ args: app.functions.list.args, handler: () => env.DATABASE.runMutation({ name: "add", args: { text: "Forged" }, requestId: crypto.randomUUID(), installationId: "another-installation" }) }),
+});
+export default class AppActions extends createAppActions(actionApp) {}
 export class AppFacet extends createAppFacet(app) {
   async fetch(request) {
     for (const statement of ${JSON.stringify(sql.split("--> statement-breakpoint"))}) this.ctx.storage.sql.exec(statement.replace("CREATE TABLE ", "CREATE TABLE IF NOT EXISTS "));
@@ -259,15 +287,76 @@ export class AppFacet extends createStorageFacet(store, ${JSON.stringify([{ id: 
       );
       assert.equal(errors.length, 0);
       if (websocket) {
+        pendingExternal = new Promise((resolve) => {
+          releaseExternal = resolve;
+        });
+        const oldCalls = externalCalls;
+        const action = first.action(reference("importTodo", "action"), {
+          url: "https://third-party.test/slow",
+        });
+        await wait(() => externalCalls > oldCalls, "action reaches external API");
+        // An external request must not hold the database or realtime queue.
+        await second.mutate(add, { text: "While the action waits" });
+        await wait(
+          () => snapshots.every((rows) => rows.at(-1).length === 2),
+          "writes continue while action waits",
+        );
+        releaseExternal();
+        const imported = await action;
+        assert.equal(imported.text, "Imported from external API");
+        await wait(
+          () => snapshots.every((rows) => rows.at(-1).length === 3),
+          "action mutation updates both clients",
+        );
+        const probe = reference("isolation", "action");
+        const isolation = await first.action(probe, {});
+        assert.deepEqual(isolation, {
+          bindings: ["DATABASE"],
+          db: false,
+          globals: 1,
+          userId: "user",
+        });
+        assert.equal((await second.action(probe, {})).globals, 1);
+        await assert.rejects(first.action(reference("forgedScope", "action"), {}));
+        assert.equal((await second.query(list, {})).length, 3);
+        await assert.rejects(first.action(reference("failAfterWrite", "action"), {}), {
+          code: "CONFLICT",
+        });
+        await wait(
+          () => snapshots.every((rows) => rows.at(-1).length === 4),
+          "committed mutation survives action failure",
+        );
+        assert.equal((await second.query(list, {})).length, 4);
+        const beforeRedirect = externalCalls;
+        await assert.rejects(
+          first.action(reference("importTodo", "action"), {
+            url: "https://third-party.test/redirect",
+          }),
+        );
+        assert.equal(externalCalls, beforeRedirect + 1);
+        const beforeBlocked = externalCalls;
+        await assert.rejects(
+          first.action(reference("importTodo", "action"), { url: "http://127.0.0.1/private" }),
+        );
+        assert.equal(externalCalls, beforeBlocked);
+        await assert.rejects(
+          first.query(reference("importTodo", "query"), { url: "https://third-party.test/title" }),
+        );
+        await assert.rejects(first.action(reference("list", "action"), {}));
         stops[1]();
         await second.query(list, {}); // Cancellation and this request share an ordered connection.
         const stoppedCount = snapshots[1].length;
         await first.mutate(add, { text: "After unsubscribe" });
-        await wait(() => snapshots[0].at(-1).length === 2, "remaining active client updates");
+        await wait(() => snapshots[0].at(-1).length === 5, "remaining active client updates");
         assert.equal(snapshots[1].length, stoppedCount);
         const isolated = makeClient("another-installation");
         try {
           assert.deepEqual(await isolated.query(list, {}), []);
+          await isolated.action(reference("importTodo", "action"), {
+            url: "https://third-party.test/title",
+          });
+          assert.equal((await isolated.query(list, {})).length, 1);
+          assert.equal((await first.query(list, {})).length, 5);
         } finally {
           isolated.close();
         }
@@ -281,14 +370,14 @@ export class AppFacet extends createStorageFacet(store, ${JSON.stringify([{ id: 
     mf = new Miniflare(convertV4MiniflareOptions(options));
     const recovered = makeClient();
     try {
-      assert.equal((await recovered.query(list, {})).length, websocket ? 2 : 1);
+      assert.equal((await recovered.query(list, {})).length, websocket ? 5 : 1);
       if (websocket) {
         await recovered.mutate(
           add,
           { text: "Both clients see this persisted mutation" },
           { requestId: "00000000-0000-4000-8000-000000000001" },
         );
-        assert.equal((await recovered.query(list, {})).length, 2);
+        assert.equal((await recovered.query(list, {})).length, 5);
       }
     } finally {
       recovered.close?.();

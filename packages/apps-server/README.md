@@ -1,6 +1,6 @@
 # @tailorkit/apps-server
 
-Apache-2.0 app backend SDK. Define SQLite tables and synchronous queries/mutations with Zod arguments. Drizzle and oRPC v2 run underneath; app code uses this package's APIs.
+Apache-2.0 app backend SDK. Define SQLite tables, synchronous queries/mutations and async actions with Zod arguments. Drizzle and oRPC v2 run underneath; app code uses this package's APIs.
 
 ```ts
 import { defineApp, table, text, mutation, query } from "@tailorkit/apps-server";
@@ -21,21 +21,54 @@ export default defineApp({
 });
 ```
 
-Handlers receive validated `args`, `db`, and verified `identity` (`userId`, `projectId`, `appId`, `installationId`, `deploymentId`, `expiresAt`). Queries expose selection builders; mutations additionally expose insert/update/delete. Use synchronous `.all()`, `.get()` and `.run()`. Async handlers are rejected: writes, result validation and the accepted-write receipt commit in one synchronous transaction. Optional `result: zodSchema` validates the output before commit. Throw `AppError` for an intentional public error; unexpected errors are hidden.
+Handlers receive validated `args`, `db`, and verified `identity` (`userId`, `projectId`, `appId`, `installationId`, `deploymentId`, `expiresAt`). Queries expose selection builders; mutations additionally expose insert/update/delete. Use synchronous `.all()`, `.get()` and `.run()`. Async query/mutation handlers are rejected: writes, result validation and the accepted-write receipt commit in one synchronous transaction. Optional `result: zodSchema` validates the output before commit. Throw `AppError` for an intentional public error; unexpected errors are hidden.
 
 Schema exports include `table`, `text`, `integer`, `real`, `boolean` and common comparison/order operators. This is a small supported surface. Apps can import Drizzle for advanced configurations, but those features are not guaranteed to work with tracking or this driver.
+
+## Queries, mutations and actions
+
+| Type     | Database access                      | External calls | Automatic query reruns                    |
+| -------- | ------------------------------------ | -------------- | ----------------------------------------- |
+| Query    | Read only                            | Blocked        | When subscribed                           |
+| Mutation | Read/write in one atomic transaction | Blocked        | Invalidates affected queries after commit |
+| Action   | Through `runQuery` / `runMutation`   | Async HTTPS    | Its mutations trigger normal invalidation |
+
+Use `action({ args, result?, handler })` for external API calls. Action handlers receive validated `args`, verified `identity`, an abort `signal`, and typed `runQuery` / `runMutation` methods. They have no `db` handle. Actions can be synchronous or async; query/mutation handlers remain synchronous.
+
+```ts
+import { action } from "@tailorkit/apps-server";
+import { api } from "./server.gen";
+
+// Add this definition to defineApp({ ... }). Annotate the return type when
+// using generated references back into the same module to avoid circular inference.
+const importTodo = action({
+  args: z.object({ url: z.url() }),
+  async handler({ args, runQuery, runMutation, signal }): Promise<Todo> {
+    await runQuery(api.list, {});
+    const response = await fetch(args.url, { signal });
+    const data = z.object({ title: z.string() }).parse(await response.json());
+    return runMutation(api.add, { text: data.title });
+  },
+});
+```
+
+Clients call `await client.action(api.importTodo, { url })`. Actions are one-shot calls, never subscriptions, and are not automatically retried. Every `runQuery` / `runMutation` executes separately; the action as a whole is not a transaction. An earlier mutation stays committed if later external work or result validation fails. Combine related database writes into one mutation when they must be atomic. External writes need the provider's idempotency mechanism before retrying an action. `runMutation` accepts an optional `{ requestId }` to reuse the normal mutation receipt when explicitly retrying a database step.
+
+Cloudflare runs each action in a fresh stateless Dynamic Worker, separate from the network-blocked SQLite facet. A trusted callback binding fixes its installation, user and deployment; it cannot choose another store or access platform credentials. The HTTPS gateway checks destinations and redirects, rejects literal private/loopback addresses and local/internal hostnames, and forwards no platform credentials. Action database calls pass through the same realtime coordinator as client calls, so successful writes update active subscriptions. External I/O holds neither the database queue nor the realtime queue.
+
+The initial limits are 16 concurrent actions per installation, 64 database/outbound calls per action, 50 ms CPU and 30 seconds elapsed time (also bounded by JWT expiry). Completion, disconnection, cancellation or expiry revokes callbacks; already committed writes and accepted external effects remain committed. Actions are not durable jobs. Nested `runAction`, scheduling, internal-only functions and app-secret management are deferred.
 
 ## Source layout
 
 - `src/database/`: SQLite schema builders, database types and the tracked Drizzle driver.
-- `src/server/`: query/mutation definitions, atomic execution, realtime coordination and server RPC transport. Tests live beside the implementation.
+- `src/server/`: query/mutation/action definitions, atomic database execution, async action execution, realtime coordination and server RPC transport. Tests live beside the implementation.
 - `src/client/`: browser WebSocket connection, typed references and the host JWT session provider.
 
 The root `index.ts`, `client.ts` and `runtime.ts` files expose the existing public entry points. `errors.ts` is shared by the client and server. Cloudflare-specific adapters remain in `apps/apps-runtime`.
 
 ## Build and upload
 
-Add `server: { entry: "./src/server.ts", references: "./src/server.gen.ts" }` to `tailorkit.config.ts` (these paths are defaults). `tailorkit build` emits `.tailorkit-server/server.js`, the isolated Cloudflare facet, and generates typed references. References import the server module **only as a TypeScript type**; no implementation is evaluated or bundled in the browser. The browser builder rejects server implementation imports.
+Add `server: { entry: "./src/server.ts", references: "./src/server.gen.ts" }` to `tailorkit.config.ts` (these paths are defaults). `tailorkit build` emits `.tailorkit-server/server.js`, containing the isolated SQLite facet and stateless action entry point, and generates typed references. References import the server module **only as a TypeScript type**; no implementation is evaluated or bundled in the browser. The browser builder rejects server implementation imports.
 
 `tailorkit deploy` uploads the client and private server artifact through existing platform-issued blob upload URLs. Apps need no Cloudflare credentials. R2 stores them under separate `client/` and `server/` prefixes; only client assets are public. Client-only apps continue to build without a server artifact. Watch mode watches both builds; generated output stays separate from `.tailorkit`.
 
@@ -73,8 +106,8 @@ pnpm --filter @tailorkit/apps-server test
 pnpm --filter @tailorkit/apps-runtime test
 ```
 
-The runtime test runs disposable local Wrangler/workerd/R2 state and two clients against the example's real backend. It checks persistent writes, atomic replay protection, realtime snapshots, JWT renewal and recovery after restart. It needs no Cloudflare account and deploys nothing. See `examples/apps/backend-todo` and the runtime README.
+The runtime test runs disposable local Wrangler/workerd/R2 state and two clients against the example's real backend, including an external API action and writes continuing while it waits. It checks persistent writes, atomic replay protection, realtime snapshots, JWT renewal and recovery after restart. It needs no Cloudflare account and deploys nothing. See `examples/apps/backend-todo` and the runtime README.
 
 Database migration delivery and production schema initialization are deliberately deferred. `table()` defines a Drizzle-compatible schema; it does not create tables at runtime. A fresh production installation needs its app tables created before queries work. Tests alone initialize their disposable tables using the existing Drizzle-generated fixture SQL; no migration files are uploaded.
 
-This initial implementation uses standard WebSockets, not Durable Object hibernation. Active connections keep the supervisor awake. Each installation serializes calls and query reruns, with limits of 128 connections and 256 active queries. CPU/subrequest limits apply to isolated app code; installation quotas and receipt retention remain future work. It supports one live deployment per installation, full snapshots and table-level tracking. Offline sync, optimistic updates, middleware, Redis notification delivery and advanced dependency tracking are deferred.
+This initial implementation uses standard WebSockets, not Durable Object hibernation. Active connections keep the supervisor awake. Each installation serializes database calls and query reruns, with limits of 128 connections and 256 active queries. CPU/subrequest limits apply to isolated app code; installation quotas and receipt retention remain future work. It supports one live deployment per installation, full snapshots and table-level tracking. Offline sync, optimistic updates, middleware, Redis notification delivery and advanced dependency tracking are deferred.

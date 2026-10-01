@@ -1,6 +1,7 @@
 import { asyncIteratorObject, ORPCError, os } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/websocket";
 import { z } from "zod";
+import type { Invocation } from "./execution";
 import { invocationSchema } from "./execution";
 import type { Identity } from "./functions";
 import { appError } from "../errors";
@@ -74,9 +75,18 @@ export function createRpcConnection(
   realtime: ReturnType<typeof createRealtime>,
   socket: Pick<WebSocket, "send" | "addEventListener" | "removeEventListener" | "close">,
   identity: Identity,
+  action?: (input: Invocation, identity: Identity, signal?: AbortSignal) => Promise<unknown>,
 ) {
   const base = os.$context<Record<string, never>>();
   const handler = new RPCHandler({
+    action: base.input(invocationSchema).handler(async ({ input, signal }) => {
+      try {
+        if (!action) throw new Error("Actions are unavailable");
+        return await action(input, identity, signal);
+      } catch (error) {
+        throw wireError(error);
+      }
+    }),
     query: base.input(invocationSchema).handler(async ({ input }) => {
       try {
         return await realtime.query(input, identity);

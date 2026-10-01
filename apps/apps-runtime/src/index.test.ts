@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, expect, it, vi } from "vite-plus/test";
 
 vi.mock("cloudflare:workers", () => ({
+  WorkerEntrypoint: class {},
   DurableObject: class {
     ctx: unknown;
     env: unknown;

@@ -18,6 +18,7 @@ export interface Client {
     args: I,
     options?: { requestId?: string },
   ): Promise<O>;
+  action<I, O>(reference: Reference<"action", I, O>, args: I): Promise<O>;
   subscribe<I, O>(
     reference: Reference<"query", I, O>,
     args: I,
@@ -28,6 +29,7 @@ export interface Client {
 }
 type Wire = {
   query(input: { name: string; args: unknown }): Promise<unknown>;
+  action(input: { name: string; args: unknown }): Promise<unknown>;
   mutate(input: { name: string; args: unknown; requestId: string }): Promise<unknown>;
   subscribe(
     input: { name: string; args: unknown },
@@ -114,6 +116,7 @@ export function createClient(
           requestId: settings?.requestId ?? crypto.randomUUID(),
         }),
       ) as Promise<never>,
+    action: (ref, args) => call(() => wire.action({ name: ref.name, args })) as Promise<never>,
     subscribe(ref, args, next, settings = {}) {
       if (closed) throw new AppError("UNAVAILABLE", "App client closed");
       const controller = new AbortController();

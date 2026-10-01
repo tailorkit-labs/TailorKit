@@ -1,18 +1,18 @@
 # App runtime
 
-`tailorkit-apps-runtime` is the trusted Cloudflare entry point for app queries, mutations and subscriptions. App server bundles are uploaded by the existing CLI to the private blob bucket under `server/server.js`; client code remains under `client/client.js`. The public assets worker never serves server bundles.
+`tailorkit-apps-runtime` is the trusted Cloudflare entry point for app queries, mutations, actions and subscriptions. App server bundles are uploaded by the existing CLI to the private blob bucket under `server/server.js`; client code remains under `client/client.js`. The public assets worker never serves server bundles.
 
 The host authorizes an installation and calls the platform API using its existing project key. The platform checks the app belongs to that project and the supplied verified scopes, resolves its published deployment, and issues a short-lived ES256 JWT containing `userId` (JWT `sub`), `projectId`, `appId`, `installationId` and `deploymentId`. Configure the host SDK's `storage.resolveInstallation` to return these **canonical database IDs**, the stable installation ID and this runtime's `/rpc` URL. The host SDK calls `POST /apps/{appId}/runtime/session`; customer hosts never receive signing keys. Resolve deployment access on the host server; sandboxed apps obtain scoped JWTs through the bridge and call the backend directly over a WebSocket. Platform credentials remain in the host server.
 
 The runtime derives its issuer from `PLATFORM_URL`, fetches trusted public keys from `GET /runtime/keys`, and caches them for 60 seconds. Audience is fixed to `tailorkit-apps-runtime`. Calls allow any browser origin and omit cookies; JWT authorization remains mandatory. For each request, the gateway verifies the token's signature, issuer, audience, expiry and required project/deployment claims. It routes to a supervisor named `[issuer, projectId, appId, installationId]`. The supervisor verifies authentication again and asks the authenticated platform API (`POST /apps/{appId}/runtime`, with the signed project ID) for the currently published, verified bundle. A different app/project is forbidden; an old deployment returns `INCOMPATIBLE_VERSION` and requires reloading the app.
 
-The supervisor reads the exact private R2 key returned by the platform, verifies its size and SHA-256, and loads `AppFacet` using Dynamic Workers. Its loader key includes the installation, deployment and checksum. The dynamic code has no platform bindings or credentials and no outbound network access. The supervisor overwrites the identity header and removes the JWT.
+The supervisor reads the exact private R2 key returned by the platform, verifies its size and SHA-256, and loads `AppFacet` using Dynamic Workers. Its loader key includes the installation, deployment and checksum. The database facet has no platform bindings or credentials and no outbound network access. Actions use a separate stateless worker with scoped callbacks and a trusted HTTPS egress gateway. The supervisor overwrites the identity header and removes the JWT.
 
 Each installation uses the fixed facet name `app`. Updating code aborts the old facet and starts the new class with the **same SQLite database**. Deployment IDs never select databases. This is Durable Object SQLite, not D1. One published deployment runs at a time; concurrent versions and automatic schema upgrades are deferred.
 
 Request admission is serialized through an installation-local queue, including publication lookup, but streaming responses release that queue immediately. The supervisor ends subscriptions at token expiry; the apps-server client refreshes authentication through the JWT bridge and reconnects with fresh query snapshots. Standard WebSockets keep the supervisor awake; hibernation is deferred.
 
-`DeploymentSource` and `FacetExecution` are private Effect v4 services. The new apps-server SDK separates synchronous persistence, asynchronous execution and subscription delivery; neither apps nor browser clients need Effect. Provider services can be substituted in tests or a future self-hosted implementation without changing the app API.
+`DeploymentSource`, `FacetExecution` and `ActionExecution` are private Effect v4 services. The new apps-server SDK separates synchronous persistence, asynchronous execution and subscription delivery; neither apps nor browser clients need Effect. Provider services can be substituted in tests or a future self-hosted implementation without changing the app API.
 
 The runtime has no fixed project or environment scope. `projectId` comes from the verified JWT and remains part of the stable installation identity.
 
@@ -20,10 +20,20 @@ Configure the same private service credential as `RUNTIME_SERVICE_TOKEN` on this
 
 The platform needs `APP_RUNTIME_SIGNING_KEY`, an ES256 private JWK with a stable `kid`, stored as a server secret. Its `OPENAPI_SERVER_URL` must match the runtime's `PLATFORM_URL` (trailing slash is normalized). Only public key material is returned by `/runtime/keys`. For rotation, optionally configure `APP_RUNTIME_PREVIOUS_PUBLIC_KEYS` as a public JWKS and retain retired keys for at least six minutes. A token with a newly rotated key may be rejected until the 60-second cache refreshes.
 
+## Actions
+
+The same uploaded server artifact exports a SQLite `AppFacet` and a stateless default action entry point. The WebSocket action route verifies the published deployment and runs the action outside the database/realtime queues. It creates a fresh Dynamic Worker with only an installation-bound `DATABASE` callback binding and an HTTPS outbound gateway. Queries and mutations still use `globalOutbound: null` and zero subrequests.
+
+The callback capability fixes the verified user, project, app, installation and deployment. Every database call returns through the installation's normal realtime coordinator, including table invalidation. Capabilities are revoked after completion/cancellation/expiry and checked again when queued database work starts. No JWT, platform service credential, R2 binding or SQLite handle enters the action worker.
+
+Actions have a 30-second deadline capped by JWT expiry, 50 ms CPU, 64 database/outbound calls, and a per-installation limit of 16 concurrent actions. The gateway allows HTTPS, checks each redirect, rejects literal private/loopback destinations and local/internal hostnames, and never injects platform credentials. There is no durable action scheduling or automatic retry. An action failure cannot roll back earlier committed mutations or external effects.
+
 ## Code layout
 
 - `src/index.ts`: Wrangler entry point, gateway and installation supervisor.
 - `src/facet.ts`: SQLite execution adapter, compiled into each isolated app artifact.
+- `src/action-worker.ts`: stateless action entry point compiled into the same app artifact.
+- `src/actions.ts`: scoped action capabilities, deadlines and HTTPS egress gateway.
 - `src/source.ts`: private deployment metadata and R2 bundle retrieval.
 - `src/runtime.ts`: service contracts, request orchestration and installation routing.
 - `src/worker-env.d.ts`: Wrangler-generated bindings and runtime types; code uses `Env` directly.

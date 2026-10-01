@@ -38,6 +38,17 @@ function View() {
         >
           Add todo
         </Button>
+        <Button
+          onClick={() =>
+            mutate(
+              storage.action(api.importTodo, {
+                url: "https://jsonplaceholder.typicode.com/posts/1",
+              }),
+            )
+          }
+        >
+          Import from an external API
+        </Button>
         {todos.map((todo) => (
           <Flex key={todo.id} direction="column" gap="xs">
             <Box>

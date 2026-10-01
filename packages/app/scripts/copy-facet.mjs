@@ -5,3 +5,8 @@ await copyFile(
   new URL("../../../apps/apps-runtime/src/facet.ts", import.meta.url),
   new URL("../dist/facet.ts", import.meta.url),
 );
+
+await copyFile(
+  new URL("../../../apps/apps-runtime/src/action-worker.ts", import.meta.url),
+  new URL("../dist/action-worker.ts", import.meta.url),
+);
