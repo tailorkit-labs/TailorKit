@@ -1,0 +1,79 @@
+packages/apps-server/src/index.ts
+  s_3eb1bc43ff7a73::t_edf7fc6685567e 1
+  s_3eb1bc43ff7a73::t_7711b37f09576d 3-9
+apps/apps-runtime/src/integration.test.mjs
+  s_3eb1bc43ff7a73::t_7711b37f09576d 38-40,56-66,146,290-345
+  s_3eb1bc43ff7a73::t_f6e8eb97a5f169 147-159,350,355-359,373,380
+.changeset/pluggable-app-storage.md
+  s_3eb1bc43ff7a73::t_148534cfd6080f 12
+packages/apps-server/src/server/transport.ts
+  s_3eb1bc43ff7a73::t_7711b37f09576d 86-88
+  s_3eb1bc43ff7a73::t_edf7fc6685567e 4,78,82-85,89
+packages/app/scripts/copy-facet.mjs
+  s_3eb1bc43ff7a73::t_edf7fc6685567e 8
+  s_3eb1bc43ff7a73::t_7711b37f09576d 9-12
+apps/apps-runtime/src/runtime.ts
+  s_3eb1bc43ff7a73::t_208ee7317b37b1 2,50,62-63,77-82,87-93
+  s_3eb1bc43ff7a73::t_7711b37f09576d 40-49
+examples/apps/backend-todo/README.md
+  s_3eb1bc43ff7a73::t_148534cfd6080f 3,13,18-19
+apps/apps-runtime/src/index.test.ts
+  s_3eb1bc43ff7a73::t_208ee7317b37b1 4
+examples/apps/backend-todo/src/views/default.tsx
+  s_3eb1bc43ff7a73::t_7711b37f09576d 41-51
+packages/apps-server/src/server/functions.ts
+  s_3eb1bc43ff7a73::t_edf7fc6685567e 1,14-18,24-26,57-59,64
+  s_3eb1bc43ff7a73::t_7711b37f09576d 19-23,30-33,54-56
+  s_3eb1bc43ff7a73::t_9ec944ebb37ebd 34
+packages/apps-server/src/client/reference.ts
+  s_3eb1bc43ff7a73::t_edf7fc6685567e 3,7,15,19
+apps/apps-runtime/src/actions.ts
+  s_3eb1bc43ff7a73::t_7711b37f09576d 8-11,13-14,22-25,27-36,53-62,70-74,76-86,91-103,110-114,118-134
+  s_3eb1bc43ff7a73::t_208ee7317b37b1 1-7,12,15-21,26,37-52,63-69,75,87-90,104-109,115-117,135-138
+apps/apps-runtime/src/actions.test.ts
+  s_3eb1bc43ff7a73::t_7711b37f09576d 1-58
+apps/apps-runtime/src/index.ts
+  s_3eb1bc43ff7a73::t_208ee7317b37b1 12-13,21-22,33,124,129,160,164-165,169-171,178-182
+  s_3eb1bc43ff7a73::t_7711b37f09576d 1-5,134-139,161-163,166-168,172-177,183-249,262-264
+packages/apps-server/src/client/connection.ts
+  s_3eb1bc43ff7a73::t_edf7fc6685567e 21,32,119
+apps/apps-runtime/README.md
+  s_3eb1bc43ff7a73::t_148534cfd6080f 9,15,23-30,35-36
+  s_3eb1bc43ff7a73::t_4de6da806881b2 3
+packages/apps-server/src/server/actions.test.ts
+  s_3eb1bc43ff7a73::t_bab37c271a5405 119-148
+  s_3eb1bc43ff7a73::t_7711b37f09576d 1-118
+packages/apps-server/src/server/actions.ts
+  s_3eb1bc43ff7a73::t_edf7fc6685567e 1-24,28-31,37,43-59
+  s_3eb1bc43ff7a73::t_7711b37f09576d 25-27,32-36,38-42
+packages/app/src/builder/server.ts
+  s_3eb1bc43ff7a73::t_edf7fc6685567e 27,31
+apps/apps-runtime/src/action-worker.ts
+  s_3eb1bc43ff7a73::t_edf7fc6685567e 1-18,22-34
+  s_3eb1bc43ff7a73::t_7711b37f09576d 19-21
+packages/apps-server/src/runtime.ts
+  s_3eb1bc43ff7a73::t_edf7fc6685567e 8-9
+packages/apps-server/README.md
+  s_3eb1bc43ff7a73::t_148534cfd6080f 3,24,28-56,58-60,64,71,109,113
+  s_3eb1bc43ff7a73::t_4de6da806881b2 57
+examples/apps/backend-todo/src/server.ts
+  s_3eb1bc43ff7a73::t_7711b37f09576d 1,4-5,8-19
+apps/apps-runtime/src/runtime.test.ts
+  s_3eb1bc43ff7a73::t_d82c09d92397c5 7-8,148-190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1e962576d2a66e43a6d09bd0f899bd136c896d69",
+  "prompts": {},
+  "sessions": {
+    "s_3eb1bc43ff7a73": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f562-59c2-7a11-9238-0a577271784f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
