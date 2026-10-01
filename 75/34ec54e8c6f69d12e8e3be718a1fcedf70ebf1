@@ -1,0 +1,51 @@
+apps/apps-runtime/.dev.vars.example
+  s_6ba0854cdb659c::t_de8725118d5887 2
+packages/api-platform/src/context.ts
+  s_6ba0854cdb659c::t_de8725118d5887 1-2,15-16,37-38,40-46,74
+apps/apps-runtime/wrangler.jsonc
+  s_6ba0854cdb659c::t_de8725118d5887 12
+packages/api-platform/src/routes/deployments.test.ts
+  s_6ba0854cdb659c::t_64448115139aa7 212-220
+  s_6ba0854cdb659c::t_cfe69b611b893f 221-232
+apps/apps-runtime/src/source.ts
+  s_6ba0854cdb659c::t_de8725118d5887 24,41,43,45
+packages/api-platform/src/env.ts
+  s_6ba0854cdb659c::t_de8725118d5887 7
+packages/api-platform/src/routes/deployments.ts
+  s_6ba0854cdb659c::t_64448115139aa7 626,639-642,644-648,650-653
+  s_6ba0854cdb659c::t_de8725118d5887 643,649
+packages/api-platform/src/runtime-access.test.ts
+  s_6ba0854cdb659c::t_64448115139aa7 5-50
+  s_6ba0854cdb659c::t_cbf87d1e1b491b 1-4,51
+apps/apps-runtime/README.md
+  s_6ba0854cdb659c::t_e8e98b773e74e7 7,17-20,45,64
+packages/api-platform/src/runtime-access.ts
+  s_6ba0854cdb659c::t_de8725118d5887 1-20,25-32
+  s_6ba0854cdb659c::t_64448115139aa7 21-24
+apps/apps-runtime/scripts/verify.mjs
+  s_6ba0854cdb659c::t_a6cf105cd34677 45,274-279
+apps/apps-runtime/src/index.test.ts
+  s_6ba0854cdb659c::t_85b96f17eae47a 18,102,196,231-232,234-239
+apps/apps-runtime/src/source.test.ts
+  s_6ba0854cdb659c::t_bc20057b48bd55 34,50
+packages/api-platform/openapi.json
+  s_6ba0854cdb659c::t_7dafd3cfc9dcfe 3081
+packages/client-platform/src/client/types.gen.ts
+  s_6ba0854cdb659c::t_53aecc4110f102 769
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7534ec54e8c6f69d12e8e3be718a1fcedf70ebf1",
+  "prompts": {},
+  "sessions": {
+    "s_6ba0854cdb659c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f111-6fe2-7f91-ab5f-14a741f20094",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
