@@ -1,0 +1,90 @@
+apps/apps-runtime/README.md
+  s_6ba0854cdb659c::t_bd701e98d584ed 5,7,21-22,47,66
+apps/apps-runtime/src/index.ts
+  s_6ba0854cdb659c::t_f7985feacc3b6e 4,105
+  s_6ba0854cdb659c::t_bd701e98d584ed 118,120
+  s_6ba0854cdb659c::t_4c1d2321bb2941 3,30,119
+packages/api-platform/src/app-runtime-auth.ts
+  s_6ba0854cdb659c::t_878bb30ce5b95f 58
+  s_6ba0854cdb659c::t_62cee0bafbd4c6 9-10
+  s_6ba0854cdb659c::t_a9cbccdd55b392 2,8,11-12,18-22,26,35-38,46,56-57,59,63,68-69
+  s_6ba0854cdb659c::t_bd701e98d584ed 3-4,6-7,13-14,16-17,23-25,27-34,39-45,47-48,50-55,60-62,64-67
+  s_6ba0854cdb659c::t_e50db691095a5d 1,5,15,49
+packages/core/src/server/storage.test.ts
+  s_6ba0854cdb659c::t_bd701e98d584ed 6-14,44-51
+  s_6ba0854cdb659c::t_85d628fa9e48cd 4,43
+apps/apps-runtime/src/auth.test.ts
+  s_6ba0854cdb659c::t_bd701e98d584ed 5-8,10-25,39-42,45-57,60-69,73-80
+  s_6ba0854cdb659c::t_1db714059dc73c 26-29,85-104
+  s_6ba0854cdb659c::t_2c7fb4a066e267 1-4,9,30-38,43-44,58-59,70-72,81-84,105
+packages/api-platform/src/env.ts
+  s_6ba0854cdb659c::t_ae7148cc6a4246 7-8
+packages/client-platform/src/client/sdk.gen.ts
+  s_6ba0854cdb659c::t_d07ab0e0d7ccca 22-23,78-88
+  s_6ba0854cdb659c::t_ae61a4518292db 89
+packages/app-storage/src/auth.ts
+  s_6ba0854cdb659c::t_b20b781f205fb4 20,30
+  s_6ba0854cdb659c::t_f7985feacc3b6e 6-8,10-15
+  s_6ba0854cdb659c::t_be5f5384c48200 9
+packages/core/src/server/handler.test.ts
+  s_6ba0854cdb659c::t_62cee0bafbd4c6 62-96,102-108
+  s_6ba0854cdb659c::t_69b75701de83c8 97-101
+apps/web/src/routes/api/platform.$.ts
+  s_6ba0854cdb659c::t_ae7148cc6a4246 1,32-33
+  s_6ba0854cdb659c::t_24e803cfca01c1 34
+packages/client-platform/src/client/types.gen.ts
+  s_6ba0854cdb659c::t_d07ab0e0d7ccca 17-48
+packages/api-platform/package.json
+  s_6ba0854cdb659c::t_bd701e98d584ed 43,53
+apps/apps-runtime/src/auth.ts
+  s_6ba0854cdb659c::t_62cee0bafbd4c6 27-43
+  s_6ba0854cdb659c::t_f7985feacc3b6e 1,8-10,15-19,22-26,44-45,52-57
+  s_6ba0854cdb659c::t_bd701e98d584ed 2-3,5-6,11-14,21,46-51
+  s_6ba0854cdb659c::t_2b1d84a7628732 4,7,20
+packages/client-platform/src/client/index.ts
+  s_6ba0854cdb659c::t_d07ab0e0d7ccca 9,45-47
+packages/api-platform/src/routes/apps.ts
+  s_6ba0854cdb659c::t_ae7148cc6a4246 263,275,277,281-284,294-295
+  s_6ba0854cdb659c::t_bd701e98d584ed 1,264-274,276,278-280,285-293,297
+packages/core/src/server/storage.ts
+  s_6ba0854cdb659c::t_d300ac790c56da 13,102
+  s_6ba0854cdb659c::t_bd701e98d584ed 29-32
+packages/core/src/server/handler.ts
+  s_6ba0854cdb659c::t_bd701e98d584ed 118-143
+  s_6ba0854cdb659c::t_4453f118dc2b28 3
+packages/app-storage/src/client.ts
+  s_6ba0854cdb659c::t_bd701e98d584ed 87-91
+packages/api-platform/src/app-runtime-auth.test.ts
+  s_6ba0854cdb659c::t_2c7fb4a066e267 1-2,8,22-25,33,40-45,49-52
+  s_6ba0854cdb659c::t_bd701e98d584ed 3-7,9-21,26-32,34-39,46-48
+apps/apps-runtime/src/index.test.ts
+  s_6ba0854cdb659c::t_bd701e98d584ed 79-82,148
+  s_6ba0854cdb659c::t_85d628fa9e48cd 17,48-49,109,169,179,188-189,227
+packages/api-platform/src/routes/apps.test.ts
+  s_6ba0854cdb659c::t_bd701e98d584ed 15,18-19,27-28,414-450
+  s_6ba0854cdb659c::t_ba2a10b0ccda8e 451
+apps/apps-runtime/scripts/verify.mjs
+  s_6ba0854cdb659c::t_85d628fa9e48cd 11,24-25,48
+examples/apps/persistent-todo/vite.config.ts
+  s_6ba0854cdb659c::t_a95502b8deac31 1,24-47,57-63
+packages/api-platform/openapi.json
+  s_6ba0854cdb659c::t_d81b1fe932f007 52-145
+pnpm-lock.yaml
+  s_6ba0854cdb659c::t_a267538f3085a2 1053-1055
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c010bedabf240e7407d92adf814971d09c9d82cf",
+  "prompts": {},
+  "sessions": {
+    "s_6ba0854cdb659c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f111-6fe2-7f91-ab5f-14a741f20094",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
