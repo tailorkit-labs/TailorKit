@@ -21,26 +21,36 @@ export function createActionExecution(app: AppDefinition, calls: ActionCalls) {
     const parsed = fn.args.safeParse(input.args);
     if (!parsed.success) throw new AppError("BAD_REQUEST", "Invalid function arguments");
     try {
+      const queries = Object.create(null) as Record<string, (args: unknown) => Promise<unknown>>;
+      const mutations = Object.create(null) as Record<
+        string,
+        (args: unknown, options?: { requestId?: string }) => Promise<unknown>
+      >;
+      for (const [name, definition] of Object.entries(fn.functions ?? {})) {
+        if (app.functions[name] !== definition)
+          throw new AppError("NOT_FOUND", "Action function is not registered in this app");
+        if (definition.kind === "query") {
+          queries[name] = (args) => {
+            check();
+            return calls.query({ name, args });
+          };
+        } else if (definition.kind === "mutation") {
+          mutations[name] = (args, options) => {
+            check();
+            return calls.mutate({
+              name,
+              args,
+              requestId: options?.requestId ?? crypto.randomUUID(),
+            });
+          };
+        }
+      }
       let value = await fn.handler({
         args: parsed.data,
         identity,
         signal,
-        runQuery: (reference: { name: string }, args: unknown) => {
-          check();
-          return calls.query({ name: reference.name, args });
-        },
-        runMutation: (
-          reference: { name: string },
-          args: unknown,
-          options?: { requestId?: string },
-        ) => {
-          check();
-          return calls.mutate({
-            name: reference.name,
-            args,
-            requestId: options?.requestId ?? crypto.randomUUID(),
-          });
-        },
+        queries: Object.freeze(queries),
+        mutations: Object.freeze(mutations),
       } as never);
       check();
       if (fn.result) {

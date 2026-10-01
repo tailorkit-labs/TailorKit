@@ -1,4 +1,3 @@
-import type { Reference } from "../client/reference";
 import type { z } from "zod";
 import type { QueryDatabase, MutationDatabase } from "../database/types";
 
@@ -12,24 +11,35 @@ export interface Identity {
 }
 
 export type FunctionKind = "query" | "mutation" | "action";
-export interface ActionContext {
+type FunctionCalls<F, K extends "query" | "mutation"> = {
+  readonly [N in keyof F as F[N] extends { kind: K } ? N : never]: F[N] extends {
+    args: infer A extends z.ZodType;
+    handler: (context: never) => infer O;
+  }
+    ? K extends "mutation"
+      ? (args: z.input<A>, options?: { requestId?: string }) => Promise<Awaited<O>>
+      : (args: z.input<A>) => Promise<Awaited<O>>
+    : never;
+};
+export interface ActionContext<F extends Functions = {}> {
   readonly identity: Identity;
   readonly signal: AbortSignal;
-  runQuery<I, O>(reference: Reference<"query", I, O>, args: I): Promise<O>;
-  runMutation<I, O>(
-    reference: Reference<"mutation", I, O>,
-    args: I,
-    options?: { requestId?: string },
-  ): Promise<O>;
+  readonly queries: FunctionCalls<F, "query">;
+  readonly mutations: FunctionCalls<F, "mutation">;
 }
 
-export interface FunctionDefinition<K extends FunctionKind, A extends z.ZodType, O> {
+export interface FunctionDefinition<
+  K extends FunctionKind,
+  A extends z.ZodType,
+  O,
+  F extends Functions = {},
+> {
   readonly kind: K;
   readonly args: A;
   readonly result?: z.ZodType<O>;
   readonly handler: (
     context: { args: z.output<A> } & (K extends "action"
-      ? ActionContext
+      ? ActionContext<F>
       : { db: K extends "query" ? QueryDatabase : MutationDatabase; identity: Identity }),
   ) => K extends "action" ? O | Promise<O> : O;
 }
@@ -51,8 +61,8 @@ export function mutation<A extends z.ZodType, O>(
   return Object.freeze({ ...definition, kind: "mutation" as const });
 }
 
-export function action<A extends z.ZodType, O>(
-  definition: Omit<FunctionDefinition<"action", A, O>, "kind">,
+export function action<A extends z.ZodType, O, const F extends Functions = {}>(
+  definition: Omit<FunctionDefinition<"action", A, O, F>, "kind"> & { functions?: F },
 ) {
   return Object.freeze({ ...definition, kind: "action" as const });
 }
@@ -65,6 +75,7 @@ export type Functions = Record<
     args: z.ZodType;
     result?: z.ZodType;
     handler: (context: never) => unknown;
+    functions?: Functions;
   }
 >;
 export function defineApp<const F extends Functions>(functions: F) {

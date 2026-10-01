@@ -145,13 +145,12 @@ export class AppFacet extends DurableObject {
 import { createAppFacet } from ${JSON.stringify(path.join(repo, "apps/apps-runtime/src/facet.ts"))};
 import { createAppActions } from ${JSON.stringify(path.join(repo, "apps/apps-runtime/src/action-worker.ts"))};
 import { defineApp, action, AppError } from ${JSON.stringify(path.join(repo, "packages/apps-server/dist/index.js"))};
-import { reference } from ${JSON.stringify(path.join(repo, "packages/apps-server/dist/client.js"))};
 import { env } from "cloudflare:workers";
 let globals = 0;
 const actionApp = defineApp({ ...app.functions,
   isolation: action({ args: app.functions.list.args, handler: context => ({ bindings: Object.keys(env), db: "db" in context, globals: ++globals, userId: context.identity.userId }) }),
-  failAfterWrite: action({ args: app.functions.list.args, async handler({ runMutation }) {
-    await runMutation(reference("add", "mutation"), { text: "Committed before the action failed" });
+  failAfterWrite: action({ functions: app.functions, args: app.functions.list.args, async handler(ctx) {
+    await ctx.mutations.add({ text: "Committed before the action failed" });
     throw new AppError("CONFLICT", "Intentional action failure");
   } }),
   forgedScope: action({ args: app.functions.list.args, handler: () => env.DATABASE.runMutation({ name: "add", args: { text: "Forged" }, requestId: crypto.randomUUID(), installationId: "another-installation" }) }),

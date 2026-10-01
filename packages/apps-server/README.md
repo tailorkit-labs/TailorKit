@@ -8,7 +8,7 @@ import { z } from "zod";
 
 const notes = table("notes", { id: text().primaryKey(), title: text().notNull() });
 
-export default defineApp({
+const functions = {
   list: query({
     args: z.object({}),
     handler: ({ db }) => db.select().from(notes).all(),
@@ -16,9 +16,11 @@ export default defineApp({
   add: mutation({
     args: z.object({ title: z.string().min(1) }),
     handler: ({ db, args, identity }) =>
-      db.insert(notes).values({ id: crypto.randomUUID(), title: args.title }).returning().get(),
+      db.insert(notes).values({ id: crypto.randomUUID(), title: args.title }).returning().get()!,
   }),
-});
+};
+
+export default defineApp(functions);
 ```
 
 Handlers receive validated `args`, `db`, and verified `identity` (`userId`, `projectId`, `appId`, `installationId`, `deploymentId`, `expiresAt`). Queries expose selection builders; mutations additionally expose insert/update/delete. Use synchronous `.all()`, `.get()` and `.run()`. Async query/mutation handlers are rejected: writes, result validation and the accepted-write receipt commit in one synchronous transaction. Optional `result: zodSchema` validates the output before commit. Throw `AppError` for an intentional public error; unexpected errors are hidden.
@@ -27,36 +29,40 @@ Schema exports include `table`, `text`, `integer`, `real`, `boolean` and common 
 
 ## Queries, mutations and actions
 
-| Type     | Database access                      | External calls | Automatic query reruns                    |
-| -------- | ------------------------------------ | -------------- | ----------------------------------------- |
-| Query    | Read only                            | Blocked        | When subscribed                           |
-| Mutation | Read/write in one atomic transaction | Blocked        | Invalidates affected queries after commit |
-| Action   | Through `runQuery` / `runMutation`   | Async HTTPS    | Its mutations trigger normal invalidation |
+| Type     | Database access                         | External calls | Automatic query reruns                    |
+| -------- | --------------------------------------- | -------------- | ----------------------------------------- |
+| Query    | Read only                               | Blocked        | When subscribed                           |
+| Mutation | Read/write in one atomic transaction    | Blocked        | Invalidates affected queries after commit |
+| Action   | Through `ctx.queries` / `ctx.mutations` | Async HTTPS    | Its mutations trigger normal invalidation |
 
-Use `action({ args, result?, handler })` for external API calls. Action handlers receive validated `args`, verified `identity`, an abort `signal`, and typed `runQuery` / `runMutation` methods. They have no `db` handle. Actions can be synchronous or async; query/mutation handlers remain synchronous.
+Use `action({ functions?, args, result?, handler })` for external API calls. Action handlers receive validated `args`, verified `identity`, an abort `signal`, and typed `ctx.queries.<name>(args)` / `ctx.mutations.<name>(args)` methods. They have no `db` handle. Actions can be synchronous or async; query/mutation handlers remain synchronous.
+
+Pass a shared query/mutation collection as `functions`, and register that same collection under the same names in `defineApp`. The namespaces expose only the declared queries and mutations; their argument and result types are inferred from the definitions. No generated client references are needed on the server. Actions with no database calls can omit `functions`.
+
+To extend the example above, add this action and include it in the app:
 
 ```ts
 import { action } from "@tailorkit/apps-server";
-import { api } from "./server.gen";
 
-// Add this definition to defineApp({ ... }). Annotate the return type when
-// using generated references back into the same module to avoid circular inference.
-const importTodo = action({
+const importNote = action({
+  functions,
   args: z.object({ url: z.url() }),
-  async handler({ args, runQuery, runMutation, signal }): Promise<Todo> {
-    await runQuery(api.list, {});
-    const response = await fetch(args.url, { signal });
+  async handler(ctx) {
+    await ctx.queries.list({});
+    const response = await fetch(ctx.args.url, { signal: ctx.signal });
     const data = z.object({ title: z.string() }).parse(await response.json());
-    return runMutation(api.add, { text: data.title });
+    return ctx.mutations.add({ title: data.title });
   },
 });
+
+export default defineApp({ ...functions, importNote });
 ```
 
-Clients call `await client.action(api.importTodo, { url })`. Actions are one-shot calls, never subscriptions, and are not automatically retried. Every `runQuery` / `runMutation` executes separately; the action as a whole is not a transaction. An earlier mutation stays committed if later external work or result validation fails. Combine related database writes into one mutation when they must be atomic. External writes need the provider's idempotency mechanism before retrying an action. `runMutation` accepts an optional `{ requestId }` to reuse the normal mutation receipt when explicitly retrying a database step.
+Clients call `await client.action(api.importNote, { url })`. Actions are one-shot calls, never subscriptions, and are not automatically retried. Every query/mutation call executes separately; the action as a whole is not a transaction. An earlier mutation stays committed if later external work or result validation fails. Combine related database writes into one mutation when they must be atomic. External writes need the provider's idempotency mechanism before retrying an action. Mutation methods accept an optional second argument `{ requestId }`, for example `ctx.mutations.add({ title }, { requestId })`, to reuse the normal mutation receipt when explicitly retrying a database step.
 
 Cloudflare runs each action in a fresh stateless Dynamic Worker, separate from the network-blocked SQLite facet. A trusted callback binding fixes its installation, user and deployment; it cannot choose another store or access platform credentials. The HTTPS gateway checks destinations and redirects, rejects literal private/loopback addresses and local/internal hostnames, and forwards no platform credentials. Action database calls pass through the same realtime coordinator as client calls, so successful writes update active subscriptions. External I/O holds neither the database queue nor the realtime queue.
 
-The initial limits are 16 concurrent actions per installation, 64 database/outbound calls per action, 50 ms CPU and 30 seconds elapsed time (also bounded by JWT expiry). Completion, disconnection, cancellation or expiry revokes callbacks; already committed writes and accepted external effects remain committed. Actions are not durable jobs. Nested `runAction`, scheduling, internal-only functions and app-secret management are deferred.
+The initial limits are 16 concurrent actions per installation, 64 database/outbound calls per action, 50 ms CPU and 30 seconds elapsed time (also bounded by JWT expiry). Completion, disconnection, cancellation or expiry revokes callbacks; already committed writes and accepted external effects remain committed. Actions are not durable jobs. Nested action calls, scheduling, internal-only functions and app-secret management are deferred.
 
 ## Source layout
 
