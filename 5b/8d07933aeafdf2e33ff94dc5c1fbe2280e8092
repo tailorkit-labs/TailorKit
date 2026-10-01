@@ -1,0 +1,90 @@
+packages/api-platform/src/preview/routes.test.ts
+  s_f369eb849ee6f7::t_c6f85f177123f2 1-491
+packages/api-platform/package.json
+  s_f369eb849ee6f7::t_c6f85f177123f2 35-39
+  s_f369eb849ee6f7::t_b014a3b4b0bf49 61
+  s_f369eb849ee6f7::t_eafa1f66896c20 43
+packages/api-platform/src/preview/manifest.ts
+  s_f369eb849ee6f7::t_b2081799b3621a 1-6,8-14,20-22,24-86
+  s_f369eb849ee6f7::t_526eae72332447 15-19
+  s_f369eb849ee6f7::t_a1b8d9980924be 7
+  s_f369eb849ee6f7::t_66ea3adda2aa79 23
+packages/api-platform/src/preview/errors.ts
+  s_f369eb849ee6f7::t_d5cfb659b521b8 1-13
+package.json
+  s_f369eb849ee6f7::t_330389d1f32bd5 38
+packages/api-platform/src/preview/build-store.ts
+  s_f369eb849ee6f7::t_a24f4413f084a8 28-36,62,68-71,85-89,92-95,106-112,279-285,299-301,330-333,368-370,376-381,393-394
+  s_f369eb849ee6f7::t_ec1970c19b7d2a 72,79,82,97,101,113,119,121,139,142,145,172,176,182,185,188,198,219,222,226,230,233,238-240,246,255-256,264,266-267,277,289,291,313,316,327,350,352,355,360,363,365-366
+  s_f369eb849ee6f7::t_6803398a436415 4-7,14,38,61,63-67,73-74,83-84,90,96,99-100,103,125-126,129-130,136-138,141,144,177,179-181,184,187,192,270-271,273-275,297-298,303-305,310-312,329,334-335,347-349,351,354,364,367,371-375,382-392,395
+  s_f369eb849ee6f7::t_c6f85f177123f2 1-3,15-26,39,41,43-45,47-49,51-60,75-78,80-81,91,102,104-105,114-118,120,123-124,127-128,131-135,146,148-156,158-159,161-168,170-171,173,175,178,189,191,193-197,199,201-202,204-209,211-215,217-218,223-225,227,229,231-232,234-236,241-244,247,249-251,253-254,257-262,265,268-269,276,278,286-288,290,292-296,302,306-309,314-315,317-326,328,336-346,353,356-359,361-362,396-397
+  s_f369eb849ee6f7::t_b2081799b3621a 8-11,13,27,40,42,46,50,220,237,245,263
+  s_f369eb849ee6f7::t_eafa1f66896c20 37,98,122,140,143,147,157,160,169,174,183,186,190,200,203,210,216,228,248,252,272
+  s_f369eb849ee6f7::t_c3fb1006bceec8 12,221
+packages/api-platform/src/preview/lifecycle.ts
+  s_f369eb849ee6f7::t_b2081799b3621a 7,22,45
+  s_f369eb849ee6f7::t_c6f85f177123f2 1-6,8-21,23-44,46-53
+packages/api-platform/src/preview/build-store.test.mjs
+  s_f369eb849ee6f7::t_c6f85f177123f2 1-4,9-396,477
+  s_f369eb849ee6f7::t_b2081799b3621a 7
+  s_f369eb849ee6f7::t_875edd931c3ef9 5-6,8,397-476
+packages/api-platform/src/preview/token.ts
+  s_f369eb849ee6f7::t_c6f85f177123f2 1-54
+packages/api-platform/src/preview/grants.ts
+  s_f369eb849ee6f7::t_c6f85f177123f2 1-8,10-36,38-45,47-64,66-120,122-159,161-168
+  s_f369eb849ee6f7::t_eafa1f66896c20 9,37,46,65,121,160
+packages/kv/src/contract.test.ts
+  s_f369eb849ee6f7::t_c6f85f177123f2 376,412,468
+packages/api-platform/src/preview/ws.ts
+  s_f369eb849ee6f7::t_c6f85f177123f2 1-5,15-77,79-104,115-146,148-232
+  s_f369eb849ee6f7::t_eafa1f66896c20 6,78,147
+  s_f369eb849ee6f7::t_b2081799b3621a 7-11,13-14,105-114
+  s_f369eb849ee6f7::t_0d9e510694b397 12
+packages/api-platform/src/index.ts
+  s_f369eb849ee6f7::t_c6f85f177123f2 6
+pnpm-workspace.yaml
+  s_f369eb849ee6f7::t_b014a3b4b0bf49 44
+packages/api-platform/src/preview/storage.ts
+  s_f369eb849ee6f7::t_d5cfb659b521b8 1-22,24-33,35-37
+  s_f369eb849ee6f7::t_7d809998b54a18 23
+  s_f369eb849ee6f7::t_a276f10e4dfa2b 34
+packages/api-platform/src/preview/constants.ts
+  s_f369eb849ee6f7::t_b2081799b3621a 1-6
+packages/api-platform/src/preview/runtime.ts
+  s_f369eb849ee6f7::t_c13d9d2464409b 1-23
+packages/api-platform/src/preview/README.md
+  s_f369eb849ee6f7::t_26f9e36fdd324e 1-7,9-45
+  s_f369eb849ee6f7::t_933b34fbb1b74e 8
+apps/web/src/tests/preview-ws.test.mjs
+  s_f369eb849ee6f7::t_c6f85f177123f2 9,12
+packages/api-platform/src/preview/token.test.ts
+  s_f369eb849ee6f7::t_c6f85f177123f2 1-19
+packages/api-platform/src/preview/ws-auth.ts
+  s_f369eb849ee6f7::t_c6f85f177123f2 1-40
+packages/api-platform/vitest.config.ts
+  s_f369eb849ee6f7::t_526eae72332447 12-13
+apps/web/src/routes/api/platform.preview.ws.ts
+  s_f369eb849ee6f7::t_c6f85f177123f2 2-4
+packages/api-platform/src/preview/routes.ts
+  s_f369eb849ee6f7::t_eafa1f66896c20 13,81,234
+  s_f369eb849ee6f7::t_b2081799b3621a 14,125
+  s_f369eb849ee6f7::t_c6f85f177123f2 1-12,15-80,82-124,126-233,235-293
+pnpm-lock.yaml
+  s_f369eb849ee6f7::t_4ba5bc67b08766 245-247,292-294,534,537,621,627,910,968-971,1101,1107,1110,1113,1137,1159,1291,7413-7415,10958,10962,10980,10985,10987,10994,11000,11007,11030,11037,11042,11049,15273,15283,15354,15357,15376,15386,15389,15408,16020,16027,16040-16041
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5b8d07933aeafdf2e33ff94dc5c1fbe2280e8092",
+  "prompts": {},
+  "sessions": {
+    "s_f369eb849ee6f7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f5fa-c79c-7473-b597-c5c56abd669c",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
