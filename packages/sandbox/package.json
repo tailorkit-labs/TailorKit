@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@tailorkit/app-storage": "workspace:*",
+    "@tailorkit/apps-server": "workspace:*",
     "@tailorkit/core": "workspace:*",
     "zod": "catalog:"
   },

@@ -70,6 +70,7 @@ temp
 # App server artifacts, local signing keys and persistent Durable Object state.
 .tailorkit
 .tailorkit-storage
+.tailorkit-server
 examples/apps/persistent-todo/storage/public-keys.json
 
 apps/apps-runtime/src/worker-env.d.ts

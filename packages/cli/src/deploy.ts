@@ -388,7 +388,13 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
   const clientAsset = await readFile(clientAssetPath);
   const clientAssetGzip = await gzipAsync(clientAsset);
   const serverAsset = manifest.assets.server
-    ? await readFile(path.join(loaded.root, ".tailorkit-storage", manifest.assets.server))
+    ? await readFile(
+        path.join(
+          loaded.root,
+          loaded.config.server ? ".tailorkit-server" : ".tailorkit-storage",
+          manifest.assets.server,
+        ),
+      )
     : undefined;
   const logoEntries = Object.entries(manifest.assets.logos ?? {}) as ["dark" | "light", string][];
   const logoAssets = await Promise.all(

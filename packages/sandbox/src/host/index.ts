@@ -1,3 +1,4 @@
+import type { Session } from "@tailorkit/apps-server/client";
 import type { StorageClient } from "@tailorkit/app-storage";
 import { functionReference, StorageError } from "@tailorkit/app-storage";
 import { HostToIframePayload, IframeToHostPayload } from "../protocol.js";
@@ -31,6 +32,7 @@ export interface IframeUiHostOptions {
   sourceText?: string;
   /** Bound by the host SDK to this app installation; never supplied by the iframe. */
   storage?: StorageClient;
+  getBackendSession?: (options: { refresh: boolean }) => Promise<Session>;
 }
 
 export function createIframeUiHost(
@@ -48,6 +50,7 @@ export function createIframeUiHost(
   const resolvedAppUrl = toUrl(appUrl);
   const storageSubscriptions = new Map<string, () => void>();
   const storageCalls = new Set<string>();
+  const sessionCalls = new Set<string>();
   const queuedPayloads: HostToIframePayloadType[] = [];
   let appSourcePromise: Promise<string> | null = null;
   let destroyed = false;
@@ -104,6 +107,27 @@ export function createIframeUiHost(
     const result = IframeToHostPayload.safeParse(event.data.payload);
     if (!result.success) {
       reportError(new Error(`Invalid sandbox message: ${result.error.message}`));
+      return;
+    }
+    if (result.data.type === "backendSessionRequest") {
+      const { id, refresh } = result.data.data;
+      if (sessionCalls.has(id) || sessionCalls.size >= 4) return;
+      sessionCalls.add(id);
+      void (
+        options.getBackendSession?.({ refresh }) ??
+        Promise.reject(new Error("App backend is not configured"))
+      )
+        .then((session) => {
+          if (!destroyed) postToIframe({ type: "backendSessionResult", data: { id, session } });
+        })
+        .catch(() => {
+          if (!destroyed)
+            postToIframe({
+              type: "backendSessionResult",
+              data: { id, error: "Unable to authorize the app backend" },
+            });
+        })
+        .finally(() => sessionCalls.delete(id));
       return;
     }
     if (result.data.type === "storageRequest") {
@@ -228,28 +252,48 @@ export function createIframeUiHost(
         options.sourceText === undefined
           ? fetchSource(fetchImplementation, resolvedAppUrl)
           : Promise.resolve(options.sourceText);
-      (options.mountTarget ?? document.body).append(iframe);
-      void sendInit().catch(reportError);
+      const attach = (origin?: string) => {
+        if (destroyed) return;
+        if (origin) configureIframe(iframe, channel, origin);
+        (options.mountTarget ?? document.body).append(iframe);
+        void sendInit().catch(reportError);
+      };
+      if (options.getBackendSession) {
+        void options
+          .getBackendSession({ refresh: false })
+          .then((session) => {
+            const url = new URL(session.url);
+            if (url.protocol === "https:") url.protocol = "wss:";
+            else if (
+              url.protocol === "http:" &&
+              ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
+            )
+              url.protocol = "ws:";
+            else throw new Error("Backend requires HTTPS or loopback");
+            attach(url.origin);
+          })
+          .catch(() => attach());
+      } else attach();
     },
   };
 }
 
-function configureIframe(iframe: HTMLIFrameElement, channel: string): void {
+function configureIframe(iframe: HTMLIFrameElement, channel: string, backendOrigin?: string): void {
   iframe.hidden = true;
   iframe.tabIndex = -1;
   iframe.title = "TailorKit extension sandbox";
   iframe.setAttribute("aria-hidden", "true");
   iframe.setAttribute("referrerpolicy", "no-referrer");
   iframe.setAttribute("sandbox", "allow-scripts");
-  iframe.srcdoc = createIframeDocument(channel);
+  iframe.srcdoc = createIframeDocument(channel, backendOrigin);
 }
 
-function createIframeDocument(channel: string): string {
+function createIframeDocument(channel: string, backendOrigin?: string): string {
   return `<!doctype html>
 <html data-tailorkit-channel="${channel}">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' data:; worker-src 'none'; connect-src 'none'; img-src 'none'; style-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' data:; worker-src 'none'; connect-src ${backendOrigin ?? "'none'"}; img-src 'none'; style-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'">
   </head>
   <body>
     <div id="tailorkit-root"></div>

@@ -1,3 +1,5 @@
+import { createIframeBackend } from "./backend";
+import type { Session } from "@tailorkit/apps-server/client";
 import { createIframeStorage } from "./storage";
 import type { StorageClient } from "@tailorkit/app-storage";
 import { iframeReadyType, sandboxMessageType } from "../bridge";
@@ -39,6 +41,11 @@ export function startIframeRuntime(options: {
       parentWindow.postMessage({ channel, payload, type: sandboxMessageType }, "*");
     }
   };
+  const backend = createIframeBackend((data) => send({ type: "backendSessionRequest", data }));
+  const backendGlobal = globalThis as typeof globalThis & {
+    __tailorkitBackendSession?: (options: { refresh: boolean }) => Promise<Session>;
+  };
+  backendGlobal.__tailorkitBackendSession = backend.getSession;
   const storage = createIframeStorage((data) => send({ type: "storageRequest", data }));
   const storageGlobal = globalThis as typeof globalThis & { __tailorkitStorage?: StorageClient };
   storageGlobal.__tailorkitStorage = storage.client;
@@ -151,7 +158,9 @@ export function startIframeRuntime(options: {
       return;
     }
     const payload = event.data.payload as HostToIframePayload;
-    if (payload?.type === "storageResult") {
+    if (payload?.type === "backendSessionResult") {
+      backend.receive(payload.data);
+    } else if (payload?.type === "storageResult") {
       storage.receive(payload.data);
     } else if (payload?.type === "init") {
       pendingLoad = pendingLoad.then(() => loadApp(payload.data)).catch(sendError);
@@ -175,6 +184,9 @@ export function startIframeRuntime(options: {
   parentWindow.postMessage({ channel, type: iframeReadyType }, "*");
   send({ type: "ready" });
   return () => {
+    backend.close();
+    if (backendGlobal.__tailorkitBackendSession === backend.getSession)
+      delete backendGlobal.__tailorkitBackendSession;
     storage.close();
     if (storageGlobal.__tailorkitStorage === storage.client) {
       delete storageGlobal.__tailorkitStorage;

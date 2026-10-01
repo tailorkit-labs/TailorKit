@@ -3,6 +3,9 @@
   "private": true,
   "license": "BUSL-1.1",
   "type": "module",
+  "exports": {
+    "./facet": "./src/facet.ts"
+  },
   "scripts": {
     "build": "wrangler deploy --dry-run --outdir dist",
     "check-types": "pnpm types && tsc --noEmit",
@@ -12,6 +15,7 @@
   },
   "dependencies": {
     "@tailorkit/app-storage": "workspace:*",
+    "@tailorkit/apps-server": "workspace:*",
     "effect": "4.0.0-rc.117",
     "zod": "catalog:"
   },

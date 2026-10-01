@@ -6,6 +6,7 @@ import type { LogoContentType } from "@tailorkit/asset-delivery/logo-validation"
 import { build as viteBuild } from "vite";
 import { loadTailorKitConfig } from "../config/loader";
 import { assertSupportedPreactVersion } from "../preact-version";
+import { buildServer } from "./server";
 import { buildStorage, storagePaths } from "./storage";
 
 import { createTailorKitUploadManifest } from "./upload-manifest";
@@ -57,7 +58,11 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
       throw new Error("App build output would clear persistent storage state");
     }
   }
-  const storageWatcher = await buildStorage(loaded, options.watch);
+  if (loaded.config.storage && loaded.config.server)
+    throw new Error("Configure either server or legacy storage, not both");
+  const storageWatcher = loaded.config.server
+    ? await buildServer(loaded, options.watch, resolvedOutDir)
+    : await buildStorage(loaded, options.watch);
   const writeBuildExtras = async (): Promise<void> => {
     const logoManifest: { dark?: string; light?: string } = {};
     for (const variant of ["light", "dark"] as const) {
@@ -80,7 +85,7 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
     }
     await writeFile(
       path.join(resolvedOutDir, "tailorkit-upload.json"),
-      `${JSON.stringify(createTailorKitUploadManifest(logoManifest, Boolean(loaded.config.storage)), null, 2)}\n`,
+      `${JSON.stringify(createTailorKitUploadManifest(logoManifest, Boolean(loaded.config.storage || loaded.config.server)), null, 2)}\n`,
       "utf-8",
     );
   };
@@ -122,8 +127,14 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
     plugins: [
       {
         name: "tailorkit-browser-server-boundary",
-        resolveId(id, importer) {
+        enforce: "pre",
+        async resolveId(id, importer) {
           if (
+            /^@tailorkit\/apps-server(?:$|\/(?:runtime)$)/u.test(id) ||
+            (loaded.config.server &&
+              importer &&
+              path.resolve(path.dirname(importer), id) ===
+                path.resolve(loaded.root, loaded.config.server.entry)) ||
             /^@tailorkit\/app-storage\/(?:server|auth|runtime|tooling|orchestration)$/u.test(id) ||
             /^tailorkit\/app\/storage\/(?:server|auth)$/u.test(id) ||
             (loaded.config.storage &&
@@ -132,15 +143,23 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
                 path.resolve(loaded.root, loaded.config.storage.entry))
           ) {
             throw new Error(
-              "Storage server implementations cannot be imported into a browser bundle. Use storage.gen.ts references.",
+              "App server implementations cannot be imported into a browser bundle. Use generated client references.",
             );
+          }
+          const serverEntry = loaded.config.server?.entry ?? loaded.config.storage?.entry;
+          if (serverEntry && importer) {
+            const resolved = await this.resolve(id, importer, { skipSelf: true });
+            if (resolved?.id.split("?")[0] === path.resolve(loaded.root, serverEntry))
+              throw new Error(
+                "App server implementations cannot be imported into a browser bundle. Use generated client references.",
+              );
           }
           return null;
         },
       },
       {
         name: "tailorkit-preview-build-ready",
-        async closeBundle() {
+        async writeBundle() {
           try {
             await writeBuildExtras();
             firstBuildDone?.();

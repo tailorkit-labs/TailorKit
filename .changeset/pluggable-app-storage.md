@@ -1,4 +1,5 @@
 ---
+"@tailorkit/apps-server": minor
 "@tailorkit/app-storage": minor
 "@tailorkit/app": minor
 "@tailorkit/cli": minor
@@ -8,4 +9,6 @@
 "tailorkit": minor
 ---
 
-Add typed app queries, mutations and subscriptions backed by isolated Dynamic Worker SQLite facets. Introduce a trusted supervisor, Effect v4 provider services, local CLI-managed Drizzle migrations, host JWT authentication, sandbox bridge support, and a Cloudflare runtime in apps/apps-cloud with provider-neutral service contracts. Upload client and migration-free server bundles to separate blob prefixes, keep server downloads private, and load published server code dynamically. Remote migrations remain deferred. Existing client-only apps continue to build and run without storage configuration.
+Add the Apache-2.0 apps-server SDK with SQLite schema builders, synchronous Zod-validated queries/mutations, atomic mutation receipts and typed browser references. Use oRPC v2 WebSockets for direct sandbox calls and server-driven query snapshots; the bridge supplies scoped platform JWTs and renews authentication. Track table dependencies and rerun only active affected queries after commit.
+
+Upload client and migration-free private server bundles to separate blob prefixes and load published code into isolated Dynamic Worker SQLite facets through apps/apps-runtime. Keep stable installation databases across deployments, trusted Effect v4 provider services, and legacy app-storage/client-only compatibility. Schema initialization and migration delivery remain deferred.

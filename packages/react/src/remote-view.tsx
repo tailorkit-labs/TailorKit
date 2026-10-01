@@ -1,3 +1,4 @@
+import type { Session } from "@tailorkit/apps-server/client";
 import type { StorageClient } from "@tailorkit/app-storage";
 /* oxlint-disable react(invariant) */
 
@@ -55,6 +56,7 @@ interface RemoteViewHostProps {
   appUrl: string | URL;
   sourceText?: string;
   storage?: StorageClient;
+  getBackendSession?: (options: { refresh: boolean }) => Promise<Session>;
   components: Record<string, unknown>;
   createIframe?: () => HTMLIFrameElement;
   props?: Record<string, unknown>;
@@ -64,6 +66,7 @@ export function RemoteViewHost({
   appUrl,
   sourceText,
   storage,
+  getBackendSession,
   components,
   createIframe,
   props,
@@ -119,6 +122,7 @@ export function RemoteViewHost({
       createIframe,
       sourceText,
       storage,
+      getBackendSession,
       onError: (error) => {
         console.error("TailorKit remote app failed", error);
         setError(error);
@@ -148,7 +152,7 @@ export function RemoteViewHost({
       hostRef.current = null;
       host.destroy();
     };
-  }, [appUrl, createIframe, sourceText, storage, store]);
+  }, [appUrl, createIframe, sourceText, storage, getBackendSession, store]);
 
   if (status === "error" && error) {
     return createElement("div", null, formatError(error));

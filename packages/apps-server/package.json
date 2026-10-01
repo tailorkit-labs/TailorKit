@@ -1,0 +1,44 @@
+{
+  "name": "@tailorkit/apps-server",
+  "version": "0.1.0-beta.15",
+  "license": "Apache-2.0",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js"
+    },
+    "./runtime": {
+      "types": "./dist/runtime.d.ts",
+      "import": "./dist/runtime.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/client.ts src/runtime.ts --format esm --target node20 --clean && tsc -p tsconfig.build.json",
+    "check-types": "tsc --noEmit",
+    "test": "vp test run"
+  },
+  "dependencies": {
+    "@orpc/client": "catalog:",
+    "@orpc/server": "catalog:",
+    "drizzle-orm": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@tailorkit/config": "workspace:*",
+    "@types/node": "catalog:",
+    "tsup": "^8.5.1",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

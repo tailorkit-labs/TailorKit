@@ -36,6 +36,12 @@ const tailorkitConfigSchema = z.object({
   host: z.string().url(),
   logos: logosConfigSchema.optional(),
   storage: storageConfigSchema.optional(),
+  server: z
+    .object({
+      entry: z.string().default("./src/server.ts"),
+      references: z.string().default("./src/server.gen.ts"),
+    })
+    .optional(),
 });
 
 export type TailorKitConfig = z.input<typeof tailorkitConfigSchema>;

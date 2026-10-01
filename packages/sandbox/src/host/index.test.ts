@@ -178,3 +178,70 @@ it("updates a mounted slot without fetching its app bundle again", async () => {
   expect(host.iframe.isConnected).toBe(true);
   host.destroy();
 });
+
+describe("backend JWT bridge", () => {
+  afterEach(() => {
+    document.body.replaceChildren();
+    vi.restoreAllMocks();
+  });
+  it("allows only the host-authorized backend origin and renews scoped sessions", async () => {
+    const session = {
+      token: "scoped-token",
+      expiresAt: Date.now() + 120_000,
+      url: "https://runtime.test/rpc",
+    };
+    const getBackendSession = vi.fn().mockResolvedValue(session);
+    const onError = vi.fn();
+    const host = createIframeUiHost("https://assets.test/app.js", {
+      fetch: createFetch(),
+      getBackendSession,
+      onError,
+    });
+    host.mount();
+    await vi.waitFor(() => expect(host.iframe.isConnected).toBe(true));
+    expect(host.iframe.srcdoc).toContain("connect-src wss://runtime.test");
+    expect(host.iframe.srcdoc).not.toContain("scoped-token");
+    const postMessage = vi.spyOn(getContentWindow(host.iframe), "postMessage");
+    const channel = getChannel(host.iframe);
+    // An app cannot choose another installation or project in the bridge request.
+    emitFromIframe(host.iframe, {
+      channel,
+      type: sandboxMessageType,
+      payload: {
+        type: "backendSessionRequest",
+        data: { id: "forged", refresh: true, appId: "another-app" },
+      },
+    });
+    expect(getBackendSession).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledOnce();
+    emitFromIframe(host.iframe, {
+      channel,
+      type: sandboxMessageType,
+      payload: { type: "backendSessionRequest", data: { id: "renew", refresh: true } },
+    });
+    await vi.waitFor(() =>
+      expect(postMessage).toHaveBeenCalledWith(
+        {
+          channel,
+          type: sandboxMessageType,
+          payload: { type: "backendSessionResult", data: { id: "renew", session } },
+        },
+        "*",
+      ),
+    );
+    expect(getBackendSession).toHaveBeenLastCalledWith({ refresh: true });
+    host.destroy();
+  });
+  it("keeps client-only apps working when no backend session exists", async () => {
+    const host = createIframeUiHost("https://assets.test/app.js", {
+      fetch: createFetch(),
+      getBackendSession: async () => {
+        throw new Error("No backend");
+      },
+    });
+    host.mount();
+    await vi.waitFor(() => expect(host.iframe.isConnected).toBe(true));
+    expect(host.iframe.srcdoc).toContain("connect-src 'none'");
+    host.destroy();
+  });
+});

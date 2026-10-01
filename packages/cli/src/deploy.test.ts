@@ -90,3 +90,20 @@ it("does not publish when the server upload fails", async () => {
   await expect(runDeploy({ cwd: root })).rejects.toThrow("Asset upload failed");
   expect(mocks.publish).not.toHaveBeenCalled();
 });
+
+it("uploads the new apps-server artifact from its separate build directory", async () => {
+  await mkdir(path.join(root, ".tailorkit-server"));
+  await writeFile(path.join(root, ".tailorkit-server/server.js"), "new-backend-code");
+  mocks.load.mockResolvedValue({
+    root,
+    filepath: path.join(root, "tailorkit.config.ts"),
+    config: { appId: "app-one", server: { entry: "src/server.ts" } },
+  });
+  const fetch = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValue(new Response(null, { status: 200 }));
+  await runDeploy({ cwd: root });
+  const server = fetch.mock.calls.find(([url]) => String(url).endsWith("server"));
+  expect(new TextDecoder().decode(server?.[1]?.body as Uint8Array)).toBe("new-backend-code");
+  expect(mocks.publish).toHaveBeenCalledOnce();
+});

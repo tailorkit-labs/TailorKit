@@ -1,3 +1,4 @@
+import { createSessionProvider } from "@tailorkit/apps-server/client";
 import { createHostStorageClient } from "@tailorkit/app-storage/host";
 import { useCallback, useEffect, useId, useMemo, useRef, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
@@ -21,6 +22,10 @@ export const AppView = ({
   const reactId = useId();
   const storage = useMemo(
     () => createHostStorageClient({ baseUrl: store.baseUrl, appId: app.id }),
+    [store.baseUrl, app.id],
+  );
+  const getBackendSession = useMemo(
+    () => createSessionProvider({ baseUrl: store.baseUrl, appId: app.id }),
     [store.baseUrl, app.id],
   );
   const currentView = useSyncExternalStore(
@@ -114,6 +119,7 @@ export const AppView = ({
           ).toString()}
           sourceText={previewSnapshot.source ?? undefined}
           storage={storage}
+          getBackendSession={getBackendSession}
           components={wrappedComponents}
           createIframe={createIframe}
           props={runtimeProps}

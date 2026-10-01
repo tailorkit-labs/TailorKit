@@ -22,6 +22,7 @@ export default defineConfig({
       external: [
         /^node:/u,
         /^@tailorkit\/app-storage(?:\/|$)/u,
+        /^@tailorkit\/app(?:\/|$)/u,
         "@clack/prompts",
         "@standard-schema/spec",
         "arktype",

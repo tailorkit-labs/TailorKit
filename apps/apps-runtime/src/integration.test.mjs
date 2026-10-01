@@ -10,6 +10,8 @@ import { build } from "vite";
 import { createStorageClient, functionReference } from "@tailorkit/app-storage";
 import { issueStorageToken, APP_RUNTIME_AUDIENCE } from "@tailorkit/app-storage/auth";
 
+import { createClient, reference } from "@tailorkit/apps-server/client";
+
 import { it } from "vite-plus/test";
 
 it("runs isolated app backends with persistent SQLite and two-client realtime updates", async () => {
@@ -113,7 +115,7 @@ export class AppFacet extends DurableObject {
       },
     });
   }
-  async function checkRpc() {
+  async function checkRpc(websocket = false) {
     const repo = path.resolve(import.meta.dirname, "../../..");
     const sql = await readFile(
       path.join(
@@ -122,20 +124,20 @@ export class AppFacet extends DurableObject {
       ),
       "utf-8",
     );
-    const migrations = [
-      {
-        id: "test-initial",
-        hash: createHash("sha256").update(sql).digest("hex"),
-        statements: sql.split("--> statement-breakpoint"),
-      },
-    ];
     const entry = path.join(state, "fixture.ts");
-    // Only this disposable fixture initializes its schema. Production uploads carry no migrations.
-    await writeFile(
-      entry,
-      `import store from ${JSON.stringify(path.join(repo, "examples/apps/persistent-todo/src/server.ts"))};
+    // Only this disposable fixture initializes its schema with existing Drizzle-generated SQL.
+    const setup = websocket
+      ? `import app from ${JSON.stringify(path.join(repo, "examples/apps/backend-todo/src/server.ts"))};
+import { createAppFacet } from ${JSON.stringify(path.join(repo, "apps/apps-runtime/src/facet.ts"))};
+export class AppFacet extends createAppFacet(app) {
+  async fetch(request) {
+    for (const statement of ${JSON.stringify(sql.split("--> statement-breakpoint"))}) this.ctx.storage.sql.exec(statement.replace("CREATE TABLE ", "CREATE TABLE IF NOT EXISTS "));
+    return super.fetch(request);
+  }
+}`
+      : `import store from ${JSON.stringify(path.join(repo, "examples/apps/persistent-todo/src/server.ts"))};
 import { createStorageFacet } from ${JSON.stringify(path.join(repo, "apps/apps-cloud/src/facet.ts"))};
-export class AppFacet extends createStorageFacet(store, ${JSON.stringify(migrations)}) {
+export class AppFacet extends createStorageFacet(store, ${JSON.stringify([{ id: "test-initial", hash: createHash("sha256").update(sql).digest("hex"), statements: sql.split("--> statement-breakpoint") }])}) {
   #ready = false;
   async fetch(request) {
     if (!this.#ready) {
@@ -145,8 +147,8 @@ export class AppFacet extends createStorageFacet(store, ${JSON.stringify(migrati
     }
     return super.fetch(request);
   }
-}`,
-    );
+}`;
+    await writeFile(entry, setup);
     await build({
       configFile: false,
       root: repo,
@@ -169,14 +171,14 @@ export class AppFacet extends createStorageFacet(store, ${JSON.stringify(migrati
     published = {
       projectId: "project",
       appId: "app",
-      deploymentId: "todo",
+      deploymentId: websocket ? "backend" : "todo",
       objectKey: "private/todo/server/server.js",
       checksum: createHash("sha256").update(code).digest("hex"),
       contentLength: Buffer.byteLength(code),
     };
     let renewals = 0;
-    const makeClient = () =>
-      createStorageClient({
+    const makeClient = (installationId = websocket ? "backend-todos" : "todos") =>
+      (websocket ? createClient : createStorageClient)({
         getSession: async () => {
           renewals++;
           return {
@@ -186,12 +188,22 @@ export class AppFacet extends createStorageFacet(store, ${JSON.stringify(migrati
                 userId: "user",
                 projectId: "project",
                 appId: "app",
-                installationId: "todos",
-                deploymentId: "todo",
+                installationId,
+                deploymentId: websocket ? "backend" : "todo",
               },
             )),
             url: "https://runtime.test/rpc",
           };
+        },
+        connect: async (url, protocols) => {
+          const response = await mf.dispatchFetch(url.replace("wss:", "https:"), {
+            headers: { upgrade: "websocket", "sec-websocket-protocol": protocols.join(", ") },
+          });
+          if (response.status !== 101)
+            throw new Error(`WebSocket handshake ${response.status}: ${await response.text()}`);
+          const socket = response.webSocket;
+          socket.accept();
+          return socket;
         },
         fetch: async (input, init) => {
           const request = new Request(input, init);
@@ -206,8 +218,8 @@ export class AppFacet extends createStorageFacet(store, ${JSON.stringify(migrati
       });
     const first = makeClient();
     const second = makeClient();
-    const list = functionReference("list", "query", 1);
-    const add = functionReference("add", "mutation", 1);
+    const list = websocket ? reference("list", "query") : functionReference("list", "query", 1);
+    const add = websocket ? reference("add", "mutation") : functionReference("add", "mutation", 1);
     const snapshots = [[], []];
     const errors = [];
     const stops = [first, second].map((client, index) =>
@@ -246,16 +258,49 @@ export class AppFacet extends createStorageFacet(store, ${JSON.stringify(migrati
         "renewed subscriptions receive fresh snapshots",
       );
       assert.equal(errors.length, 0);
+      if (websocket) {
+        stops[1]();
+        await second.query(list, {}); // Cancellation and this request share an ordered connection.
+        const stoppedCount = snapshots[1].length;
+        await first.mutate(add, { text: "After unsubscribe" });
+        await wait(() => snapshots[0].at(-1).length === 2, "remaining active client updates");
+        assert.equal(snapshots[1].length, stoppedCount);
+        const isolated = makeClient("another-installation");
+        try {
+          assert.deepEqual(await isolated.query(list, {}), []);
+        } finally {
+          isolated.close();
+        }
+      }
     } finally {
       stops.forEach((stop) => stop());
+      first.close?.();
+      second.close?.();
     }
     await mf.dispose();
     mf = new Miniflare(convertV4MiniflareOptions(options));
-    assert.equal((await makeClient().query(list, {})).length, 1);
+    const recovered = makeClient();
+    try {
+      assert.equal((await recovered.query(list, {})).length, websocket ? 2 : 1);
+      if (websocket) {
+        await recovered.mutate(
+          add,
+          { text: "Both clients see this persisted mutation" },
+          { requestId: "00000000-0000-4000-8000-000000000001" },
+        );
+        assert.equal((await recovered.query(list, {})).length, 2);
+      }
+    } finally {
+      recovered.close?.();
+    }
   }
   try {
     mf = new Miniflare(convertV4MiniflareOptions(options));
     await publish(1);
+    const rejected = await mf.dispatchFetch("https://runtime.test/rpc", {
+      headers: { upgrade: "websocket", "sec-websocket-protocol": "tailorkit, jwt.forged" },
+    });
+    assert.equal(rejected.status, 401);
     const response = await invoke("one");
     assert.equal(response.status, 200, await response.clone().text());
     const one = await response.json();
@@ -320,8 +365,9 @@ export class AppFacet extends createStorageFacet(store, ${JSON.stringify(migrati
     assert.ok(body.startsWith("open"));
     assert.equal((await (await invoke("one")).json()).writes, 6);
     await checkRpc();
+    await checkRpc(true);
   } finally {
     await mf?.dispose();
     await rm(state, { recursive: true, force: true });
   }
-}, 30_000);
+}, 45_000);
