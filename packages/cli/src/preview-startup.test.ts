@@ -13,14 +13,11 @@ const mocks = vi.hoisted(() => ({
   token: vi.fn(),
   whoami: vi.fn(),
   heartbeat: vi.fn(),
-  storageStart: vi.fn(),
-  storageClose: vi.fn(),
 }));
 
 vi.mock("@tailorkit/app/config/loader", () => ({ loadTailorKitConfig: mocks.load }));
 vi.mock("@tailorkit/app/builder", () => ({
   buildApp: mocks.build,
-  startStorageRuntime: mocks.storageStart,
 }));
 vi.mock("@tailorkit/core/server", () => ({ createTailorKitClient: mocks.client }));
 vi.mock("@tailorkit/client-platform/preview", () => ({
@@ -43,23 +40,12 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.build.mockResolvedValue({ close: mocks.close });
   mocks.close.mockImplementation(async () => {});
-  mocks.storageStart.mockResolvedValue({ close: mocks.storageClose });
   mocks.client.mockReturnValue({ preview: { start: mocks.start, stop: mocks.stop } });
   mocks.start.mockResolvedValue({ data: { sessionId: "session" } });
   mocks.stop.mockImplementation(async () => {});
   mocks.token.mockResolvedValue({ deployToken: "token" });
   mocks.whoami.mockResolvedValue({ hostUrl: "https://host.test" });
   mocks.heartbeat.mockResolvedValue({ accepted: true });
-});
-
-it("closes the app watcher when the configured storage adapter fails to start", async () => {
-  const cwd = await mkdtemp(path.join(tmpdir(), "tailorkit-preview-storage-"));
-  dirs.push(cwd);
-  mocks.load.mockResolvedValue({ root: cwd, config: { appId: "app" } });
-  mocks.storageStart.mockRejectedValue(new Error("Adapter startup failed"));
-  await expect(runPreview({ cwd })).rejects.toThrow("Adapter startup failed");
-  expect(mocks.close).toHaveBeenCalledOnce();
-  expect(mocks.start).not.toHaveBeenCalled();
 });
 
 it.each(["Preview session is unavailable.", "Preview CLI token is unavailable."])(

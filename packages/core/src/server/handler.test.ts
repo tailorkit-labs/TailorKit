@@ -65,7 +65,7 @@ describe("createTailorKitServer", () => {
       projectKey: "project-key",
       scopes: { org: testScopeSchema },
       components: {},
-      storage: {
+      backend: {
         resolveInstallation: () => ({
           appId: "app",
           installationId: "installation",
@@ -82,7 +82,7 @@ describe("createTailorKitServer", () => {
       },
     });
     const response = await server.handler(
-      new Request("https://host.test/api/tailorkit/storage/session", {
+      new Request("https://host.test/api/tailorkit/backend/session", {
         method: "POST",
         headers: { "content-type": "application/json", origin: "https://host.test" },
         body: JSON.stringify({ appId: "app" }),

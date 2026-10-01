@@ -47,30 +47,17 @@
     "./arktype": {
       "types": "./dist/arktype.d.ts",
       "import": "./dist/arktype.js"
-    },
-    "./app/storage": {
-      "types": "./dist/app-storage.d.ts",
-      "import": "./dist/app-storage.js"
-    },
-    "./app/storage/server": {
-      "types": "./dist/app-storage-server.d.ts",
-      "import": "./dist/app-storage-server.js"
-    },
-    "./app/storage/auth": {
-      "types": "./dist/app-storage-auth.d.ts",
-      "import": "./dist/app-storage-auth.js"
     }
   },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "build": "tsup ./src/index.ts ./src/server.ts ./src/react.ts ./src/app.ts ./src/app-config.ts ./src/app-storage.ts ./src/app-storage-server.ts ./src/app-storage-auth.ts ./src/zod.ts ./src/valibot.ts ./src/arktype.ts --out-dir ./dist --format esm --target node20 --minify --clean && tsc -p tsconfig.build.json",
+    "build": "tsup ./src/index.ts ./src/server.ts ./src/react.ts ./src/app.ts ./src/app-config.ts ./src/zod.ts ./src/valibot.ts ./src/arktype.ts --out-dir ./dist --format esm --target node20 --minify --clean && tsc -p tsconfig.build.json",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@tailorkit/app": "workspace:*",
-    "@tailorkit/app-storage": "workspace:*",
     "@tailorkit/cli": "workspace:*",
     "@tailorkit/core": "workspace:*",
     "@tailorkit/react": "workspace:*"

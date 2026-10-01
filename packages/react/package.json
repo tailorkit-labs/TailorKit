@@ -28,7 +28,6 @@
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.9",
     "@standard-schema/spec": "^1.1.0",
-    "@tailorkit/app-storage": "workspace:*",
     "@tailorkit/apps-server": "workspace:*",
     "@tailorkit/client-platform": "workspace:*",
     "@tailorkit/core": "workspace:*",

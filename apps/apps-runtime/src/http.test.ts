@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vite-plus/test";
-import { StorageError } from "@tailorkit/app-storage";
+import { AppError } from "@tailorkit/apps-server";
 import { authenticatedResponse, errorResponse, readBounded } from "./http";
 
 afterEach(() => vi.useRealTimers());
@@ -49,7 +49,7 @@ it.each([
   ["UNAVAILABLE", 503],
   ["INTERNAL_SERVER_ERROR", 500],
 ] as const)("maps %s to HTTP %s", async (code, status) => {
-  const response = errorResponse(new StorageError(code, "public message"));
+  const response = errorResponse(new AppError(code, "public message"));
 
   expect(response.status).toBe(status);
   expect(await response.json()).toEqual({ code, message: "public message" });

@@ -1,13 +1,10 @@
 /* eslint-disable max-classes-per-file */
 import type { Invocation } from "@tailorkit/apps-server/runtime";
 import { Context, Effect } from "effect";
-import { StorageError } from "@tailorkit/app-storage";
-import type { StorageIdentity } from "@tailorkit/app-storage/server";
+import { AppError } from "@tailorkit/apps-server";
+import type { Identity } from "@tailorkit/apps-server";
 
-export interface RuntimeIdentity extends StorageIdentity {
-  readonly projectId: string;
-  readonly deploymentId: string;
-}
+export type RuntimeIdentity = Identity;
 
 export interface ServerDeployment {
   projectId: string;
@@ -21,8 +18,8 @@ export interface ServerDeployment {
 export class DeploymentSource extends Context.Service<
   DeploymentSource,
   {
-    current(identity: RuntimeIdentity): Effect.Effect<ServerDeployment, StorageError>;
-    code(deployment: ServerDeployment): Effect.Effect<string, StorageError>;
+    current(identity: RuntimeIdentity): Effect.Effect<ServerDeployment, AppError>;
+    code(deployment: ServerDeployment): Effect.Effect<string, AppError>;
   }
 >()("tailorkit/apps-runtime/DeploymentSource") {}
 
@@ -33,7 +30,7 @@ export class FacetExecution extends Context.Service<
       request: Request,
       identity: RuntimeIdentity,
       deployment: ServerDeployment,
-    ): Effect.Effect<Response, StorageError>;
+    ): Effect.Effect<Response, AppError>;
   }
 >()("tailorkit/apps-runtime/FacetExecution") {}
 
@@ -44,16 +41,10 @@ export class ActionExecution extends Context.Service<
       input: Invocation,
       identity: RuntimeIdentity,
       deployment: ServerDeployment,
-    ): Effect.Effect<unknown, StorageError>;
+    ): Effect.Effect<unknown, AppError>;
   }
 >()("tailorkit/apps-runtime/ActionExecution") {}
 
-export function runtimeIdentity(identity: StorageIdentity): RuntimeIdentity {
-  if (!identity.projectId || !identity.deploymentId) {
-    throw new StorageError("UNAUTHORIZED", "Project and deployment access required");
-  }
-  return { ...identity, projectId: identity.projectId, deploymentId: identity.deploymentId };
-}
 /** Deployment selects code, never the database. Issuer also separates trusted hosts. */
 export function installationName(identity: RuntimeIdentity, issuer: string) {
   return JSON.stringify([issuer, identity.projectId, identity.appId, identity.installationId]);
@@ -64,15 +55,15 @@ export function authorizedDeployment(identity: RuntimeIdentity) {
     const source = yield* DeploymentSource;
     const deployment = yield* source.current(identity);
     if (deployment.projectId !== identity.projectId || deployment.appId !== identity.appId) {
-      return yield* Effect.fail(new StorageError("FORBIDDEN", "App or project mismatch"));
+      return yield* Effect.fail(new AppError("FORBIDDEN", "App or project mismatch"));
     }
     if (deployment.deploymentId !== identity.deploymentId) {
       return yield* Effect.fail(
-        new StorageError("INCOMPATIBLE_VERSION", "App deployment changed; reload the app"),
+        new AppError("INCOMPATIBLE_VERSION", "App deployment changed; reload the app"),
       );
     }
     if (identity.expiresAt <= Date.now()) {
-      return yield* Effect.fail(new StorageError("UNAUTHORIZED", "Storage token expired"));
+      return yield* Effect.fail(new AppError("UNAUTHORIZED", "App token expired"));
     }
     return deployment;
   });

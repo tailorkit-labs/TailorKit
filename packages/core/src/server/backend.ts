@@ -1,6 +1,6 @@
 import type { TailorKitScopes } from "./types";
 
-export interface HostStorageAccess {
+export interface HostBackendAccess {
   userId: string;
   appId: string;
   installationId: string;
@@ -10,7 +10,7 @@ export interface HostStorageAccess {
   url: string;
 }
 
-export interface HostStorageOptions {
+export interface HostBackendOptions {
   /** Authorize membership and resolve a stable installation from the host's verified scopes.
    * Return null for unauthorized apps. The client cannot choose a storage ID or runtime URL.
    */
@@ -18,16 +18,16 @@ export interface HostStorageOptions {
     request: Request;
     appId: string;
     scopes: TailorKitScopes;
-  }): HostStorageAccess | null | Promise<HostStorageAccess | null>;
+  }): HostBackendAccess | null | Promise<HostBackendAccess | null>;
 }
 // Keep the request/build lifecycle and its failure paths together.
 // eslint-disable-next-line complexity
-export async function handleStorageSession(
+export async function handleBackendSession(
   request: Request,
-  options: HostStorageOptions,
+  options: HostBackendOptions,
   authenticate: (input: { request: Request }) => Promise<{ scopes: TailorKitScopes } | null>,
   issueSession: (
-    access: HostStorageAccess,
+    access: HostBackendAccess,
     scopes: TailorKitScopes,
   ) => Promise<{ token: string; expiresAt: number }>,
 ) {
@@ -97,7 +97,7 @@ export async function handleStorageSession(
     url.protocol !== "https:" &&
     !(url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname))
   ) {
-    throw new Error("Storage runtime URLs require HTTPS (or loopback for local development)");
+    throw new Error("App runtime URLs require HTTPS (or loopback for local development)");
   }
   const session = await issueSession(access, viewer.scopes);
   return Response.json({ ...session, url: access.url }, { headers });

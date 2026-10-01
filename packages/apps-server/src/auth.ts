@@ -1,7 +1,7 @@
 import { createLocalJWKSet, importJWK, jwtVerify, SignJWT } from "jose";
 import { z } from "zod";
-import { StorageError } from "./errors";
-import type { StorageIdentity } from "./server";
+import { AppError } from "./errors";
+import type { Identity } from "./server/functions";
 
 /** Fixed audience for the hosted app runtime. */
 export const APP_RUNTIME_AUDIENCE = "tailorkit-apps-runtime";
@@ -13,7 +13,7 @@ export function appRuntimeIssuer(platformUrl: string) {
   return url.href.replace(/\/$/u, "");
 }
 
-export interface StorageSigningOptions {
+export interface AppSigningOptions {
   issuer: string;
   audience: string;
   keyId: string;
@@ -21,32 +21,30 @@ export interface StorageSigningOptions {
   privateKey: CryptoKey | JsonWebKey;
   lifetimeSeconds?: number;
 }
-export interface StorageTrust {
+export interface AppTokenTrust {
   issuer: string;
   audience: string;
   appId?: string;
   projectId?: string;
-  requireDeployment?: boolean;
   /** Trusted issuer public keys, provisioned by the operator; never read from JWT headers. */
   publicKeys: { keys: (JsonWebKey & { kid: string })[] };
 }
 const access = z.object({
-  projectId: z.string().min(1).max(256).optional(),
-  deploymentId: z.string().min(1).max(256).optional(),
+  projectId: z.string().min(1).max(256),
+  deploymentId: z.string().min(1).max(256),
   sub: z.string().min(1).max(256),
   appId: z.string().min(1).max(256),
   installationId: z.string().min(1).max(256),
   exp: z.number().int(),
   iat: z.number().int(),
 });
-export async function issueStorageToken(
-  options: StorageSigningOptions,
-  identity: Omit<StorageIdentity, "expiresAt">,
-  purpose: "calls" | "migrations" = "calls",
+export async function issueAppToken(
+  options: AppSigningOptions,
+  identity: Omit<Identity, "expiresAt">,
 ) {
   const lifetime = options.lifetimeSeconds ?? 120;
   if (!Number.isInteger(lifetime) || lifetime < 1 || lifetime > 300) {
-    throw new Error("Storage tokens must last 1–300 seconds");
+    throw new Error("App tokens must last 1–300 seconds");
   }
   const now = Math.floor(Date.now() / 1000);
   access.parse({
@@ -67,7 +65,7 @@ export async function issueStorageToken(
     deploymentId: identity.deploymentId,
     appId: identity.appId,
     installationId: identity.installationId,
-    purpose,
+    purpose: "calls",
   })
     .setProtectedHeader({ alg: "ES256", kid: options.keyId, typ: "JWT" })
     .setSubject(identity.userId)
@@ -78,10 +76,7 @@ export async function issueStorageToken(
     .sign(key);
   return { token, expiresAt: (now + lifetime) * 1000 };
 }
-export function storageTokenVerifier(
-  trust: StorageTrust,
-  purpose: "calls" | "migrations" = "calls",
-) {
+export function appTokenVerifier(trust: AppTokenTrust) {
   if (
     !trust.publicKeys.keys.length ||
     trust.publicKeys.keys.some(
@@ -93,66 +88,51 @@ export function storageTokenVerifier(
   const keys = createLocalJWKSet({
     keys: trust.publicKeys.keys.map((key) => ({ ...key, alg: "ES256", use: "sig" })),
   });
-  return async (token: string): Promise<StorageIdentity> => {
+  return async (token: string): Promise<Identity> => {
     try {
       const { payload } = await jwtVerify(token, keys, {
         issuer: trust.issuer,
         audience: trust.audience,
         algorithms: ["ES256"],
         typ: "JWT",
-        requiredClaims: ["sub", "exp", "iat", "appId", "installationId"],
+        requiredClaims: [
+          "sub",
+          "exp",
+          "iat",
+          "appId",
+          "installationId",
+          "projectId",
+          "deploymentId",
+        ],
         maxTokenAge: "5m",
       });
       const claims = access.parse(payload);
       if (
-        (payload.purpose ?? "calls") !== purpose ||
+        (payload.purpose ?? "calls") !== "calls" ||
         (trust.appId !== undefined && claims.appId !== trust.appId) ||
         (trust.projectId !== undefined && claims.projectId !== trust.projectId) ||
-        (trust.requireDeployment && (!claims.projectId || !claims.deploymentId)) ||
         claims.exp - claims.iat > 300 ||
         claims.iat > Math.floor(Date.now() / 1000)
       ) {
-        throw new Error("Invalid storage access");
+        throw new Error("Invalid app access");
       }
       return Object.freeze({
-        ...(claims.projectId ? { projectId: claims.projectId } : {}),
-        ...(claims.deploymentId ? { deploymentId: claims.deploymentId } : {}),
+        projectId: claims.projectId,
+        deploymentId: claims.deploymentId,
         userId: claims.sub,
         appId: claims.appId,
         installationId: claims.installationId,
         expiresAt: claims.exp * 1000,
       });
     } catch {
-      throw new StorageError("UNAUTHORIZED", "Invalid or expired storage token");
+      throw new AppError("UNAUTHORIZED", "Invalid or expired app token");
     }
   };
 }
 export function bearerToken(request: Request) {
   const authorization = request.headers.get("authorization");
   if (!authorization?.startsWith("Bearer ") || authorization.length > 8192) {
-    throw new StorageError("UNAUTHORIZED", "Storage token required");
+    throw new AppError("UNAUTHORIZED", "App token required");
   }
   return authorization.slice(7);
-}
-/** Stable across deployments, unambiguous across installations. No client store IDs. */
-export function installationKey(
-  identity: Pick<StorageIdentity, "appId" | "installationId">,
-  issuer: string,
-) {
-  return JSON.stringify([issuer, identity.appId, identity.installationId]);
-}
-
-/** Operator/CLI only. This token is never issued by the host SDK session endpoint. */
-export function issueStorageMigrationToken(
-  options: StorageSigningOptions,
-  identity: Omit<StorageIdentity, "expiresAt">,
-) {
-  return issueStorageToken(
-    { ...options, audience: `${options.audience}:migrations` },
-    identity,
-    "migrations",
-  );
-}
-export function storageMigrationTokenVerifier(trust: StorageTrust) {
-  return storageTokenVerifier({ ...trust, audience: `${trust.audience}:migrations` }, "migrations");
 }

@@ -29,7 +29,6 @@
   "dependencies": {
     "@clack/prompts": "^1.8.1",
     "@tailorkit/app": "workspace:*",
-    "@tailorkit/app-storage": "workspace:*",
     "@tailorkit/client-platform": "workspace:*",
     "@tailorkit/core": "workspace:*",
     "cac": "^7.0.0",

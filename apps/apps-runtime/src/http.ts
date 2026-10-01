@@ -1,4 +1,4 @@
-import { storageError } from "@tailorkit/app-storage/runtime";
+import { appError } from "@tailorkit/apps-server/runtime";
 
 export async function readBounded(
   response: { body: ReadableStream<Uint8Array> | null },
@@ -28,7 +28,7 @@ export async function readBounded(
 }
 
 export function errorResponse(error: unknown) {
-  const failure = storageError(error);
+  const failure = appError(error);
   const status = {
     UNAUTHORIZED: 401,
     FORBIDDEN: 403,

@@ -1,7 +1,7 @@
 import { WorkerEntrypoint } from "cloudflare:workers";
 import type { Identity } from "@tailorkit/apps-server";
 import type { Invocation } from "@tailorkit/apps-server/runtime";
-import { StorageError } from "@tailorkit/app-storage";
+import { AppError } from "@tailorkit/apps-server";
 
 /** Per-invocation capabilities are revoked on completion, cancellation or expiry. */
 export class ActionLeases {
@@ -11,16 +11,16 @@ export class ActionLeases {
   >();
   open(identity: Identity, parent?: AbortSignal) {
     if (this.#active.size >= 16)
-      throw new StorageError("UNAVAILABLE", "Installation action limit exceeded");
+      throw new AppError("UNAVAILABLE", "Installation action limit exceeded");
     const deadline = Math.min(identity.expiresAt, Date.now() + 30_000);
-    if (deadline <= Date.now()) throw new StorageError("UNAUTHORIZED", "App token expired");
+    if (deadline <= Date.now()) throw new AppError("UNAUTHORIZED", "App token expired");
     const id = crypto.randomUUID();
     const controller = new AbortController();
-    const cancel = () => controller.abort(new StorageError("UNAVAILABLE", "Action cancelled"));
+    const cancel = () => controller.abort(new AppError("UNAVAILABLE", "Action cancelled"));
     parent?.addEventListener("abort", cancel, { once: true });
     if (parent?.aborted) cancel();
     const timer = setTimeout(
-      () => controller.abort(new StorageError("UNAVAILABLE", "Action deadline exceeded")),
+      () => controller.abort(new AppError("UNAVAILABLE", "Action deadline exceeded")),
       deadline - Date.now(),
     );
     this.#active.set(id, { identity, deadline, signal: controller.signal, calls: 0 });
@@ -38,9 +38,9 @@ export class ActionLeases {
   access(id: string, count = true) {
     const lease = this.#active.get(id);
     if (!lease || lease.signal.aborted || lease.deadline <= Date.now())
-      throw new StorageError("UNAVAILABLE", "Action has ended");
+      throw new AppError("UNAVAILABLE", "Action has ended");
     if (count && ++lease.calls > 64)
-      throw new StorageError("BAD_REQUEST", "Action call limit exceeded");
+      throw new AppError("BAD_REQUEST", "Action call limit exceeded");
     return lease;
   }
 }
@@ -84,7 +84,7 @@ export function actionDestination(url: URL) {
         (octets[0] === 172 && octets[1]! >= 16 && octets[1]! <= 31) ||
         (octets[0] === 100 && octets[1]! >= 64 && octets[1]! <= 127)))
   )
-    throw new StorageError("FORBIDDEN", "Action destination must be a public HTTPS endpoint");
+    throw new AppError("FORBIDDEN", "Action destination must be a public HTTPS endpoint");
 }
 
 /** Only the trusted supervisor creates this binding. Apps cannot choose its installation or lease. */
@@ -133,6 +133,6 @@ export class ActionBridge extends WorkerEntrypoint<
         redirect: "manual",
       });
     }
-    throw new StorageError("BAD_REQUEST", "Too many action redirects");
+    throw new AppError("BAD_REQUEST", "Too many action redirects");
   }
 }

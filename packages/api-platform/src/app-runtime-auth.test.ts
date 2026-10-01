@@ -1,5 +1,5 @@
 import { expect, it, vi } from "vite-plus/test";
-import { APP_RUNTIME_AUDIENCE, storageTokenVerifier } from "@tailorkit/app-storage/auth";
+import { APP_RUNTIME_AUDIENCE, appTokenVerifier } from "@tailorkit/apps-server/auth";
 const settings = vi.hoisted(() => ({
   APP_RUNTIME_SIGNING_KEY: "",
   APP_RUNTIME_PREVIOUS_PUBLIC_KEYS: undefined as string | undefined,
@@ -31,10 +31,9 @@ it("publishes only public keys and issues platform-bound short-lived access", as
     deploymentId: "deployment",
   };
   const session = await issueAppRuntimeToken(identity);
-  const verify = storageTokenVerifier({
+  const verify = appTokenVerifier({
     issuer: settings.OPENAPI_SERVER_URL,
     audience: APP_RUNTIME_AUDIENCE,
-    requireDeployment: true,
     publicKeys,
   });
   expect(await verify(session.token)).toMatchObject(identity);

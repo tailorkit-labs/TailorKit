@@ -38,7 +38,6 @@
     "test": "vp test run"
   },
   "dependencies": {
-    "@tailorkit/app-storage": "workspace:*",
     "@tailorkit/apps-server": "workspace:*",
     "@tailorkit/core": "workspace:*",
     "cosmiconfig": "^10.0.1",

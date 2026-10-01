@@ -13,29 +13,12 @@ const logosConfigSchema = z.object({
   light: z.string().min(1).optional(),
 });
 
-const storageConfigSchema = z.object({
-  entry: z.string().default("./src/server.ts"),
-  migrations: z.string().default("./storage/migrations"),
-  references: z.string().default("./src/storage.gen.ts"),
-  /** Trusted runtime integration, exporting the SDK's StorageTools Effect Layer. */
-  adapter: z.string().min(1),
-  namespace: z.string().regex(/^[a-z][a-z0-9-]{0,62}$/u),
-  issuer: z.url(),
-  audience: z.string().min(1).default("tailorkit-storage"),
-  publicKeys: z.string().default("./storage/public-keys.json"),
-  origins: z.array(z.url()).min(1),
-  /** Already provisioned runtime. The CLI checks compatibility before uploading client assets. */
-  runtimeUrl: z.url().optional(),
-  port: z.number().int().min(1024).max(65_535).default(8787),
-});
-
 const tailorkitConfigSchema = z.object({
   appId: z.string().min(1).optional(),
   build: buildConfigSchema.optional(),
   client: clientConfigSchema.optional(),
   host: z.string().url(),
   logos: logosConfigSchema.optional(),
-  storage: storageConfigSchema.optional(),
   server: z
     .object({
       entry: z.string().default("./src/server.ts"),

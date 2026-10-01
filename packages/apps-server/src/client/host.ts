@@ -15,7 +15,7 @@ export function createSessionProvider(options: {
     if (!input.refresh && cached && cached.expiresAt > Date.now() + 5000)
       return Promise.resolve(cached);
     pending ??= (async () => {
-      const response = await (options.fetch ?? fetch)(new URL("storage/session", base), {
+      const response = await (options.fetch ?? fetch)(new URL("backend/session", base), {
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },

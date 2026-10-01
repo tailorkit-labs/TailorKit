@@ -21,7 +21,7 @@ it("deduplicates token requests, caches until renewal and sends only the host-bo
   expect(first).toEqual(second);
   expect(fetch).toHaveBeenCalledTimes(1);
   expect(fetch.mock.calls[0]?.[0].toString()).toBe(
-    "https://host.test/api/tailorkit/storage/session",
+    "https://host.test/api/tailorkit/backend/session",
   );
   expect(fetch.mock.calls[0]?.[1]).toMatchObject({
     credentials: "same-origin",

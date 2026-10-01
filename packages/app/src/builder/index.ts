@@ -7,18 +7,8 @@ import { build as viteBuild } from "vite";
 import { loadTailorKitConfig } from "../config/loader";
 import { assertSupportedPreactVersion } from "../preact-version";
 import { buildServer } from "./server";
-import { buildStorage, storagePaths } from "./storage";
 
 import { createTailorKitUploadManifest } from "./upload-manifest";
-
-export {
-  buildStorage,
-  inspectStorage,
-  generateStorageModel,
-  storagePaths,
-  storageProject,
-  startStorageRuntime,
-} from "./storage";
 
 export {
   createTailorKitUploadManifest,
@@ -49,20 +39,7 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
   assertSupportedPreactVersion(preactVersion);
 
   const resolvedOutDir = path.resolve(loaded.root, outDir);
-  if (loaded.config.storage) {
-    const paths = storagePaths(loaded);
-    if (
-      paths.directory === resolvedOutDir ||
-      !path.relative(resolvedOutDir, paths.directory).startsWith("..")
-    ) {
-      throw new Error("App build output would clear persistent storage state");
-    }
-  }
-  if (loaded.config.storage && loaded.config.server)
-    throw new Error("Configure either server or legacy storage, not both");
-  const storageWatcher = loaded.config.server
-    ? await buildServer(loaded, options.watch, resolvedOutDir)
-    : await buildStorage(loaded, options.watch);
+  const serverWatcher = await buildServer(loaded, options.watch, resolvedOutDir);
   const writeBuildExtras = async (): Promise<void> => {
     const logoManifest: { dark?: string; light?: string } = {};
     for (const variant of ["light", "dark"] as const) {
@@ -85,7 +62,7 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
     }
     await writeFile(
       path.join(resolvedOutDir, "tailorkit-upload.json"),
-      `${JSON.stringify(createTailorKitUploadManifest(logoManifest, Boolean(loaded.config.storage || loaded.config.server)), null, 2)}\n`,
+      `${JSON.stringify(createTailorKitUploadManifest(logoManifest, Boolean(loaded.config.server)), null, 2)}\n`,
       "utf-8",
     );
   };
@@ -130,23 +107,17 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
         enforce: "pre",
         async resolveId(id, importer) {
           if (
-            /^@tailorkit\/apps-server(?:$|\/(?:runtime)$)/u.test(id) ||
+            /^@tailorkit\/apps-server(?:$|\/(?:runtime|auth)$)/u.test(id) ||
             (loaded.config.server &&
               importer &&
               path.resolve(path.dirname(importer), id) ===
-                path.resolve(loaded.root, loaded.config.server.entry)) ||
-            /^@tailorkit\/app-storage\/(?:server|auth|runtime|tooling|orchestration)$/u.test(id) ||
-            /^tailorkit\/app\/storage\/(?:server|auth)$/u.test(id) ||
-            (loaded.config.storage &&
-              importer &&
-              path.resolve(path.dirname(importer), id) ===
-                path.resolve(loaded.root, loaded.config.storage.entry))
+                path.resolve(loaded.root, loaded.config.server.entry))
           ) {
             throw new Error(
               "App server implementations cannot be imported into a browser bundle. Use generated client references.",
             );
           }
-          const serverEntry = loaded.config.server?.entry ?? loaded.config.storage?.entry;
+          const serverEntry = loaded.config.server?.entry;
           if (serverEntry && importer) {
             const resolved = await this.resolve(id, importer, { skipSelf: true });
             if (resolved?.id.split("?")[0] === path.resolve(loaded.root, serverEntry))
@@ -192,8 +163,8 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
     ],
     root: loaded.root,
   }).catch(async (error: unknown) => {
-    if (storageWatcher && typeof storageWatcher === "object" && "close" in storageWatcher) {
-      await (storageWatcher as { close(): Promise<void> }).close();
+    if (serverWatcher && typeof serverWatcher === "object" && "close" in serverWatcher) {
+      await (serverWatcher as { close(): Promise<void> }).close();
     }
     throw error;
   });
@@ -215,8 +186,8 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
       if (result && typeof result === "object" && "close" in result) {
         await (result as { close(): Promise<void> }).close();
       }
-      if (storageWatcher && typeof storageWatcher === "object" && "close" in storageWatcher) {
-        await (storageWatcher as { close(): Promise<void> }).close();
+      if (serverWatcher && typeof serverWatcher === "object" && "close" in serverWatcher) {
+        await (serverWatcher as { close(): Promise<void> }).close();
       }
       throw error;
     }
@@ -227,9 +198,9 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
     result &&
     typeof result === "object" &&
     "close" in result &&
-    storageWatcher &&
-    typeof storageWatcher === "object" &&
-    "close" in storageWatcher
+    serverWatcher &&
+    typeof serverWatcher === "object" &&
+    "close" in serverWatcher
   ) {
     const clientWatcher = result as {
       close(): Promise<void>;
@@ -239,7 +210,7 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
       on: clientWatcher.on.bind(clientWatcher),
       async close() {
         await clientWatcher.close();
-        await (storageWatcher as { close(): Promise<void> }).close();
+        await (serverWatcher as { close(): Promise<void> }).close();
       },
     };
   }

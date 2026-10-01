@@ -15,12 +15,21 @@ it("builds separate artifacts and rejects accidental imports of server code", as
     expect(browser).not.toContain("tailorkit_receipts");
     expect(browser).not.toContain("Todo does not exist");
     expect(browser).not.toContain("cloudflare:workers");
+    expect(browser).not.toContain("jwtVerify");
+    expect(browser).not.toContain("SignJWT");
     expect(refs).toContain('import type app from "./server"');
     expect(
       JSON.parse(await readFile(path.join(root, ".tailorkit/tailorkit-upload.json"), "utf8"))
         .assets,
     ).toEqual({ client: "client.js", server: "server.js" });
     await writeFile(path.join(root, "src/client.ts"), 'import "./server";\n' + client);
+    await expect(buildApp({ cwd: root })).rejects.toThrow(
+      "cannot be imported into a browser bundle",
+    );
+    await writeFile(
+      path.join(root, "src/client.ts"),
+      'import "@tailorkit/apps-server/auth";\n' + client,
+    );
     await expect(buildApp({ cwd: root })).rejects.toThrow(
       "cannot be imported into a browser bundle",
     );

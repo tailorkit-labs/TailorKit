@@ -23,10 +23,10 @@ beforeEach(async () => {
   vi.resetAllMocks();
   root = await mkdtemp(path.join(tmpdir(), "tailorkit-private-deploy-"));
   await mkdir(path.join(root, ".tailorkit"));
-  await mkdir(path.join(root, ".tailorkit-storage"));
+  await mkdir(path.join(root, ".tailorkit-server"));
   await writeFile(path.join(root, ".tailorkit/client.js"), "client-code");
-  await writeFile(path.join(root, ".tailorkit-storage/server.js"), "server-code");
-  await writeFile(path.join(root, ".tailorkit-storage/migrations.json"), "DO NOT UPLOAD");
+  await writeFile(path.join(root, ".tailorkit-server/server.js"), "server-code");
+  await writeFile(path.join(root, ".tailorkit-server/migrations.json"), "DO NOT UPLOAD");
   await writeFile(
     path.join(root, ".tailorkit/tailorkit-upload.json"),
     JSON.stringify({ version: 1, assets: { client: "client.js", server: "server.js" } }),
@@ -34,7 +34,7 @@ beforeEach(async () => {
   mocks.load.mockResolvedValue({
     root,
     filepath: path.join(root, "tailorkit.config.ts"),
-    config: { appId: "app-one", storage: {} },
+    config: { appId: "app-one", server: {} },
   });
   mocks.whoami.mockResolvedValue({ hostUrl: "https://host.example" });
   mocks.token.mockResolvedValue({ deployToken: "deploy-token" });
@@ -92,7 +92,6 @@ it("does not publish when the server upload fails", async () => {
 });
 
 it("uploads the new apps-server artifact from its separate build directory", async () => {
-  await mkdir(path.join(root, ".tailorkit-server"));
   await writeFile(path.join(root, ".tailorkit-server/server.js"), "new-backend-code");
   mocks.load.mockResolvedValue({
     root,

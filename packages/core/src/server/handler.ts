@@ -1,4 +1,4 @@
-import { handleStorageSession } from "./storage";
+import { handleBackendSession } from "./backend";
 import { RPCHandler } from "@orpc/server/fetch";
 import { appsList, appsRuntimeSession, previewAccepted } from "@tailorkit/client-platform/client";
 import { createClient } from "@tailorkit/client-platform/client/client/index";
@@ -114,14 +114,14 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
     };
     const url = new URL(request.url);
     const previewPrefix = `${basePath}/preview/`;
-    if (url.pathname === `${basePath}/storage/session` && options.storage) {
-      return handleStorageSession(
+    if (url.pathname === `${basePath}/backend/session` && options.backend) {
+      return handleBackendSession(
         request,
-        options.storage,
+        options.backend,
         authenticate,
         async (access, scopes) => {
           if (!access.deploymentId)
-            throw new Error("Storage access requires a published deployment ID");
+            throw new Error("App backend access requires a published deployment ID");
           const headers = await (typeof platformHeaders === "function"
             ? platformHeaders()
             : platformHeaders);

@@ -1,13 +1,9 @@
-import type { StorageTrust } from "@tailorkit/app-storage/auth";
+import type { AppTokenTrust } from "@tailorkit/apps-server/auth";
 import { createPrivateKey, createPublicKey } from "node:crypto";
-import {
-  APP_RUNTIME_AUDIENCE,
-  appRuntimeIssuer,
-  issueStorageToken,
-} from "@tailorkit/app-storage/auth";
+import { APP_RUNTIME_AUDIENCE, appRuntimeIssuer, issueAppToken } from "@tailorkit/apps-server/auth";
 import { env } from "./env";
 
-type PublicKey = StorageTrust["publicKeys"]["keys"][number];
+type PublicKey = AppTokenTrust["publicKeys"]["keys"][number];
 
 function signingKey() {
   if (!env.APP_RUNTIME_SIGNING_KEY)
@@ -44,7 +40,7 @@ export function issueAppRuntimeToken(identity: {
   deploymentId: string;
 }) {
   const key = signingKey();
-  return issueStorageToken(
+  return issueAppToken(
     {
       issuer: appRuntimeIssuer(env.OPENAPI_SERVER_URL ?? "https://tailorkit.dev/api/platform"),
       audience: APP_RUNTIME_AUDIENCE,

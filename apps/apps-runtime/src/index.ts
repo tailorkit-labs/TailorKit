@@ -8,12 +8,12 @@ import type { Identity } from "@tailorkit/apps-server";
 import { z } from "zod";
 import { DurableObject } from "cloudflare:workers";
 import { Effect, Layer } from "effect";
-import { bearerToken, appRuntimeIssuer } from "@tailorkit/app-storage/auth";
+import { bearerToken, appRuntimeIssuer } from "@tailorkit/apps-server/auth";
 import { ActionLeases, abortable } from "./actions";
 export { ActionBridge } from "./actions";
 import { verifier } from "./auth";
-import { StorageError } from "@tailorkit/app-storage";
-import { storageError } from "@tailorkit/app-storage/runtime";
+import { AppError } from "@tailorkit/apps-server";
+import { appError } from "@tailorkit/apps-server/runtime";
 import { deploymentSource } from "./source";
 import {
   DeploymentSource,
@@ -23,7 +23,6 @@ import {
   RequestQueue,
   execute,
   installationName,
-  runtimeIdentity,
 } from "./runtime";
 import { authenticatedResponse, errorResponse, readBounded } from "./http";
 
@@ -44,12 +43,11 @@ export class AppInstallation extends DurableObject<Env> {
   fetch(request: Request): Promise<Response> {
     return this.#queue.run(async () => {
       try {
-        const identity = runtimeIdentity(await this.#verify(bearerToken(request)));
+        const identity = await this.#verify(bearerToken(request));
         const expected = this.env.STORES.idFromName(
           installationName(identity, appRuntimeIssuer(this.env.PLATFORM_URL)),
         );
-        if (!this.ctx.id.equals(expected))
-          throw new StorageError("FORBIDDEN", "Installation mismatch");
+        if (!this.ctx.id.equals(expected)) throw new AppError("FORBIDDEN", "Installation mismatch");
 
         if (request.headers.get("upgrade")?.toLowerCase() === "websocket")
           return await this.#open(request, identity);
@@ -72,7 +70,7 @@ export class AppInstallation extends DurableObject<Env> {
             }
 
             if (access.expiresAt <= Date.now())
-              throw new StorageError("UNAUTHORIZED", "Storage token expired");
+              throw new AppError("UNAUTHORIZED", "App token expired");
 
             const previous = this.ctx.storage.kv.get<string>("version");
             if (previous && previous !== version) {
@@ -108,7 +106,7 @@ export class AppInstallation extends DurableObject<Env> {
 
             return authenticatedResponse(await facet.fetch(forwarded), access.expiresAt);
           },
-          catch: storageError,
+          catch: appError,
         }),
     });
 
@@ -142,7 +140,7 @@ export class AppInstallation extends DurableObject<Env> {
       );
       const value = JSON.parse(new TextDecoder().decode(await readBounded(response, 1024 * 1024)));
       if (!response.ok)
-        throw new StorageError(
+        throw new AppError(
           value.code ?? "INTERNAL_SERVER_ERROR",
           value.message ?? "App function failed",
         );
@@ -167,7 +165,7 @@ export class AppInstallation extends DurableObject<Env> {
       kind === "query" ? invocationSchema : invocationSchema.extend({ requestId: z.uuid() })
     ).parse(raw);
     if (new TextEncoder().encode(JSON.stringify(input)).byteLength > 1024 * 1024)
-      throw new StorageError("BAD_REQUEST", "Action input too large");
+      throw new AppError("BAD_REQUEST", "Action input too large");
     const scoped = { ...input, actionId };
     return kind === "query"
       ? this.#realtime.query(scoped, identity)
@@ -228,7 +226,7 @@ export class AppInstallation extends DurableObject<Env> {
                 ),
               );
               if (!response.ok)
-                throw new StorageError(
+                throw new AppError(
                   result.code ?? "INTERNAL_SERVER_ERROR",
                   result.message ?? "Action failed",
                 );
@@ -237,7 +235,7 @@ export class AppInstallation extends DurableObject<Env> {
               lease.close();
             }
           },
-          catch: storageError,
+          catch: appError,
         }),
     });
     return Effect.runPromise(
@@ -250,11 +248,11 @@ export class AppInstallation extends DurableObject<Env> {
   async #open(_request: Request, identity: Identity) {
     const current = await Effect.runPromise(this.#source.current(identity));
     if (current.projectId !== identity.projectId || current.appId !== identity.appId)
-      throw new StorageError("FORBIDDEN", "App or project mismatch");
+      throw new AppError("FORBIDDEN", "App or project mismatch");
     if (current.deploymentId !== identity.deploymentId)
-      throw new StorageError("INCOMPATIBLE_VERSION", "App deployment changed; reload the app");
+      throw new AppError("INCOMPATIBLE_VERSION", "App deployment changed; reload the app");
     if (this.#connections.size >= 128)
-      throw new StorageError("BAD_REQUEST", "Installation connection limit exceeded");
+      throw new AppError("BAD_REQUEST", "Installation connection limit exceeded");
     const pair = new WebSocketPair();
     const [client, server] = [pair[0], pair[1]];
     server.accept();
@@ -307,8 +305,8 @@ export default {
             .map((value) => value.trim()) ?? [];
         const token = protocols.find((value) => value.startsWith("jwt."))?.slice(4);
         if (!protocols.includes("tailorkit") || !token || token.length > 8192)
-          throw new StorageError("UNAUTHORIZED", "App token required");
-        const identity = runtimeIdentity(await verifier(env)(token));
+          throw new AppError("UNAUTHORIZED", "App token required");
+        const identity = await verifier(env)(token);
         const headers = new Headers(request.headers);
         headers.set("authorization", `Bearer ${token}`);
         response = await env.STORES.getByName(
@@ -317,7 +315,7 @@ export default {
       } else if (request.method !== "POST" || !new URL(request.url).pathname.startsWith("/rpc/"))
         response = new Response("Not found", { status: 404 });
       else {
-        const identity = runtimeIdentity(await verifier(env)(bearerToken(request)));
+        const identity = await verifier(env)(bearerToken(request));
         const bytes = await readBounded(request, 1024 * 1024);
         response = await env.STORES.getByName(
           installationName(identity, appRuntimeIssuer(env.PLATFORM_URL)),

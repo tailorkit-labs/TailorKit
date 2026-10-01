@@ -1,16 +1,16 @@
-import { StorageError } from "@tailorkit/app-storage";
+import { AppError } from "@tailorkit/apps-server";
 import {
   APP_RUNTIME_AUDIENCE,
   appRuntimeIssuer,
-  storageTokenVerifier,
-} from "@tailorkit/app-storage/auth";
+  appTokenVerifier,
+} from "@tailorkit/apps-server/auth";
 import { z } from "zod";
 import { readBounded } from "./http";
 
 // Cache only completed key data, never an in-flight request across Worker requests.
 const keys = new WeakMap<
   object,
-  { expiresAt: number; verify: ReturnType<typeof storageTokenVerifier> }
+  { expiresAt: number; verify: ReturnType<typeof appTokenVerifier> }
 >();
 
 export function verifier(env: Pick<Env, "PLATFORM_URL">) {
@@ -23,7 +23,7 @@ export function verifier(env: Pick<Env, "PLATFORM_URL">) {
         credentials: "omit",
         signal: AbortSignal.timeout(10_000),
       });
-      if (!response.ok) throw new StorageError("UNAVAILABLE", "Platform signing keys unavailable");
+      if (!response.ok) throw new AppError("UNAVAILABLE", "Platform signing keys unavailable");
       const publicKeys = z
         .object({
           keys: z
@@ -43,10 +43,9 @@ export function verifier(env: Pick<Env, "PLATFORM_URL">) {
         .parse(JSON.parse(new TextDecoder().decode(await readBounded(response, 16 * 1024))));
       cached = {
         expiresAt: Date.now() + 60_000,
-        verify: storageTokenVerifier({
+        verify: appTokenVerifier({
           issuer,
           audience: APP_RUNTIME_AUDIENCE,
-          requireDeployment: true,
           publicKeys,
         }),
       };

@@ -1,5 +1,4 @@
 import { createSessionProvider } from "@tailorkit/apps-server/client";
-import { createHostStorageClient } from "@tailorkit/app-storage/host";
 import { useCallback, useEffect, useId, useMemo, useRef, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import { isViewAncestor } from "@tailorkit/core/views";
@@ -20,10 +19,6 @@ export const AppView = ({
   const { store, client } = useTailorRootContext("AppView");
   const { theme, components: wrappedComponents } = client;
   const reactId = useId();
-  const storage = useMemo(
-    () => createHostStorageClient({ baseUrl: store.baseUrl, appId: app.id }),
-    [store.baseUrl, app.id],
-  );
   const getBackendSession = useMemo(
     () => createSessionProvider({ baseUrl: store.baseUrl, appId: app.id }),
     [store.baseUrl, app.id],
@@ -118,7 +113,6 @@ export const AppView = ({
             appUrl ?? new URL(`preview/${previewSessionId}/client.js`, store.baseUrl)
           ).toString()}
           sourceText={previewSnapshot.source ?? undefined}
-          storage={storage}
           getBackendSession={getBackendSession}
           components={wrappedComponents}
           createIframe={createIframe}

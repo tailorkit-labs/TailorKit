@@ -2,7 +2,7 @@
 
 `tailorkit-apps-runtime` is the trusted Cloudflare entry point for app queries, mutations, actions and subscriptions. App server bundles are uploaded by the existing CLI to the private blob bucket under `server/server.js`; client code remains under `client/client.js`. The public assets worker never serves server bundles.
 
-The host authorizes an installation and calls the platform API using its existing project key. The platform checks the app belongs to that project and the supplied verified scopes, resolves its published deployment, and issues a short-lived ES256 JWT containing `userId` (JWT `sub`), `projectId`, `appId`, `installationId` and `deploymentId`. Configure the host SDK's `storage.resolveInstallation` to return these **canonical database IDs**, the stable installation ID and this runtime's `/rpc` URL. The host SDK calls `POST /apps/{appId}/runtime/session`; customer hosts never receive signing keys. Resolve deployment access on the host server; sandboxed apps obtain scoped JWTs through the bridge and call the backend directly over a WebSocket. Platform credentials remain in the host server.
+The host authorizes an installation and calls the platform API using its existing project key. The platform checks the app belongs to that project and the supplied verified scopes, resolves its published deployment, and issues a short-lived ES256 JWT containing `userId` (JWT `sub`), `projectId`, `appId`, `installationId` and `deploymentId`. Configure the host SDK's `backend.resolveInstallation` to return these **canonical database IDs**, the stable installation ID and this runtime's `/rpc` URL. The host SDK calls `POST /apps/{appId}/runtime/session`; customer hosts never receive signing keys. Resolve deployment access on the host server; sandboxed apps obtain scoped JWTs through the bridge and call the backend directly over a WebSocket. Platform credentials remain in the host server.
 
 The runtime derives its issuer from `PLATFORM_URL`, fetches trusted public keys from `GET /runtime/keys`, and caches them for 60 seconds. Audience is fixed to `tailorkit-apps-runtime`. Calls allow any browser origin and omit cookies; JWT authorization remains mandatory. For each request, the gateway verifies the token's signature, issuer, audience, expiry and required project/deployment claims. It routes to a supervisor named `[issuer, projectId, appId, installationId]`. The supervisor verifies authentication again and asks the authenticated platform API (`POST /apps/{appId}/runtime`, with the signed project ID) for the currently published, verified bundle. A different app/project is forbidden; an old deployment returns `INCOMPATIBLE_VERSION` and requires reloading the app.
 
@@ -46,13 +46,12 @@ Tests live beside the code they exercise. `src/integration.test.mjs` runs agains
 From the repository root:
 
 ```sh
-pnpm --filter @tailorkit/app-storage build
 pnpm --filter @tailorkit/apps-server build
 pnpm --filter @tailorkit/apps-runtime check-types
 pnpm --filter @tailorkit/apps-runtime test
 ```
 
-`test` dry-builds with Wrangler and runs its bundled Miniflare/workerd locally with disposable persistent R2 and DO state. It substitutes only the trusted platform metadata HTTP response. It verifies JWT/project checks, private R2 downloads, code hashes, isolation, blocked network access, deployment switches, rejection of old tokens, cold restart persistence, token expiry and WebSocket renewal, oRPC v2 queries/mutations, accepted-write deduplication and realtime updates between two clients using the new `backend-todo` app (plus legacy transport compatibility).
+`test` dry-builds with Wrangler and runs its bundled Miniflare/workerd locally with disposable persistent R2 and DO state. It substitutes only the trusted platform metadata HTTP response. It verifies JWT/project checks, private R2 downloads, code hashes, isolation, blocked network access, deployment switches, rejection of old tokens, cold restart persistence, token expiry and WebSocket renewal, oRPC v2 queries/mutations/actions, accepted-write deduplication and realtime updates between two clients using the new `backend-todo` app.
 
 The todo test fixture initializes its disposable database using the existing Drizzle-generated migration; **production uploads contain no migrations**.
 
@@ -74,9 +73,8 @@ Local compatibility uses the date supported by the repository's pinned workerd. 
 
 ## Current limits
 
-- Remote migration distribution and authorization remain intentionally undecided. Fresh app tables need initialization before queries work; schema initialization is not performed automatically. This worker has no remote migration endpoint and stores no migration artifacts. Legacy local migration tooling remains in `apps-cloud`; the new SDK does not use it.
+- Remote migration distribution and authorization remain intentionally undecided. Fresh app tables need initialization before queries work; schema initialization is not performed automatically. This worker has no remote migration endpoint and stores no migration artifacts.
 - The platform is the only token issuer. Project keys limit hosts to their own projects; hosts remain responsible for authenticating their users and asserting authorized installation IDs and scopes. The platform has no customer-host user membership database.
 - Published metadata is checked on every request. Platform metadata must be available; verified code is cached per warm installation and read from R2 again after a cold restart.
 - Updates stop existing subscriptions; clients reload for a deployment change. Schema compatibility across updates remains the app developer's responsibility.
 - Runtime limits constrain CPU and subrequests; quotas, abuse accounting and facet/database lifecycle cleanup are future work. Untrusted apps can break their own schema or invalidation tracking.
-- The old `apps-cloud` supervisor remains for the existing local app tooling. New hosted runtime requests should target this worker.

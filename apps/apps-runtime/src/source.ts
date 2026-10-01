@@ -1,7 +1,7 @@
 import { Effect } from "effect";
 import { z } from "zod";
-import { StorageError } from "@tailorkit/app-storage";
-import { storageError } from "@tailorkit/app-storage/runtime";
+import { AppError } from "@tailorkit/apps-server";
+import { appError } from "@tailorkit/apps-server/runtime";
 import type { DeploymentSource } from "./runtime";
 import { readBounded } from "./http";
 
@@ -47,19 +47,18 @@ export function deploymentSource(
               signal: AbortSignal.timeout(10_000),
             },
           );
-          if (!response.ok)
-            throw new StorageError("UNAVAILABLE", "Published app metadata unavailable");
+          if (!response.ok) throw new AppError("UNAVAILABLE", "Published app metadata unavailable");
           return metadata.parse(
             JSON.parse(new TextDecoder().decode(await readBounded(response, 16 * 1024))),
           ).body;
         },
-        catch: storageError,
+        catch: appError,
       }),
     code: (deployment) =>
       Effect.tryPromise({
         try: async () => {
           const object = await env.BUNDLES.get(deployment.objectKey);
-          if (!object) throw new StorageError("NOT_FOUND", "Server bundle missing");
+          if (!object) throw new AppError("NOT_FOUND", "Server bundle missing");
           const bytes = await readBounded(new Response(object.body), deployment.contentLength);
           if (bytes.byteLength !== deployment.contentLength)
             throw new Error("Server bundle size mismatch");
@@ -68,7 +67,7 @@ export function deploymentSource(
           if (checksum !== deployment.checksum) throw new Error("Server bundle checksum mismatch");
           return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
         },
-        catch: storageError,
+        catch: appError,
       }),
   };
 }

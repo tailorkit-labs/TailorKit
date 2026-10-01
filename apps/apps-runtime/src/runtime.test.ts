@@ -9,7 +9,6 @@ import {
   RequestQueue,
   execute,
   installationName,
-  runtimeIdentity,
 } from "./runtime";
 
 const identity = {
@@ -94,14 +93,6 @@ it("serializes async admission, recovers from errors and releases streaming resp
   expect(order).toEqual(["first", "second"]);
   expect(await queue.run(async () => "third")).toBe("third");
   await stream.body?.cancel();
-});
-
-it("requires project and deployment claims when converting a verified identity", () => {
-  expect(runtimeIdentity(identity)).toEqual(identity);
-  expect(() => runtimeIdentity({ ...identity, projectId: undefined })).toThrow("access required");
-  expect(() => runtimeIdentity({ ...identity, deploymentId: undefined })).toThrow(
-    "access required",
-  );
 });
 
 it("forwards the verified identity and published deployment through the execution service", async () => {

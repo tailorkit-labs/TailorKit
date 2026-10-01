@@ -70,13 +70,15 @@ The initial limits are 16 concurrent actions per installation, 64 database/outbo
 - `src/server/`: query/mutation/action definitions, atomic database execution, async action execution, realtime coordination and server RPC transport. Tests live beside the implementation.
 - `src/client/`: browser WebSocket connection, typed references and the host JWT session provider.
 
-The root `index.ts`, `client.ts` and `runtime.ts` files expose the existing public entry points. `errors.ts` is shared by the client and server. Cloudflare-specific adapters remain in `apps/apps-runtime`.
+The root `index.ts`, `client.ts` and `runtime.ts` files expose the public entry points. `auth.ts` provides server-only JWT signing and verification for the platform and trusted runtime. `errors.ts` is shared by the client and server. Cloudflare-specific adapters remain in `apps/apps-runtime`.
 
 ## Build and upload
 
 Add `server: { entry: "./src/server.ts", references: "./src/server.gen.ts" }` to `tailorkit.config.ts` (these paths are defaults). `tailorkit build` emits `.tailorkit-server/server.js`, containing the isolated SQLite facet and stateless action entry point, and generates typed references. References import the server module **only as a TypeScript type**; no implementation is evaluated or bundled in the browser. The browser builder rejects server implementation imports.
 
 `tailorkit deploy` uploads the client and private server artifact through existing platform-issued blob upload URLs. Apps need no Cloudflare credentials. R2 stores them under separate `client/` and `server/` prefixes; only client assets are public. Client-only apps continue to build without a server artifact. Watch mode watches both builds; generated output stays separate from `.tailorkit`.
+
+The legacy `app-storage` SDK, `apps-cloud` worker, `storage` config and storage CLI commands have been removed. Use `server` config and this SDK. Host authorization is configured with `backend.resolveInstallation`; the host session endpoint is `/backend/session`.
 
 ## Client
 
@@ -104,7 +106,6 @@ The Drizzle driver records tables read by each query, including empty selections
 ## Local validation and current limits
 
 ```sh
-pnpm --filter @tailorkit/app-storage build
 pnpm --filter @tailorkit/apps-server build
 pnpm --filter @tailorkit/app build
 pnpm --filter backend-todo build

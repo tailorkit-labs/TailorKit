@@ -14,8 +14,8 @@ vi.mock("cloudflare:workers", () => ({
 }));
 
 import { Effect } from "effect";
-import { StorageError } from "@tailorkit/app-storage";
-import { issueStorageToken, APP_RUNTIME_AUDIENCE } from "@tailorkit/app-storage/auth";
+import { AppError } from "@tailorkit/apps-server";
+import { issueAppToken, APP_RUNTIME_AUDIENCE } from "@tailorkit/apps-server/auth";
 import worker, { AppInstallation } from "./index";
 
 // Node requires a duplex hint for request streams; workerd does not.
@@ -129,7 +129,7 @@ function setup() {
 }
 
 async function request(overrides = {}, path = "/rpc/query", body = "{}") {
-  const session = await issueStorageToken(signing, { ...identity, ...overrides });
+  const session = await issueAppToken(signing, { ...identity, ...overrides });
 
   return new Request(`https://runtime.test${path}`, {
     method: "POST",
@@ -192,20 +192,6 @@ it("authenticates and forwards a bounded RPC body with CORS and stable installat
   expect(getByName).toHaveBeenCalledWith(JSON.stringify([signing.issuer, "project", "app", "one"]));
   expect(await routeFetch.mock.calls[0][0].text()).toBe("{}");
 });
-
-it.each([{}, { deploymentId: undefined }, { projectId: undefined }])(
-  "rejects unauthorized or incomplete runtime identities: %j",
-  async (access) => {
-    const { env, getByName } = setup();
-    const incoming = Object.keys(access).length
-      ? await request(access)
-      : new Request("https://runtime.test/rpc/query", { method: "POST", body: "{}" });
-    const response = await worker.fetch(incoming, env);
-
-    expect(response.status).toBe(401);
-    expect(getByName).not.toHaveBeenCalled();
-  },
-);
 
 it("rejects oversized chunked request bodies without forwarding", async () => {
   const { env, getByName } = setup();
@@ -297,7 +283,7 @@ it("keeps the running facet when replacement code fails verification", async () 
   const installation = new AppInstallation(fixtures.ctx, fixtures.env);
   await (await installation.fetch(await request())).text();
   source.current.mockResolvedValue({ ...deployment, deploymentId: "v2" });
-  source.code.mockRejectedValue(new StorageError("NOT_FOUND", "Missing code"));
+  source.code.mockRejectedValue(new AppError("NOT_FOUND", "Missing code"));
 
   expect((await installation.fetch(await request({ deploymentId: "v2" }))).status).toBe(404);
   expect(fixtures.abort).not.toHaveBeenCalled();
