@@ -6,10 +6,10 @@ const mocks = vi.hoisted(() => ({
   close: vi.fn(),
 }));
 
-vi.mock("@tailorkit/api-platform/preview-ws-auth", () => ({
+vi.mock("@tailorkit/api-platform/preview/ws-auth", () => ({
   authorizePreviewSocket: mocks.authorize,
 }));
-vi.mock("@tailorkit/api-platform/preview-ws", () => ({ previewWebSocketRouter: {} }));
+vi.mock("@tailorkit/api-platform/preview/ws", () => ({ previewWebSocketRouter: {} }));
 vi.mock("@orpc/server/crossws", () => ({
   experimental_RPCHandler: class {
     handlers = mocks;

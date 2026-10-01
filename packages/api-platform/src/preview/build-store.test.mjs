@@ -2,11 +2,10 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { test } from "vite-plus/test";
-import {
-  createPreviewBuildStore,
-  previewChunkBytes,
-  previewMessageBytes,
-} from "./preview-build-store.ts";
+import { Effect } from "effect";
+import { createPreviewBuildStore, createPreviewBuildStoreEffects } from "./build-store.ts";
+import { previewChunkBytes, previewMessageBytes } from "./constants.ts";
+import { PreviewBuildError, PreviewStorageError } from "./errors.ts";
 
 function fakeKV() {
   const data = new Map();
@@ -395,4 +394,84 @@ test("revision subscription can be released", async () => {
   await unsubscribe();
   await kv.publish("preview:revision:session", JSON.stringify({ revision: 2, buildId: "later" }));
   assert.deepEqual(revisions, [1, null]);
+});
+
+test("Effect builds are lazy and validation failures do not claim an upload", async () => {
+  const kv = fakeKV();
+  const store = createPreviewBuildStoreEffects(kv);
+  const manifest = manifestFor([["client.js", Buffer.alloc(0)]]);
+  manifest.files.push({ ...manifest.files[0], path: "../escape.js" });
+  const program = store.begin("session", manifest);
+  assert.equal(await kv.get("preview:uploading:session"), null);
+  const failure = await Effect.runPromise(Effect.flip(program));
+  assert.ok(failure instanceof PreviewBuildError);
+  assert.match(failure.message, /file path/);
+  assert.equal(await kv.get("preview:uploading:session"), null);
+
+  const begin = store.begin("session", manifestFor([["client.js", Buffer.alloc(0)]]));
+  assert.equal(await kv.get("preview:uploading:session"), null);
+  const buildId = await Effect.runPromise(begin);
+  assert.equal(await kv.get("preview:uploading:session"), buildId);
+  const committed = await Effect.runPromise(store.commit("session", buildId));
+  assert.equal(committed.revision, 1);
+  await Effect.runPromise(store.end("session"));
+  assert.equal(await Effect.runPromise(store.current("session")), null);
+});
+
+test("Effect storage failures retain their operation and cause at the Promise boundary", async () => {
+  const kv = fakeKV();
+  const cause = new Error("storage offline");
+  kv.get = async () => {
+    throw cause;
+  };
+  const failure = await Effect.runPromise(
+    Effect.flip(createPreviewBuildStoreEffects(kv).current("session")),
+  );
+  assert.ok(failure instanceof PreviewStorageError);
+  assert.equal(failure.operation, "get");
+  assert.equal(failure.cause, cause);
+  await assert.rejects(createPreviewBuildStore(kv).current("session"), (error) => error === cause);
+});
+
+test("corrupt persisted builds fail in the typed error channel", async () => {
+  const kv = fakeKV();
+  await kv.set("preview:current:session", "invalid JSON");
+  const failure = await Effect.runPromise(
+    Effect.flip(createPreviewBuildStoreEffects(kv).current("session")),
+  );
+  assert.ok(failure instanceof PreviewBuildError);
+  assert.ok(failure.cause instanceof SyntaxError);
+});
+
+test("notification failures do not undo committed or ended state", async () => {
+  const kv = fakeKV();
+  kv.publish = async () => {
+    throw new Error("pub/sub unavailable");
+  };
+  const store = createPreviewBuildStore(kv);
+  const buildId = await store.begin("session", manifestFor([["client.js", Buffer.alloc(0)]]));
+  const { commit } = store;
+  const committed = await commit("session", buildId);
+  assert.deepEqual(await store.current("session"), committed);
+  await store.end("session");
+  assert.equal(await store.current("session"), null);
+});
+
+test("failed retirement of an old build does not undo a promoted build", async () => {
+  const kv = fakeKV();
+  const store = createPreviewBuildStore(kv);
+  const manifest = manifestFor([["client.js", Buffer.alloc(0)]]);
+  const firstId = await store.begin("session", manifest);
+  await store.commit("session", firstId);
+  const nextId = await store.begin("session", manifest);
+  const write = kv.set;
+  kv.set = async (key, value, options) => {
+    if (key === `preview:build:session:${firstId}`) {
+      throw new Error("retirement failed");
+    }
+    return write(key, value, options);
+  };
+  const committed = await store.commit("session", nextId);
+  assert.deepEqual(await store.current("session"), committed);
+  assert.equal(committed.revision, 2);
 });

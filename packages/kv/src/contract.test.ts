@@ -373,7 +373,7 @@ describe.each([
     expect(store.subscribers.size).toBe(0);
   });
   it("delivers a committed preview across two platform instances", async () => {
-    const moduleUrl = new URL("../../api-platform/src/preview-build-store.ts", import.meta.url)
+    const moduleUrl = new URL("../../api-platform/src/preview/build-store.ts", import.meta.url)
       .href;
     const { createPreviewBuildStore } = await import(moduleUrl);
     store.data.clear();
@@ -409,7 +409,7 @@ describe.each([
     await unsubscribe();
   });
   it("allows only one begin to claim an unchanged upload marker", async () => {
-    const moduleUrl = new URL("../../api-platform/src/preview-build-store.ts", import.meta.url)
+    const moduleUrl = new URL("../../api-platform/src/preview/build-store.ts", import.meta.url)
       .href;
     const { createPreviewBuildStore } = await import(moduleUrl);
     store.data.clear();
@@ -465,7 +465,7 @@ describe.each([
     await first.upload("session", buildId!, 0, 0, bytes.toString("base64"));
   });
   it("keeps a verified build retryable after the initial upload lease expires", async () => {
-    const moduleUrl = new URL("../../api-platform/src/preview-build-store.ts", import.meta.url)
+    const moduleUrl = new URL("../../api-platform/src/preview/build-store.ts", import.meta.url)
       .href;
     const { createPreviewBuildStore } = await import(moduleUrl);
     store.data.clear();

@@ -21,10 +21,10 @@ vi.mock("@tailorkit/db", () => ({
 }));
 vi.mock("@tailorkit/kv", async (original) => ({ ...(await original()), getKV: () => state.kv }));
 
-const { previewRouter } = await import("./preview");
+const { previewRouter } = await import("./routes");
 const { canonicalizeScope } = await import("../scope");
-const { authorizePreviewSocket } = await import("../preview-ws-auth");
-const { previewWebSocketRouter } = await import("../preview-ws");
+const { authorizePreviewSocket } = await import("./ws-auth");
+const { previewWebSocketRouter } = await import("./ws");
 const authSecret = env.AUTH_SECRET;
 if (!authSecret) {
   throw new Error("The preview test requires AUTH_SECRET in its Vitest config.");

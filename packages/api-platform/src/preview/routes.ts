@@ -1,7 +1,6 @@
 import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { hashSecret } from "@tailorkit/api-utils/hashing";
-import { getBaseUrl } from "@tailorkit/env";
 import { env } from "#env";
 import { getKV } from "@tailorkit/kv";
 import { db } from "@tailorkit/db";
@@ -10,13 +9,14 @@ import { project } from "@tailorkit/db/schema/project";
 import { and, count, eq, lt } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import z from "zod";
-import { createPreviewBuildStore } from "../preview-build-store";
-import { ensurePreviewDeveloperGrace } from "../preview-lifecycle";
+import { createPreviewBuildStore } from "./build-store";
+import { previewWebSocketUrl, requirePreviewKV } from "./runtime";
+import { previewSessionTtlSeconds } from "./constants";
+import { ensurePreviewDeveloperGrace } from "./lifecycle";
 import { o, protectedRouter } from "../procedures";
-import { previewGrantRoutes } from "./preview-grants";
+import { previewGrantRoutes } from "./grants";
 import { canonicalizeScope } from "../scope";
 
-const previewSessionLifetimeMs = 8 * 60 * 60 * 1000;
 const firstConnectionGraceMs = 2 * 60 * 1000;
 const maxActivePreviewsPerScope = 5;
 const activePreviewConflictReason = "ACTIVE_PREVIEW_EXISTS";
@@ -78,12 +78,7 @@ const startPreview = protectedRouter
     }),
   )
   .handler(async ({ context, input }) => {
-    const kv = getKV();
-    if (!kv) {
-      throw new ORPCError("SERVICE_UNAVAILABLE", {
-        message: "Preview storage is unavailable: configure KV.",
-      });
-    }
+    const kv = requirePreviewKV();
     const now = new Date();
     const token = await getValidCliToken(context.project.id, input.body.deployToken);
 
@@ -127,7 +122,7 @@ const startPreview = protectedRouter
 
     const tunnelToken = createSecret();
     const shareId = createSecret();
-    const expiresAt = new Date(now.getTime() + previewSessionLifetimeMs);
+    const expiresAt = new Date(now.getTime() + previewSessionTtlSeconds * 1000);
     const started = await db
       .transaction(async (tx) => {
         // Serialize starts in this project so concurrent app starts cannot exceed the scope cap.
@@ -230,16 +225,13 @@ const startPreview = protectedRouter
       }
     }
 
-    const baseUrl = getBaseUrl(env).replace(/^http/u, "ws");
-    const tunnelUrl = new URL("/api/platform/preview/ws", baseUrl);
-    tunnelUrl.searchParams.set("session", started.session.id);
     return {
       body: {
         expiresAt,
         sessionId: started.session.id,
         shareId,
         tunnelToken,
-        tunnelUrl: tunnelUrl.href,
+        tunnelUrl: previewWebSocketUrl(started.session.id),
       },
     };
   });

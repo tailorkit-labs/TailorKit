@@ -2,15 +2,13 @@ import { openapi } from "@orpc/openapi";
 import { randomBytes } from "node:crypto";
 import { ORPCError } from "@orpc/server";
 import { db } from "@tailorkit/db";
-import { getBaseUrl } from "@tailorkit/env";
-import { env } from "#env";
-import { getKV } from "@tailorkit/kv";
 import z from "zod";
 import { withAppAssetUrl } from "../asset-url";
 import { protectedRouter } from "../procedures";
-import { createPreviewViewerToken } from "../preview-token";
-import { ensurePreviewDeveloperGrace } from "../preview-lifecycle";
-import { AppWithCurrentDeployment } from "./apps";
+import { createPreviewViewerToken } from "./token";
+import { previewWebSocketUrl, requirePreviewKV } from "./runtime";
+import { ensurePreviewDeveloperGrace } from "./lifecycle";
+import { AppWithCurrentDeployment } from "../routes/apps";
 import {
   canonicalizeScope,
   canonicalizeScopes,
@@ -22,16 +20,6 @@ import {
 const opaqueId = z.string().regex(/^[A-Za-z0-9_-]{43}$/u);
 const createId = () => randomBytes(32).toString("base64url");
 const grantKey = (id: string) => `preview:grant:${id}`;
-const requireKV = () => {
-  const kv = getKV();
-  if (!kv) {
-    throw new ORPCError("SERVICE_UNAVAILABLE", {
-      message: "Preview storage is unavailable: configure KV.",
-    });
-  }
-  return kv;
-};
-
 const grantSchema = z.object({
   projectId: z.string().min(1),
   sessionId: z.uuid(),
@@ -46,7 +34,7 @@ export const invitation = protectedRouter
     z.object({ body: z.object({ appName: z.string(), expiresAt: z.date(), sessionId: z.uuid() }) }),
   )
   .handler(async ({ context, input }) => {
-    requireKV();
+    const kv = requirePreviewKV();
     const session = await db.query.previewSession.findFirst({
       where: { shareId: input.params.shareId, projectId: context.project.id, status: "active" },
       with: { app: true },
@@ -55,7 +43,7 @@ export const invitation = protectedRouter
       !session ||
       !session.app ||
       session.expiresAt <= new Date() ||
-      !(await ensurePreviewDeveloperGrace(requireKV(), session.id))
+      !(await ensurePreviewDeveloperGrace(kv, session.id))
     ) {
       throw new ORPCError("NOT_FOUND");
     }
@@ -74,7 +62,7 @@ export const accept = protectedRouter
   )
   .output(z.object({ body: z.object({ grantId: opaqueId, sessionId: z.uuid() }) }))
   .handler(async ({ context, input }) => {
-    const kv = requireKV();
+    const kv = requirePreviewKV();
     const scope = canonicalizeScope(input.body.scope);
     const session = await db.query.previewSession.findFirst({
       where: { shareId: input.params.shareId, projectId: context.project.id, status: "active" },
@@ -130,7 +118,7 @@ export const accepted = protectedRouter
     }),
   )
   .handler(async ({ context, input }) => {
-    const kv = requireKV();
+    const kv = requirePreviewKV();
     const scopes = canonicalizeScopes(input.body.scopes);
     const items = [];
     const seen = new Set<string>();
@@ -164,18 +152,12 @@ export const accepted = protectedRouter
         continue;
       }
       seen.add(session.app.id);
-      const websocketUrl = new URL(
-        "/api/platform/preview/ws",
-        getBaseUrl(env).replace(/^http/u, "ws"),
-      );
-      websocketUrl.searchParams.set("session", session.id);
-      websocketUrl.searchParams.set("role", "viewer");
       items.push({
         app: withAppAssetUrl(session.app, context.organization.publicId, context.project.id),
         preview: {
           sessionId: session.id,
           expiresAt: session.expiresAt,
-          websocketUrl: websocketUrl.href,
+          websocketUrl: previewWebSocketUrl(session.id, "viewer"),
           token: createPreviewViewerToken(session.id),
         },
       });

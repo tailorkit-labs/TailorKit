@@ -3,12 +3,12 @@ import { previewSession } from "@tailorkit/db/schema/preview-session";
 import type { KV } from "@tailorkit/kv";
 import { createPreviewPresence } from "@tailorkit/kv";
 import { and, eq } from "drizzle-orm";
-import { createPreviewBuildStore } from "./preview-build-store";
+import { createPreviewBuildStore } from "./build-store";
+import { previewSessionTtlSeconds } from "./constants";
 
 const everKey = (sessionId: string) => `preview:developer-seen:${sessionId}`;
 const presenceKey = (sessionId: string) => `preview:developer-connection:${sessionId}`;
 const endedKey = (sessionId: string) => `preview:ended:${sessionId}`;
-const activeTtlSeconds = 8 * 60 * 60;
 
 export function recordPreviewHeartbeat(kv: KV, sessionId: string): Promise<boolean> {
   return createPreviewPresence(kv).heartbeatIfActive(
@@ -19,7 +19,7 @@ export function recordPreviewHeartbeat(kv: KV, sessionId: string): Promise<boole
     },
     everKey(sessionId),
     endedKey(sessionId),
-    activeTtlSeconds,
+    previewSessionTtlSeconds,
   );
 }
 
@@ -42,7 +42,7 @@ export async function ensurePreviewDeveloperGrace(
       presenceKey(sessionId),
       everKey(sessionId),
       endedKey(sessionId),
-      activeTtlSeconds,
+      previewSessionTtlSeconds,
       expireUnseen,
     )
   ) {
