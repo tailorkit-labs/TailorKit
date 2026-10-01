@@ -28,7 +28,7 @@ The platform needs `APP_RUNTIME_SIGNING_KEY`, an ES256 private JWK with a stable
 - `src/worker-env.d.ts`: Wrangler-generated bindings and runtime types; code uses `Env` directly.
 - `src/http.ts`: bounded bodies, error responses and authenticated streams.
 
-Tests live beside the code they exercise. Unit tests cover gateway routing, authentication, deployment changes, code caching, isolation settings, source validation, request queues and stream lifecycle. The local workerd demonstration checks the real Cloudflare bindings and two-client realtime behavior.
+Tests live beside the code they exercise. `src/integration.test.mjs` runs against real local workerd/R2 bindings as part of the normal test command. Unit tests cover gateway routing, authentication, deployment changes, code caching, isolation settings, source validation, request queues and stream lifecycle. The local workerd demonstration checks the real Cloudflare bindings and two-client realtime behavior.
 
 ## Local commands
 
@@ -37,10 +37,10 @@ From the repository root:
 ```sh
 pnpm --filter @tailorkit/app-storage build
 pnpm --filter @tailorkit/apps-runtime check-types
-pnpm --filter @tailorkit/apps-runtime verify
+pnpm --filter @tailorkit/apps-runtime test
 ```
 
-`verify` dry-builds with Wrangler and runs its bundled Miniflare/workerd locally with disposable persistent R2 and DO state. It substitutes only the trusted platform metadata HTTP response. It verifies JWT/project checks, private R2 downloads, code hashes, isolation, blocked network access, deployment switches, rejection of old tokens, cold restart persistence, token expiry, oRPC v2 queries/mutations, accepted-write deduplication and realtime updates between two clients.
+`test` dry-builds with Wrangler and runs its bundled Miniflare/workerd locally with disposable persistent R2 and DO state. It substitutes only the trusted platform metadata HTTP response. It verifies JWT/project checks, private R2 downloads, code hashes, isolation, blocked network access, deployment switches, rejection of old tokens, cold restart persistence, token expiry, oRPC v2 queries/mutations, accepted-write deduplication and realtime updates between two clients.
 
 The todo test fixture initializes its disposable database using the existing Drizzle-generated migration; **production uploads contain no migrations**.
 
@@ -48,7 +48,7 @@ To run the gateway against a development platform, copy `.dev.vars.example` to `
 
 App bundles are uploaded and published with `tailorkit deploy`. The CLI obtains private upload URLs from the platform and uploads both client and optional server code. When the platform blob provider uses R2, both files go into that R2 bucket. The runtime's `BUNDLES` binding must point to the same bucket.
 
-`wrangler dev --local` uses a separate local R2 store; ordinary TailorKit deployments do not populate it. Use `verify` for the complete local runtime demonstration: its test fixtures populate disposable R2 directly, without a seed command.
+`wrangler dev --local` uses a separate local R2 store; ordinary TailorKit deployments do not populate it. Use `test` for the complete local runtime demonstration: its test fixtures populate disposable R2 directly, without a seed command.
 
 ```sh
 pnpm --filter @tailorkit/apps-runtime dev

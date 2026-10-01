@@ -8,8 +8,7 @@
     "check-types": "pnpm types && tsc --noEmit",
     "types": "wrangler types src/worker-env.d.ts --env-interface Env --strict-vars=false",
     "dev": "wrangler dev --local --persist-to .tailorkit/state",
-    "test": "vp test run && pnpm verify",
-    "verify": "pnpm build && node scripts/verify.mjs"
+    "test": "pnpm build && vp test run"
   },
   "dependencies": {
     "@tailorkit/app-storage": "workspace:*",
