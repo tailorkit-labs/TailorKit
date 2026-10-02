@@ -63,9 +63,7 @@ export function deploymentSource(
               throw new AppError("UNAVAILABLE", "Published app metadata unavailable");
             }
 
-            deployment = appDeploymentMetadata.parse(
-              ((await response.json()) as { body: unknown }).body,
-            );
+            deployment = appDeploymentMetadata.parse(await response.json());
             if (
               deployment.projectId !== identity.projectId ||
               deployment.appId !== identity.appId
