@@ -91,7 +91,7 @@ beforeEach(() => {
 function setup() {
   vi.stubGlobal(
     "fetch",
-    vi.fn(async () => Response.json({ body: await source.current() })),
+    vi.fn(async () => Response.json(await source.current())),
   );
   let version: string | undefined;
   const facetQuery = vi.fn(async (_input: unknown, _identity: unknown) => ({
