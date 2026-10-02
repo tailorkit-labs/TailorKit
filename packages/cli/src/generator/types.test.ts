@@ -103,6 +103,57 @@ it("detects the default server file without server configuration and removes sta
 });
 
 describe("renderGeneratedTypes", () => {
+  it("preserves nullable view context fields through schema serialization and generation", () => {
+    const schema = createTailorKitSchema({
+      components: {},
+      contexts: {
+        "/": z.object({
+          customer: z.object({ id: z.string(), name: z.string() }).nullable(),
+          label: z.string().nullable(),
+          count: z.number().nullable(),
+          enabled: z.boolean().nullable(),
+          empty: z.null(),
+          labels: z.array(z.string().nullable()),
+          customers: z.array(z.object({ id: z.string() }).nullable()),
+          tags: z.array(z.string()).nullable(),
+        }),
+      },
+      slots: { sidebar: { views: ["/"] } },
+    }).serialize();
+
+    const output = renderGeneratedTypes(TailorKitSchemaSpec.parse(schema));
+
+    expect(output).toContain(
+      "customer: {\n        id: string;\n        name: string;\n      } | null;",
+    );
+    expect(output).toContain("label: string | null;");
+    expect(output).toContain("count: number | null;");
+    expect(output).toContain("enabled: boolean | null;");
+    expect(output).toContain("empty: null;");
+    expect(output).toContain("labels: (string | null)[];");
+    expect(output).toContain("customers: ({\n        id: string;\n      } | null)[];");
+    expect(output).toContain("tags: string[] | null;");
+    expect(output).not.toContain("unknown");
+  });
+
+  it("preserves and deduplicates every type in a JSON Schema type array", () => {
+    const output = renderGeneratedTypes({
+      views: {
+        "/": {
+          context: {
+            type: "object",
+            properties: {
+              value: { type: ["null", "string", "integer", "number", "boolean"] },
+            },
+            required: ["value"],
+          },
+        },
+      },
+    });
+
+    expect(output).toContain("value: null | string | number | boolean;");
+  });
+
   it("generates view props from schema views", () => {
     const output = renderGeneratedTypes({
       components: {},

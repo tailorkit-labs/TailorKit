@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const JSONType = z.enum(["object", "array", "string", "number", "boolean", "null"]);
+const JSONType = z.enum(["object", "array", "string", "number", "integer", "boolean", "null"]);
 
 /**
  * Models the exact JSON Schema 2020-12 subset emitted by `z.toJSONSchema()`.
@@ -17,7 +17,13 @@ export const JsonSchema: z.ZodType<Record<string, unknown>> = z
     additionalProperties: z.union([z.boolean(), z.lazy(() => JsonSchema)]).optional(),
     enum: z.array(z.unknown()).optional(),
     const: z.unknown().optional(),
-    items: z.lazy(() => JsonSchema).optional(),
+    items: z.union([z.boolean(), z.lazy(() => JsonSchema)]).optional(),
+    prefixItems: z.lazy(() => z.array(JsonSchema)).optional(),
+    minItems: z.number().int().nonnegative().optional(),
+    maxItems: z.number().int().nonnegative().optional(),
+    propertyNames: z.lazy(() => JsonSchema).optional(),
+    minimum: z.number().optional(),
+    maximum: z.number().optional(),
     anyOf: z.lazy(() => z.array(JsonSchema)).optional(),
     oneOf: z.lazy(() => z.array(JsonSchema)).optional(),
     allOf: z.lazy(() => z.array(JsonSchema)).optional(),
