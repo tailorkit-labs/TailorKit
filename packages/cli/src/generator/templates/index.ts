@@ -6,7 +6,6 @@ import oxlintConfigTemplate from "./oxlint.config.ts.liquid";
 import oxfmtConfigTemplate from "./oxfmt.config.ts.liquid";
 import clientTemplate from "./src/client.ts.liquid";
 import defaultViewTemplate from "./src/views/default.tsx.liquid";
-import genTemplate from "./src/tailorkit.gen.ts.liquid";
 import serverTemplate from "./src/server.ts.liquid";
 import schemaTemplate from "./src/schema.ts.liquid";
 import greetingTemplate from "./src/functions/greeting.ts.liquid";
@@ -22,7 +21,6 @@ export {
   oxfmtConfigTemplate,
   clientTemplate,
   defaultViewTemplate,
-  genTemplate,
   serverTemplate,
   schemaTemplate,
   greetingTemplate,

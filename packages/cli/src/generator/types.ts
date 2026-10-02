@@ -43,7 +43,7 @@ interface SerializedAction {
   output?: JsonSchema;
 }
 
-interface TailorKitSchemaFile {
+export interface TailorKitSchemaFile {
   actions?: SerializedActions;
   components?: Record<string, SerializedComponent>;
   views?: Record<string, SerializedView>;
@@ -52,6 +52,7 @@ interface TailorKitSchemaFile {
 
 export interface GenerateTypesOptions {
   configPath?: string;
+  schema?: TailorKitSchemaFile;
   cwd?: string;
   outFile?: string;
 }
@@ -504,7 +505,7 @@ const joinUrlPath = (baseUrl: string, pathName: string): string => {
   return url.toString();
 };
 
-const fetchSchemaFromHost = async (host: string): Promise<TailorKitSchemaFile> => {
+export const fetchSchemaFromHost = async (host: string): Promise<TailorKitSchemaFile> => {
   const schemaUrl = joinUrlPath(host, "schema");
   const response = await fetch(schemaUrl);
 
@@ -519,7 +520,7 @@ export const generateTypes = async (options: GenerateTypesOptions = {}): Promise
   const root = path.resolve(options.cwd ?? ".");
   const outPath = path.resolve(root, options.outFile ?? path.join("src", "tailorkit.gen.ts"));
   const loaded = await loadTailorKitConfig(options.configPath, root);
-  const schema = await fetchSchemaFromHost(loaded.config.host);
+  const schema = options.schema ?? (await fetchSchemaFromHost(loaded.config.host));
 
   const serverEntry = path.resolve(loaded.root, loaded.config.server?.entry ?? "src/server.ts");
   const serverExists = await stat(serverEntry)

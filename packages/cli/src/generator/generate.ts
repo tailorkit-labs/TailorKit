@@ -2,12 +2,12 @@ import { Liquid } from "liquidjs";
 import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { generateTypes, type TailorKitSchemaFile } from "./types";
 import { TEMPLATE_DRIZZLE_VERSION } from "./package-versions";
 
 import {
   clientTemplate,
   defaultViewTemplate,
-  genTemplate,
   gitignoreTemplate,
   oxfmtConfigTemplate,
   oxlintConfigTemplate,
@@ -26,6 +26,7 @@ export interface GenerateAppOptions {
   force: boolean;
   formatting: boolean;
   hostUrl: string;
+  schema: TailorKitSchemaFile;
   linting: boolean;
   packageName: string;
   packageVersions: {
@@ -66,11 +67,30 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     force,
     formatting,
     hostUrl,
+    schema,
     linting,
     packageName,
     packageVersions,
     useWorkspaceDependencies,
   } = options;
+
+  const slots = Object.keys(schema.slots ?? {}).sort();
+  const viewPath = Object.keys(schema.views ?? {})
+    .sort()
+    .find((view) => slots.some((slot) => schema.slots?.[slot]?.views.includes(view)));
+  if (viewPath === undefined) {
+    throw new Error(
+      "The host schema has no views supported by a slot. Add a view and slot before running tailorkit init.",
+    );
+  }
+  const slotName = slots.find((slot) => schema.slots?.[slot]?.views.includes(viewPath))!;
+  const box = schema.components?.Box;
+  // Only use a wrapper that accepts children without requiring host-specific props.
+  const useBox = box?.children === true && !box.fields?.required?.length;
+  const bindingsPath = path.join(targetDirectory, "src", "tailorkit.gen.ts");
+  if (!force && existsSync(bindingsPath)) {
+    throw new Error(`${bindingsPath} already exists. Use --force to overwrite it.`);
+  }
 
   const tailorkitVersion = useWorkspaceDependencies ? "workspace:*" : packageVersions.tailorkit;
 
@@ -86,6 +106,9 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
   }
 
   const templateData = {
+    viewPath: JSON.stringify(viewPath),
+    slotName: JSON.stringify(slotName),
+    useBox,
     checkScript: checkParts.join(" && "),
     fixScript: fixParts.join(" && "),
     formatting,
@@ -116,7 +139,6 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     { template: oxfmtConfigTemplate, dest: "oxfmt.config.ts", condition: formatting },
     { template: clientTemplate, dest: path.join("src", "client.ts") },
     { template: defaultViewTemplate, dest: path.join("src", "views", "default.tsx") },
-    { template: genTemplate, dest: path.join("src", "tailorkit.gen.ts") },
     { template: serverTemplate, dest: path.join("src", "server.ts") },
     { template: schemaTemplate, dest: path.join("src", "schema.ts") },
     { template: greetingTemplate, dest: path.join("src", "functions", "greeting.ts") },
@@ -130,4 +152,7 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
         await writeTemplateFile(path.join(targetDirectory, dest), rendered, force);
       }),
   );
+
+  // Use the same binding generator as `tailorkit generate`, even without installation.
+  await generateTypes({ cwd: targetDirectory, schema });
 };
