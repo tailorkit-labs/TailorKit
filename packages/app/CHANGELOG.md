@@ -1,5 +1,11 @@
 # @tailorkit/app
 
+## 0.1.0-beta.17
+
+### Patch Changes
+
+- 364d5cd: Document TailorKitConfig options and their defaults in editor tooltips, and generate new app configs with only the host URL so the backend is enabled explicitly.
+
 ## 0.1.0-beta.16
 
 ### Minor Changes
