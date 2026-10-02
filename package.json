@@ -39,7 +39,7 @@
     "oxlint": "1.86.0",
     "sherif": "^1.13.0",
     "turbo": "2.11.5",
-    "ultracite": "7.12.1",
+    "ultracite": "7.12.2",
     "vite-plus": "catalog:"
   },
   "packageManager": "pnpm@12.6.0"

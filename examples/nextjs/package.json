@@ -30,7 +30,7 @@
     "@tailorkit/env": "workspace:*",
     "@tailorkit/ui": "workspace:*",
     "lucide-react": "catalog:",
-    "next": "16.3.6",
+    "next": "16.3.7",
     "next-themes": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
