@@ -68,13 +68,7 @@ export const router = base.router({
   ),
   actions: http.actions.handler(
     handlerGen(function* actions({ input, context, signal }) {
-      return yield* Effect.tryPromise({
-        try: (effectSignal) =>
-          Effect.runPromise(context.installation.action(input, signal ?? effectSignal), {
-            signal: effectSignal,
-          }),
-        catch: (error) => error,
-      });
+      return yield* context.installation.action(input, signal);
     }),
   ),
   // The public pass-through output schema preserves the hibernation callback.
@@ -102,43 +96,52 @@ export function requestRoute(request: Request) {
 }
 
 /** Authenticate before selecting an installation; WebSocket JWTs arrive as subprotocols. */
-export async function routeInstallation<Identity>(
+export function routeInstallation<Identity, Error>(
   request: Request,
   options: {
-    verify(token: string): Promise<Identity>;
+    verify(token: string): Effect.Effect<Identity, Error>;
     installation(identity: Identity): { fetch(request: Request): Promise<Response> };
   },
 ) {
-  if (request.method === "OPTIONS") {
-    return new Response(null, { status: 204 });
-  }
-  const route = requestRoute(request);
-  if (!route) {
-    return new Response("Not found", { status: 404 });
-  }
-  if (route === "subscriptions") {
-    const protocols =
-      request.headers
-        .get("sec-websocket-protocol")
-        ?.split(",")
-        .map((value) => value.trim()) ?? [];
-    const token = protocols.find((value) => value.startsWith("jwt."))?.slice(4);
-    if (!protocols.includes("tailorkit") || !token) {
-      throw new ORPCError("UNAUTHORIZED", { message: "App token required" });
+  return Effect.gen(function* () {
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204 });
     }
-    const identity = await options.verify(token);
-    const headers = new Headers(request.headers);
-    headers.set("authorization", `Bearer ${token}`);
-    return options
-      .installation(identity)
-      .fetch(new Request(request.url, { headers, signal: request.signal }));
-  }
-  const authorization = request.headers.get("authorization");
-  const token = authorization?.match(/^Bearer (\S+)$/u)?.[1];
-  if (!token) {
-    throw new ORPCError("UNAUTHORIZED", { message: "App token required" });
-  }
-  return options.installation(await options.verify(token)).fetch(request);
+    const route = requestRoute(request);
+    if (!route) {
+      return new Response("Not found", { status: 404 });
+    }
+    let token: string | undefined;
+    if (route === "subscriptions") {
+      const protocols =
+        request.headers
+          .get("sec-websocket-protocol")
+          ?.split(",")
+          .map((value) => value.trim()) ?? [];
+      if (protocols.includes("tailorkit")) {
+        token = protocols.find((value) => value.startsWith("jwt."))?.slice(4);
+      }
+    } else {
+      token = request.headers.get("authorization")?.match(/^Bearer (\S+)$/u)?.[1];
+    }
+    if (!token) {
+      return yield* Effect.fail(new ORPCError("UNAUTHORIZED", { message: "App token required" }));
+    }
+    const identity = yield* options.verify(token);
+    return yield* Effect.tryPromise({
+      try: () => {
+        if (route === "subscriptions") {
+          const headers = new Headers(request.headers);
+          headers.set("authorization", `Bearer ${token}`);
+          return options
+            .installation(identity)
+            .fetch(new Request(request.url, { headers, signal: request.signal }));
+        }
+        return options.installation(identity).fetch(request);
+      },
+      catch: (error) => error,
+    });
+  });
 }
 
 export function createInstallationHandler() {

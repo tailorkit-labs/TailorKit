@@ -2,7 +2,7 @@ import { expect, it, vi, afterEach } from "vite-plus/test";
 import { Effect } from "effect";
 import { APP_RUNTIME_AUDIENCE } from "@tailorkit/api-utils/app-auth";
 import { issueAppToken } from "@tailorkit/api-utils/app-auth";
-import { createAppRuntimeVerifier, createAppRuntimeVerifierEffect } from "./auth";
+import { createAppRuntimeVerifierEffect } from "./auth";
 
 const pair = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, [
   "sign",
@@ -36,10 +36,10 @@ it("verifies configured public keys without making external requests", async () 
   const fetcher = vi.fn();
   vi.stubGlobal("fetch", fetcher);
   for (const keys of [publicKeys, JSON.stringify(publicKeys)]) {
-    const verify = createAppRuntimeVerifier({ platformUrl: issuer, publicKeys: keys });
+    const verify = createAppRuntimeVerifierEffect({ platformUrl: issuer, publicKeys: keys });
     const session = await issueAppToken(signing, identity);
-    expect(await verify(session.token)).toMatchObject(identity);
-    expect(await verify(session.token)).toMatchObject(identity);
+    expect(await Effect.runPromise(verify(session.token))).toMatchObject(identity);
+    expect(await Effect.runPromise(verify(session.token))).toMatchObject(identity);
   }
   expect(fetcher).not.toHaveBeenCalled();
 });
@@ -49,7 +49,9 @@ it.each([{ issuer: "https://attacker.test" }, { audience: "other" }])(
   async (overrides) => {
     const session = await issueAppToken({ ...signing, ...overrides }, identity);
     await expect(
-      createAppRuntimeVerifier({ platformUrl: issuer, publicKeys })(session.token),
+      Effect.runPromise(
+        createAppRuntimeVerifierEffect({ platformUrl: issuer, publicKeys })(session.token),
+      ),
     ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   },
 );
@@ -58,7 +60,9 @@ it.each([undefined, "invalid", { keys: [] }, { keys: [{ kty: "oct", k: "secret",
   "fails closed for invalid configured keys %j",
   async (keys) => {
     await expect(
-      createAppRuntimeVerifier({ platformUrl: issuer, publicKeys: keys })("token"),
+      Effect.runPromise(
+        createAppRuntimeVerifierEffect({ platformUrl: issuer, publicKeys: keys })("token"),
+      ),
     ).rejects.toMatchObject({ code: "UNAVAILABLE" });
   },
 );

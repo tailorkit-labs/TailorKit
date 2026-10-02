@@ -39,39 +39,50 @@ export class AppInstallation extends DurableObject<Env> {
 
   fetch(request: Request): Promise<Response> {
     return Effect.runPromise(
-      Effect.tryPromise({
-        try: async () => {
-          const identity = await this.#verify(bearerToken(request));
-          const expected = this.env.STORES.idFromName(
-            installationName(identity, appRuntimeIssuer(this.env.PLATFORM_URL)),
-          );
-          if (!this.ctx.id.equals(expected)) {
-            throw new AppError("FORBIDDEN", "Installation mismatch");
-          }
-          const route = requestRoute(request);
-          if (!route) {
-            throw new AppError("NOT_FOUND", "Unknown RPC route");
-          }
-          if (route === "subscriptions") {
-            await Effect.runPromise(
-              this.#source.current(
-                identity,
-                this.ctx.storage.kv.get<string>("version")?.split(":")[0],
-              ),
+      Effect.gen({ self: this }, function* () {
+        const token = yield* Effect.try({ try: () => bearerToken(request), catch: appError });
+        const identity = yield* this.#verify(token);
+        yield* Effect.try({
+          try: () => {
+            const expected = this.env.STORES.idFromName(
+              installationName(identity, appRuntimeIssuer(this.env.PLATFORM_URL)),
             );
-            return this.#subscriptions.open(identity);
-          }
-          const { matched, response } = await this.#http.handle(request, {
-            prefix: "/rpc",
-            context: { installation: this.#operations(identity, request.signal) },
+            if (!this.ctx.id.equals(expected)) {
+              throw new AppError("FORBIDDEN", "Installation mismatch");
+            }
+          },
+          catch: appError,
+        });
+        const route = requestRoute(request);
+        if (!route) {
+          return yield* Effect.fail(new AppError("NOT_FOUND", "Unknown RPC route"));
+        }
+        if (route === "subscriptions") {
+          yield* this.#source.current(
+            identity,
+            this.ctx.storage.kv.get<string>("version")?.split(":")[0],
+          );
+          return yield* Effect.tryPromise({
+            try: () => this.#subscriptions.open(identity),
+            catch: appError,
           });
-          if (matched) {
-            return response;
-          }
-          throw new AppError("NOT_FOUND", "Unknown RPC route");
-        },
-        catch: appError,
-      }).pipe(Effect.catch((error) => Effect.succeed(rpcErrorResponse(error)))),
+        }
+        const { matched, response } = yield* Effect.tryPromise({
+          try: () =>
+            this.#http.handle(request, {
+              prefix: "/rpc",
+              context: { installation: this.#operations(identity, request.signal) },
+            }),
+          catch: appError,
+        });
+        if (matched) {
+          return response;
+        }
+        return yield* Effect.fail(new AppError("NOT_FOUND", "Unknown RPC route"));
+      }).pipe(
+        Effect.mapError(appError),
+        Effect.catch((error) => Effect.succeed(rpcErrorResponse(error))),
+      ),
     );
   }
 

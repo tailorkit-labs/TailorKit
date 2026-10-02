@@ -57,6 +57,7 @@ it("propagates cancellation through an Effect handler to the action", async () =
     started = resolve;
   });
   let actionSignal: AbortSignal | undefined;
+  const finalized = vi.fn();
   const operations = installation();
   operations.action = (_input, signal) => {
     if (!signal) {
@@ -70,7 +71,7 @@ it("propagates cancellation through an Effect handler to the action", async () =
           signal.addEventListener("abort", () => reject(signal.reason), { once: true }),
         ),
       catch: (error) => error,
-    });
+    }).pipe(Effect.ensuring(Effect.sync(finalized)));
   };
   const client = createRouterClient(
     { queries: router.queries, mutations: router.mutations, actions: router.actions },
@@ -82,6 +83,7 @@ it("propagates cancellation through an Effect handler to the action", async () =
   controller.abort();
   await rejected;
   expect(actionSignal?.aborted).toBe(true);
+  expect(finalized).toHaveBeenCalledOnce();
 });
 
 it("routes HTTP calls with shared client types, CORS and typed error statuses", async () => {

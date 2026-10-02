@@ -30,60 +30,73 @@ export default {
     });
 
     const response = await Effect.runPromise(
-      Effect.tryPromise({
-        try: async () => {
-          if (publication) {
-            if (request.method !== "POST") {
-              return new Response("Method not allowed", { status: 405 });
-            }
-            if (!(await runtimeServiceAuthorized(request, env.RUNTIME_SERVICE_TOKEN))) {
-              throw new AppError("UNAUTHORIZED", "Runtime service credential required");
-            }
-            const text = await request.text();
-            if (text.length > 8192) {
-              throw new AppError("BAD_REQUEST", "Deployment metadata too large");
-            }
-            let value: unknown;
-            try {
-              value = JSON.parse(text);
-            } catch {
-              throw new AppError("BAD_REQUEST", "Invalid deployment metadata");
-            }
-            const parsed = appDeploymentMetadata.safeParse(value);
-            if (!parsed.success) {
-              throw new AppError("BAD_REQUEST", "Invalid deployment metadata");
-            }
-            validateDeploymentPublication(parsed.data, publication);
-            await env.DEPLOYMENTS.put(
-              deploymentMetadataKey(parsed.data),
-              JSON.stringify(parsed.data),
-              { expirationTtl: metadataLifetimeSeconds },
-            );
-            return new Response(null, { status: 204 });
+      Effect.gen(function* () {
+        if (publication) {
+          if (request.method !== "POST") {
+            return new Response("Method not allowed", { status: 405 });
           }
-          if (!appRoute) return new Response("Not found", { status: 404 });
-          const url = new URL(request.url);
-          url.pathname = appRoute.rpcPath;
-          const routedRequest = new Request(url, request);
-          return routeInstallation(routedRequest, {
-            verify: async (token) => {
-              const identity = await verifier(env)(token);
+          if (
+            !(yield* Effect.tryPromise({
+              try: () => runtimeServiceAuthorized(request, env.RUNTIME_SERVICE_TOKEN),
+              catch: appError,
+            }))
+          ) {
+            return yield* Effect.fail(
+              new AppError("UNAUTHORIZED", "Runtime service credential required"),
+            );
+          }
+          const text = yield* Effect.tryPromise({ try: () => request.text(), catch: appError });
+          if (text.length > 8192) {
+            return yield* Effect.fail(new AppError("BAD_REQUEST", "Deployment metadata too large"));
+          }
+          const value = yield* Effect.try({
+            try: () => JSON.parse(text) as unknown,
+            catch: () => new AppError("BAD_REQUEST", "Invalid deployment metadata"),
+          });
+          const parsed = appDeploymentMetadata.safeParse(value);
+          if (!parsed.success) {
+            return yield* Effect.fail(new AppError("BAD_REQUEST", "Invalid deployment metadata"));
+          }
+          yield* Effect.try({
+            try: () => validateDeploymentPublication(parsed.data, publication),
+            catch: appError,
+          });
+          yield* Effect.tryPromise({
+            try: () =>
+              env.DEPLOYMENTS.put(deploymentMetadataKey(parsed.data), JSON.stringify(parsed.data), {
+                expirationTtl: metadataLifetimeSeconds,
+              }),
+            catch: appError,
+          });
+          return new Response(null, { status: 204 });
+        }
+        if (!appRoute) return new Response("Not found", { status: 404 });
+        const url = new URL(request.url);
+        url.pathname = appRoute.rpcPath;
+        const routedRequest = new Request(url, request);
+        return yield* routeInstallation(routedRequest, {
+          verify: (token) =>
+            Effect.gen(function* () {
+              const identity = yield* verifier(env)(token);
               if (
                 (appRoute.publicTeamId !== undefined &&
                   identity.publicTeamId !== appRoute.publicTeamId) ||
                 identity.projectId !== appRoute.projectId ||
                 identity.appPublicId !== appRoute.appPublicId
               ) {
-                throw new AppError("FORBIDDEN", "App token does not match the route");
+                return yield* Effect.fail(
+                  new AppError("FORBIDDEN", "App token does not match the route"),
+                );
               }
               return identity;
-            },
-            installation: (identity) =>
-              env.STORES.getByName(installationName(identity, appRuntimeIssuer(env.PLATFORM_URL))),
-          });
-        },
-        catch: appError,
-      }).pipe(Effect.catch((error) => Effect.succeed(rpcErrorResponse(error)))),
+            }),
+          installation: (identity) =>
+            env.STORES.getByName(installationName(identity, appRuntimeIssuer(env.PLATFORM_URL))),
+        });
+      }).pipe(
+        Effect.mapError(appError),
+        Effect.catch((error) => Effect.succeed(rpcErrorResponse(error))),
+      ),
     );
 
     if (response.status === 101) {

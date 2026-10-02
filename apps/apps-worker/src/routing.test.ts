@@ -1,3 +1,5 @@
+import { Effect } from "effect";
+import { AppError } from "@tailorkit/app/server";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 
 const state = vi.hoisted(() => ({ verify: vi.fn() }));
@@ -27,7 +29,7 @@ const metadata = {
 };
 const fetchInstallation = vi.fn(async (_request: Request) => new Response("result"));
 const getByName = vi.fn(() => ({ fetch: fetchInstallation }));
-const put = vi.fn();
+const put = vi.fn(async () => {});
 const env = {
   ASSET_DOMAIN: "tailorkit.app",
   PLATFORM_URL: "https://platform.test/api/platform",
@@ -46,7 +48,7 @@ const post = (url: string, body: unknown = metadata, token = secret) =>
 
 beforeEach(() => {
   vi.clearAllMocks();
-  state.verify.mockResolvedValue(identity);
+  state.verify.mockReturnValue(Effect.succeed(identity));
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -70,7 +72,7 @@ it.each([
 });
 
 it("rejects sessions without a signed public app identifier", async () => {
-  state.verify.mockResolvedValue({ ...identity, appPublicId: undefined });
+  state.verify.mockReturnValue(Effect.succeed({ ...identity, appPublicId: undefined }));
   expect((await call(post(`${rpc}/queries`, {}, "session"))).status).toBe(403);
   expect(getByName).not.toHaveBeenCalled();
 });
@@ -124,4 +126,14 @@ it("rejects unauthorized publication and unsupported methods", async () => {
   expect((await call(post(publication, metadata, "invalid"))).status).toBe(401);
   expect((await call(new Request(publication))).status).toBe(405);
   expect(put).not.toHaveBeenCalled();
+});
+
+it("returns verifier failures without selecting an installation", async () => {
+  state.verify.mockReturnValue(Effect.fail(new AppError("UNAUTHORIZED", "App token expired")));
+  const response = await call(post(`${rpc}/queries`, {}, "session"));
+  expect(response.status).toBe(401);
+  expect(await response.json()).toMatchObject({
+    json: { code: "UNAUTHORIZED", message: "App token expired" },
+  });
+  expect(getByName).not.toHaveBeenCalled();
 });
