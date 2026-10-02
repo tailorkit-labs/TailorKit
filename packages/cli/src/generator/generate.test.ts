@@ -22,7 +22,7 @@ const defaultOptions = {
   packageVersions: {
     oxfmt: "1.0.0",
     oxlint: "1.0.0",
-    preact: "10.0.0",
+    preact: "11.0.0",
     tailorkit: "4.5.6",
     typescript: "5.0.0",
   },
@@ -174,7 +174,7 @@ describe("generateApp", () => {
     await generateApp({ ...defaultOptions, targetDirectory });
 
     const content = await readFile(path.join(targetDirectory, "package.json"), "utf-8");
-    expect(content).toContain('"preact": "10.0.0"');
+    expect(content).toContain('"preact": "11.0.0"');
     expect(content).toContain('"typescript": "5.0.0"');
   });
 

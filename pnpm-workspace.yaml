@@ -76,6 +76,8 @@ peerDependencyRules:
   allowedVersions:
     vite: "*"
 minimumReleaseAgeExclude:
+  # Preact 11 migration; keep the age rule for other releases.
+  - "preact@11.0.0"
   - vite-plus
   - "@voidzero-dev/*"
   - oxlint

@@ -119,7 +119,7 @@ backend, UI, workflow, extension types, scripts, webhooks, authentication,
 onboarding, publishing, and feedback. The portable ideas are adapted to Preact
 and TailorKit's actual runtime; Stripe-specific APIs and workflow requirements
 are not instructions for this agent. Preact behavior was checked against its
-[hooks guide](https://preactjs.com/guide/v10/hooks/).
+[hooks guide](https://preactjs.com/guide/v11/hooks/).
 
 Contract guidance was checked against the CLI templates and generator,
 `packages/app/src/index.ts`, the sandbox host/iframe code, host rendering in

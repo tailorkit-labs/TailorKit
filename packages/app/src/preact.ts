@@ -1,9 +1,9 @@
 /* oxlint-disable react/immutability -- Preact refs are mutable; the React compiler rule does not recognize preact/hooks.useRef. */
 import { createStore } from "@tanstack/store";
-import { useSelector } from "@tanstack/preact-store";
 import { createContext, h } from "preact";
 import type { ComponentChildren } from "preact";
-import { useCallback, useContext, useEffect, useMemo, useRef } from "preact/hooks";
+import { useSyncExternalStore } from "preact/compat";
+import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef } from "preact/hooks";
 import { createClient } from "./client/connection";
 import type { Client } from "./client/connection";
 import { reference } from "./client/reference";
@@ -30,7 +30,7 @@ export function ClientProvider({ children, client, onError }: ClientProviderProp
       new QueryStore(client ?? createClient(), !client, (error) => errorHandler.current?.(error)),
     [client],
   );
-  useEffect(() => () => store.dispose(), [store]);
+  useLayoutEffect(() => () => store.dispose(), [store]);
   return h(Context.Provider, { value: store }, children);
 }
 
@@ -69,10 +69,15 @@ export function useQuery<I, O>(
   const key = `${name}\0${serialized}`;
   const stableInput = useMemo(() => (JSON.parse(serialized) as { input: I }).input, [serialized]);
   const stableReference = useMemo(() => reference<"query", I, O>(name, "query"), [name]);
-  const state = useSelector(
-    store.state,
-    (queries) => (enabled ? (queries.get(key) ?? pendingQuery) : pendingQuery) as QueryState<O>,
+  const subscribe = useCallback(
+    (onChange: () => void) => store.state.subscribe(onChange).unsubscribe,
+    [store],
   );
+  const getSnapshot = useCallback(
+    () => (enabled ? (store.state.get().get(key) ?? pendingQuery) : pendingQuery) as QueryState<O>,
+    [store, key, enabled],
+  );
+  const state = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
   useEffect(() => {
     if (enabled) {
       return store.watch(key, stableReference, stableInput);
@@ -120,14 +125,18 @@ function useCall<K extends "mutation" | "action", I, O>(
     }),
     [store, name, kind],
   );
-  const state = useSelector(identity.state);
+  const subscribe = useCallback(
+    (onChange: () => void) => identity.state.subscribe(onChange).unsubscribe,
+    [identity],
+  );
+  const state = useSyncExternalStore(subscribe, identity.state.get, identity.state.get);
   const current = useRef({ identity, sequence: 0, mounted: true });
   if (current.current.identity !== identity) {
     current.current = { identity, sequence: current.current.sequence + 1, mounted: true };
   }
   const callbacks = useRef(options);
   callbacks.current = options;
-  useEffect(() => {
+  useLayoutEffect(() => {
     current.current.mounted = true;
     return () => {
       current.current.mounted = false;
