@@ -122,8 +122,16 @@ const toTypeScriptType = (schema: JsonSchema | undefined, depth = 0): string => 
     return uniqueOptions.join(" | ");
   }
 
-  const schemaType = Array.isArray(schema.type) ? schema.type[0] : schema.type;
+  if (Array.isArray(schema.type)) {
+    const options = schema.type.map((type) => toTypeScriptType({ ...schema, type }, depth));
+    return [...new Set(options)].join(" | ") || "never";
+  }
 
+  const schemaType = schema.type;
+
+  if (schemaType === "null") {
+    return "null";
+  }
   if (schemaType === "string") {
     return "string";
   }
@@ -134,7 +142,8 @@ const toTypeScriptType = (schema: JsonSchema | undefined, depth = 0): string => 
     return "boolean";
   }
   if (schemaType === "array") {
-    return `${toTypeScriptType(schema.items, depth)}[]`;
+    const itemType = toTypeScriptType(schema.items, depth);
+    return `${itemType.includes(" | ") ? `(${itemType})` : itemType}[]`;
   }
   if (schemaType === "object") {
     return toObjectType(schema, depth);
