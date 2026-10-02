@@ -1,0 +1,20 @@
+apps/apps-worker/wrangler.jsonc
+  s_b514e77b1f08c7::t_08da79bd5bc7d8 47-54,57
+  s_b514e77b1f08c7::t_5e7cb3e7537122 55-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2f45bd4abcd493afb92b33009390e6b207aa3ada",
+  "prompts": {},
+  "sessions": {
+    "s_b514e77b1f08c7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb05-541f-7412-a5e7-578b266c36aa",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
