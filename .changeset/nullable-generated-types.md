@@ -1,5 +1,6 @@
 ---
 "@tailorkit/cli": patch
+"@tailorkit/core": patch
 ---
 
-Preserve null in generated view context and component types, including JSON Schema type arrays and arrays of nullable values.
+Preserve nullable types, discriminated unions, records, and tuples in generated view contexts, component props, callbacks, and actions. Accept the JSON Schema keywords emitted for integers, records, and tuples.

@@ -8,9 +8,13 @@ import { SerializedComponent as SerializedComponentSchema } from "@tailorkit/cor
 interface JsonSchema {
   additionalProperties?: boolean | JsonSchema;
   anyOf?: JsonSchema[];
+  oneOf?: JsonSchema[];
+  allOf?: JsonSchema[];
   const?: unknown;
   enum?: unknown[];
-  items?: JsonSchema;
+  items?: boolean | JsonSchema;
+  prefixItems?: JsonSchema[];
+  minItems?: number;
   not?: JsonSchema;
   properties?: Record<string, JsonSchema>;
   required?: string[];
@@ -108,8 +112,16 @@ const toTypeScriptType = (schema: JsonSchema | undefined, depth = 0): string => 
     return schema.enum.map(toLiteralType).join(" | ");
   }
 
-  if (schema.anyOf !== undefined && schema.anyOf.length > 0) {
-    const options = schema.anyOf
+  if (schema.allOf !== undefined && schema.allOf.length > 0) {
+    const options = schema.allOf.map((option) => toTypeScriptType(option, depth));
+    return [...new Set(options)]
+      .map((option) => (option.includes(" | ") ? `(${option})` : option))
+      .join(" & ");
+  }
+
+  const union = schema.anyOf ?? schema.oneOf;
+  if (union !== undefined && union.length > 0) {
+    const options = union
       .filter((option) => !isNeverSchema(option))
       .map((option) => toTypeScriptType(option, depth))
       .filter((option) => option !== "never");
@@ -142,8 +154,18 @@ const toTypeScriptType = (schema: JsonSchema | undefined, depth = 0): string => 
     return "boolean";
   }
   if (schemaType === "array") {
-    const itemType = toTypeScriptType(schema.items, depth);
-    return `${itemType.includes(" | ") ? `(${itemType})` : itemType}[]`;
+    const items = typeof schema.items === "object" ? schema.items : undefined;
+    if (schema.prefixItems !== undefined) {
+      const tupleItems = schema.prefixItems.map((item, index) => {
+        const type = toTypeScriptType(item, depth);
+        return index < (schema.minItems ?? 0) ? type : `(${type})?`;
+      });
+      if (schema.items !== false) {
+        tupleItems.push(`...${toArrayType(toTypeScriptType(items, depth))}`);
+      }
+      return `[${tupleItems.join(", ")}]`;
+    }
+    return toArrayType(schema.items === false ? "never" : toTypeScriptType(items, depth));
   }
   if (schemaType === "object") {
     return toObjectType(schema, depth);
@@ -151,6 +173,9 @@ const toTypeScriptType = (schema: JsonSchema | undefined, depth = 0): string => 
 
   return "unknown";
 };
+
+const toArrayType = (itemType: string): string =>
+  `${itemType.includes(" | ") || itemType.includes(" & ") ? `(${itemType})` : itemType}[]`;
 
 const isNeverSchema = (schema: JsonSchema): boolean =>
   schema.not !== undefined && Object.keys(schema.not).length === 0;
@@ -174,8 +199,16 @@ const toObjectType = (schema: JsonSchema, depth: number): string => {
     return "never";
   }
 
+  const additionalType =
+    schema.additionalProperties === false || schema.additionalProperties === undefined
+      ? undefined
+      : `Record<string, ${toTypeScriptType(
+          schema.additionalProperties === true ? undefined : schema.additionalProperties,
+          depth,
+        )}>`;
+
   if (propertyEntries.length === 0) {
-    return fallbackObjectType;
+    return additionalType ?? fallbackObjectType;
   }
 
   const required = new Set(schema.required);
@@ -191,7 +224,8 @@ const toObjectType = (schema: JsonSchema, depth: number): string => {
   }
 
   lines.push(`${currentIndent}}`);
-  return lines.join("\n");
+  const objectType = lines.join("\n");
+  return additionalType === undefined ? objectType : `${objectType} & ${additionalType}`;
 };
 
 const toIdentifier = (name: string): string => {
