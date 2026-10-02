@@ -122,6 +122,6 @@ Tenant routes:
 - `/p/<projectId>/a/<appPublicId>/d/<deploymentPublicId>/logos/<filename>`: logos. Content-addressed logos use shared R2 storage.
 - `/p/<projectId>/a/<appPublicId>/rpc/queries`, `/rpc/mutations`, `/rpc/actions`: HTTP backend calls; query subscriptions use WebSockets on the queries route.
 
-RPC URLs omit the deployment ID and run the latest published backend. Deployment claims never select a separate database or pin execution. Asset responses preserve their edge cache, bounded browser TTL and security headers. RPC responses are not cached.
+RPC URLs omit the deployment ID and run the latest published backend. Deployment claims never select a separate database or pin execution. Asset responses preserve their edge cache, bounded browser TTL and security headers. RPC responses are not cached. Shared asset admission, size checks and sanitized error responses are Effect programs in `@tailorkit/asset-delivery`; the Cloudflare and Node adapters compose storage, fetch and cache operations with Effect and run them at the request boundary. Cache lookup/write failures do not prevent asset delivery.
 
 The platform needs `APP_RUNTIME_SIGNING_KEY` and `APP_RUNTIME_SERVICE_TOKEN`; no `APP_RUNTIME_URL` is needed for production's default team subdomains. Deploy the combined worker and platform, and delete the standalone `tailorkit-assets` Worker and its Workers Builds integration. Only the new URLs and signed routing claims are supported.

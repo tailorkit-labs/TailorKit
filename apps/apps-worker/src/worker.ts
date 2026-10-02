@@ -11,6 +11,7 @@ import { routeInstallation, rpcErrorResponse } from "./transport";
 import { Effect } from "effect";
 import { parseHostedAppRoute, parseDeploymentPublicationRoute } from "@tailorkit/asset-delivery";
 import assets from "./assets";
+import { validateDeploymentPublication } from "./publication";
 import { appError } from "./runtime/errors";
 
 export default {
@@ -52,22 +53,7 @@ export default {
             if (!parsed.success) {
               throw new AppError("BAD_REQUEST", "Invalid deployment metadata");
             }
-            // Public URL identifiers must describe the same private bundle as the payload.
-            const segments = parsed.data.objectKey.split("/");
-            if (
-              parsed.data.projectId !== publication.projectId ||
-              segments.length !== 10 ||
-              segments[0] !== "teams" ||
-              segments[2] !== "projects" ||
-              segments[3] !== publication.projectId ||
-              segments[4] !== "apps" ||
-              segments[5] !== publication.appPublicId ||
-              segments[6] !== "deployments" ||
-              segments[8] !== "server" ||
-              segments[9] !== "server.js"
-            ) {
-              throw new AppError("BAD_REQUEST", "Deployment metadata does not match the route");
-            }
+            validateDeploymentPublication(parsed.data, publication);
             await env.DEPLOYMENTS.put(
               deploymentMetadataKey(parsed.data),
               JSON.stringify(parsed.data),

@@ -1,3 +1,4 @@
+import { Effect } from "effect";
 import type { LogoContentType } from "./logo-validation";
 
 const uuid = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
@@ -166,4 +167,68 @@ export function parseDeploymentPublicationRoute(request: Request, assetDomain: s
   const match = publicationPath.exec(url.pathname);
   if (!match) return;
   return { projectId: match[1]!, appPublicId: match[2]! };
+}
+
+export class AssetDeliveryError extends Error {
+  readonly _tag = "AssetDeliveryError";
+  constructor(readonly status: 400 | 404 | 405 | 503) {
+    super(`Asset delivery failed (${status})`);
+  }
+}
+
+export function hostedAssetRequest(request: Request, assetDomain: string) {
+  return Effect.gen(function* () {
+    if (new URL(request.url).protocol !== "https:") {
+      return yield* Effect.fail(new AssetDeliveryError(400));
+    }
+    const identity = parseHostedAssetRequest(request, assetDomain);
+    if (!identity) return yield* Effect.fail(new AssetDeliveryError(404));
+    return identity;
+  });
+}
+
+export function nodeAssetRequest(request: Request) {
+  return Effect.gen(function* () {
+    const identity = parseNodeAssetRequest(request);
+    if (!identity) return yield* Effect.fail(new AssetDeliveryError(404));
+    return identity;
+  });
+}
+
+export function assetSize(size: number | undefined) {
+  return Effect.gen(function* () {
+    if (!isValidAssetSize(size)) return yield* Effect.fail(new AssetDeliveryError(404));
+    return size;
+  });
+}
+
+/** Both delivery adapters share request admission. */
+export function serveAssetRequest(
+  request: Request,
+  options: {
+    identity: Effect.Effect<AssetIdentity, AssetDeliveryError>;
+    load(identity: AssetIdentity): Effect.Effect<Response, AssetDeliveryError>;
+  },
+): Effect.Effect<Response, AssetDeliveryError> {
+  return Effect.gen(function* () {
+    const identity = yield* options.identity;
+    if (!isAssetMethod(request.method)) return yield* Effect.fail(new AssetDeliveryError(405));
+    if (request.method === "OPTIONS") return assetPreflight();
+    return yield* options.load(identity);
+  });
+}
+
+/** Storage details stay in trusted infrastructure; public failures expose only a status. */
+export function assetResponse(
+  program: Effect.Effect<Response, AssetDeliveryError>,
+  onUnavailable?: () => void,
+): Effect.Effect<Response> {
+  return program.pipe(
+    Effect.catch((error) =>
+      Effect.sync(() => {
+        if (error.status === 503) onUnavailable?.();
+        return assetFailure(error.status);
+      }),
+    ),
+  );
 }

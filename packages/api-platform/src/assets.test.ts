@@ -92,3 +92,21 @@ describe("Node asset delivery", () => {
     await expect(handleAssetRequest(new Request(url), null)).resolves.toHaveProperty("status", 503);
   });
 });
+
+it.each([404, 500])("maps an upstream %s to a public asset failure", async (status) => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response("Private upstream details", { status }),
+  );
+  const response = await handleAssetRequest(new Request(url), storage());
+  expect(response.status).toBe(status === 404 ? 404 : 503);
+  expect(await response.text()).toBe("");
+  expect(response.headers.get("cache-control")).toBe("no-store");
+});
+
+it("maps rejected storage reads to a sanitized service-unavailable response", async () => {
+  const backend = storage();
+  vi.mocked(backend.head).mockRejectedValueOnce(new Error("Private storage details"));
+  const response = await handleAssetRequest(new Request(url), backend);
+  expect(response.status).toBe(503);
+  expect(await response.text()).toBe("");
+});

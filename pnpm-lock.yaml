@@ -1196,6 +1196,10 @@ importers:
         version: 7.0.2
 
   packages/asset-delivery:
+    dependencies:
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-rc.117
     devDependencies:
       '@tailorkit/config':
         specifier: workspace:*

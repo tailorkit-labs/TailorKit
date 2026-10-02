@@ -184,3 +184,22 @@ describe("tenant asset gateway", () => {
     expect(JSON.stringify(log.mock.calls)).not.toContain("private storage detail");
   });
 });
+
+it("serves R2 assets when the edge cache lookup fails", async () => {
+  match.mockRejectedValueOnce(new Error("Cache unavailable"));
+  get.mockResolvedValueOnce(object());
+  const response = await fetchAsset(new Request(url));
+  expect(response.status).toBe(200);
+  expect(await response.text()).toBe(bundle);
+});
+
+it("keeps the response usable when a background cache write fails", async () => {
+  put.mockRejectedValueOnce(new Error("Private cache details"));
+  get.mockResolvedValueOnce(object());
+  const log = vi.spyOn(console, "error").mockImplementation(() => {});
+  const response = await fetchAsset(new Request(url));
+  await waitUntil.mock.calls[0]![0];
+  expect(response.status).toBe(200);
+  expect(await response.text()).toBe(bundle);
+  expect(log).toHaveBeenCalledWith(JSON.stringify({ message: "Asset cache write failed" }));
+});
