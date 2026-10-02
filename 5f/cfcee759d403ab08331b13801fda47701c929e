@@ -1,0 +1,96 @@
+packages/api-platform/src/routes/apps.ts
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 263-273
+apps/apps-worker/src/assets.test.ts
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 103-105
+  s_9df97e9992d87b::t_7afd754a9aa33e 1-7,9-102,106-184
+  s_9df97e9992d87b::t_025a380b9c0762 8
+packages/api-utils/src/app-auth/tokens.ts
+  s_9df97e9992d87b::t_7afd754a9aa33e 8,11,86-87,108-109,147
+  s_9df97e9992d87b::t_ff3fb9388e7467 9-10,40-41,166-167,187-188
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 12-13
+packages/api-platform/src/routes/apps.test.ts
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 564-566
+  s_9df97e9992d87b::t_c7021b64d133a3 17,92,281,532-533,561,604-605
+  s_9df97e9992d87b::t_025a380b9c0762 426
+apps/apps-worker/src/routing.test.ts
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 1-127
+packages/api-platform/src/asset-url.test.ts
+  s_9df97e9992d87b::t_c7021b64d133a3 43,46-47,65,86,107
+  s_9df97e9992d87b::t_49be11ee8d9b61 51
+  s_9df97e9992d87b::t_e67cf8abaf6922 34-35
+packages/api-platform/src/assets.ts
+  s_9df97e9992d87b::t_ff3fb9388e7467 42-43
+apps/apps-worker/src/tests/integration.test.mjs
+  s_9df97e9992d87b::t_c7021b64d133a3 40-44,70-71,90,120,146-147,149,228,252,255,261,266,619
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 116,127-135,155-164,166,253,568-587
+  s_9df97e9992d87b::t_99a09331655dbc 588,607,610,612,618,639,644
+apps/apps-worker/src/worker-env.d.ts
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 8,27-30,3921-3927,5637-5641,5643,5664,9858-9887,9891-9920,11002-11011,11019-11034,11037-11086,11088,11091-11110,11113-11141,11143-11152,11156-11171,11308-11323,11327-11342,11346-11380,11384-11399,11492-11493,11500
+  s_9df97e9992d87b::t_c823191a7b7a36 2-3
+apps/apps-worker/wrangler.jsonc
+  s_9df97e9992d87b::t_49be11ee8d9b61 6
+  s_9df97e9992d87b::t_7afd754a9aa33e 5,7-8,20-23,53
+packages/api-platform/src/routes/runtime.test.ts
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 4-7
+  s_9df97e9992d87b::t_c7021b64d133a3 68,70,83
+packages/api-platform/src/runtime/auth.test.ts
+  s_9df97e9992d87b::t_ff3fb9388e7467 23-24
+packages/api-platform/src/routes/deployments.ts
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 593-603
+packages/api-utils/src/app-auth/tokens.test.ts
+  s_9df97e9992d87b::t_ff3fb9388e7467 22-23,57
+  s_9df97e9992d87b::t_0d2fad93a41cc2 58-63,155-168
+apps/apps-worker/src/worker.ts
+  s_9df97e9992d87b::t_4f1a7a66aa627f 12-13,17-23,34-37,55-60,68-70,78-85,88-94
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 61-67,86-87
+packages/api-platform/src/env.ts
+  s_9df97e9992d87b::t_7afd754a9aa33e 9,11-12
+apps/apps-worker/README.md
+  s_9df97e9992d87b::t_49be11ee8d9b61 38,70
+  s_9df97e9992d87b::t_ff3fb9388e7467 9,122,125,127
+  s_9df97e9992d87b::t_025a380b9c0762 5,7,107,114-121,123-124,126
+packages/api-platform/src/routes/runtime.ts
+  s_9df97e9992d87b::t_7afd754a9aa33e 57-60,74,83-84,138,142,145-148
+apps/apps-worker/src/worker.test.ts
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 28-37,80-81,176-178,182-186,230-232,258-260,278-281,384-391
+  s_9df97e9992d87b::t_35319be12ce4f5 61-62,64,76,130,171-175,179-181,187-188,190,203,218,229,238,252,267,277,283-284,383
+apps/apps-worker/src/assets.ts
+  s_9df97e9992d87b::t_ff3fb9388e7467 46,61
+  s_9df97e9992d87b::t_48fe6aa28a255d 38-39,41,73
+  s_9df97e9992d87b::t_7afd754a9aa33e 1-37,40,42-45,47-60,62-72,74-88
+apps/apps-worker/src/supervisor/auth.test.ts
+  s_9df97e9992d87b::t_ff3fb9388e7467 22-23
+packages/asset-delivery/src/index.ts
+  s_9df97e9992d87b::t_ff3fb9388e7467 6,18,43-48,51-54
+  s_9df97e9992d87b::t_025a380b9c0762 140-142,148-151,166
+  s_9df97e9992d87b::t_4f1a7a66aa627f 139,143-145,152-158,167-168
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 146-147,159-165
+apps/apps-worker/package.json
+  s_9df97e9992d87b::t_8a2b0df6e8e7e7 22
+  s_9df97e9992d87b::t_7afd754a9aa33e 11-12
+packages/api-utils/src/app-asset-url.ts
+  s_9df97e9992d87b::t_ff3fb9388e7467 32
+  s_9df97e9992d87b::t_7afd754a9aa33e 31
+packages/api-platform/src/assets.test.ts
+  s_9df97e9992d87b::t_ea7c112b6f41db 9,65,69-71
+packages/asset-delivery/src/index.test.ts
+  s_9df97e9992d87b::t_3d56a72758eb29 16,36,41,101-119
+pnpm-lock.yaml
+  s_9df97e9992d87b::t_b3ec26d2784d7b 338-340
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5fcfcee759d403ab08331b13801fda47701c929e",
+  "prompts": {},
+  "sessions": {
+    "s_9df97e9992d87b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb9f-ac0d-7041-a89b-4751176b2edd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
