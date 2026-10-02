@@ -1,4 +1,4 @@
-export const MINIMUM_PREACT_MAJOR_VERSION = 10;
+export const MINIMUM_PREACT_MAJOR_VERSION = 11;
 
 export interface PreactVersionCheck {
   major: number;

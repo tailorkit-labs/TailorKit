@@ -212,7 +212,9 @@ it("runs actions explicitly and does not call completion callbacks after unmount
   vi.mocked(client.action).mockReturnValueOnce(pending.promise);
   await act(() => state.execute());
   expect(client.action).toHaveBeenCalledWith({ name: "import" }, undefined);
-  await act(() => render(null, root));
+  // Preact 11 defers passive cleanup. Calls must be cancelled at unmount,
+  // before those effects flush or a pending action can complete.
+  render(null, root);
   await act(async () => {
     pending.resolve("done");
     await pending.promise;

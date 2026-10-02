@@ -52,7 +52,6 @@
   "dependencies": {
     "@orpc/client": "catalog:",
     "@orpc/contract": "catalog:",
-    "@tanstack/preact-store": "0.13.3",
     "@tanstack/store": "0.11.1",
     "cosmiconfig": "^10.0.1",
     "drizzle-orm": "catalog:",
@@ -64,12 +63,12 @@
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
     "happy-dom": "^20.14.5",
-    "preact": "^10.29.8",
+    "preact": "^11.0.0",
     "tsup": "^8.5.1",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   },
   "peerDependencies": {
-    "preact": "^10.0.0"
+    "preact": "^11.0.0"
   }
 }

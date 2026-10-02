@@ -401,8 +401,8 @@ importers:
         specifier: 'catalog:'
         version: 1.48.0(react@19.3.0)
       preact:
-        specifier: ^10.29.8
-        version: 10.29.8
+        specifier: ^11.0.0
+        version: 11.0.0
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -740,8 +740,8 @@ importers:
   examples/apps/backend-todo:
     dependencies:
       preact:
-        specifier: ^10.29.8
-        version: 10.29.8
+        specifier: ^11.0.0
+        version: 11.0.0
       tailorkit:
         specifier: workspace:*
         version: link:../../../packages/tailorkit
@@ -771,8 +771,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/app
       preact:
-        specifier: ^10.29.8
-        version: 10.29.8
+        specifier: ^11.0.0
+        version: 11.0.0
     devDependencies:
       '@tailorkit/cli':
         specifier: workspace:*
@@ -787,8 +787,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/app
       preact:
-        specifier: ^10.29.8
-        version: 10.29.8
+        specifier: ^11.0.0
+        version: 11.0.0
     devDependencies:
       '@tailorkit/cli':
         specifier: workspace:*
@@ -806,8 +806,8 @@ importers:
   examples/apps/todo:
     dependencies:
       preact:
-        specifier: ^10.29.8
-        version: 10.29.8
+        specifier: ^11.0.0
+        version: 11.0.0
       tailorkit:
         specifier: workspace:*
         version: link:../../../packages/tailorkit
@@ -1139,9 +1139,6 @@ importers:
       '@orpc/contract':
         specifier: 'catalog:'
         version: 2.0.0-beta.40
-      '@tanstack/preact-store':
-        specifier: 0.13.3
-        version: 0.13.3(preact@10.29.8)
       '@tanstack/store':
         specifier: 0.11.1
         version: 0.11.1
@@ -1171,8 +1168,8 @@ importers:
         specifier: ^20.14.5
         version: 20.14.5
       preact:
-        specifier: ^10.29.8
-        version: 10.29.8
+        specifier: ^11.0.0
+        version: 11.0.0
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.28)(supports-color@10.2.2)(tsx@4.23.13)(typescript@7.0.2)(yaml@2.9.1)
@@ -5734,11 +5731,6 @@ packages:
     resolution: {integrity: sha512-y/xtNPNt/YeyoVxE/JCx+T7yjEzpezmbb+toK8DDD1P4m7Kzs5YR956+7OKexG3f8aXgC3rLZl7b1V+yNUSy5w==}
     engines: {node: '>=18'}
 
-  '@tanstack/preact-store@0.13.3':
-    resolution: {integrity: sha512-sI0yb2Z8bs8LUaQOpHQckvLYC2qTMYCvq682XSv3TzimBstpz33Db2mrkQugCKjbwP3eB5Gq21n6Ey0Fl7DH+w==}
-    peerDependencies:
-      preact: ^10.0.0
-
   '@tanstack/query-core@5.104.0':
     resolution: {integrity: sha512-JrC2r/JQlXt7khBSdUpsgxNvybzOg+aITa+ARRMlP2AFo93Y8vIqz077rp+e61mJetSZ0T6AJbwW1JHer1vrPQ==}
 
@@ -9609,6 +9601,14 @@ packages:
     resolution: {integrity: sha512-ej2aVZ+vZ8WO7tvlQWRM9N63A0KzF9q4mWJfDUHgYaIofWY9hu74QdnQrjoPMmZi2/nZ5gN0bJCQF49xQqx09Q==}
     peerDependencies:
       preact-render-to-string: '>=5'
+    peerDependenciesMeta:
+      preact-render-to-string:
+        optional: true
+
+  preact@11.0.0:
+    resolution: {integrity: sha512-LRTLKuSe6VYPhvBDjwFaX+nuZnpsw6IN2GSboisAvhGsncylBmrbDCERhgKDn6yP2mAwbGvsB5OVyTe33M8gBg==}
+    peerDependencies:
+      preact-render-to-string: '>=6.7.0'
     peerDependenciesMeta:
       preact-render-to-string:
         optional: true
@@ -14207,11 +14207,6 @@ snapshots:
       remove-accents: 0.5.0
 
   '@tanstack/pacer-lite@0.1.1': {}
-
-  '@tanstack/preact-store@0.13.3(preact@10.29.8)':
-    dependencies:
-      '@tanstack/store': 0.11.1
-      preact: 10.29.8
 
   '@tanstack/query-core@5.104.0': {}
 
@@ -19038,7 +19033,10 @@ snapshots:
 
   powershell-utils@0.2.1: {}
 
-  preact@10.29.8: {}
+  preact@10.29.8:
+    optional: true
+
+  preact@11.0.0: {}
 
   prettier@3.9.6: {}
 

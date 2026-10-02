@@ -28,7 +28,7 @@
     "@tanstack/react-router": "catalog:",
     "@tanstack/react-start": "catalog:",
     "lucide-react": "catalog:",
-    "preact": "^10.29.8",
+    "preact": "^11.0.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tailorkit": "workspace:*",

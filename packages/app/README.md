@@ -1,5 +1,7 @@
 # @tailorkit/app
 
+Apps require Preact 11 (`preact@^11.0.0`). Preact 10 is not supported.
+
 Apache-2.0 app SDK. The implementation lives here; `tailorkit/client` reexports the browser API and `tailorkit/server` reexports backend definitions. The package root also exports `defineServer`. Define SQLite tables, synchronous queries/mutations and async actions with Zod arguments. Drizzle and oRPC v2 run underneath; app code uses this package's APIs.
 
 ```ts

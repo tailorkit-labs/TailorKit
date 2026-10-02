@@ -231,7 +231,7 @@ function getInstalledPreactVersion(root: string): string {
     }
   } catch (error) {
     throw new Error(
-      `TailorKit requires Preact to build an app. Install preact@^10 and try again.`,
+      `TailorKit requires Preact to build an app. Install preact@^11 and try again.`,
       { cause: error },
     );
   }

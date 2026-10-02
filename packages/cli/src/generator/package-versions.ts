@@ -31,7 +31,7 @@ const REGISTRY_TIMEOUT_MS = 5000;
 const REQUESTS = {
   oxfmt: { fallback: "^0.46.0", matcher: "^0", packageName: "oxfmt" },
   oxlint: { fallback: "^1.61.0", matcher: "^1", packageName: "oxlint" },
-  preact: { fallback: "^10.29.1", matcher: "^10", packageName: "preact" },
+  preact: { fallback: "^11.0.0", matcher: "^11", packageName: "preact" },
   tailorkit: { fallback: "latest", matcher: "^0", packageName: "tailorkit" },
   typescript: { fallback: "^6.0.3", matcher: "^6", packageName: "typescript" },
   zod: { fallback: "^4.0.0", matcher: "^4", packageName: "zod" },
