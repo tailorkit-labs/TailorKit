@@ -133,10 +133,14 @@ export const createCliAuthApprovalUrl = (hostUrl: string, userCode: string): str
   return url.toString();
 };
 
-const createNotLoggedInError = (hostUrl: string): Error =>
-  new Error(
-    `Not logged in for ${hostUrl}. Run tailorkit login after checking host in tailorkit.config.ts.`,
-  );
+export class NotLoggedInError extends Error {
+  constructor(hostUrl: string) {
+    super(
+      `Not logged in for ${hostUrl}. Run tailorkit login after checking host in tailorkit.config.ts.`,
+    );
+    this.name = "NotLoggedInError";
+  }
+}
 
 export const saveDeployToken = async (
   hostUrl: string,
@@ -235,7 +239,7 @@ export const runWhoami = async (
   const auth = await getDeployToken(hostUrl);
 
   if (!auth?.deployToken) {
-    throw createNotLoggedInError(hostUrl);
+    throw new NotLoggedInError(hostUrl);
   }
 
   const client = createTailorKitClient({
@@ -251,7 +255,7 @@ export const runWhoami = async (
       "data" in verifyResult ? verifyResult.data : verifyResult,
     );
   } catch {
-    throw createNotLoggedInError(hostUrl);
+    throw new NotLoggedInError(hostUrl);
   }
 
   await saveDeployToken(hostUrl, {

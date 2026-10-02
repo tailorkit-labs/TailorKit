@@ -11,7 +11,7 @@ import type { LoadedTailorKitConfig } from "@tailorkit/app/config/loader";
 import { loadTailorKitConfig } from "@tailorkit/app/config/loader";
 import { createTailorKitClient } from "@tailorkit/core/server";
 import type { z } from "zod";
-import { getDeployToken, runWhoami } from "./auth";
+import { getDeployToken, NotLoggedInError, runWhoami } from "./auth";
 
 export interface TypecheckFailure {
   command: string;
@@ -23,6 +23,7 @@ interface DeployOptions {
   configPath?: string;
   cwd: string;
   mode?: string;
+  onLoginRequired?: () => Promise<{ hostUrl: string }>;
   onMissingAppId?: (details: {
     appName: string;
     configPath: string;
@@ -274,7 +275,12 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
   let appId = loaded.config.appId;
   let createdApp = false;
 
-  const auth = await runWhoami(options);
+  const auth = await runWhoami(options).catch((error: unknown) => {
+    if (error instanceof NotLoggedInError && options.onLoginRequired) {
+      return options.onLoginRequired();
+    }
+    throw error;
+  });
   const storedAuth = await getDeployToken(auth.hostUrl);
 
   if (!storedAuth?.deployToken) {

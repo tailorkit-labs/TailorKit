@@ -179,6 +179,18 @@ describe("auth store", () => {
     );
   });
 
+  it("identifies missing host credentials as not logged in", async () => {
+    const homeDirectory = await createTemporaryHome();
+    vi.mocked(loadTailorKitConfig).mockResolvedValue({
+      config: { host: "https://example.com" },
+      filepath: path.join(homeDirectory, "tailorkit.config.ts"),
+      root: homeDirectory,
+    });
+    const { NotLoggedInError, runWhoami } = await loadAuthModule(homeDirectory);
+
+    await expect(runWhoami({ cwd: homeDirectory })).rejects.toBeInstanceOf(NotLoggedInError);
+  });
+
   it("treats failed token verification as not logged in", async () => {
     const homeDirectory = await createTemporaryHome();
     vi.mocked(loadTailorKitConfig).mockResolvedValue({
@@ -201,8 +213,9 @@ describe("auth store", () => {
         },
       },
     });
-    const { runWhoami } = await loadAuthModule(homeDirectory);
+    const { NotLoggedInError, runWhoami } = await loadAuthModule(homeDirectory);
 
+    await expect(runWhoami({ cwd: homeDirectory })).rejects.toBeInstanceOf(NotLoggedInError);
     await expect(runWhoami({ cwd: homeDirectory })).rejects.toThrow(
       "Not logged in for https://example.com. Run tailorkit login after checking host in tailorkit.config.ts.",
     );
