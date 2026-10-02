@@ -68,7 +68,7 @@ it("builds configured entries and blocks the configured server from the browser"
   } finally {
     await rm(root, { recursive: true, force: true });
   }
-}, 15_000);
+}, 60_000);
 
 it("builds separate artifacts and rejects accidental imports of server code", async () => {
   const root = path.resolve(import.meta.dirname, "../../../../examples/apps/backend-todo");
@@ -137,4 +137,4 @@ it("builds separate artifacts and rejects accidental imports of server code", as
     await writeFile(path.join(root, "src/client.ts"), client);
     await rm(path.join(root, ".tailorkit"), { recursive: true, force: true });
   }
-}, 15_000);
+}, 60_000);

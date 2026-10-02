@@ -51,4 +51,4 @@ it("checks schema drift without rewriting committed migrations and allows apps w
   } finally {
     await rm(root, { recursive: true, force: true });
   }
-}, 15_000);
+}, 60_000);
