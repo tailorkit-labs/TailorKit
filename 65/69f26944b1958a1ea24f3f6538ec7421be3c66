@@ -1,0 +1,21 @@
+.changeset/skip-generated-dependency-checks.md
+  s_9bd47906ac8923::t_788d5ec9d490f3 1-5
+packages/cli/src/generator/templates/tsconfig.json.liquid
+  s_9bd47906ac8923::t_955982c77cc374 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6569f26944b1958a1ea24f3f6538ec7421be3c66",
+  "prompts": {},
+  "sessions": {
+    "s_9bd47906ac8923": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb39-120b-7813-bdf3-d4eac7699777",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
