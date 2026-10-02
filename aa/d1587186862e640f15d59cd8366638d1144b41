@@ -1,0 +1,33 @@
+.changeset/init-host-schema.md
+  s_c173e7e24c64e4::t_fabc0fd6898532 1-5
+packages/cli/src/generator/generate.test.ts
+  s_c173e7e24c64e4::t_cf17729849cd5b 1,7,21-29,244,252-254,266,270,284-285,288-291,303-362
+packages/cli/src/generator/generate.ts
+  s_c173e7e24c64e4::t_5069be3bf680fc 5,29,70,77-94,109-111,155-157
+packages/cli/src/generator/templates/src/client.ts.liquid
+  s_c173e7e24c64e4::t_6c05ba03f90539 7
+packages/cli/src/generator/templates/src/views/default.tsx.liquid
+  s_c173e7e24c64e4::t_969b0133612e9b 2,4,9,11
+packages/cli/src/generator/types.ts
+  s_c173e7e24c64e4::t_8c88cd157123bb 46,55,508,523
+packages/cli/src/init.test.ts
+  s_c173e7e24c64e4::t_6463ee3ff61aaf 1-77
+packages/cli/src/init.ts
+  s_c173e7e24c64e4::t_1a9060df23d3b0 8,192-200,214
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "aad1587186862e640f15d59cd8366638d1144b41",
+  "prompts": {},
+  "sessions": {
+    "s_c173e7e24c64e4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb4b-2301-73a1-b328-e7e6bb5a7b7b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
