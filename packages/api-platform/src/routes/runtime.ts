@@ -42,29 +42,46 @@ export const runtimeSession = protectedRouter
       params: z.object({ appId: z.string().min(1).max(256) }),
       body: z.object({
         scopes: scopesSchema,
-        userId: z.string().min(1).max(256),
-        installationId: z.string().min(1).max(256),
       }),
     }),
   )
-  .output(z.object({ body: z.object({ token: z.string(), expiresAt: z.number() }) }))
+  .output(z.object({ body: z.object({ token: z.string(), expiresAt: z.number(), url: z.url() }) }))
   .use(
     requireAppInScopes.adaptInput(({ params: { appId }, body: { scopes } }) => ({ appId, scopes })),
   )
-  .handler(async ({ context, input }) => {
+  .handler(async ({ context }) => {
     const deployment = context.app.currentDeployment;
     if (!deployment) {
       throw new ORPCError("NOT_FOUND", { message: "App has no published deployment." });
     }
-    return {
-      body: await issueAppRuntimeToken({
-        userId: input.body.userId,
-        installationId: input.body.installationId,
-        projectId: context.project.id,
-        appId: context.app.id,
-        deploymentId: deployment.id,
-      }),
-    };
+    if (!env.APP_RUNTIME_URL) {
+      throw new ORPCError("SERVICE_UNAVAILABLE", { message: "App runtime is not configured." });
+    }
+    const runtime = new URL(env.APP_RUNTIME_URL);
+    if (
+      runtime.username ||
+      runtime.password ||
+      runtime.search ||
+      runtime.hash ||
+      (runtime.protocol !== "https:" &&
+        !(
+          runtime.protocol === "http:" &&
+          ["localhost", "127.0.0.1", "[::1]"].includes(runtime.hostname)
+        ))
+    ) {
+      throw new ORPCError("SERVICE_UNAVAILABLE", { message: "Invalid app runtime configuration." });
+    }
+    const url = new URL("/rpc", runtime);
+    // Each app belongs to one installation scope. Resolve identity from the authorized
+    // database record, never from browser input or the ordering of the viewer's scopes.
+    const session = await issueAppRuntimeToken({
+      userId: `scope:${context.app.scopeKey}`,
+      installationId: context.app.id,
+      projectId: context.project.id,
+      appId: context.app.id,
+      deploymentId: deployment.id,
+    });
+    return { body: { ...session, url: url.href } };
   });
 
 // Trusted runtime metadata: return the authorized private R2 key without minting a download URL.

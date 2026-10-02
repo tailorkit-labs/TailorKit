@@ -97,19 +97,9 @@
                       "required": ["name", "value"],
                       "additionalProperties": false
                     }
-                  },
-                  "userId": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 256
-                  },
-                  "installationId": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 256
                   }
                 },
-                "required": ["scopes", "userId", "installationId"]
+                "required": ["scopes"]
               }
             }
           }
@@ -127,9 +117,13 @@
                     },
                     "expiresAt": {
                       "type": "number"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
                     }
                   },
-                  "required": ["token", "expiresAt"],
+                  "required": ["token", "expiresAt", "url"],
                   "additionalProperties": false
                 }
               }

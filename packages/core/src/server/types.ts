@@ -1,4 +1,3 @@
-import type { HostBackendOptions } from "./backend";
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { ClientOptions as PlatformClientOptions } from "@tailorkit/client-platform/client/types.gen";
 import type { TailorKitRouter } from "./router";
@@ -36,8 +35,6 @@ export interface TailorKitServerBaseOptions<
   /** Optional custom asset origin. Hosted apps receive a tenant-viewd clientPath from TailorKit automatically. */
   assetsBaseUrl?: string;
   basePath?: string;
-  /** Optional app backend authentication through scoped platform sessions. */
-  backend?: HostBackendOptions;
   /**
    * Configuration for browser-based TailorKit CLI authentication.
    */

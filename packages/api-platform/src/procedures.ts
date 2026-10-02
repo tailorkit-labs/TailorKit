@@ -9,7 +9,7 @@ import { type Scope } from "@tailorkit/db/schema/scope";
 import { canonicalizeScope, canonicalizeScopes } from "./scope";
 
 const rateLimiter = createRateLimiter({ maxRequests: 100, window: 1000 });
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 type CanonicalScope = ReturnType<typeof canonicalizeScope>;
 
 async function findAppInScopes(projectId: string, appId: string, scopes: CanonicalScope[]) {

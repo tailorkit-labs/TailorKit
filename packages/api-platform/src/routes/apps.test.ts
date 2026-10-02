@@ -14,8 +14,19 @@ import { createTestDb } from "../test/pglite";
 const testState = vi.hoisted(() => ({
   db: undefined as unknown,
   publishMetadata: vi.fn(),
-  issueToken: vi.fn(async () => ({ token: "platform-token", expiresAt: Date.now() + 300_000 })),
+  env: { APP_RUNTIME_URL: "https://runtime.test" as string | undefined },
+  issueToken: vi.fn(
+    async (_identity: {
+      userId: string;
+      installationId: string;
+      projectId: string;
+      appId: string;
+      deploymentId: string;
+    }) => ({ token: "platform-token", expiresAt: Date.now() + 300_000 }),
+  ),
 }));
+
+vi.mock("../env", () => ({ env: testState.env }));
 
 vi.mock("@tailorkit/kv", () => ({ getKV: () => undefined }));
 
@@ -78,6 +89,7 @@ describe("platform appRouter", () => {
   let db: Awaited<ReturnType<typeof createTestDb>>["db"];
 
   beforeEach(async () => {
+    testState.env.APP_RUNTIME_URL = "https://runtime.test";
     const testDb = await createTestDb();
     client = testDb.client;
     db = testDb.db;
@@ -469,19 +481,50 @@ describe("platform appRouter", () => {
     );
     expect(deployed.body.currentDeployment?.id).toBe(deployment.id);
 
+    const deleted = await call(
+      appRouter.delete,
+      { params: { appId: created.publicId }, body: { scope: productionScope } },
+      { context },
+    );
+    expect(deleted.body.id).toBe(created.id);
+  });
+  it("authorizes backend sessions with existing scopes and resolves canonical installation identities", async () => {
+    const context = createContext();
+    const [created] = await db
+      .insert(appTable)
+      .values({
+        id: "55555555-5555-7555-8555-555555555555",
+        name: "Inbox",
+        projectId,
+        publicId: "inbox0000001",
+        ...canonicalizeScope(productionScope),
+      })
+      .returning();
+    if (!created) throw new Error("Expected test app");
+    const [deployment] = await db
+      .insert(appDeployment)
+      .values({
+        appId: created.id,
+        publicId: "deploy0002",
+        status: "published",
+      })
+      .returning();
+    if (!deployment) throw new Error("Expected test deployment");
+    await db
+      .update(appTable)
+      .set({ currentDeploymentId: deployment.id })
+      .where(eq(appTable.id, created.id));
     const input = {
       params: { appId: created.publicId },
       body: {
         scopes: [productionScope],
-        userId: "verified-user",
-        installationId: "installation",
       },
     };
     const session = await call(appRouter.runtimeSession, input, { context });
     expect(session.body.token).toBe("platform-token");
     expect(testState.issueToken).toHaveBeenCalledWith({
-      userId: "verified-user",
-      installationId: "installation",
+      userId: `scope:${created.scopeKey}`,
+      installationId: created.id,
       appId: created.id,
       projectId,
       deploymentId: deployment.id,
@@ -499,11 +542,67 @@ describe("platform appRouter", () => {
       }),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
 
-    const deleted = await call(
-      appRouter.delete,
-      { params: { appId: created.publicId }, body: { scope: productionScope } },
+    expect(testState.issueToken).toHaveBeenCalledTimes(1);
+    const handler = new OpenAPIHandler({ apps: appRouter });
+    const http = await handler.handle(
+      new Request(`https://platform.test/api/platform/apps/${created.publicId}/runtime/session`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ scopes: [productionScope] }),
+      }),
+      { prefix: "/api/platform", context },
+    );
+    expect(http.response?.status).toBe(200);
+    await expect(http.response?.json()).resolves.toMatchObject({
+      token: "platform-token",
+      url: "https://runtime.test/rpc",
+    });
+
+    expect(session.body.url).toBe("https://runtime.test/rpc");
+    const identity = testState.issueToken.mock.calls.at(-1)?.[0];
+    for (const appId of [created.id, created.publicId]) {
+      for (const scopes of [
+        [stagingScope, productionScope],
+        [productionScope, stagingScope],
+      ]) {
+        await call(appRouter.runtimeSession, { params: { appId }, body: { scopes } }, { context });
+        expect(testState.issueToken).toHaveBeenLastCalledWith(identity);
+      }
+    }
+    // Removed host-selected IDs cannot override the authorized database identity.
+    await call(
+      appRouter.runtimeSession,
+      {
+        ...input,
+        body: { ...input.body, installationId: "victim", userId: "victim" },
+      } as typeof input,
       { context },
     );
-    expect(deleted.body.id).toBe(created.id);
+    expect(testState.issueToken).toHaveBeenLastCalledWith(identity);
+
+    const tokenCalls = testState.issueToken.mock.calls.length;
+    for (const runtimeUrl of [
+      undefined,
+      "http://runtime.test",
+      "ftp://localhost",
+      "https://user:pass@runtime.test",
+      "https://runtime.test?redirect=attacker",
+      "https://runtime.test#fragment",
+    ]) {
+      testState.env.APP_RUNTIME_URL = runtimeUrl;
+      await expect(call(appRouter.runtimeSession, input, { context })).rejects.toMatchObject({
+        code: "SERVICE_UNAVAILABLE",
+      });
+    }
+    expect(testState.issueToken.mock.calls).toHaveLength(tokenCalls);
+    testState.env.APP_RUNTIME_URL = "http://localhost:8787/other";
+    const local = await call(appRouter.runtimeSession, input, { context });
+    expect(local.body.url).toBe("http://localhost:8787/rpc");
+    testState.env.APP_RUNTIME_URL = "https://runtime.test";
+
+    await db.update(appTable).set({ currentDeploymentId: null }).where(eq(appTable.id, created.id));
+    await expect(call(appRouter.runtimeSession, input, { context })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
   });
 });

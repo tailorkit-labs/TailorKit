@@ -96,7 +96,7 @@ Add `server: {}` to `tailorkit.config.ts` to build the backend from `src/server.
 
 `tailorkit deploy` uploads the client and private server artifact through existing platform-issued blob upload URLs. Apps need no Cloudflare credentials. R2 stores them under separate `client/` and `server/` prefixes; only client assets are public. Client-only apps continue to build without a server artifact. Watch mode watches both builds.
 
-The legacy `app-storage` SDK, `storage` config and storage CLI commands have been removed. Use `server` config and this SDK. Host authorization is configured with `backend.resolveInstallation`; the host session endpoint is `/backend/session`.
+The legacy `app-storage` SDK, `storage` config and storage CLI commands have been removed. Use `server` config and this SDK. The host session endpoint `/backend/session` uses the existing host `authenticate` callback. The platform verifies scope access and resolves the installation and runtime URL automatically; no extra host backend configuration is required.
 
 ## Preact hooks
 
