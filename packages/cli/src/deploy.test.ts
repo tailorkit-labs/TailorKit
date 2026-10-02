@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile, rename, symlink, readdir } from "node:fs
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
+import { NotLoggedInError } from "./auth";
 import { tailorkitUploadManifestSchema } from "../../app/src/builder/upload-manifest";
 
 const mocks = vi.hoisted(() => ({
@@ -16,7 +17,11 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@tailorkit/app/config/loader", () => ({ loadTailorKitConfig: mocks.load }));
 vi.mock("@tailorkit/app/builder", () => ({ buildApp: mocks.build, tailorkitUploadManifestSchema }));
 vi.mock("@tailorkit/core/server", () => ({ createTailorKitClient: mocks.client }));
-vi.mock("./auth", () => ({ getDeployToken: mocks.token, runWhoami: mocks.whoami }));
+vi.mock("./auth", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./auth")>()),
+  getDeployToken: mocks.token,
+  runWhoami: mocks.whoami,
+}));
 const { runDeploy } = await import("./deploy");
 let root: string;
 beforeEach(async () => {
@@ -188,3 +193,62 @@ it.each(["config", "option"])(
     expect(mocks.publish).toHaveBeenCalledOnce();
   },
 );
+
+it.each(["missing", "expired"])(
+  "logs in with %s credentials and continues deploying with the new token",
+  async (credentials) => {
+    mocks.whoami.mockRejectedValue(new NotLoggedInError("https://host.example"));
+    mocks.token.mockResolvedValue(
+      credentials === "missing" ? undefined : { deployToken: "expired-token" },
+    );
+    const onLoginRequired = vi.fn().mockImplementation(async () => {
+      expect(mocks.build).not.toHaveBeenCalled();
+      expect(mocks.create).not.toHaveBeenCalled();
+      mocks.token.mockResolvedValue({ deployToken: "new-token" });
+      return { hostUrl: "https://host.example" };
+    });
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
+
+    await expect(
+      runDeploy({ cwd: root, configPath: "custom.config.ts", onLoginRequired }),
+    ).resolves.toMatchObject({ deploymentId: "deployment", status: "published" });
+    expect(mocks.whoami).toHaveBeenCalledWith(
+      expect.objectContaining({ cwd: root, configPath: "custom.config.ts" }),
+    );
+    expect(onLoginRequired).toHaveBeenCalledOnce();
+    expect(mocks.token).toHaveBeenCalledWith("https://host.example");
+    expect(mocks.client).toHaveBeenCalledWith({
+      headers: { authorization: "Bearer new-token" },
+      url: "https://host.example",
+    });
+    expect(mocks.publish).toHaveBeenCalledOnce();
+  },
+);
+
+it("skips the login flow when already authenticated", async () => {
+  const onLoginRequired = vi.fn();
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
+  await runDeploy({ cwd: root, onLoginRequired });
+  expect(onLoginRequired).not.toHaveBeenCalled();
+  expect(mocks.publish).toHaveBeenCalledOnce();
+});
+
+it.each(["CLI login was denied.", "Timed out waiting for CLI login approval."])(
+  "stops deploying when login fails: %s",
+  async (message) => {
+    mocks.whoami.mockRejectedValue(new NotLoggedInError("https://host.example"));
+    const onLoginRequired = vi.fn().mockRejectedValue(new Error(message));
+    await expect(runDeploy({ cwd: root, onLoginRequired })).rejects.toThrow(message);
+    expect(mocks.build).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+    expect(mocks.publish).not.toHaveBeenCalled();
+  },
+);
+
+it("does not start login for config or credential store errors", async () => {
+  mocks.whoami.mockRejectedValue(new Error("Invalid auth.json"));
+  const onLoginRequired = vi.fn();
+  await expect(runDeploy({ cwd: root, onLoginRequired })).rejects.toThrow("Invalid auth.json");
+  expect(onLoginRequired).not.toHaveBeenCalled();
+  expect(mocks.build).not.toHaveBeenCalled();
+});

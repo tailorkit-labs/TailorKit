@@ -31,6 +31,35 @@ const formatBytes = (bytes: number): string => {
   return `${value.toFixed(value >= 10 ? 1 : 2)} ${units[unitIndex]}`;
 };
 
+const loginWithApproval = async (options: Parameters<typeof runLogin>[0], open = true) => {
+  const approvalSpinner = spinner();
+  let isWaitingForApproval = false;
+  try {
+    const result = await runLogin(options, ({ expiresAt, hostUrl, userCode }) => {
+      const approvalUrl = createCliAuthApprovalUrl(hostUrl, userCode);
+      if (open) {
+        void openUrlInBrowser(approvalUrl);
+      }
+
+      log.info(`Enter this code in the host app: ${pc.bold(userCode)}`);
+      log.info(`Approval URL: ${pc.cyan(approvalUrl)}`);
+      log.info(`Code expires at ${expiresAt.toLocaleString()}.`);
+      log.info("Waiting for approval...");
+      approvalSpinner.start("Checking approval status");
+      isWaitingForApproval = true;
+    });
+    if (isWaitingForApproval) {
+      approvalSpinner.stop("Approved.");
+    }
+    return result;
+  } catch (error) {
+    if (isWaitingForApproval) {
+      approvalSpinner.stop("Approval failed.");
+    }
+    throw error;
+  }
+};
+
 cli.option("--cwd <path>", "Working directory", { default: "." });
 
 cli
@@ -56,43 +85,22 @@ cli
   .option("--timeout <seconds>", "Seconds to wait for approval", { default: 1800 })
   .action(async (options: Record<string, unknown>) => {
     intro(pc.bold("TailorKit"));
-    const approvalSpinner = spinner();
-    let isWaitingForApproval = false;
     try {
       const timeoutSeconds = Number.parseInt(String(options.timeout ?? "1800"), 10);
       if (!Number.isInteger(timeoutSeconds) || timeoutSeconds <= 0) {
         throw new Error("--timeout must be a positive integer.");
       }
 
-      await runLogin(
+      await loginWithApproval(
         {
           configPath: options.config as string | undefined,
           cwd: String(options.cwd ?? "."),
           timeout: timeoutSeconds * 1000,
         },
-        ({ expiresAt, hostUrl, userCode }) => {
-          const approvalUrl = createCliAuthApprovalUrl(hostUrl, userCode);
-          if (options.open !== false) {
-            void openUrlInBrowser(approvalUrl);
-          }
-
-          log.info(`Enter this code in the host app: ${pc.bold(userCode)}`);
-          log.info(`Approval URL: ${pc.cyan(approvalUrl)}`);
-          log.info(`Code expires at ${expiresAt.toLocaleString()}.`);
-          log.info("Waiting for approval...");
-          approvalSpinner.start("Checking approval status");
-          isWaitingForApproval = true;
-        },
+        options.open !== false,
       );
-
-      if (isWaitingForApproval) {
-        approvalSpinner.stop("Approved.");
-      }
       outro("Authenticated successfully.");
     } catch (error) {
-      if (isWaitingForApproval) {
-        approvalSpinner.stop("Approval failed.");
-      }
       log.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
@@ -154,6 +162,15 @@ cli
         configPath: options.config as string | undefined,
         cwd: String(options.cwd ?? "."),
         mode: options.mode as string | undefined,
+        onLoginRequired: async () => {
+          deploySpinner.stop("Authentication required.");
+          const auth = await loginWithApproval({
+            configPath: options.config as string | undefined,
+            cwd: String(options.cwd ?? "."),
+          });
+          deploySpinner.start("Building and deploying app");
+          return auth;
+        },
         onMissingAppId: async ({ appName, configPath, hostUrl, reason }) => {
           deploySpinner.stop("App not linked.");
           log.info(

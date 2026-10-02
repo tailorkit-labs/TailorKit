@@ -5,6 +5,7 @@ import path from "node:path";
 import { loadTailorKitConfig } from "@tailorkit/app/config/loader";
 import { createTailorKitClient } from "@tailorkit/core/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { z } from "zod";
 
 vi.mock("@tailorkit/app/config/loader", () => ({
   loadTailorKitConfig: vi.fn(),
@@ -179,7 +180,19 @@ describe("auth store", () => {
     );
   });
 
-  it("treats failed token verification as not logged in", async () => {
+  it("identifies missing host credentials as not logged in", async () => {
+    const homeDirectory = await createTemporaryHome();
+    vi.mocked(loadTailorKitConfig).mockResolvedValue({
+      config: { host: "https://example.com" },
+      filepath: path.join(homeDirectory, "tailorkit.config.ts"),
+      root: homeDirectory,
+    });
+    const { NotLoggedInError, runWhoami } = await loadAuthModule(homeDirectory);
+
+    await expect(runWhoami({ cwd: homeDirectory })).rejects.toBeInstanceOf(NotLoggedInError);
+  });
+
+  it("treats unauthorized token verification as not logged in", async () => {
     const homeDirectory = await createTemporaryHome();
     vi.mocked(loadTailorKitConfig).mockResolvedValue({
       config: { host: "https://example.com" },
@@ -190,7 +203,7 @@ describe("auth store", () => {
       cliAuth: {
         verifyToken: vi.fn().mockResolvedValue({
           data: undefined,
-          error: new Error("token expired"),
+          error: { code: "UNAUTHORIZED", message: "token expired" },
         }),
       },
     } as unknown as ReturnType<typeof createTailorKitClient>);
@@ -201,11 +214,47 @@ describe("auth store", () => {
         },
       },
     });
-    const { runWhoami } = await loadAuthModule(homeDirectory);
+    const { NotLoggedInError, runWhoami } = await loadAuthModule(homeDirectory);
 
+    await expect(runWhoami({ cwd: homeDirectory })).rejects.toBeInstanceOf(NotLoggedInError);
     await expect(runWhoami({ cwd: homeDirectory })).rejects.toThrow(
       "Not logged in for https://example.com. Run tailorkit login after checking host in tailorkit.config.ts.",
     );
+  });
+
+  it.each([
+    { label: "network rejection", error: new TypeError("fetch failed"), rejected: true },
+    {
+      label: "server RPC error",
+      error: { code: "INTERNAL_SERVER_ERROR", message: "Service unavailable" },
+      rejected: false,
+    },
+    { label: "forbidden rejection", error: { code: "FORBIDDEN" }, rejected: true },
+    { label: "uncoded RPC error", error: new Error("Unexpected response"), rejected: false },
+    { label: "string rejection", error: "Connection closed", rejected: true },
+    { label: "null rejection", error: null, rejected: true },
+  ])("preserves $label unchanged", async ({ error, rejected }) => {
+    const homeDirectory = await createTemporaryHome();
+    vi.mocked(loadTailorKitConfig).mockResolvedValue({
+      config: { host: "https://example.com" },
+      filepath: path.join(homeDirectory, "tailorkit.config.ts"),
+      root: homeDirectory,
+    });
+    const verifyToken = vi.fn();
+    if (rejected) {
+      verifyToken.mockRejectedValue(error);
+    } else {
+      verifyToken.mockResolvedValue({ error });
+    }
+    vi.mocked(createTailorKitClient).mockReturnValue({
+      cliAuth: { verifyToken },
+    } as unknown as ReturnType<typeof createTailorKitClient>);
+    const fixture = { hosts: { "https://example.com": { deployToken: "deploy-token" } } };
+    const filePath = await writeAuthStoreFixture(homeDirectory, fixture);
+    const { runWhoami } = await loadAuthModule(homeDirectory);
+
+    await expect(runWhoami({ cwd: homeDirectory })).rejects.toBe(error);
+    await expect(readFile(filePath, "utf-8").then(JSON.parse)).resolves.toEqual(fixture);
   });
 
   it("returns the verified named scope", async () => {
@@ -252,7 +301,7 @@ describe("auth store", () => {
     });
     const { runWhoami } = await loadAuthModule(homeDirectory);
 
-    await expect(runWhoami({ cwd: homeDirectory })).rejects.toThrow("Not logged in");
+    await expect(runWhoami({ cwd: homeDirectory })).rejects.toBeInstanceOf(z.ZodError);
     await expect(readFile(filePath, "utf-8").then(JSON.parse)).resolves.toEqual({
       hosts: { "https://example.com": { deployToken: "deploy-token" } },
     });
