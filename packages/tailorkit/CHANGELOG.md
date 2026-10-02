@@ -1,5 +1,22 @@
 # tailorkit
 
+## 0.1.0-beta.17
+
+### Patch Changes
+
+- Updated dependencies [ba00155]
+- Updated dependencies [364d5cd]
+- Updated dependencies [72d38cd]
+- Updated dependencies [8d1b465]
+- Updated dependencies [aad1587]
+- Updated dependencies [d586115]
+- Updated dependencies [6569f26]
+- Updated dependencies [9384481]
+  - @tailorkit/core@0.1.0-beta.17
+  - @tailorkit/app@0.1.0-beta.17
+  - @tailorkit/cli@0.1.0-beta.17
+  - @tailorkit/react@0.1.0-beta.17
+
 ## 0.1.0-beta.16
 
 ### Minor Changes
