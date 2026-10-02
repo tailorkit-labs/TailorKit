@@ -1,0 +1,19 @@
+examples/apps/todo/src/views/default.tsx
+  s_4a1b1e248fdd39::t_0934a8e1c1db5d 100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "57c6c59fd510e688c1c127e0702e8b43f6d8f629",
+  "prompts": {},
+  "sessions": {
+    "s_4a1b1e248fdd39": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0d0ed-33ee-7df0-83d5-5f2457afaf25",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

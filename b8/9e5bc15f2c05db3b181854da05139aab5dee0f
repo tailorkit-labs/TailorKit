@@ -1,0 +1,37 @@
+packages/email/src/env.ts
+  s_3d0991fdb1f2d5::t_0c0fdcc6d2926e 16
+packages/api-utils/src/env.ts
+  s_3d0991fdb1f2d5::t_0c0fdcc6d2926e 10
+packages/api-platform/src/env.ts
+  s_3d0991fdb1f2d5::t_0c0fdcc6d2926e 8
+packages/db/package.json
+  s_3d0991fdb1f2d5::t_0c0fdcc6d2926e 31
+packages/db/src/index.ts
+  s_3d0991fdb1f2d5::t_0c0fdcc6d2926e 8-12
+packages/api-platform/src/asset-url.test.ts
+  s_3d0991fdb1f2d5::t_0c0fdcc6d2926e 8,10
+packages/api-platform/src/routes/preview.test.ts
+  s_3d0991fdb1f2d5::t_0c0fdcc6d2926e 8,25-28,139,387
+packages/env/src/index.ts
+  s_3d0991fdb1f2d5::t_0c0fdcc6d2926e 81-84
+packages/core/src/server/types.ts
+  s_3d0991fdb1f2d5::t_0c0fdcc6d2926e 26-27
+packages/kv/src/env.ts
+  s_3d0991fdb1f2d5::t_0c0fdcc6d2926e 8,10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b89e5bc15f2c05db3b181854da05139aab5dee0f",
+  "prompts": {},
+  "sessions": {
+    "s_3d0991fdb1f2d5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0db9a-b24c-7a23-9518-937366441cbe",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

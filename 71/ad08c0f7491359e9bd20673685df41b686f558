@@ -1,0 +1,40 @@
+packages/app-agent/package.json
+  s_4f0c1630725e09::t_636851c2260f23 13-14
+packages/app-agent/agent/skills/tailorkit-apps/references/preact.md
+  s_4f0c1630725e09::t_973928413befe0 104,107-111,114-115
+packages/app-agent/agent/tools/create-app.ts
+  s_4f0c1630725e09::t_2d13d3de1eb8ff 7-23,28,40-63,67
+  s_4f0c1630725e09::t_fd7a24d9c46ba9 26
+packages/app-agent/test/create-app.test.ts
+  s_4f0c1630725e09::t_3beed0786a6ca1 1-100
+packages/app-agent/agent/skills/tailorkit-apps/references/verification.md
+  s_4f0c1630725e09::t_973928413befe0 37-42
+.changeset/sandbox-secure-connections.md
+  s_4f0c1630725e09::t_ba6e7551e27ff3 1-5
+apps/docs/content/docs/(getting-started)/how-apps-work.mdx
+  s_4f0c1630725e09::t_9c4d9fd05e74db 67-71
+apps/docs/content/docs/(guides)/deploying-to-production.mdx
+  s_4f0c1630725e09::t_8d21ce1a245e1b 23-27
+packages/app-agent/agent/skills/tailorkit-apps/references/data-and-access.md
+  s_4f0c1630725e09::t_2183c2c24e69a7 3-9,29-35
+packages/sandbox/src/host/index.test.ts
+  s_4f0c1630725e09::t_b225e3d519c09f 67
+packages/sandbox/src/host/index.ts
+  s_4f0c1630725e09::t_216a2407994de6 169
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "71ad08c0f7491359e9bd20673685df41b686f558",
+  "prompts": {},
+  "sessions": {
+    "s_4f0c1630725e09": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f1f6-275f-79c3-98d9-b850f15f50db",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

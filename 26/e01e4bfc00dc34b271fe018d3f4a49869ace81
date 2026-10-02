@@ -1,0 +1,61 @@
+examples/apps/email/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 13-14
+apps/web/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 11-12
+apps/demo/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 11-12
+examples/nextjs/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 11-12
+packages/config/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 11-12
+examples/apps/todo/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 13-14
+packages/observability/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 12-13
+packages/db/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 12-13
+packages/ui/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 12-13
+packages/kv/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 12-13
+examples/tanstack-start/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 11-12
+packages/storage/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 12-13
+packages/api-platform/turbo.json
+  s_3d0991fdb1f2d5::t_c48d359a30c1ac 5
+examples/shared/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 11-12
+packages/auth/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 12-13
+apps/docs/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 12-13
+packages/api-platform/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 12-13
+packages/api-utils/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 12-13
+examples/apps/notes/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 13-14
+packages/api/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 12-13
+packages/email/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 12-13
+packages/env/package.json
+  s_3d0991fdb1f2d5::t_ae21eb21d6687a 12-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "26e01e4bfc00dc34b271fe018d3f4a49869ace81",
+  "prompts": {},
+  "sessions": {
+    "s_3d0991fdb1f2d5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0db9a-b24c-7a23-9518-937366441cbe",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

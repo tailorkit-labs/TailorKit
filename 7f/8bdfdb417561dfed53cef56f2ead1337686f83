@@ -1,0 +1,26 @@
+examples/tanstack-start/src/routeTree.gen.ts
+  s_1b2930c7c7c803::t_1cdf62a6cc941f 11-18,21-22,24,26-27,29,31-32,34,36-37,39,41-42,44,46-47,49,51-52,54,57-63,66-72,75-82,85,87-94,96-102,104-112,115-119,122,124-172,177,182,184-186,189,194,196,204,207,209-211,213-214
+.zed/settings.json
+  s_1b2930c7c7c803::t_9c10295f949d18 52-60,62,65-73,75
+  s_1b2930c7c7c803::t_15bd75bdd96ad2 19
+  s_1b2930c7c7c803::t_548e93b90faa15 51,61,63-64,74,76
+vite.config.ts
+  s_1b2930c7c7c803::t_5c5d2f436a800d 4,6
+  s_1b2930c7c7c803::t_c0db42de588bee 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7f8bdfdb417561dfed53cef56f2ead1337686f83",
+  "prompts": {},
+  "sessions": {
+    "s_1b2930c7c7c803": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0dd5a-8827-7a60-8b69-fa45e4717568",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

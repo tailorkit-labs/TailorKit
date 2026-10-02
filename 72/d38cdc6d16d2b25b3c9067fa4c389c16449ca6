@@ -1,0 +1,32 @@
+.changeset/friendly-deploy-login.md
+  s_7d6f2e2bf74c1b::t_c3827311a91c64 1-5
+packages/cli/src/deploy.ts
+  s_7d6f2e2bf74c1b::t_c3827311a91c64 14,26,278-283
+packages/cli/src/index.ts
+  s_7d6f2e2bf74c1b::t_c3827311a91c64 34-62,94,100,165-173
+packages/cli/src/index.test.ts
+  s_7d6f2e2bf74c1b::t_6222e74ebacbac 1-99
+packages/cli/src/auth.test.ts
+  s_7d6f2e2bf74c1b::t_09735059063aad 216,218
+  s_7d6f2e2bf74c1b::t_f1ac7b57d09731 182-193
+packages/cli/src/deploy.test.ts
+  s_7d6f2e2bf74c1b::t_f22df2d127f6c0 5,20-24,196-254
+packages/cli/src/auth.ts
+  s_7d6f2e2bf74c1b::t_c3827311a91c64 136-143,242,258
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "72d38cdc6d16d2b25b3c9067fa4c389c16449ca6",
+  "prompts": {},
+  "sessions": {
+    "s_7d6f2e2bf74c1b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb38-3eff-7851-966e-d9c723d6e1bd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

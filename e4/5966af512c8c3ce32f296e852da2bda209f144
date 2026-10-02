@@ -1,0 +1,21 @@
+AGENTS.md
+  s_0a462de1f34d55::t_6e43800335c3b4 8
+apps/web/src/components/google-icon.tsx
+  s_0a462de1f34d55::t_6e43800335c3b4 1-2,12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e45966af512c8c3ce32f296e852da2bda209f144",
+  "prompts": {},
+  "sessions": {
+    "s_0a462de1f34d55": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e06e-f25e-7f23-9432-fb485284b35e",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

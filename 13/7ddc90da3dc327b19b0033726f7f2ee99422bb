@@ -1,0 +1,67 @@
+packages/react/src/index.ts
+  s_f3e800461aea44::t_738c3ac4ca374f 2-8,11
+packages/react/src/hooks/use-apps.ts
+  s_f3e800461aea44::t_e7da7a24b1b216 3,7-8
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_f3e800461aea44::t_2bf38f05b68993 161-171
+  s_f3e800461aea44::t_e8f7033348e5dd 4,43
+apps/docs/content/docs/(guides)/views.mdx
+  s_f3e800461aea44::t_59487ac36040ae 73,80-81,103,111,114-121,124-125,142-145,152,207,254-256
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_f3e800461aea44::t_d109cb6d79ec30 1,10,12,104,109,140,145,260,299,326,386,424,475,479,501-521,530,536,646-653,658,664-665,677,692,706,713,744-749,759,761,763-764,769,771-772,776,778-779,827
+packages/react/src/tailorkit.tsx
+  s_f3e800461aea44::t_d44909cf8b7b54 229,241,243
+  s_f3e800461aea44::t_068aaef883d093 1-228,230-240,242,244-257
+.changeset/calm-clients-bind-react.md
+  s_f3e800461aea44::t_cbe70491154ff4 1-7
+apps/demo/src/routes/embed-panel.tsx
+  s_f3e800461aea44::t_2abc35b547b5a3 4,68,87,137-141
+apps/docs/content/docs/(getting-started)/installation.mdx
+  s_f3e800461aea44::t_63ac041788e17b 280,282,302,308-311
+apps/docs/content/docs/(guides)/components.mdx
+  s_f3e800461aea44::t_1add33ae4ea882 237-238
+apps/docs/content/docs/(guides)/layouts-and-styles.mdx
+  s_f3e800461aea44::t_c4c25fa4fda570 76-77,241-242
+examples/nextjs/components/customer-screen.tsx
+  s_f3e800461aea44::t_5865aab1d7320b 3
+examples/nextjs/components/tailorkit-shell.tsx
+  s_f3e800461aea44::t_b577ae5b2afe0f 7,14
+examples/nextjs/lib/tailorkit-client.tsx
+  s_f3e800461aea44::t_3fd21ddbbc4d66 37,39
+examples/tanstack-start/src/components/tailorkit-shell.tsx
+  s_f3e800461aea44::t_300c93263ad0e0 7,10
+examples/tanstack-start/src/lib/tailorkit-client.tsx
+  s_f3e800461aea44::t_bc4a70953c015c 35,37
+examples/tanstack-start/src/routes/customers.$customerId.tsx
+  s_f3e800461aea44::t_ea11b616f63c57 9
+examples/tanstack-start/src/routes/customers.tsx
+  s_f3e800461aea44::t_e89065d9d06e64 5
+packages/react/src/components/app-view.tsx
+  s_f3e800461aea44::t_73647bd1588338 9
+packages/react/src/components/context.ts
+  s_f3e800461aea44::t_62e302e5cc6877 4,8,13-16,21-25
+packages/react/src/components/root.tsx
+  s_f3e800461aea44::t_c798a45223cdc4 4,13
+packages/react/src/hooks/use-view.ts
+  s_f3e800461aea44::t_5ed9ba96d68bd6 7-8,37,45,52-54,56-62
+packages/react/src/preview-manager.ts
+  s_f3e800461aea44::t_9a62c6c01200ec 6
+packages/react/src/store.ts
+  s_f3e800461aea44::t_d118b14d21951a 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "137ddc90da3dc327b19b0033726f7f2ee99422bb",
+  "prompts": {},
+  "sessions": {
+    "s_f3e800461aea44": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e28e-78c9-72e0-90fd-5c6df82f980b",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

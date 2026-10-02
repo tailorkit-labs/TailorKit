@@ -1,0 +1,22 @@
+packages/api-platform/src/routes/cli-auth.test.ts
+  s_465509f4e20709::t_86d490ec855e72 32
+apps/web/vite.config.ts
+  s_465509f4e20709::t_02896cbc8b5fae 22,32-47,52-70,72-73
+  s_465509f4e20709::t_d6a96351d0f140 74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1bb0993e1157e18b7cc443a0be209cd9c7495d90",
+  "prompts": {},
+  "sessions": {
+    "s_465509f4e20709": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ebbe-1099-7252-b14b-3e214ebf39ea",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

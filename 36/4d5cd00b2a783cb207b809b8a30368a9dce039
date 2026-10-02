@@ -1,0 +1,21 @@
+.changeset/document-config-defaults.md
+  s_0769e84af143bf::t_8a3b376af94df9 1-6
+packages/app/src/config/config.ts
+  s_0769e84af143bf::t_c9cf3ad71db76e 26-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "364d5cd00b2a783cb207b809b8a30368a9dce039",
+  "prompts": {},
+  "sessions": {
+    "s_0769e84af143bf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb35-6bd0-7950-afac-274b4ffbec73",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

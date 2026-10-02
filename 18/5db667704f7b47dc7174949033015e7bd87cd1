@@ -1,0 +1,37 @@
+packages/api-platform/src/routes/preview.test.ts
+  s_77ea77b6981c20::t_3e8b0e52bd8b57 199-206,212
+  s_77ea77b6981c20::t_5244ef9d6ca7d4 181-182,194,217-219,227-229,244-246
+  s_77ea77b6981c20::t_5ed6050157a817 207-211
+  s_77ea77b6981c20::t_6eaf5f84ec6eba 215,225-226
+  s_77ea77b6981c20::t_3cbbcee3854f48 183-193,195-198,213-214,216,220-224,230-243
+  s_77ea77b6981c20::t_5e8efd209a2410 31-35
+packages/api-platform/src/preview-build-store.ts
+  s_77ea77b6981c20::t_f4283f24234a02 37,130-141,146-150,155,167-169,207-209,258-260,328-332
+  s_77ea77b6981c20::t_6eaf5f84ec6eba 203
+packages/api-platform/src/routes/preview.ts
+  s_77ea77b6981c20::t_7201135d3daa03 86-89,115-121
+  s_77ea77b6981c20::t_baa93cf4b9ceaf 7-8,16,84,95-96,112-114,122-124
+  s_77ea77b6981c20::t_aa33a5c5c4b9ab 85,125-126
+packages/api-platform/src/preview-build-store.test.mjs
+  s_77ea77b6981c20::t_5e8efd209a2410 17-21,129-131,156-159,162,167-170,173-176
+  s_77ea77b6981c20::t_ce9604498be15f 132-133,155,160-161,171-172
+  s_77ea77b6981c20::t_7201135d3daa03 163-166
+  s_77ea77b6981c20::t_5ed6050157a817 134-154
+  s_77ea77b6981c20::t_25a22e44ff6cad 177-178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "185db667704f7b47dc7174949033015e7bd87cd1",
+  "prompts": {},
+  "sessions": {
+    "s_77ea77b6981c20": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0cd9e-6fe0-78c3-bfa5-b5e52cb77459",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+apps/assets/wrangler.jsonc
+  s_db006b35487dad::t_5758520a63314f 5-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1e5165ec1d6dabc22c861081a23eefdb6f607aba",
+  "prompts": {},
+  "sessions": {
+    "s_db006b35487dad": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f212-5945-74d1-9eea-37724240930b",
+        "model": "unknown"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

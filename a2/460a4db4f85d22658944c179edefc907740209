@@ -1,0 +1,21 @@
+packages/ui/vite.config.ts
+  s_605b8ccd8c6b18::t_56f03fb9608e9d 33
+  s_605b8ccd8c6b18::t_cfeb474678ad9e 9
+  s_605b8ccd8c6b18::t_2b3f1fe5f88a8b 1-8,10-32,34-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a2460a4db4f85d22658944c179edefc907740209",
+  "prompts": {},
+  "sessions": {
+    "s_605b8ccd8c6b18": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e145-e60f-7782-8a7b-e103e158c86d",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

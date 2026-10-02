@@ -1,0 +1,14 @@
+apps/web/src/routes/(app)/account/security/index.tsx
+  h_18044dd1b61a81 46-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3bac893f32d88ef46d0466818db093c39133cb6c",
+  "prompts": {},
+  "humans": {
+    "h_18044dd1b61a81": {
+      "author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

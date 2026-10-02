@@ -1,0 +1,37 @@
+apps/web/src/routes/(app)/account/security/index.tsx
+  s_904c22dc094ce5::t_60fb03beb62bd2 16,32,103-114,286,288,312,333-339,409,584,614-622,624-638,641-643,645,647,650-697
+packages/api/src/routers/user.ts
+  s_904c22dc094ce5::t_60fb03beb62bd2 4,14-63,70-91
+packages/kv/src/index.ts
+  s_904c22dc094ce5::t_60fb03beb62bd2 1
+packages/kv/src/types.ts
+  s_904c22dc094ce5::t_60fb03beb62bd2 8-12,30
+packages/kv/src/upstash.ts
+  s_904c22dc094ce5::t_60fb03beb62bd2 4-5,116-121
+packages/ui/src/forms/form.tsx
+  s_904c22dc094ce5::t_60fb03beb62bd2 183-188,197,204
+packages/kv/src/redis.ts
+  s_904c22dc094ce5::t_60fb03beb62bd2 3-4,97,99
+.codex/environments/environment.toml
+  s_904c22dc094ce5::t_60fb03beb62bd2 1-6
+examples/nextjs/components/theme-provider.tsx
+  s_904c22dc094ce5::t_60fb03beb62bd2 3-4,6-8
+packages/kv/src/with-timeout.ts
+  s_904c22dc094ce5::t_60fb03beb62bd2 1-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "20a78a50fa241c460fd17e78ba4c55973bfe2f61",
+  "prompts": {},
+  "sessions": {
+    "s_904c22dc094ce5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e090-1026-7ea3-a135-c8ebdffc9128",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

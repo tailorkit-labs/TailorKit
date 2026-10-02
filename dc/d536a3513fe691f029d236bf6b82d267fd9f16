@@ -1,0 +1,32 @@
+packages/auth/src/env.ts
+  s_0a462de1f34d55::t_d371253702ddf4 12-13,36-47
+apps/web/src/routes/(app)/account/security/index.tsx
+  s_0a462de1f34d55::t_609f36e1b76efe 354,369,377,381,390,399,605,620,644,659
+  s_0a462de1f34d55::t_e36ddff8e1a84f 259-266,291-311,326-327,343,350,353,355,360,366,368,376,382,384-385,387,592-604,606-619,621-630,645-646,660-661
+  s_0a462de1f34d55::t_640fc94496c04f 257-258
+apps/web/src/routes/(auth)/sign-up.tsx
+  s_0a462de1f34d55::t_6cdb5c38ed87a1 75-76,125-128,136,140-143,146-147,201,203,210-223
+apps/web/src/routes/(auth)/login.tsx
+  s_0a462de1f34d55::t_ae72f6d7f6b9a1 141
+  s_0a462de1f34d55::t_6cdb5c38ed87a1 76-77,106-108,110,124,128-131,134-135,255,257,274-287
+packages/api/src/routers/user.ts
+  s_0a462de1f34d55::t_d371253702ddf4 28
+packages/auth/src/index.ts
+  s_0a462de1f34d55::t_d371253702ddf4 144-145,153-162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dcd536a3513fe691f029d236bf6b82d267fd9f16",
+  "prompts": {},
+  "sessions": {
+    "s_0a462de1f34d55": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e06e-f25e-7f23-9432-fb485284b35e",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

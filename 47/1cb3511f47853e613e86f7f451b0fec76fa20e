@@ -1,0 +1,125 @@
+packages/api-platform/src/routes/preview.test.ts
+  s_83dc76b7551d25::t_cb91cec76d6296 54-55,60
+  s_83dc76b7551d25::t_85340d7b256f52 378
+  s_83dc76b7551d25::t_07b1a33d12efa0 267-317
+  s_83dc76b7551d25::t_a936d4c9b38a36 37-53,56-59,61-65
+  s_83dc76b7551d25::t_a2d613f176645b 203-233
+  s_83dc76b7551d25::t_ebb2539ecffb35 379,395-400
+  s_83dc76b7551d25::t_1c130844f78808 166-185,192-195
+packages/kv/src/preview-presence.test.ts
+  s_83dc76b7551d25::t_a936d4c9b38a36 19-20
+  s_83dc76b7551d25::t_114d7ecc864334 18
+  s_83dc76b7551d25::t_33a00d11eedab5 80-83
+packages/cli/src/preview.ts
+  s_83dc76b7551d25::t_4ec2f0b0473282 87-107,264-270,272-278
+  s_83dc76b7551d25::t_589f8a12d6e764 162,164,173-174,179,198-211,329-331
+packages/kv/src/types.ts
+  s_83dc76b7551d25::t_10a6a7a9f3e7c3 28-34
+  s_83dc76b7551d25::t_9b708b4bba6e99 50
+  s_83dc76b7551d25::t_873c0f1be65e56 35-49,51
+  s_83dc76b7551d25::t_8e02ee6806393f 27
+packages/client-platform/src/preview.ts
+  s_83dc76b7551d25::t_80985a8c85c9ca 14-20
+  s_83dc76b7551d25::t_4f2fab7e46660b 21-27
+packages/api-platform/src/preview-build-store.ts
+  s_83dc76b7551d25::t_10a6a7a9f3e7c3 156,164-181
+  s_83dc76b7551d25::t_8e02ee6806393f 291-300
+  s_83dc76b7551d25::t_b5d52b95555063 147,407,418-425
+packages/cli/src/preview.test.ts
+  s_83dc76b7551d25::t_011282d40f46d2 136-138
+  s_83dc76b7551d25::t_230bae71797a6c 7-11,18-36
+  s_83dc76b7551d25::t_625b132db76981 37-38
+packages/core/src/server/preview-consent.ts
+  s_83dc76b7551d25::t_413f10a0e526b9 138-139,148-149
+  s_83dc76b7551d25::t_0b7894d1e72c0b 140-147
+packages/kv/src/upstash.ts
+  s_83dc76b7551d25::t_329691c689e1ad 23-34,36-37,41-43,149-162,170-177,179-181
+  s_83dc76b7551d25::t_110d2aacd421df 163-169
+  s_83dc76b7551d25::t_278ccb47400ac0 13-22,131-147
+  s_83dc76b7551d25::t_9b708b4bba6e99 35,38-40,178
+  s_83dc76b7551d25::t_f2912ec75e270f 148
+packages/api-platform/src/preview-ws.ts
+  s_83dc76b7551d25::t_873c0f1be65e56 133-135
+apps/web/src/nitro/routes/api/platform/preview/ws.ts
+  s_83dc76b7551d25::t_aa03b528dac646 9,35-40,45-47,60-66,71
+packages/kv/src/preview-presence.ts
+  s_83dc76b7551d25::t_873c0f1be65e56 49-75
+  s_83dc76b7551d25::t_2c578123908157 30-32
+packages/api-platform/src/routes/preview.ts
+  s_83dc76b7551d25::t_9b708b4bba6e99 12,17,82-96
+  s_83dc76b7551d25::t_0b7894d1e72c0b 230-232,239-240
+  s_83dc76b7551d25::t_b5d52b95555063 233-238,241,246
+  s_83dc76b7551d25::t_ba50b0bd771b15 60-61,97,102,110,120-121,160,180,183-190,194,196-202
+  s_83dc76b7551d25::t_cde4055de50ed5 98
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_83dc76b7551d25::t_13dc4efcfc144a 174-222
+packages/api-platform/src/preview-lifecycle.ts
+  s_83dc76b7551d25::t_e2f1c4b0e453d1 13
+  s_83dc76b7551d25::t_c1e158c170dc8b 14-23
+  s_83dc76b7551d25::t_9b708b4bba6e99 27-31,38
+  s_83dc76b7551d25::t_873c0f1be65e56 9-11,32-37,39-40
+packages/client-platform/src/preview.test.ts
+  s_83dc76b7551d25::t_4f2fab7e46660b 5-11,13,16-21
+  s_83dc76b7551d25::t_80985a8c85c9ca 1-4,12,14-15,28-29
+  s_83dc76b7551d25::t_a79cda1f413917 22-27
+packages/core/src/server/types.ts
+  s_83dc76b7551d25::t_29654cc829b450 49-53
+packages/react/src/components/app-view.tsx
+  s_83dc76b7551d25::t_56cff324c85479 1,47-48,56
+  s_83dc76b7551d25::t_e2f1c4b0e453d1 50-55
+packages/kv/src/contract.test.ts
+  s_83dc76b7551d25::t_a2d613f176645b 555-569
+  s_83dc76b7551d25::t_ec9e2853684af4 467-476,478-504
+  s_83dc76b7551d25::t_1938f3ea1fd82c 505-517,519-554
+  s_83dc76b7551d25::t_c1e158c170dc8b 518
+  s_83dc76b7551d25::t_114d7ecc864334 108-120,212-224
+  s_83dc76b7551d25::t_a936d4c9b38a36 78-95,100-107,182-199,204-211
+  s_83dc76b7551d25::t_97dbc4af1f52cc 477
+  s_83dc76b7551d25::t_775b6aba15d16a 411-466
+  s_83dc76b7551d25::t_cb91cec76d6296 96-99,200-203
+packages/kv/src/redis.ts
+  s_83dc76b7551d25::t_110d2aacd421df 147-153
+  s_83dc76b7551d25::t_329691c689e1ad 22-33,35-36,40-42,128-146,154-165,167-169
+  s_83dc76b7551d25::t_278ccb47400ac0 12-21,106-127
+  s_83dc76b7551d25::t_9b708b4bba6e99 34,37-39,166
+apps/web/src/tests/preview-ws.test.mjs
+  s_83dc76b7551d25::t_e2f1c4b0e453d1 15,17,20
+  s_83dc76b7551d25::t_7118fe32d54275 1-14,16,18-19,21-69
+packages/react/src/__tests__/preview-manager.test.ts
+  s_83dc76b7551d25::t_4e16a1a7103afc 285
+  s_83dc76b7551d25::t_6e4a52b9a88152 248-256,315-323
+  s_83dc76b7551d25::t_c01d895519e311 86-128
+  s_83dc76b7551d25::t_eedc489fc952b2 183
+  s_83dc76b7551d25::t_257c93334c642f 219-247,257-284,286-292
+  s_83dc76b7551d25::t_222e2fbb15be6b 293-314,324-361
+packages/cli/src/preview-startup.test.ts
+  s_83dc76b7551d25::t_0074cbb3991d57 1-27,29-30,32-53,57
+  s_83dc76b7551d25::t_f2b64f32d808a2 28,31,54-56
+packages/core/src/server/preview.test.ts
+  s_83dc76b7551d25::t_413f10a0e526b9 10,23-25,29-31,85-105
+packages/api-platform/src/preview-build-store.test.mjs
+  s_83dc76b7551d25::t_f721f2eaa8215d 57-65
+  s_83dc76b7551d25::t_274f4ba1029448 13,16-36,38-41,43-44,47-55,66,69,72,76-77,81
+  s_83dc76b7551d25::t_0243d253451afb 387-388,393-394,396-397
+  s_83dc76b7551d25::t_209439bffae565 147-160
+packages/react/src/preview-manager.ts
+  s_83dc76b7551d25::t_c4ccc3560a6531 154-156
+  s_83dc76b7551d25::t_7992e735f948e7 96-97,99-102,105,174
+  s_83dc76b7551d25::t_60b917e485bf61 22,32-36,98,164-165,172,230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "471cb3511f47853e613e86f7f451b0fec76fa20e",
+  "prompts": {},
+  "sessions": {
+    "s_83dc76b7551d25": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0d06e-ff3b-7980-9c14-b5f6411b112d",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

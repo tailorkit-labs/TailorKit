@@ -1,0 +1,80 @@
+packages/api-platform/src/preview-tunnel-relay.ts
+  s_c58a62bc7ab6cb::t_38ae14bc967330 175
+  s_c58a62bc7ab6cb::t_a6e5f4f80377c3 206-210
+  s_c58a62bc7ab6cb::t_02e2bad4c43333 9,184-205
+packages/react/src/components/root.tsx
+  s_c58a62bc7ab6cb::t_c40bf138fb7407 18
+  s_c58a62bc7ab6cb::t_ffec001fd75454 21
+packages/api-platform/src/routes/preview.ts
+  s_c58a62bc7ab6cb::t_c292a8087d25c4 129-130,140
+  s_c58a62bc7ab6cb::t_cf1ff23f08b362 11,174
+  s_c58a62bc7ab6cb::t_96cf776e59c5a4 107-108,131-132,139
+packages/cli/src/preview.ts
+  s_c58a62bc7ab6cb::t_f45d15fd2e23a8 133,139,306,314,320
+  s_c58a62bc7ab6cb::t_0639595f817a1b 223-224,227-237,254,262,313,315-317
+  s_c58a62bc7ab6cb::t_8325c53357ee74 141-142,209-210
+  s_c58a62bc7ab6cb::t_ab847154a9f204 143-146,148-160,164-167,171-208
+packages/react/src/components/app-view.tsx
+  s_c58a62bc7ab6cb::t_a07bc29d00e3a2 80
+  s_c58a62bc7ab6cb::t_3ae04230624a89 66-67
+  s_c58a62bc7ab6cb::t_2e1dcbdf14878d 71-76
+  s_c58a62bc7ab6cb::t_13d550446718b9 62-63,69-70,77-79,98
+  s_c58a62bc7ab6cb::t_dda8e3092b9a04 64-65
+  s_c58a62bc7ab6cb::t_c40bf138fb7407 86
+packages/api-platform/src/preview-token.ts
+  s_c58a62bc7ab6cb::t_4d018887d3af81 5
+apps/web/src/nitro/routes/api/preview-events.ts
+  s_c58a62bc7ab6cb::t_7fb6d26d63f3cf 32-43
+  s_c58a62bc7ab6cb::t_a9b2bf4188abb2 1-6,8-31,45-46,48-51
+  s_c58a62bc7ab6cb::t_297c7f08cdc3ed 7,44,47
+  s_c58a62bc7ab6cb::t_8ff6911d61995d 52-53
+packages/react/src/tailor-kit.tsx
+  s_c58a62bc7ab6cb::t_d46789e6aa2da6 49-51
+  s_c58a62bc7ab6cb::t_9014df26880287 48,52-54
+examples/nextjs/components/tailorkit-shell.tsx
+  s_c58a62bc7ab6cb::t_eab68118efb1dc 7
+  s_c58a62bc7ab6cb::t_c40bf138fb7407 165
+packages/app/src/builder/index.ts
+  s_c58a62bc7ab6cb::t_656c52c77d8bef 29,145,250-252,256
+  s_c58a62bc7ab6cb::t_d6619989c70a7e 257-258,275-277
+  s_c58a62bc7ab6cb::t_c40bf138fb7407 253-255
+packages/client-platform/src/client/types.gen.ts
+  s_c58a62bc7ab6cb::t_a710bd13c34470 656-657
+packages/cli/src/index.ts
+  s_c58a62bc7ab6cb::t_278281a6aaaf5f 42
+packages/react/src/store.ts
+  s_c58a62bc7ab6cb::t_9ec60e215efcbe 20
+packages/react/src/remote-view.tsx
+  s_c58a62bc7ab6cb::t_4bba1a0b4e20e2 144
+packages/cli/src/preview.test.ts
+  s_c58a62bc7ab6cb::t_35cd44f87678c7 14,16,19-22
+packages/api-platform/src/preview-tunnel.ts
+  s_c58a62bc7ab6cb::t_ceebdbc5f31b4d 4-8,34-35,58-63
+packages/api-platform/openapi.json
+  s_c58a62bc7ab6cb::t_347e174b1f9c20 2405-2410,2419
+  s_c58a62bc7ab6cb::t_e661c4fc803dc7 2420-2426
+examples/tanstack-start/README.md
+  s_c58a62bc7ab6cb::t_e202b451ba4018 50-55
+packages/core/src/server/handler.ts
+  s_c58a62bc7ab6cb::t_b5c08472972a81 85-90,110-111
+  s_c58a62bc7ab6cb::t_be3431a5625d23 84
+  s_c58a62bc7ab6cb::t_551fffb5c2e6d7 231-236
+  s_c58a62bc7ab6cb::t_a5924435e8c542 83,91-109,112-114,215-220,250,257-258,262,270-275
+  s_c58a62bc7ab6cb::t_d48cbb72eda6d3 230,244,249
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cd5f01dfd72966f2d12a56a275b83bcd2ef4d357",
+  "prompts": {},
+  "sessions": {
+    "s_c58a62bc7ab6cb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ccd3-885a-7670-baa0-0f22fc740876",
+        "model": "gpt-6-luna"
+      },
+      "human_author": null
+    }
+  }
+}

@@ -1,0 +1,35 @@
+apps/assets/package.json
+  s_6a7004e192da8f::t_0a4c8b69bfe2f6 19
+apps/docs/package.json
+  s_6a7004e192da8f::t_1ed998d8750eca 42-43,45,49
+packages/agent/package.json
+  s_6a7004e192da8f::t_f17b1e657a04c8 23,31
+pnpm-lock.yaml
+  s_6a7004e192da8f::t_35724b382fe817 240-241,312-313,337,424-425,427-428,431,433-434,440,445-446,618,739,828,874,877,880,882-883,886,899,901-902,1621,3561-3562,3565,8406-8407,8430-8431,8492-8493,8552-8553,8557,9302-9303,9563-9564,9593-9594,11369-11370,13294,13314,13345,13351-13352,13373,13384,13386,13390,13392,13404,13406,13409,13411,13425,13427,13431,13433,15007-15008,15098,15105,15109,15111,15116,18366,18386,18415,18423,18430,18456,18459,18475,18479,18495-18497,18743,18746-18747,19212,19240,19246-19248,19770,19810,19812,21696,21698,22164,22170
+pnpm-workspace.yaml
+  s_f3e800461aea44::t_e1fd8b6634c963 43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "aad4c07534795ecaa42f13eb597ad57aa319a833",
+  "prompts": {},
+  "sessions": {
+    "s_6a7004e192da8f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e2aa-14c3-7eb1-b0d6-9ceae8ef1c0d",
+        "model": "unknown"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_f3e800461aea44": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e28e-78c9-72e0-90fd-5c6df82f980b",
+        "model": "unknown"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

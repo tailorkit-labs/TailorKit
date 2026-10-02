@@ -1,0 +1,108 @@
+packages/cli/src/deploy.test.ts
+  s_3eb1bc43ff7a73::t_d9594c31481029 26,28-29,37
+packages/app/src/builder/index.ts
+  s_3eb1bc43ff7a73::t_d9594c31481029 42,65,114,120,166-167,189-190,201-203,213
+  s_3eb1bc43ff7a73::t_8e0daafdbe567a 110
+apps/apps-runtime/src/http.ts
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 1,31
+packages/apps-server/package.json
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 21-24,31
+  s_3eb1bc43ff7a73::t_f6158d8bdea08a 39
+packages/apps-server/README.md
+  s_3eb1bc43ff7a73::t_bb3238fba931e9 73,81
+  s_3eb1bc43ff7a73::t_75803dee8baf4b 82
+packages/apps-server/src/auth.test.ts
+  s_3eb1bc43ff7a73::t_b0cebc70374fe8 1-8,23-40,42-46,48-59,67-101
+  s_3eb1bc43ff7a73::t_8d0092dadb3ea3 9-21
+  s_3eb1bc43ff7a73::t_8e0daafdbe567a 22,41,47,60-64,66
+  s_3eb1bc43ff7a73::t_5be0d9004eead2 65
+packages/core/src/server/handler.test.ts
+  s_3eb1bc43ff7a73::t_2807724d706434 68,85
+apps/apps-runtime/src/index.ts
+  s_3eb1bc43ff7a73::t_8d0092dadb3ea3 50
+  s_3eb1bc43ff7a73::t_d9594c31481029 309,318
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 11,15-16,46,73,109,143,168,229,238,251,253,255,308
+packages/app/src/config/loader.ts
+  s_3eb1bc43ff7a73::t_8e0daafdbe567a 29-30,32-33
+  s_3eb1bc43ff7a73::t_c1489546aade47 31
+packages/core/src/server/index.ts
+  s_3eb1bc43ff7a73::t_2807724d706434 5
+.changeset/pluggable-app-storage.md
+  s_3eb1bc43ff7a73::t_2807724d706434 13-15
+apps/apps-runtime/README.md
+  s_3eb1bc43ff7a73::t_2807724d706434 5,54,76
+apps/apps-runtime/src/auth.ts
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 1,5-6,13,26,46
+apps/apps-runtime/src/source.ts
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 3-4,55,61,70
+  s_3eb1bc43ff7a73::t_8d0092dadb3ea3 50
+apps/apps-runtime/src/auth.test.ts
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 2,35,52,81,92
+apps/apps-runtime/src/runtime.ts
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 4-5,7,21-22,33,44,58,62,66
+packages/app/src/config/loader.test.ts
+  s_3eb1bc43ff7a73::t_bb3238fba931e9 1-20
+apps/apps-runtime/src/fixtures/todos.sql
+  s_3eb1bc43ff7a73::t_b0cebc70374fe8 1-5
+packages/tailorkit/package.json
+  s_3eb1bc43ff7a73::t_d9594c31481029 56
+packages/cli/src/deploy.ts
+  s_3eb1bc43ff7a73::t_8d0092dadb3ea3 391
+packages/app/src/builder/server.test.ts
+  s_3eb1bc43ff7a73::t_8e0daafdbe567a 18-19,29-30,32,35
+  s_3eb1bc43ff7a73::t_33740d5204ca9a 31
+  s_3eb1bc43ff7a73::t_a1dce985d1f360 33-34
+packages/api-platform/src/app-runtime-auth.ts
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 1,6,43
+  s_3eb1bc43ff7a73::t_8d0092dadb3ea3 3
+packages/core/src/server/handler.ts
+  s_3eb1bc43ff7a73::t_2807724d706434 1,117-118,120,124
+packages/core/src/server/backend.ts
+  s_3eb1bc43ff7a73::t_2807724d706434 1-104
+packages/react/src/remote-view.tsx
+  s_3eb1bc43ff7a73::t_d9594c31481029 151
+packages/apps-server/src/client/host.ts
+  s_3eb1bc43ff7a73::t_2807724d706434 18
+apps/apps-runtime/src/http.test.ts
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 2,52
+packages/core/src/server/types.ts
+  s_3eb1bc43ff7a73::t_bb3238fba931e9 39
+  s_3eb1bc43ff7a73::t_2807724d706434 1,40
+apps/apps-runtime/src/integration.test.mjs
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 10,113,191,402
+  s_3eb1bc43ff7a73::t_b0cebc70374fe8 131,133,136,180,186-187,198,218-219,342
+  s_3eb1bc43ff7a73::t_8d0092dadb3ea3 258,343
+packages/api-platform/src/app-runtime-auth.test.ts
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 2,34
+apps/apps-runtime/src/actions.ts
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 4,14,16,19,23,41,43,87,136
+packages/core/src/server/backend.test.ts
+  s_3eb1bc43ff7a73::t_2807724d706434 1-82
+apps/apps-runtime/src/index.test.ts
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 17-18,132,286
+packages/apps-server/src/auth.ts
+  s_3eb1bc43ff7a73::t_0f8c9efe9e7658 1-78,80-97,107-138
+  s_3eb1bc43ff7a73::t_8d0092dadb3ea3 79,98-106
+packages/apps-server/src/client/host.test.ts
+  s_3eb1bc43ff7a73::t_2807724d706434 24
+pnpm-lock.yaml
+  s_3eb1bc43ff7a73::t_06678f356aabcd 998,1000,1119
+packages/api-platform/package.json
+  s_3eb1bc43ff7a73::t_722cb69b5183e5 53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3e068d373ded2c4c17324f0072bbb7dd4fc5ca30",
+  "prompts": {},
+  "sessions": {
+    "s_3eb1bc43ff7a73": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f562-59c2-7a11-9238-0a577271784f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

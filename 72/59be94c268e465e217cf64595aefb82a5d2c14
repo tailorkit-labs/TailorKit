@@ -1,0 +1,29 @@
+packages/kv/src/types.ts
+  s_a6fa8534aa32ec::t_dd5ec883d5990d 8-12,30
+packages/kv/src/index.ts
+  s_a6fa8534aa32ec::t_dd5ec883d5990d 1
+packages/kv/src/redis.ts
+  s_a6fa8534aa32ec::t_dd5ec883d5990d 3-4,97-101
+packages/kv/src/upstash.ts
+  s_a6fa8534aa32ec::t_dd5ec883d5990d 4-5,116,120-124
+packages/api/src/routers/user.ts
+  s_a6fa8534aa32ec::t_dd5ec883d5990d 20
+packages/kv/src/with-timeout.ts
+  s_a6fa8534aa32ec::t_dd5ec883d5990d 1-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7259be94c268e465e217cf64595aefb82a5d2c14",
+  "prompts": {},
+  "sessions": {
+    "s_a6fa8534aa32ec": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e05f-6b27-79c1-9f01-eed8a599e013",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

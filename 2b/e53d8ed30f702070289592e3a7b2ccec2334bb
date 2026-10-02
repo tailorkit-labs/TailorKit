@@ -1,0 +1,21 @@
+pnpm-workspace.yaml
+  s_3d0991fdb1f2d5::t_bd4e56ef642df2 3-5
+pnpm-lock.yaml
+  s_3d0991fdb1f2d5::t_fbd676e2421ffa 276-278,10852
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2be53d8ed30f702070289592e3a7b2ccec2334bb",
+  "prompts": {},
+  "sessions": {
+    "s_3d0991fdb1f2d5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0db9a-b24c-7a23-9518-937366441cbe",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

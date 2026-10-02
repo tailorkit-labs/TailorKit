@@ -1,0 +1,143 @@
+packages/api-platform/src/scope.test.ts
+  s_81a921fd8004cc::t_632e7612c4aa10 90,92-96,108-110,117-127
+  s_81a921fd8004cc::t_19c1aad478e0e6 10
+  s_81a921fd8004cc::t_305aab71a87239 97-107,111-112,114-116
+  s_81a921fd8004cc::t_43b98e001863da 2-3,6-9,11-15,35,49-59,80-89
+  s_81a921fd8004cc::t_0c9faa1bcb0dec 91
+  s_81a921fd8004cc::t_de83be5fce7964 113
+packages/core/src/server/routes/apps.ts
+  s_81a921fd8004cc::t_1ef6455101e271 94
+  s_81a921fd8004cc::t_034512ac478db1 40,52
+packages/core/src/server/cli-auth-page.ts
+  s_81a921fd8004cc::t_382e34617e5206 67,73,90-94,137-141,145,234-237,250-254,262,266,269-270
+  s_81a921fd8004cc::t_7e4c5c3eefa795 222
+packages/db/src/schema/preview-session.ts
+  s_81a921fd8004cc::t_79d8ae23026357 17,76
+packages/react/src/store.ts
+  s_81a921fd8004cc::t_4cefdcca7d1fbf 13-19,47-48,74,81-85,89-92,96-101,103,119-120,124,133,164,175,218-221,223,230-232,234,242-244,254
+  s_81a921fd8004cc::t_98856526d0d141 80
+  s_81a921fd8004cc::t_6383f1a12eda86 150,178,180
+  s_81a921fd8004cc::t_d0b7232c754e54 146,179
+  s_81a921fd8004cc::t_1cecd4312faeb7 45-46,65
+  s_81a921fd8004cc::t_2ea7ffa1de2c33 27-29,50,75-79,86-88,93-95,102,125,128-129,140,224-229,233,235-241
+  s_81a921fd8004cc::t_bd9495a3bbcfa2 126-127
+  s_81a921fd8004cc::t_755e49b23e4d04 25-26,104
+packages/api-platform/src/routes/apps.ts
+  s_81a921fd8004cc::t_dbec02c8ae5dcb 163,168,182,187,218,223
+  s_81a921fd8004cc::t_388a94f922be96 10-16,45,49-61
+packages/api-platform/src/routes/deployments.ts
+  s_81a921fd8004cc::t_da6235e10035cf 22,25,159,162-163,165-168,171-174
+packages/api-platform/src/procedures.ts
+  s_81a921fd8004cc::t_6ece5fca16348e 22,76,82-83,90-91
+  s_81a921fd8004cc::t_df05dc04ced2c8 81
+  s_81a921fd8004cc::t_a2c4e157cba9a1 23-24,26-31,33-35,37-38,42,52-70,72-74,77-80,85-89
+  s_81a921fd8004cc::t_012fcabc09f183 25
+  s_81a921fd8004cc::t_c292032fffc2f7 84
+packages/core/src/server/types.test-d.ts
+  s_81a921fd8004cc::t_ba3ed8b0d250a0 94
+  s_81a921fd8004cc::t_8ce0e3eb89d408 92-93
+  s_81a921fd8004cc::t_6e3b777e0be1f7 91
+packages/api-platform/src/scope.ts
+  s_81a921fd8004cc::t_b1fc35a04d7135 6,15,213,226-234
+  s_81a921fd8004cc::t_be09133be56b1f 4-5,207-209
+  s_81a921fd8004cc::t_5bfad201e4e9be 235
+packages/api-platform/openapi.json
+  s_81a921fd8004cc::t_ecbf25ad6775a3 1439-1451,1453,1455,1480-1510,1519-1549,1554-1556,1558-1561,1563,1594-1603,1605,1607,1615-1623,1625,1650-1680,1689-1719,1724-1726,1729,2066-2076,2078-2081,2083,2085,2110-2140,2149-2179,2184-2186,2189
+packages/core/src/server/procedures.ts
+  s_81a921fd8004cc::t_143b331d1192a8 72-75
+  s_74e9827b5b8c45::t_d24b5d5c9f43b3 4
+packages/react/src/hooks/use-apps.ts
+  s_81a921fd8004cc::t_ef970fcc8a5dc3 27-31,33
+  s_b9e6f9736349da::t_94922a2351064a 35
+packages/api-platform/src/routes/preview-grants.ts
+  s_81a921fd8004cc::t_50ceb201a9516d 15-16,116,132-136
+packages/api-platform/src/routes/cli-auth.test.ts
+  s_81a921fd8004cc::t_4938f90d46aa5c 32
+  s_81a921fd8004cc::t_916b8bbe9024bb 179-220
+packages/core/src/server/scope.test.ts
+  s_81a921fd8004cc::t_143b331d1192a8 104-111
+  s_81a921fd8004cc::t_658f01ea4ffadb 169-177,191-192
+packages/api-platform/src/routes/preview-grants.test.ts
+  s_81a921fd8004cc::t_8328927e415aed 1-22
+packages/db/src/schema/scope.ts
+  s_81a921fd8004cc::t_2cdeca22acb2be 204
+  s_81a921fd8004cc::t_94daa5029ae16b 18,23-26
+  s_81a921fd8004cc::t_eab4d1311c5570 210,222-223,225,228-233
+  s_81a921fd8004cc::t_9799375937c5a3 21-22,33,40,43,45,49-51,56,62-65,74,79-84,91-95,98-101,104,112-114,116-119,127,132,144-146,154,157-159,163-165,188-195,205-209,211-216,218-221
+  s_81a921fd8004cc::t_c26db10d0f21ac 217
+packages/db/src/schema/cli-auth.ts
+  s_81a921fd8004cc::t_a0c8bda3067dfc 15,97,104
+packages/client-platform/src/client/sdk.gen.ts
+  s_81a921fd8004cc::t_54ba8a534834bb 114-117
+packages/core/src/server/scope.ts
+  s_81a921fd8004cc::t_76e30709829f6a 5,25-26
+  s_81a921fd8004cc::t_143b331d1192a8 27,176
+packages/api-platform/src/routes/apps.test.ts
+  s_81a921fd8004cc::t_e641b3f2e5b6cf 273-285
+packages/api-platform/src/routes/deployments.test.ts
+  s_81a921fd8004cc::t_5014a7a6a9e43b 128
+  s_81a921fd8004cc::t_9029348f712280 129-144
+apps/docs/content/docs/(guides)/views.mdx
+  s_81a921fd8004cc::t_a1ab293bbbb18e 45
+  s_81a921fd8004cc::t_6217a909ced335 54
+  s_81a921fd8004cc::t_0daddbb4f50c99 53
+  s_81a921fd8004cc::t_ee162a7845f28e 75
+  s_81a921fd8004cc::t_c694119baef704 95-100
+  s_81a921fd8004cc::t_369bf3c8a50cb0 101-102
+packages/core/src/server/types.ts
+  s_81a921fd8004cc::t_143b331d1192a8 122-125,128-130
+packages/core/src/server/preview-consent.ts
+  s_81a921fd8004cc::t_98cd02a9bdd06d 4-9,111-115,149-152
+packages/client-platform/src/client/types.gen.ts
+  s_81a921fd8004cc::t_54ba8a534834bb 339,372-375,426-429,535-538
+packages/core/src/server/handler.test.ts
+  s_81a921fd8004cc::t_9dcba1ccb87eaa 363-391
+  s_81a921fd8004cc::t_143b331d1192a8 106-137
+packages/cli/src/auth.ts
+  s_81a921fd8004cc::t_2fafdd35bdaf41 59-61
+packages/react/src/__tests__/store.test.ts
+  s_81a921fd8004cc::t_2773bbbe84d7e8 133-137,139-140
+  s_81a921fd8004cc::t_4d36fc418f80ef 39,58
+  s_81a921fd8004cc::t_67f3adc9c5e502 1-38,40-57,59-70,98-132,141-142
+  s_81a921fd8004cc::t_fe74c1c0288bfa 71-97
+  s_81a921fd8004cc::t_5b6513cb7453c3 138
+packages/core/src/server/handler.ts
+  s_81a921fd8004cc::t_143b331d1192a8 300-302
+packages/db/src/schema/apps.ts
+  s_81a921fd8004cc::t_e509815a297b0b 18,57
+packages/cli/src/auth.test.ts
+  s_81a921fd8004cc::t_a0bd2b19825911 83,87,93,95-105,234-240,248-254
+  s_81a921fd8004cc::t_35ec590230c3a6 255
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "870558abc230e62bde82017d6742c889f3e08c4c",
+  "prompts": {},
+  "sessions": {
+    "s_74e9827b5b8c45": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e6b4-8cdd-7c72-b932-018f4142a0dd",
+        "model": "unknown"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_81a921fd8004cc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e6b3-d4c4-7823-803a-2dfcbc0341d7",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_b9e6f9736349da": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e6c9-d205-7001-b915-cc21b2ec5004",
+        "model": "unknown"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

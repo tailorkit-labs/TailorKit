@@ -1,0 +1,25 @@
+package.json
+  s_f1d95b5abc8651::t_04c7ea27623f13 6
+.gitignore
+  s_f1d95b5abc8651::t_04c7ea27623f13 52
+.vite-hooks/pre-commit
+  s_f1d95b5abc8651::t_04c7ea27623f13 1-17
+vite.config.ts
+  s_f1d95b5abc8651::t_04c7ea27623f13 1-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "364f339815e415195cf4b333a0bb45fe5ac27726",
+  "prompts": {},
+  "sessions": {
+    "s_f1d95b5abc8651": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0dcec-c2b4-77e1-9d5b-f00efff2c61e",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+.changeset/document-config-defaults.md
+  s_f77d47a4f981c3::t_c0cf4d269f9e4f 1-6
+.github/workflows/ci.yml
+  s_f77d47a4f981c3::t_c0cf4d269f9e4f 63,69
+packages/app/src/config/config.ts
+  s_f77d47a4f981c3::t_c0cf4d269f9e4f 26-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "26c06ae1ca464c7fc108772853c803007f7e42b0",
+  "prompts": {},
+  "sessions": {
+    "s_f77d47a4f981c3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb3b-27f2-7790-9705-e42a8d431168",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

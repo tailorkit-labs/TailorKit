@@ -1,0 +1,27 @@
+apps/apps-runtime/README.md
+  s_6ba0854cdb659c::t_2535a8064c4e38 22
+apps/apps-runtime/src/index.ts
+  s_6ba0854cdb659c::t_2535a8064c4e38 18,30,113,151
+apps/apps-runtime/package.json
+  s_6ba0854cdb659c::t_2535a8064c4e38 9
+apps/apps-runtime/src/index.test.ts
+  s_6ba0854cdb659c::t_2535a8064c4e38 112
+apps/apps-runtime/src/source.ts
+  s_6ba0854cdb659c::t_2535a8064c4e38 24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f1e5778a034a9f6aa43eb928293935c7a9bdaddb",
+  "prompts": {},
+  "sessions": {
+    "s_6ba0854cdb659c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f111-6fe2-7f91-ab5f-14a741f20094",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

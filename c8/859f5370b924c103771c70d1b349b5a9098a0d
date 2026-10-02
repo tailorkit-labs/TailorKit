@@ -1,0 +1,16 @@
+apps/web/vercel.json
+  h_18044dd1b61a81 6
+pnpm-workspace.yaml
+  h_18044dd1b61a81 55-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c8859f5370b924c103771c70d1b349b5a9098a0d",
+  "prompts": {},
+  "humans": {
+    "h_18044dd1b61a81": {
+      "author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

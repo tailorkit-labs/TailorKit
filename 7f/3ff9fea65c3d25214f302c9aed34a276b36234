@@ -1,0 +1,67 @@
+apps/docs/content/docs/(getting-started)/installation.mdx
+  s_605b67eab03fcc::t_9d5e97ebd05828 77,79
+apps/demo/src/lib/tailorkit.tsx
+  s_605b67eab03fcc::t_9d5e97ebd05828 156-157
+packages/core/src/server/handler.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 20,31,36-37,41,49,58
+packages/react/src/tailor-kit.tsx
+  s_605b67eab03fcc::t_9d5e97ebd05828 142,158-159
+packages/tailorkit/src/index.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 8
+examples/nextjs/lib/tailorkit.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 1,13
+packages/core/src/schema/schema.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 13,23,42,48,54,57,60-61,64,71,74,80-81,137,188
+packages/core/src/schema/slots.test.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 4,10,34
+apps/docs/content/docs/(guides)/components.mdx
+  s_605b67eab03fcc::t_9d5e97ebd05828 159,166,262
+packages/cli/src/generator/types.test.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 342-344
+examples/shared/src/index.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 2,112-122
+packages/core/src/schema/views.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 1-2,4-8,13-15,26,31,37
+apps/docs/content/docs/(guides)/views.mdx
+  s_605b67eab03fcc::t_9d5e97ebd05828 20-23
+packages/core/src/schema/schema.test-d.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 28-30,43-45,61,64,74,167-168,170,176,181,188,190,192,194,196,198-200
+examples/tanstack-start/src/lib/tailorkit.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 1,13
+packages/cli/src/preview.ts
+  s_605b67eab03fcc::t_e0084fa0563b74 197-203
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_605b67eab03fcc::t_9d5e97ebd05828 78-82
+packages/react/src/hooks/use-view.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 10-12
+packages/core/src/server/types.test-d.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 2,43,48
+.changeset/bright-contexts.md
+  s_605b67eab03fcc::t_9d5e97ebd05828 1-6
+packages/core/src/server/types.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 9,66,71-72,79,85-86,93,96-98,119,141
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_605b67eab03fcc::t_9d5e97ebd05828 29-35
+.changeset/quiet-preview-reconnects.md
+  s_605b67eab03fcc::t_9d5e97ebd05828 1-5
+packages/core/src/schema/views.test-d.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 7
+packages/core/src/schema/index.ts
+  s_605b67eab03fcc::t_9d5e97ebd05828 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7f3ff9fea65c3d25214f302c9aed34a276b36234",
+  "prompts": {},
+  "sessions": {
+    "s_605b67eab03fcc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0cd0c-6dbb-7bc3-b066-d28af2693f02",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+packages/ui/src/styles/globals.css
+  s_1c97cef8964c21::t_be5cce88f498e8 151
+packages/ui/src/components/skeleton.tsx
+  s_1c97cef8964c21::t_17f4046ce3541a 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e42f3466cafd823567f9dffb844ef131bbf1fe4b",
+  "prompts": {},
+  "sessions": {
+    "s_1c97cef8964c21": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e0b9-e115-7a80-920d-a2cc2c09b9e4",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

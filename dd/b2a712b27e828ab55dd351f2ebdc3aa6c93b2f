@@ -1,0 +1,187 @@
+packages/observability/src/index.test.ts
+  s_3d0991fdb1f2d5::t_963e3adef56f21 26
+packages/api/src/routers/user.test.ts
+  s_3d0991fdb1f2d5::t_963e3adef56f21 34
+apps/web/vercel.json
+  s_3d0991fdb1f2d5::t_89c9e39cd3cdbb 4
+  s_3d0991fdb1f2d5::t_3c52d167f0a8bf 5
+packages/auth/package.json
+  s_47b7ce69f09fa7::t_b05d1e2c92cb01 35-37,39
+packages/api-utils/src/app-asset-url.ts
+  s_3d0991fdb1f2d5::t_5272821125bf03 1-2,21
+packages/kv/src/kv.ts
+  s_3d0991fdb1f2d5::t_5272821125bf03 1
+packages/api/src/env.ts
+  s_3d0991fdb1f2d5::t_3c04a79dfda595 1-5,7-8
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 6
+packages/api-platform/src/routes/cli-auth.ts
+  s_3d0991fdb1f2d5::t_4a253c555c4257 5
+packages/kv/src/upstash.ts
+  s_3d0991fdb1f2d5::t_5272821125bf03 1
+packages/api-platform/scripts/generate-openapi.ts
+  s_3d0991fdb1f2d5::t_4a253c555c4257 5,8
+AGENTS.md
+  s_47b7ce69f09fa7::t_b05d1e2c92cb01 8-11
+packages/api-utils/src/dev-delay.ts
+  s_3d0991fdb1f2d5::t_5272821125bf03 2
+packages/db/turbo.json
+  s_3d0991fdb1f2d5::t_68a90c7cd19abe 1-14
+examples/tanstack-start/turbo.json
+  s_3d0991fdb1f2d5::t_f76e35ef2d316c 1-9
+packages/storage/src/storage.ts
+  s_3d0991fdb1f2d5::t_5272821125bf03 1
+turbo.json
+  s_3d0991fdb1f2d5::t_f76e35ef2d316c 7
+packages/core/src/server/types.ts
+  s_3d0991fdb1f2d5::t_68a90c7cd19abe 28
+examples/nextjs/turbo.json
+  s_3d0991fdb1f2d5::t_f76e35ef2d316c 1-9
+packages/env/README.md
+  s_3d0991fdb1f2d5::t_071d3437ee7822 1-31
+apps/demo/turbo.json
+  s_3d0991fdb1f2d5::t_f76e35ef2d316c 6-9
+  s_3d0991fdb1f2d5::t_68a90c7cd19abe 1-5
+packages/api-platform/src/routes/preview.ts
+  s_3d0991fdb1f2d5::t_4a253c555c4257 3-4,211
+apps/demo/package.json
+  s_3d0991fdb1f2d5::t_2c99ea6ed1f384 24
+apps/demo/src/env.ts
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 6
+  s_3d0991fdb1f2d5::t_1cd36e7415fced 1-5,7-8
+packages/api-platform/src/env.ts
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 6,13
+  s_3d0991fdb1f2d5::t_3c04a79dfda595 1-5,7-12,14-16
+packages/api-platform/src/routes/preview-grants.ts
+  s_3d0991fdb1f2d5::t_4a253c555c4257 4-5,156
+packages/storage/package.json
+  s_3d0991fdb1f2d5::t_2c99ea6ed1f384 35-36
+packages/api-utils/src/env.ts
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 6,14
+  s_3d0991fdb1f2d5::t_11e5950f942ce7 9-11
+  s_3d0991fdb1f2d5::t_3c04a79dfda595 1-5,7-8,12-13,15-16
+packages/kv/src/contract.test.ts
+  s_3d0991fdb1f2d5::t_963e3adef56f21 22
+packages/email/package.json
+  s_3d0991fdb1f2d5::t_2c99ea6ed1f384 36-37
+packages/env/package.json
+  s_3d0991fdb1f2d5::t_59cafd5d3662ab 17-20,24
+packages/db/drizzle.config.ts
+  s_3d0991fdb1f2d5::t_963e3adef56f21 2,22
+packages/auth/src/index.ts
+  s_3d0991fdb1f2d5::t_5272821125bf03 4-5,71,95,115,238
+apps/web/package.json
+  s_47b7ce69f09fa7::t_b05d1e2c92cb01 25
+packages/api-utils/package.json
+  s_3d0991fdb1f2d5::t_2c99ea6ed1f384 49-50
+examples/nextjs/src/env.ts
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 6,10
+  s_3d0991fdb1f2d5::t_1cd36e7415fced 1-5,7-9,11-13
+packages/db/src/index.ts
+  s_3d0991fdb1f2d5::t_5272821125bf03 1,8
+packages/api-utils/src/rate-limiting.ts
+  s_3d0991fdb1f2d5::t_5272821125bf03 9
+apps/demo/src/routes/api/tailorkit.$.ts
+  s_3d0991fdb1f2d5::t_1cd36e7415fced 4
+  s_3d0991fdb1f2d5::t_a298e094a3ea66 11
+packages/env/src/index.ts
+  s_3d0991fdb1f2d5::t_2553ed2a5f9a3c 88,96
+  s_3d0991fdb1f2d5::t_1b618b85a73032 11,21,49-54
+  s_3d0991fdb1f2d5::t_17199dca4bed89 1-5,7-10,12-20,22-48,55-87,89,91-95,97-124,144,153-162,164-165,168,171-179,181,188-189,192-194,196-197
+  s_3d0991fdb1f2d5::t_3bd3b9248d610b 90
+  s_3d0991fdb1f2d5::t_4a253c555c4257 148-152
+packages/api-platform/src/preview-token.test.ts
+  s_3d0991fdb1f2d5::t_963e3adef56f21 3
+packages/email/src/index.ts
+  s_3d0991fdb1f2d5::t_5272821125bf03 3-4,107,168,174
+examples/tanstack-start/src/env.ts
+  s_3d0991fdb1f2d5::t_1cd36e7415fced 1-5,7-9,11-13
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 6,10
+examples/tanstack-start/src/lib/tailorkit.ts
+  s_3d0991fdb1f2d5::t_1cd36e7415fced 3,6-7
+  s_3d0991fdb1f2d5::t_16ed4940ee89f2 9
+apps/web/src/env.ts
+  s_3d0991fdb1f2d5::t_1cd36e7415fced 1-3
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 4-8
+examples/nextjs/package.json
+  s_3d0991fdb1f2d5::t_2c99ea6ed1f384 6-14,29,36
+  s_3d0991fdb1f2d5::t_74f0a95f69c1c7 37
+packages/api-platform/src/asset-url.test.ts
+  s_3d0991fdb1f2d5::t_963e3adef56f21 9
+packages/api-platform/src/preview-ws-auth.ts
+  s_3d0991fdb1f2d5::t_4a253c555c4257 3
+packages/api-platform/src/preview-token.ts
+  s_3d0991fdb1f2d5::t_4a253c555c4257 3
+oxlint.config.ts
+  s_3d0991fdb1f2d5::t_166be9bad9a2ce 81
+  s_3d0991fdb1f2d5::t_68a90c7cd19abe 9-16,79-80,82-86
+packages/storage/src/env.ts
+  s_3d0991fdb1f2d5::t_3c04a79dfda595 1-5,7-12,14-22
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 6,13
+apps/web/turbo.json
+  s_3d0991fdb1f2d5::t_68a90c7cd19abe 1-5
+  s_3d0991fdb1f2d5::t_f76e35ef2d316c 6-9
+apps/web/vite.config.ts
+  s_3d0991fdb1f2d5::t_1cd36e7415fced 8
+  s_3d0991fdb1f2d5::t_c4a7ed4d07c7e2 26
+examples/nextjs/lib/tailorkit.ts
+  s_3d0991fdb1f2d5::t_1cd36e7415fced 3,6-7
+  s_3d0991fdb1f2d5::t_49c020e091e73b 9
+packages/auth/src/env.ts
+  s_3d0991fdb1f2d5::t_3c04a79dfda595 1,3-5,7-12,15-20,22-24
+  s_3d0991fdb1f2d5::t_1cd36e7415fced 13
+  s_3d0991fdb1f2d5::t_0f049d97b60974 2,14,25-38
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 6,21
+packages/email/src/env.ts
+  s_3d0991fdb1f2d5::t_3c04a79dfda595 1-5,7-18,20-32
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 6,19
+packages/api/src/routers/user.ts
+  s_3d0991fdb1f2d5::t_5272821125bf03 4
+packages/kv/src/env.ts
+  s_3d0991fdb1f2d5::t_3c04a79dfda595 1-5,7-10,12-23
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 6,11
+packages/api-platform/src/routes/preview.test.ts
+  s_3d0991fdb1f2d5::t_963e3adef56f21 134,382
+packages/api-platform/turbo.json
+  s_3d0991fdb1f2d5::t_f76e35ef2d316c 1-10
+packages/observability/src/env.ts
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 6,16
+  s_3d0991fdb1f2d5::t_3c04a79dfda595 1-5,7-15,17-18
+packages/db/src/env.ts
+  s_3d0991fdb1f2d5::t_3c04a79dfda595 1-5
+  s_3d0991fdb1f2d5::t_b9aed6078aaec7 6
+packages/observability/package.json
+  s_3d0991fdb1f2d5::t_2c99ea6ed1f384 36-37
+pnpm-workspace.yaml
+  s_47b7ce69f09fa7::t_b05d1e2c92cb01 35
+  s_3d0991fdb1f2d5::t_d85b19bc8309a6 61-64
+packages/observability/src/index.ts
+  s_3d0991fdb1f2d5::t_5272821125bf03 8
+pnpm-lock.yaml
+  s_3d0991fdb1f2d5::t_e4373e50063d92 228-229,326-328,522,524-525,612,740-742,764-766,820-822,1018-1020,1090-1091,1093-1094,1096-1097,1100,1102-1103,1127,1343-1345,1451-1453,1556-1558,1960-1961,1963,1965,1968-1969,1972,1982-1983,1985,1995,2015-2016,2018,2025-2026,2028,2031-2032,2034,2041-2042,2044,2046-2047,2051-2052,2054,2064-2065,2067,2069,6423-6424,10819,10821,10823,10827,10830,10841,10843,10848,10850,10855,10861,10863,10868,10870,10873,10875,10878,10880,10882,10885,10890,10892,10895,10897,10899,14625,14627-14633,14635
+examples/tanstack-start/package.json
+  s_3d0991fdb1f2d5::t_1db682d587fba0 30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ddb2a712b27e828ab55dd351f2ebdc3aa6c93b2f",
+  "prompts": {},
+  "sessions": {
+    "s_3d0991fdb1f2d5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0db9a-b24c-7a23-9518-937366441cbe",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_47b7ce69f09fa7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0db69-120e-77b2-a6c1-02dbe86e558b",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

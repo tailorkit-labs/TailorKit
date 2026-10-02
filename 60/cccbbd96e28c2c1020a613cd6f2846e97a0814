@@ -1,0 +1,20 @@
+packages/client-platform/tests/preview.test.ts
+  s_83dc76b7551d25::t_c35ccbc20cd90b 5,65-90
+  s_83dc76b7551d25::t_1eb0cf0ac7200d 91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "60cccbbd96e28c2c1020a613cd6f2846e97a0814",
+  "prompts": {},
+  "sessions": {
+    "s_83dc76b7551d25": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0d06e-ff3b-7980-9c14-b5f6411b112d",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

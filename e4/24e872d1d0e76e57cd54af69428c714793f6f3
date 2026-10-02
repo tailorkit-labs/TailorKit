@@ -1,0 +1,19 @@
+packages/kv/src/upstash.ts
+  s_e45336e2e9a86d::t_bde221c99786c6 108-109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e424e872d1d0e76e57cd54af69428c714793f6f3",
+  "prompts": {},
+  "sessions": {
+    "s_e45336e2e9a86d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0d18c-e005-7280-9767-c47e84cff1cd",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

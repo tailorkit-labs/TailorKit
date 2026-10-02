@@ -1,0 +1,62 @@
+packages/app/README.md
+  s_bafb6bbdded91c::t_d7762b1341eaad 3-4
+packages/app/src/preact-version.test.ts
+  s_bafb6bbdded91c::t_edf420c6453491 1-20
+packages/app/src/preact.ts
+  s_bafb6bbdded91c::t_d7762b1341eaad 6,33,72-74,76-80,128-132,139
+  s_bafb6bbdded91c::t_3ecb6ac6387cac 5
+packages/app/src/preact.test.ts
+  s_bafb6bbdded91c::t_d7762b1341eaad 215-217
+packages/cli/src/generator/package-versions.test.ts
+  s_bafb6bbdded91c::t_edf420c6453491 1-28
+.changeset/preact-eleven.md
+  s_bafb6bbdded91c::t_2946d2bd22a4f0 1-6
+apps/demo/package.json
+  s_bafb6bbdded91c::t_00b9675c921868 31
+examples/apps/backend-todo/package.json
+  s_bafb6bbdded91c::t_76bc1f7afd92be 15
+examples/apps/email/package.json
+  s_bafb6bbdded91c::t_4e0f2936a6ebad 29
+examples/apps/notes/package.json
+  s_bafb6bbdded91c::t_fdfba896356e57 29
+examples/apps/todo/package.json
+  s_bafb6bbdded91c::t_99e6238fb97e5b 29
+packages/app-agent/README.md
+  s_bafb6bbdded91c::t_cdf1cc2ad02270 122
+packages/app-agent/agent/lib/package-policy.ts
+  s_bafb6bbdded91c::t_f00dce0f619f7c 5
+packages/app-agent/agent/skills/tailorkit-apps/SKILL.md
+  s_bafb6bbdded91c::t_f469c95c201678 19-21
+packages/app/package.json
+  s_bafb6bbdded91c::t_4b9f83c61c93e9 66,72
+packages/app/src/builder/index.ts
+  s_bafb6bbdded91c::t_646082a0adb2dc 234
+packages/app/src/preact-version.ts
+  s_bafb6bbdded91c::t_35552c3f6e0eeb 1
+packages/app/src/providers.test.ts
+  s_bafb6bbdded91c::t_5449e38012bc15 7
+packages/cli/src/generator/generate.test.ts
+  s_bafb6bbdded91c::t_d442f504a5ce5a 25,177
+packages/cli/src/generator/package-versions.ts
+  s_bafb6bbdded91c::t_471d9a72e23425 34
+pnpm-workspace.yaml
+  s_bafb6bbdded91c::t_1dfbcdbeb901cd 79-80
+pnpm-lock.yaml
+  s_bafb6bbdded91c::t_d65dff281923cf 404-405,743-744,774-775,790-791,809-810,1171-1172,9608-9615,19036-19039
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b38b251d7cf5aad3a91144e93e87811100fe21a3",
+  "prompts": {},
+  "sessions": {
+    "s_bafb6bbdded91c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb24-85f8-7be0-b6a6-ba735e55a3dd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

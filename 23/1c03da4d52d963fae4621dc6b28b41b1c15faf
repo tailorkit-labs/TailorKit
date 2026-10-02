@@ -1,0 +1,19 @@
+packages/kv/package.json
+  s_83dc76b7551d25::t_b01c393d4e2577 30-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "231c03da4d52d963fae4621dc6b28b41b1c15faf",
+  "prompts": {},
+  "sessions": {
+    "s_83dc76b7551d25": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0d06e-ff3b-7980-9c14-b5f6411b112d",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

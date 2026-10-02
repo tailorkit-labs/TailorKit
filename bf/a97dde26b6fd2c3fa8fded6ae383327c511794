@@ -1,0 +1,19 @@
+apps/assets/wrangler.jsonc
+  s_6c7043da608411::t_ff46fa054ae9e3 5-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bfa97dde26b6fd2c3fa8fded6ae383327c511794",
+  "prompts": {},
+  "sessions": {
+    "s_6c7043da608411": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f97c-33f2-7b00-ae53-ee745576a301",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

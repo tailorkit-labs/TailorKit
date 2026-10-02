@@ -1,0 +1,21 @@
+packages/cli/src/auth.ts
+  s_7d6f2e2bf74c1b::t_d8865e2c1d7753 257-266
+packages/cli/src/auth.test.ts
+  s_7d6f2e2bf74c1b::t_d8865e2c1d7753 8,195,206,225-259,304
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b6767b0d498003698242e3c6f5fae1ed0e07c6ca",
+  "prompts": {},
+  "sessions": {
+    "s_7d6f2e2bf74c1b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb38-3eff-7851-966e-d9c723d6e1bd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

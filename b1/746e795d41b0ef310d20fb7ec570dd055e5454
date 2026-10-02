@@ -1,0 +1,24 @@
+packages/core/src/server/preview-consent.ts
+  s_a987e1048fa33e::t_7fd09e9a16a142 42-43,68-69,131,155,158
+packages/core/src/server/preview.test.ts
+  s_a987e1048fa33e::t_7fd09e9a16a142 209-234
+  s_a987e1048fa33e::t_7ce71d44314a4a 142-143,177,180,203-208,235
+  s_a987e1048fa33e::t_a3deb534eecfd7 236-266
+  s_a987e1048fa33e::t_0616611f8d4df9 267
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b1746e795d41b0ef310d20fb7ec570dd055e5454",
+  "prompts": {},
+  "sessions": {
+    "s_a987e1048fa33e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0d13e-a4af-7d11-a287-a2fea9544435",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

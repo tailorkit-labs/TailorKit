@@ -1,0 +1,29 @@
+packages/core/src/server/preview-consent.ts
+  s_4a1b1e248fdd39::t_c087f1b22827dc 7,67-68,70-71,76-85,140-141,146-147,171-177,180-183,186-200,202
+  s_4a1b1e248fdd39::t_17e838bb1bdcba 144-145
+  s_4a1b1e248fdd39::t_b06041994dc04a 201
+packages/core/src/server/preview.test.ts
+  s_4a1b1e248fdd39::t_17e838bb1bdcba 138-140
+  s_4a1b1e248fdd39::t_b06041994dc04a 134-137,141-143,160,164,171-181
+  s_4a1b1e248fdd39::t_1d006c4fe6c302 182-184
+examples/apps/todo/src/views/default.tsx
+  s_4a1b1e248fdd39::t_27935b1952baf8 100
+packages/core/src/server/cli-auth-page.ts
+  s_4a1b1e248fdd39::t_17e838bb1bdcba 313-344
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "76497d1f778d9ea8d1c7579e288083acc6897c97",
+  "prompts": {},
+  "sessions": {
+    "s_4a1b1e248fdd39": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0d0ed-33ee-7df0-83d5-5f2457afaf25",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
