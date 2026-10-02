@@ -19,6 +19,8 @@ const signing = {
   keyId: "host-key",
 };
 const identity = {
+  publicTeamId: "abc123def45678",
+  appPublicId: "app000000001",
   userId: "user",
   projectId: "project",
   deploymentId: "deployment",
@@ -52,7 +54,13 @@ it("rejects wrong signature, issuer, audience, app, expiry, missing claims and e
     await expect(verify(token)).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   }
   const sign = (claims: Record<string, unknown>) =>
-    new SignJWT({ projectId: identity.projectId, deploymentId: identity.deploymentId, ...claims })
+    new SignJWT({
+      publicTeamId: identity.publicTeamId,
+      appPublicId: identity.appPublicId,
+      projectId: identity.projectId,
+      deploymentId: identity.deploymentId,
+      ...claims,
+    })
       .setProtectedHeader({ alg: "ES256", kid: "host-key", typ: "JWT" })
       .setSubject("user")
       .setIssuer(signing.issuer)
@@ -144,14 +152,17 @@ it("rejects a token that expires while its signature is being verified", async (
   await expect(Effect.runPromise(program)).resolves.toBe("UNAUTHORIZED");
 });
 
-it.each(["projectId", "deploymentId"])("requires the signed %s claim", async (field) => {
-  const now = Math.floor(Date.now() / 1000);
-  const claims = { ...identity, [field]: undefined, iat: now, exp: now + 120 };
-  const token = await new SignJWT(claims)
-    .setProtectedHeader({ alg: "ES256", kid: "host-key", typ: "JWT" })
-    .setSubject(identity.userId)
-    .setIssuer(signing.issuer)
-    .setAudience(signing.audience)
-    .sign(privateKey);
-  await expect(verify(token)).rejects.toMatchObject({ code: "UNAUTHORIZED" });
-});
+it.each(["projectId", "deploymentId", "publicTeamId", "appPublicId"])(
+  "requires the signed %s claim",
+  async (field) => {
+    const now = Math.floor(Date.now() / 1000);
+    const claims = { ...identity, [field]: undefined, iat: now, exp: now + 120 };
+    const token = await new SignJWT(claims)
+      .setProtectedHeader({ alg: "ES256", kid: "host-key", typ: "JWT" })
+      .setSubject(identity.userId)
+      .setIssuer(signing.issuer)
+      .setAudience(signing.audience)
+      .sign(privateKey);
+    await expect(verify(token)).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  },
+);

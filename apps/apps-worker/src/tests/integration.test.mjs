@@ -37,6 +37,11 @@ it("runs isolated app backends with persistent SQLite and two-client realtime up
     keys: [{ ...(await crypto.subtle.exportKey("jwk", keys.publicKey)), kid: "test" }],
   };
 
+  const projectId = "22222222-2222-4222-8222-222222222222";
+  const otherProjectId = "33333333-3333-4333-8333-333333333333";
+  const publicTeamId = "abc123def45678";
+  const appPublicId = "app000000001";
+  const rpcUrl = `https://${publicTeamId}.tailorkit.app/p/${projectId}/a/${appPublicId}/rpc`;
   let published;
   let externalCalls = 0;
   let releaseExternal;
@@ -62,7 +67,8 @@ it("runs isolated app backends with persistent SQLite and two-client realtime up
     bindings: {
       PLATFORM_URL: "https://platform.test/api/platform",
       APP_RUNTIME_PUBLIC_KEYS: publicKeys,
-      RUNTIME_SERVICE_TOKEN: "private-key",
+      RUNTIME_SERVICE_TOKEN: "x".repeat(32),
+      ASSET_DOMAIN: "tailorkit.app",
     },
     outboundService: async (request) => {
       if (request.url.startsWith("https://third-party.test/")) {
@@ -81,7 +87,7 @@ it("runs isolated app backends with persistent SQLite and two-client realtime up
       }
 
       assert.equal(request.url, "https://platform.test/api/platform/apps/app/runtime");
-      assert.equal(request.headers.get("authorization"), "Bearer private-key");
+      assert.equal(request.headers.get("authorization"), `Bearer ${"x".repeat(32)}`);
       metadataReads++;
       return Response.json({ body: published });
     },
@@ -107,20 +113,26 @@ export default { functions: { probe: {
 
   async function publish(version) {
     const code = bundle(version);
-    const objectKey = `private/v${version}/server/server.js`;
+    const objectKey = `teams/${publicTeamId}/projects/${projectId}/apps/${appPublicId}/deployments/deploy00000${version}/server/server.js`;
     const bucket = await mf.getR2Bucket("BUNDLES");
     await bucket.put(objectKey, code);
     published = {
-      projectId: "project",
+      projectId,
       appId: "app",
       deploymentId: `v${version}`,
       objectKey,
       checksum: createHash("sha256").update(code).digest("hex"),
       contentLength: Buffer.byteLength(code),
     };
-    await (
-      await mf.getKVNamespace("DEPLOYMENTS")
-    ).put(JSON.stringify([published.projectId, published.appId]), JSON.stringify(published));
+    const response = await mf.dispatchFetch(
+      `https://internal.tailorkit.app/p/${projectId}/a/${appPublicId}/new-deployment`,
+      {
+        method: "POST",
+        headers: { authorization: `Bearer ${"x".repeat(32)}`, "content-type": "application/json" },
+        body: JSON.stringify(published),
+      },
+    );
+    assert.equal(response.status, 204, await response.text());
   }
 
   async function invoke(
@@ -131,22 +143,27 @@ export default { functions: { probe: {
     input = { name: "probe" },
   ) {
     const session = await issueAppToken(signing, {
+      publicTeamId,
+      appPublicId,
       userId: "user",
-      projectId: "project",
+      projectId,
       appId: "app",
       installationId,
       deploymentId,
       ...overrides,
     });
-    return mf.dispatchFetch(`https://runtime.test/rpc/${endpoint}`, {
-      method: "POST",
-      body: JSON.stringify({ json: input }),
-      headers: {
-        authorization: `Bearer ${session.token}`,
-        "x-tailorkit-identity": "forged",
-        "content-type": "application/json",
+    return mf.dispatchFetch(
+      `${rpcUrl.replace(projectId, overrides.projectId ?? projectId)}/${endpoint}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ json: input }),
+        headers: {
+          authorization: `Bearer ${session.token}`,
+          "x-tailorkit-identity": "forged",
+          "content-type": "application/json",
+        },
       },
-    });
+    );
   }
 
   async function checkRpc() {
@@ -208,7 +225,7 @@ export const migrations = ${JSON.stringify(history)};`;
       await bucket.put("private/todo/server/server.js", code);
 
       published = {
-        projectId: "project",
+        projectId,
         appId: "app",
         deploymentId,
         objectKey: "private/todo/server/server.js",
@@ -232,19 +249,21 @@ export const migrations = ${JSON.stringify(history)};`;
               // Renew after five seconds while keeping the production one-minute renewal window.
               { ...signing, lifetimeSeconds: 65 },
               {
+                publicTeamId,
+                appPublicId,
                 userId: "user",
-                projectId: "project",
+                projectId,
                 appId: "app",
                 installationId,
                 deploymentId: published.deploymentId,
               },
             )),
-            url: "https://runtime.test/rpc",
+            url: rpcUrl,
           };
         },
         fetch: (url, init) => mf.dispatchFetch(String(url), init),
         connect: async (url, protocols) => {
-          assert.equal(new URL(url).pathname, "/rpc/queries");
+          assert.equal(new URL(url).pathname, new URL(rpcUrl).pathname + "/queries");
           const response = await mf.dispatchFetch(url.replace("wss:", "https:"), {
             headers: { upgrade: "websocket", "sec-websocket-protocol": protocols.join(", ") },
           });
@@ -546,7 +565,27 @@ export const migrations = ${JSON.stringify(history)};`;
     mf = new Miniflare(convertV4MiniflareOptions(options));
     await publish(1);
 
-    const rejected = await mf.dispatchFetch("https://runtime.test/rpc/queries", {
+    // Assets and app code share one R2 binding, but public routes cannot expose server code.
+    const assets = await mf.getR2Bucket("BUNDLES");
+    const assetBase = `${rpcUrl.replace(/\/rpc$/u, "")}/d/deploy000001`;
+    const clientKey = `teams/${publicTeamId}/projects/${projectId}/apps/${appPublicId}/deployments/deploy000001/client/client.js`;
+    await assets.put(clientKey, "export default 'client';");
+    const client = await mf.dispatchFetch(`${assetBase}/client/client.js`);
+    assert.equal(client.status, 200);
+    assert.equal(await client.text(), "export default 'client';");
+    assert.equal(client.headers.get("cache-control"), "private, max-age=3600");
+    assert.equal((await mf.dispatchFetch(`${assetBase}/client.js`)).status, 404);
+    const logoHash = "a".repeat(64);
+    await assets.put(
+      `teams/${publicTeamId}/projects/${projectId}/apps/${appPublicId}/logos/${logoHash}.svg`,
+      "<svg/>",
+    );
+    const logo = await mf.dispatchFetch(`${assetBase}/logos/${logoHash}.svg`);
+    assert.equal(logo.status, 200);
+    assert.equal(logo.headers.get("content-type"), "image/svg+xml");
+    assert.equal((await mf.dispatchFetch(`${assetBase}/server/server.js`)).status, 404);
+
+    const rejected = await mf.dispatchFetch(`${rpcUrl}/queries`, {
       headers: { upgrade: "websocket", "sec-websocket-protocol": "tailorkit, jwt.forged" },
     });
     assert.equal(rejected.status, 401);
@@ -565,19 +604,19 @@ export const migrations = ${JSON.stringify(history)};`;
     assert.equal((await (await invoke("one")).json().then((result) => result.json)).globals, 2);
 
     const before = metadataReads;
-    assert.equal((await invoke("one", "v1", { projectId: "other" })).status, 403);
+    assert.equal((await invoke("one", "v1", { projectId: otherProjectId })).status, 403);
     assert.equal(metadataReads, before + 1);
 
-    published = { ...published, projectId: "other" };
+    published = { ...published, projectId: otherProjectId };
     const otherProject = await (
-      await invoke("one", "v1", { projectId: "other" })
+      await invoke("one", "v1", { projectId: otherProjectId })
     )
       .json()
       .then((result) => result.json);
     assert.equal(otherProject.globals, 1);
 
-    published = { ...published, projectId: "other" };
-    await (await mf.getKVNamespace("DEPLOYMENTS")).delete(JSON.stringify(["project", "app"]));
+    published = { ...published, projectId: otherProjectId };
+    await (await mf.getKVNamespace("DEPLOYMENTS")).delete(JSON.stringify([projectId, "app"]));
     assert.equal((await invoke("one")).status, 403);
 
     await publish(2);
@@ -597,12 +636,12 @@ export const migrations = ${JSON.stringify(history)};`;
 
     const originalHash = published.checksum;
     published = { ...published, checksum: "a".repeat(64) };
-    await (await mf.getKVNamespace("DEPLOYMENTS")).delete(JSON.stringify(["project", "app"]));
+    await (await mf.getKVNamespace("DEPLOYMENTS")).delete(JSON.stringify([projectId, "app"]));
     assert.equal((await invoke("one")).status, 500);
     published = { ...published, checksum: originalHash };
     await (
       await mf.getKVNamespace("DEPLOYMENTS")
-    ).put(JSON.stringify(["project", "app"]), JSON.stringify(published));
+    ).put(JSON.stringify([projectId, "app"]), JSON.stringify(published));
     assert.equal((await (await invoke("one")).json().then((result) => result.json)).globals, 2);
 
     await checkRpc();

@@ -54,10 +54,10 @@ export const runtimeSession = protectedRouter
     if (!deployment) {
       throw new ORPCError("NOT_FOUND", { message: "App has no published deployment." });
     }
-    if (!env.APP_RUNTIME_URL) {
-      throw new ORPCError("SERVICE_UNAVAILABLE", { message: "App runtime is not configured." });
-    }
-    const runtime = new URL(env.APP_RUNTIME_URL);
+    const runtime = new URL(
+      env.APP_RUNTIME_URL ??
+        `https://${context.organization.publicId}.${env.ASSET_DOMAIN ?? "tailorkit.app"}`,
+    );
     if (
       runtime.username ||
       runtime.password ||
@@ -71,7 +71,7 @@ export const runtimeSession = protectedRouter
     ) {
       throw new ORPCError("SERVICE_UNAVAILABLE", { message: "Invalid app runtime configuration." });
     }
-    const url = new URL("/rpc", runtime);
+    const url = new URL(`/p/${context.project.id}/a/${context.app.publicId}/rpc`, runtime);
     // Each app belongs to one installation scope. Resolve identity from the authorized
     // database record, never from browser input or the ordering of the viewer's scopes.
     const session = await issueAppRuntimeToken({
@@ -80,6 +80,8 @@ export const runtimeSession = protectedRouter
       projectId: context.project.id,
       appId: context.app.id,
       deploymentId: deployment.id,
+      publicTeamId: context.organization.publicId,
+      appPublicId: context.app.publicId,
     });
     return { body: { ...session, url: url.href } };
   });
@@ -133,14 +135,17 @@ export const getRuntimeBundle = protectedRouter
   });
 
 /** Cache publication failures do not undo a published deployment; worker misses use the API. */
-export function publishRuntimeMetadata(metadata: AppDeploymentMetadata) {
+export function publishRuntimeMetadata(metadata: AppDeploymentMetadata, appPublicId: string) {
   return Effect.runPromise(
     Effect.tryPromise({
       try: async () => {
-        if (!env.APP_RUNTIME_URL || !env.APP_RUNTIME_SERVICE_TOKEN) {
+        if (!env.APP_RUNTIME_SERVICE_TOKEN) {
           return;
         }
-        const url = new URL("/internal/deployments", env.APP_RUNTIME_URL);
+        const url = new URL(
+          `/p/${metadata.projectId}/a/${appPublicId}/new-deployment`,
+          env.APP_RUNTIME_INTERNAL_URL ?? `https://internal.${env.ASSET_DOMAIN ?? "tailorkit.app"}`,
+        );
         if (url.protocol !== "https:") {
           throw new Error("App runtime URL requires HTTPS");
         }

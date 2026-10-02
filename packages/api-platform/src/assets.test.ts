@@ -6,7 +6,7 @@ const teamId = "abc123def45678";
 const projectId = "22222222-2222-4222-8222-222222222222";
 const appId = "app000000001";
 const deploymentId = "deploy000001";
-const url = `http://localhost:3000/api/assets/t/${teamId}/p/${projectId}/a/${appId}/d/${deploymentId}/client.js`;
+const url = `http://localhost:3000/api/assets/t/${teamId}/p/${projectId}/a/${appId}/d/${deploymentId}/client/client.js`;
 const key = `teams/${teamId}/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/client/client.js`;
 const bundle = "export default 'local asset';";
 
@@ -62,16 +62,13 @@ describe("Node asset delivery", () => {
     expect(response.headers.get("ETag")).toBe('"asset-etag"');
   });
 
-  it("reads existing files/ assets without exposing server keys", async () => {
+  it("returns not found without falling back to retired storage paths", async () => {
     const backend = storage();
     vi.mocked(backend.head).mockRejectedValueOnce({ name: "NoSuchKey" });
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(bundle));
     const response = await handleAssetRequest(new Request(url), backend);
-    expect(await response.text()).toBe(bundle);
-    expect(backend.createDownloadUrl).toHaveBeenCalledWith({
-      key: key.replace("/client/", "/files/"),
-      expiresInSeconds: 60,
-    });
+    expect(response.status).toBe(404);
+    expect(backend.head).toHaveBeenCalledExactlyOnceWith({ key });
+    expect(backend.createDownloadUrl).not.toHaveBeenCalled();
   });
 
   it("serves HEAD and OPTIONS without downloading the object", async () => {
@@ -94,4 +91,22 @@ describe("Node asset delivery", () => {
     ).resolves.toHaveProperty("status", 405);
     await expect(handleAssetRequest(new Request(url), null)).resolves.toHaveProperty("status", 503);
   });
+});
+
+it.each([404, 500])("maps an upstream %s to a public asset failure", async (status) => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response("Private upstream details", { status }),
+  );
+  const response = await handleAssetRequest(new Request(url), storage());
+  expect(response.status).toBe(status === 404 ? 404 : 503);
+  expect(await response.text()).toBe("");
+  expect(response.headers.get("cache-control")).toBe("no-store");
+});
+
+it("maps rejected storage reads to a sanitized service-unavailable response", async () => {
+  const backend = storage();
+  vi.mocked(backend.head).mockRejectedValueOnce(new Error("Private storage details"));
+  const response = await handleAssetRequest(new Request(url), backend);
+  expect(response.status).toBe(503);
+  expect(await response.text()).toBe("");
 });

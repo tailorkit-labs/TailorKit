@@ -31,8 +31,8 @@ describe("hosted asset URLs", () => {
         publicId: deploymentPublicId,
         status: "published" as const,
         clientEntryFileId: "55555555-5555-4555-8555-555555555555",
-        logoDarkPath: "logo-dark.svg",
-        logoLightPath: "logo-light.webp",
+        logoDarkPath: `logos/${"a".repeat(64)}.svg`,
+        logoLightPath: `logos/${"b".repeat(64)}.webp`,
         errorMessage: null,
         publishedAt: new Date(),
         createdAt: new Date(),
@@ -40,15 +40,15 @@ describe("hosted asset URLs", () => {
       },
     };
     expect(withAppAssetUrl(app, "abc123def45678", projectId).clientPath).toBe(
-      `https://abc123def45678.tailorkit.app/p/${projectId}/a/${appPublicId}/d/${deploymentPublicId}/client.js`,
+      `https://abc123def45678.tailorkit.app/p/${projectId}/a/${appPublicId}/d/${deploymentPublicId}/client/client.js`,
     );
     expect(withAppAssetUrl(app, "abc123def45678", projectId).logoPaths).toEqual({
-      dark: `https://abc123def45678.tailorkit.app/p/${projectId}/a/${appPublicId}/d/${deploymentPublicId}/logo-dark.svg`,
-      light: `https://abc123def45678.tailorkit.app/p/${projectId}/a/${appPublicId}/d/${deploymentPublicId}/logo-light.webp`,
+      dark: `https://abc123def45678.tailorkit.app/p/${projectId}/a/${appPublicId}/d/${deploymentPublicId}/logos/${"a".repeat(64)}.svg`,
+      light: `https://abc123def45678.tailorkit.app/p/${projectId}/a/${appPublicId}/d/${deploymentPublicId}/logos/${"b".repeat(64)}.webp`,
     });
   });
 
-  it("uses app-scoped URLs for content-addressed logos", () => {
+  it("uses deployment URLs for content-addressed logos without duplicating stored files", () => {
     const logoHash = "b".repeat(64);
     const app = {
       publicId: appPublicId,
@@ -62,7 +62,7 @@ describe("hosted asset URLs", () => {
     };
 
     expect(withAppAssetUrl(app, "abc123def45678", projectId).logoPaths).toEqual({
-      dark: `https://abc123def45678.tailorkit.app/p/${projectId}/a/${appPublicId}/logos/${logoHash}.svg`,
+      dark: `https://abc123def45678.tailorkit.app/p/${projectId}/a/${appPublicId}/d/${deploymentPublicId}/logos/${logoHash}.svg`,
     });
   });
 
@@ -83,7 +83,7 @@ describe("hosted asset URLs", () => {
       },
     };
     expect(withAppAssetUrl(app, "abc123def45678", projectId).clientPath).toBe(
-      `http://localhost:3000/api/assets/t/abc123def45678/p/${projectId}/a/${appPublicId}/d/${deploymentPublicId}/client.js`,
+      `http://localhost:3000/api/assets/t/abc123def45678/p/${projectId}/a/${appPublicId}/d/${deploymentPublicId}/client/client.js`,
     );
   });
 
@@ -104,7 +104,7 @@ describe("hosted asset URLs", () => {
       },
     };
     expect(withAppAssetUrl(app, "abc123def45678", projectId).clientPath).toBe(
-      `https://tailorkit.example.com/api/assets/t/abc123def45678/p/${projectId}/a/${appPublicId}/d/${deploymentPublicId}/client.js`,
+      `https://tailorkit.example.com/api/assets/t/abc123def45678/p/${projectId}/a/${appPublicId}/d/${deploymentPublicId}/client/client.js`,
     );
   });
 

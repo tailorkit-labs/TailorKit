@@ -31,12 +31,7 @@ export function createAppRuntimeVerifierEffect(options: RuntimeVerifierOptions) 
   return (token: string) => verify(token);
 }
 
-export function createAppRuntimeVerifier(options: RuntimeVerifierOptions) {
-  const verify = createAppRuntimeVerifierEffect(options);
-  return (token: string) => Effect.runPromise(verify(token));
-}
-
-let cached: { id: string; verify: ReturnType<typeof createAppRuntimeVerifier> } | undefined;
+let cached: { id: string; verify: ReturnType<typeof createAppRuntimeVerifierEffect> } | undefined;
 
 export function verifier(env: Env) {
   const id = JSON.stringify([env.PLATFORM_URL, env.APP_RUNTIME_PUBLIC_KEYS]);
@@ -44,7 +39,7 @@ export function verifier(env: Env) {
   if (cached?.id !== id) {
     cached = {
       id,
-      verify: createAppRuntimeVerifier({
+      verify: createAppRuntimeVerifierEffect({
         platformUrl: env.PLATFORM_URL,
         publicKeys: env.APP_RUNTIME_PUBLIC_KEYS,
       }),

@@ -1,73 +1,65 @@
 import {
-  assetFailure,
+  AssetDeliveryError,
   assetHeaders,
-  assetPreflight,
-  isAssetMethod,
-  legacyClientKey,
-  isValidAssetSize,
-  parseNodeAssetRequest,
+  assetResponse,
+  assetSize,
+  nodeAssetRequest,
+  serveAssetRequest,
 } from "@tailorkit/asset-delivery";
+import type { AssetIdentity } from "@tailorkit/asset-delivery";
 import type { Storage } from "@tailorkit/storage";
+import { Effect } from "effect";
 
-function isNotFound(error: unknown) {
-  if (!error || typeof error !== "object") {
-    return false;
+function storageFailure(error: unknown) {
+  if (error && typeof error === "object") {
+    const value = error as { name?: string; $metadata?: { httpStatusCode?: number } };
+    if (
+      value.name === "NoSuchKey" ||
+      value.name === "NotFound" ||
+      value.$metadata?.httpStatusCode === 404
+    ) {
+      return new AssetDeliveryError(404);
+    }
   }
-  const value = error as { name?: string; $metadata?: { httpStatusCode?: number } };
-  return (
-    value.name === "NoSuchKey" ||
-    value.name === "NotFound" ||
-    value.$metadata?.httpStatusCode === 404
-  );
+  return new AssetDeliveryError(503);
 }
 
-export async function handleAssetRequest(
-  request: Request,
-  storage: Storage | null,
-): Promise<Response> {
-  const identity = parseNodeAssetRequest(request);
-  if (!identity) {
-    return assetFailure(404);
-  }
-  if (!storage) {
-    return assetFailure(503);
-  }
-  if (!isAssetMethod(request.method)) {
-    return assetFailure(405);
-  }
-  if (request.method === "OPTIONS") {
-    return assetPreflight();
-  }
-
-  try {
-    let key = identity.key;
-    const object = await storage.head({ key }).catch(async (error: unknown) => {
-      const legacy = legacyClientKey(identity);
-      if (!isNotFound(error) || !legacy) throw error;
-      key = legacy;
-      return storage.head({ key });
+function loadAsset(request: Request, identity: AssetIdentity, storage: Storage) {
+  return Effect.gen(function* () {
+    const key = identity.key;
+    const object = yield* Effect.tryPromise({
+      try: () => storage.head({ key }),
+      catch: storageFailure,
     });
-    if (!isValidAssetSize(object.contentLength)) {
-      return assetFailure(404);
-    }
+    const contentLength = yield* assetSize(object.contentLength);
     const headers = assetHeaders({
-      contentLength: object.contentLength,
+      contentLength,
       contentType: identity.contentType,
       etag: object.etag,
     });
-    if (request.method === "HEAD") {
-      return new Response(null, { headers });
-    }
-    const download = await storage.createDownloadUrl({
-      key,
-      expiresInSeconds: 60,
+    if (request.method === "HEAD") return new Response(null, { headers });
+    const download = yield* Effect.tryPromise({
+      try: () => storage.createDownloadUrl({ key, expiresInSeconds: 60 }),
+      catch: storageFailure,
     });
-    const upstream = await fetch(download.url, { redirect: "error" });
-    if (!upstream.ok) {
-      return assetFailure(upstream.status === 404 ? 404 : 503);
-    }
+    const upstream = yield* Effect.tryPromise({
+      try: (signal) => fetch(download.url, { redirect: "error", signal }),
+      catch: storageFailure,
+    });
+    if (!upstream.ok)
+      return yield* Effect.fail(new AssetDeliveryError(upstream.status === 404 ? 404 : 503));
     return new Response(upstream.body, { headers });
-  } catch (error) {
-    return assetFailure(isNotFound(error) ? 404 : 503);
-  }
+  });
+}
+
+export function handleAssetRequest(request: Request, storage: Storage | null): Promise<Response> {
+  const program = Effect.gen(function* () {
+    const identity = yield* nodeAssetRequest(request);
+    if (!storage) return yield* Effect.fail(new AssetDeliveryError(503));
+    return yield* serveAssetRequest(request, {
+      identity: Effect.succeed(identity),
+      load: (asset) => loadAsset(request, asset, storage),
+    });
+  });
+  return Effect.runPromise(assetResponse(program));
 }

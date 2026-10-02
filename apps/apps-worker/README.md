@@ -2,11 +2,11 @@ Private Cloudflare application runtime, licensed under BUSL-1.1.
 
 # App runtime
 
-`tailorkit-apps-worker` is the trusted Cloudflare entry point for app queries, mutations, actions and subscriptions. App server bundles are uploaded by the existing CLI to the private blob bucket under `server/server.js`; client code remains under `client/client.js`. The public assets worker never serves server bundles.
+`tailorkit-apps-worker` is the trusted Cloudflare entry point for app queries, mutations, actions and subscriptions. App server bundles are uploaded by the existing CLI to the private blob bucket under `server/server.js`; client code remains under `client/client.js`. The same worker delivers public client assets and logos; its asset allowlist never serves server bundles.
 
-The host SDK uses its existing `authenticate` callback and calls `POST /apps/{appId}/runtime/session` with its project key and verified scopes. The platform checks the app belongs to that project and one of those scopes, resolves its published deployment, and issues a short-lived ES256 JWT. No `backend.resolveInstallation` callback is required. The canonical app ID is the stable installation ID, and `userId` (JWT `sub`) is `scope:<scopeKey>` for the app's authorized scope; this represents the installation scope, not an individual person. The platform returns its configured `APP_RUNTIME_URL` origin with the `/rpc` path. Sandboxed apps obtain scoped JWTs through the host bridge and call the backend over authenticated HTTP, with a WebSocket for query subscriptions. Platform credentials remain in the host server.
+The host SDK uses its existing `authenticate` callback and calls `POST /apps/{appId}/runtime/session` with its project key and verified scopes. The platform checks the app belongs to that project and one of those scopes, resolves its published deployment, and issues a short-lived ES256 JWT. No `backend.resolveInstallation` callback is required. The canonical app ID is the stable installation ID, and `userId` (JWT `sub`) is `scope:<scopeKey>` for the app's authorized scope; this represents the installation scope, not an individual person. The platform returns `https://<teamPublicId>.tailorkit.app/p/<projectId>/a/<appPublicId>/rpc`, deriving the hostname from `ASSET_DOMAIN` (default `tailorkit.app`). `APP_RUNTIME_URL` is an optional origin override for local development. The signed JWT binds the public team and app identifiers as well as the canonical project/app IDs; the gateway checks the hostname and path before routing to a trusted installation. Sandboxed apps obtain scoped JWTs through the host bridge and call the backend over authenticated HTTP, with a WebSocket for query subscriptions. Platform credentials remain in the host server.
 
-When upgrading from a host-selected installation ID, previously stored data remains under that old ID and must be migrated separately. The automatic installation ID stays the same across public/internal app IDs, scope-list ordering and published deployments.
+The installation ID stays the same across public/internal app IDs, scope-list ordering and published deployments.
 
 The runtime derives its issuer from `PLATFORM_URL` and verifies JWTs using `APP_RUNTIME_PUBLIC_KEYS`, a configured public JWKS. No public-key request is made. Audience is fixed to `tailorkit-apps-worker`. Calls allow browser origins and omit cookies; JWT authorization remains mandatory. The worker authenticates and routes requests to the supervisor named `[issuer, projectId, appId, installationId]`. The supervisor verifies authentication again and resolves the currently published bundle from the `DEPLOYMENTS` KV namespace, falling back to the authenticated platform API on a miss. A different app/project is forbidden. Deployment claims do not pin execution: existing client code continues calling the latest published server.
 
@@ -35,7 +35,7 @@ The host still returns the runtime's `/rpc` base URL. The client selects the rou
 | `/rpc/actions`   | POST JSON             | Shared dynamic facet, outbound HTTPS through a scoped capability |
 | `/rpc/queries`   | GET WebSocket upgrade | Trusted Durable Object, query subscriptions                      |
 
-HTTP requests and responses use the oRPC wire protocol. Procedure inputs contain `{ name, args }`; mutations also require a UUID `requestId`. oRPC preserves typed errors and their HTTP statuses. The URL determines the operation type, so bodies cannot override it. Nested names such as `todos.list` retain their full path. WebSockets expose subscriptions only.
+The table paths are relative to `/p/<projectId>/a/<appPublicId>`. HTTP requests and responses use the oRPC wire protocol. Procedure inputs contain `{ name, args }`; mutations also require a UUID `requestId`. oRPC preserves typed errors and their HTTP statuses. The URL determines the operation type, so bodies cannot override it. Nested names such as `todos.list` retain their full path. WebSockets expose subscriptions only.
 
 The gateway authenticates and selects the trusted installation Durable Object. The installation verifies the published deployment with Effect, owns WebSockets and subscriptions, and calls the isolated SQLite facet directly over RPC. Each internal RPC call returns `{ result, tables, committed }`, where `result` contains either `{ ok: true, value }` or `{ ok: false, error: { code, message } }`. Values pass schema and JSON serialization validation before mutations commit. Queries report their read dependencies; mutations report changed tables. Errors retain table metadata, but rolled-back and replayed mutations do not invalidate subscriptions. The trusted oRPC transport translates values and errors into the client wire protocol and generates HTTP headers.
 
@@ -67,7 +67,7 @@ From the repository root:
 pnpm --filter @tailorkit/api-utils build
 pnpm --filter @tailorkit/app build
 pnpm --filter @tailorkit/apps-worker check-types
-pnpm --filter @tailorkit/apps-worker test
+pnpm exec turbo run test --filter=@tailorkit/apps-worker
 ```
 
 `test` dry-builds with Wrangler and runs its bundled Miniflare/workerd locally with disposable persistent R2 and DO state. It substitutes only the trusted platform metadata HTTP response. It verifies JWT/project checks, private R2 downloads, code hashes, isolation, blocked network access, deployment switches, rejection of old tokens, cold restart persistence, token expiry and WebSocket renewal, HTTP queries/mutations/actions, nested function dispatch, oRPC query subscriptions, accepted-write deduplication and realtime updates between two clients using the new `backend-todo` app.
@@ -104,10 +104,24 @@ Application bundles export a `runtimeManifest` alongside the default application
 
 ## Deployment metadata cache
 
-The platform sets `APP_RUNTIME_URL` to the worker's HTTPS origin and sends `POST /internal/deployments` after publication or a rollout. The body contains `{ projectId, appId, deploymentId, objectKey, checksum, contentLength }`. Requests use `Authorization: Bearer <APP_RUNTIME_SERVICE_TOKEN>`; configure that same secret as `RUNTIME_SERVICE_TOKEN` on the worker. It is independent of signing keys and never enters app code. Vercel calls the worker over HTTPS and needs no Cloudflare API credentials.
+The platform sends `POST https://internal.tailorkit.app/p/<projectId>/a/<appPublicId>/new-deployment` after publication or a rollout. `APP_RUNTIME_INTERNAL_URL` optionally overrides that origin; by default it is `https://internal.<ASSET_DOMAIN>`. Only the reserved internal hostname accepts publication requests. The worker checks that the body project and private bundle path match the URL. The body contains `{ projectId, appId, deploymentId, objectKey, checksum, contentLength }`. Requests use `Authorization: Bearer <APP_RUNTIME_SERVICE_TOKEN>`; configure that same secret as `RUNTIME_SERVICE_TOKEN` on the worker. It is independent of signing keys and never enters app code. Vercel calls the worker over HTTPS and needs no Cloudflare API credentials.
 
 KV entries are keyed by `[projectId, appId]` and expire after five minutes. Misses fetch the authoritative platform metadata and fill KV. Publication failures are logged without undoing publication; expiration lets the cache recover even if its previous value remains. Before replacing a running deployment, the worker confirms a changed KV pointer with the platform to avoid switching backwards on stale replicas. A subscriber refresh resolves its facet once and reuses it for all affected subscriptions.
 
 Publication does not broadcast to every installation. Active clients discover an update on subsequent calls or authentication renewal. KV propagation can delay discovery. The host does not remount the app; server deployments must preserve compatibility with existing client code. Active actions are cancelled on facet replacement and are not automatically retried.
 
 Sandbox iframes always allow HTTP(S) and WebSocket connections. They retain an opaque `null` origin through `sandbox="allow-scripts"`; backend calls omit cookies and require scoped JWTs. Initial rendering does not require a backend session.
+
+## Shared app delivery
+
+One `tailorkit-apps-worker` deployment handles the wildcard `*.tailorkit.app/*` route and the `internal.tailorkit.app` custom domain. The former assets worker/package is retired. Keep the existing worker name and `STORES` binding to preserve installation databases. Configure wildcard proxied DNS for `*.tailorkit.app`; Wrangler provisions the internal custom domain. The platform's `ASSET_DOMAIN` must match this worker's value.
+
+Tenant routes:
+
+- `/p/<projectId>/a/<appPublicId>/d/<deploymentPublicId>/client/client.js`: immutable public client bundle.
+- `/p/<projectId>/a/<appPublicId>/d/<deploymentPublicId>/logos/<filename>`: logos. Content-addressed logos use shared R2 storage.
+- `/p/<projectId>/a/<appPublicId>/rpc/queries`, `/rpc/mutations`, `/rpc/actions`: HTTP backend calls; query subscriptions use WebSockets on the queries route.
+
+RPC URLs omit the deployment ID and run the latest published backend. Deployment claims never select a separate database or pin execution. Asset responses preserve their edge cache, bounded browser TTL and security headers. RPC responses are not cached. Shared asset admission, size checks and sanitized error responses are Effect programs in `@tailorkit/asset-delivery`; the Cloudflare and Node adapters compose storage, fetch and cache operations with Effect and run them at the request boundary. Cache lookup/write failures do not prevent asset delivery.
+
+The platform needs `APP_RUNTIME_SIGNING_KEY` and `APP_RUNTIME_SERVICE_TOKEN`; no `APP_RUNTIME_URL` is needed for production's default team subdomains. Deploy the combined worker and platform, and delete the standalone `tailorkit-assets` Worker and its Workers Builds integration. Only the new URLs and signed routing claims are supported.

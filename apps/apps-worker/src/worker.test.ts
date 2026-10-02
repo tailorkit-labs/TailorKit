@@ -25,7 +25,16 @@ vi.stubGlobal(
   "Request",
   class extends NativeRequest {
     constructor(input: RequestInfo | URL, init?: RequestInit) {
-      const options = { ...init, duplex: "half" };
+      const options =
+        init instanceof NativeRequest
+          ? {
+              method: init.method,
+              headers: init.headers,
+              body: init.body,
+              signal: init.signal,
+              duplex: "half",
+            }
+          : { ...init, duplex: "half" };
       super(input, options);
     }
   },
@@ -49,8 +58,10 @@ const publicKeys = {
   keys: [{ ...(await crypto.subtle.exportKey("jwk", keys.publicKey)), kid: "host" }],
 };
 const identity = {
+  publicTeamId: "abc123def45678",
+  appPublicId: "app000000001",
   userId: "user",
-  projectId: "project",
+  projectId: "22222222-2222-4222-8222-222222222222",
   appId: "app",
   installationId: "one",
   deploymentId: "v1",
@@ -62,11 +73,12 @@ const checksum = async (code: string) =>
 const codeHash = await checksum("code");
 const nextHash = await checksum("new code");
 const deployment = {
-  projectId: "project",
+  projectId: "22222222-2222-4222-8222-222222222222",
   appId: "app",
   deploymentId: "v1",
   checksum: codeHash,
-  objectKey: "private/server.js",
+  objectKey:
+    "teams/abc123def45678/projects/22222222-2222-4222-8222-222222222222/apps/app000000001/deployments/deploy000001/server/server.js",
   contentLength: 4,
 };
 
@@ -115,6 +127,7 @@ function setup() {
   const idFromName = vi.fn(() => id);
 
   const env = {
+    ASSET_DOMAIN: "tailorkit.app",
     DEPLOYMENTS: { get: vi.fn(async () => null), put: vi.fn(async () => {}) },
     BUNDLES: { get: async () => ({ body: new Response(await source.code()).body! }) },
     RUNTIME_SERVICE_TOKEN: "private",
@@ -155,8 +168,26 @@ async function request(overrides = {}, path = "/rpc/queries", body = '{"json":{"
   });
 }
 
+// Gateway tests use hosted paths; installation tests retain the private normalized /rpc paths.
+async function fetchWorker(request: Request, env: Env) {
+  const url = new URL(request.url);
+  if (url.hostname === "runtime.test" && url.pathname.startsWith("/rpc")) {
+    const token = request.headers.get("authorization")?.slice(7);
+    const payload = token
+      ? JSON.parse(atob(token.split(".")[1]!.replaceAll("-", "+").replaceAll("_", "/")))
+      : identity;
+    url.hostname = `${identity.publicTeamId}.tailorkit.app`;
+    url.pathname = `/p/${payload.projectId}/a/${identity.appPublicId}${url.pathname}`;
+  }
+  return worker.fetch(
+    new Request(url, request),
+    { ...env, ASSET_DOMAIN: env.ASSET_DOMAIN ?? "tailorkit.app" },
+    {} as ExecutionContext,
+  );
+}
+
 it("answers a preflight without accessing authentication or storage", async () => {
-  const response = await worker.fetch(
+  const response = await fetchWorker(
     new Request("https://runtime.test/rpc/queries", { method: "OPTIONS" }),
     {} as Parameters<typeof worker.fetch>[1],
   );
@@ -169,7 +200,7 @@ it.each(["GET", "POST"])(
   "rejects unsupported %s routes before authentication or storage",
   async (method) => {
     const { env, getByName } = setup();
-    const response = await worker.fetch(
+    const response = await fetchWorker(
       new Request("https://runtime.test/server/server.js", { method }),
       env,
     );
@@ -184,7 +215,7 @@ it.each(["/rpc", "/rpc/query", "/rpc/unknown", "/rpc/queries/extra"])(
   async (path) => {
     const { env, getByName } = setup();
     expect(
-      (await worker.fetch(new Request(`https://runtime.test${path}`, { method: "POST" }), env))
+      (await fetchWorker(new Request(`https://runtime.test${path}`, { method: "POST" }), env))
         .status,
     ).toBe(404);
     expect(getByName).not.toHaveBeenCalled();
@@ -195,14 +226,16 @@ it.each(["actions", "mutations", "queries"])(
   "forwards authenticated HTTP %s calls",
   async (kind) => {
     const { env, routeFetch } = setup();
-    await worker.fetch(await request({}, `/rpc/${kind}`), env);
-    expect(routeFetch.mock.calls[0]![0].url).toBe(`https://runtime.test/rpc/${kind}`);
+    await fetchWorker(await request({}, `/rpc/${kind}`), env);
+    expect(routeFetch.mock.calls[0]![0].url).toBe(
+      `https://${identity.publicTeamId}.tailorkit.app/rpc/${kind}`,
+    );
   },
 );
 
 it("requires a token even when any origin is allowed", async () => {
   const { env, getByName } = setup();
-  const response = await worker.fetch(
+  const response = await fetchWorker(
     new Request("https://runtime.test/rpc/queries", {
       method: "POST",
       headers: { origin: "https://attacker.test" },
@@ -216,20 +249,22 @@ it("requires a token even when any origin is allowed", async () => {
 
 it("authenticates and forwards an RPC body with CORS and stable installation routing", async () => {
   const { env, getByName, routeFetch } = setup();
-  const response = await worker.fetch(await request(), env);
+  const response = await fetchWorker(await request(), env);
 
   expect(response.status).toBe(202);
   expect(response.headers.get("access-control-allow-origin")).toBe("*");
   expect(response.headers.get("access-control-allow-credentials")).toBeNull();
   expect(response.headers.get("cache-control")).toBe("no-store");
-  expect(getByName).toHaveBeenCalledWith(JSON.stringify([signing.issuer, "project", "app", "one"]));
+  expect(getByName).toHaveBeenCalledWith(
+    JSON.stringify([signing.issuer, identity.projectId, "app", "one"]),
+  );
   expect(await routeFetch.mock.calls[0][0].text()).toBe('{"json":{"name":"list"}}');
 });
 
 it("maps forwarding failures to a sanitized response with allowed-origin CORS", async () => {
   const { env, routeFetch } = setup();
   routeFetch.mockRejectedValueOnce(new Error("private details"));
-  const response = await worker.fetch(await request(), env);
+  const response = await fetchWorker(await request(), env);
 
   expect(response.status).toBe(500);
   expect(await response.text()).not.toContain("private details");
@@ -239,11 +274,14 @@ it("maps forwarding failures to a sanitized response with allowed-origin CORS", 
 it("accepts different signed projects and routes them to distinct installations", async () => {
   const { env, getByName } = setup();
 
-  expect((await worker.fetch(await request(), env)).status).toBe(202);
-  expect((await worker.fetch(await request({ projectId: "other" }), env)).status).toBe(202);
+  expect((await fetchWorker(await request(), env)).status).toBe(202);
+  expect(
+    (await fetchWorker(await request({ projectId: "33333333-3333-4333-8333-333333333333" }), env))
+      .status,
+  ).toBe(202);
   expect(getByName.mock.calls.map(([name]) => name)).toEqual([
-    JSON.stringify([signing.issuer, "project", "app", "one"]),
-    JSON.stringify([signing.issuer, "other", "app", "one"]),
+    JSON.stringify([signing.issuer, identity.projectId, "app", "one"]),
+    JSON.stringify([signing.issuer, "33333333-3333-4333-8333-333333333333", "app", "one"]),
   ]);
 });
 
@@ -342,12 +380,15 @@ it("accepts metadata publication only with the shared service credential", async
   const { env, getByName } = setup();
   env.RUNTIME_SERVICE_TOKEN = "x".repeat(32);
   const publish = (token: string, body: unknown = deployment) =>
-    worker.fetch(
-      new Request("https://runtime.test/internal/deployments", {
-        method: "POST",
-        headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-        body: JSON.stringify(body),
-      }),
+    fetchWorker(
+      new Request(
+        `https://internal.tailorkit.app/p/${identity.projectId}/a/${identity.appPublicId}/new-deployment`,
+        {
+          method: "POST",
+          headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+          body: JSON.stringify(body),
+        },
+      ),
       env,
     );
   expect((await publish("wrong")).status).toBe(401);

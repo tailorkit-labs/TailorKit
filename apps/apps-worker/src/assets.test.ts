@@ -1,11 +1,11 @@
 import { assetHeaders } from "@tailorkit/asset-delivery";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import worker from "./index";
+import worker from "./assets";
 
 const projectId = "22222222-2222-4222-8222-222222222222";
 const appId = "app000000001";
 const deploymentId = "deploy000001";
-const path = `/p/${projectId}/a/${appId}/d/${deploymentId}/client.js`;
+const path = `/p/${projectId}/a/${appId}/d/${deploymentId}/client/client.js`;
 const url = `https://abc123def45678.tailorkit.app${path}`;
 const key = `teams/abc123def45678/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/client/client.js`;
 const bundle = "export default 'tenant bundle';";
@@ -14,7 +14,7 @@ const head = vi.fn();
 const match = vi.fn((_request: Request) => Promise.resolve(undefined as Response | undefined));
 const put = vi.fn((_request: Request, _response: Response) => Promise.resolve());
 const waitUntil = vi.fn();
-const env = { ASSET_DOMAIN: "tailorkit.app", ASSETS: { get, head } } as unknown as Env;
+const env = { ASSET_DOMAIN: "tailorkit.app", BUNDLES: { get, head } } as unknown as Env;
 const ctx = { waitUntil } as unknown as ExecutionContext;
 
 function fetchAsset(request: Request) {
@@ -77,11 +77,11 @@ describe("tenant asset gateway", () => {
     expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
   });
 
-  it("keeps already published files/client.js readable while new uploads use client/", async () => {
-    get.mockResolvedValueOnce(null).mockResolvedValueOnce(object());
+  it("returns not found without falling back to retired storage paths", async () => {
+    get.mockResolvedValueOnce(null);
     const response = await fetchAsset(new Request(url));
-    expect(await response.text()).toBe(bundle);
-    expect(get).toHaveBeenNthCalledWith(2, key.replace("/client/", "/files/"));
+    expect(response.status).toBe(404);
+    expect(get).toHaveBeenCalledExactlyOnceWith(key);
   });
 
   it("serves an edge cache hit without reading R2", async () => {
@@ -100,9 +100,13 @@ describe("tenant asset gateway", () => {
 
   it("serves logos with their image content type", async () => {
     get.mockResolvedValueOnce(object("<svg/>"));
-    const response = await fetchAsset(new Request(url.replace("client.js", "logo-light.svg")));
+    const response = await fetchAsset(
+      new Request(url.replace("client/client.js", `logos/${"a".repeat(64)}.svg`)),
+    );
     expect(response.headers.get("Content-Type")).toBe("image/svg+xml");
-    expect(get).toHaveBeenCalledWith(key.replace("client.js", "logo-light.svg"));
+    expect(get).toHaveBeenCalledWith(
+      `teams/abc123def45678/projects/${projectId}/apps/${appId}/logos/${"a".repeat(64)}.svg`,
+    );
   });
 
   it("uses the hostname tenant ID as part of the storage namespace", async () => {
@@ -179,4 +183,23 @@ describe("tenant asset gateway", () => {
     await expect(fetchAsset(new Request(url))).resolves.toHaveProperty("status", 503);
     expect(JSON.stringify(log.mock.calls)).not.toContain("private storage detail");
   });
+});
+
+it("serves R2 assets when the edge cache lookup fails", async () => {
+  match.mockRejectedValueOnce(new Error("Cache unavailable"));
+  get.mockResolvedValueOnce(object());
+  const response = await fetchAsset(new Request(url));
+  expect(response.status).toBe(200);
+  expect(await response.text()).toBe(bundle);
+});
+
+it("keeps the response usable when a background cache write fails", async () => {
+  put.mockRejectedValueOnce(new Error("Private cache details"));
+  get.mockResolvedValueOnce(object());
+  const log = vi.spyOn(console, "error").mockImplementation(() => {});
+  const response = await fetchAsset(new Request(url));
+  await waitUntil.mock.calls[0]![0];
+  expect(response.status).toBe(200);
+  expect(await response.text()).toBe(bundle);
+  expect(log).toHaveBeenCalledWith(JSON.stringify({ message: "Asset cache write failed" }));
 });

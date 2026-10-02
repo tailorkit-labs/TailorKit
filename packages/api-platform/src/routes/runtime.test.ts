@@ -1,7 +1,10 @@
 import { beforeEach, expect, it, vi } from "vite-plus/test";
 
 const state = vi.hoisted(() => ({
-  env: { APP_RUNTIME_URL: "https://runtime.test/rpc", APP_RUNTIME_SERVICE_TOKEN: "x".repeat(32) },
+  env: {
+    APP_RUNTIME_INTERNAL_URL: "https://internal.tailorkit.app",
+    APP_RUNTIME_SERVICE_TOKEN: "x".repeat(32),
+  },
   publicKeys: vi.fn(() => ({
     keys: [{ kty: "EC", crv: "P-256", kid: "platform", x: "x", y: "y" }],
   })),
@@ -62,9 +65,9 @@ it("publishes deployment metadata to the worker with the service credential", as
     .spyOn(globalThis, "fetch")
     .mockResolvedValue(new Response(null, { status: 204 }));
   try {
-    await publishRuntimeMetadata(metadata);
+    await publishRuntimeMetadata(metadata, "app000000001");
     expect(fetch).toHaveBeenCalledWith(
-      new URL("https://runtime.test/internal/deployments"),
+      new URL("https://internal.tailorkit.app/p/project/a/app000000001/new-deployment"),
       expect.objectContaining({
         method: "POST",
         headers: {
@@ -77,7 +80,7 @@ it("publishes deployment metadata to the worker with the service credential", as
     );
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
     fetch.mockRejectedValueOnce(new Error("Network unavailable"));
-    await expect(publishRuntimeMetadata(metadata)).resolves.toBeUndefined();
+    await expect(publishRuntimeMetadata(metadata, "app000000001")).resolves.toBeUndefined();
     expect(log).toHaveBeenCalledOnce();
     log.mockRestore();
   } finally {

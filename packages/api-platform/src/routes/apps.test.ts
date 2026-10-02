@@ -14,7 +14,7 @@ import { createTestDb } from "../test/pglite";
 const testState = vi.hoisted(() => ({
   db: undefined as unknown,
   publishMetadata: vi.fn(),
-  env: { APP_RUNTIME_URL: "https://runtime.test" as string | undefined },
+  env: { APP_RUNTIME_URL: undefined as string | undefined },
   issueToken: vi.fn(
     async (_identity: {
       userId: string;
@@ -89,7 +89,7 @@ describe("platform appRouter", () => {
   let db: Awaited<ReturnType<typeof createTestDb>>["db"];
 
   beforeEach(async () => {
-    testState.env.APP_RUNTIME_URL = "https://runtime.test";
+    testState.env.APP_RUNTIME_URL = undefined;
     const testDb = await createTestDb();
     client = testDb.client;
     db = testDb.db;
@@ -278,7 +278,7 @@ describe("platform appRouter", () => {
 
     expect(result.body.items[0]?.currentDeployment?.id).toBe(deployment.id);
     expect(result.body.items[0]?.clientPath).toBe(
-      `https://team0000000001.tailorkit.app/p/${projectId}/a/notes00001/d/deploy0001/client.js`,
+      `https://team0000000001.tailorkit.app/p/${projectId}/a/notes00001/d/deploy0001/client/client.js`,
     );
   });
 
@@ -423,6 +423,7 @@ describe("platform appRouter", () => {
       if (status === "published") {
         expect(testState.publishMetadata).toHaveBeenCalledWith(
           expect.objectContaining({ deploymentId: deployment.id, objectKey }),
+          created.publicId,
         );
       } else {
         expect(testState.publishMetadata).not.toHaveBeenCalled();
@@ -528,6 +529,8 @@ describe("platform appRouter", () => {
       appId: created.id,
       projectId,
       deploymentId: deployment.id,
+      publicTeamId: context.organization.publicId,
+      appPublicId: created.publicId,
     });
     await expect(
       call(
@@ -555,10 +558,12 @@ describe("platform appRouter", () => {
     expect(http.response?.status).toBe(200);
     await expect(http.response?.json()).resolves.toMatchObject({
       token: "platform-token",
-      url: "https://runtime.test/rpc",
+      url: `https://team0000000001.tailorkit.app/p/${projectId}/a/${created.publicId}/rpc`,
     });
 
-    expect(session.body.url).toBe("https://runtime.test/rpc");
+    expect(session.body.url).toBe(
+      `https://team0000000001.tailorkit.app/p/${projectId}/a/${created.publicId}/rpc`,
+    );
     const identity = testState.issueToken.mock.calls.at(-1)?.[0];
     for (const appId of [created.id, created.publicId]) {
       for (const scopes of [
@@ -582,7 +587,6 @@ describe("platform appRouter", () => {
 
     const tokenCalls = testState.issueToken.mock.calls.length;
     for (const runtimeUrl of [
-      undefined,
       "http://runtime.test",
       "ftp://localhost",
       "https://user:pass@runtime.test",
@@ -597,8 +601,8 @@ describe("platform appRouter", () => {
     expect(testState.issueToken.mock.calls).toHaveLength(tokenCalls);
     testState.env.APP_RUNTIME_URL = "http://localhost:8787/other";
     const local = await call(appRouter.runtimeSession, input, { context });
-    expect(local.body.url).toBe("http://localhost:8787/rpc");
-    testState.env.APP_RUNTIME_URL = "https://runtime.test";
+    expect(local.body.url).toBe(`http://localhost:8787/p/${projectId}/a/${created.publicId}/rpc`);
+    testState.env.APP_RUNTIME_URL = undefined;
 
     await db.update(appTable).set({ currentDeploymentId: null }).where(eq(appTable.id, created.id));
     await expect(call(appRouter.runtimeSession, input, { context })).rejects.toMatchObject({

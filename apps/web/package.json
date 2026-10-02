@@ -71,7 +71,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "cross-env": "10.1.0",
-    "oxc-transform-react": "^0.151.0",
+    "oxc-transform-react": "^0.152.0",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
