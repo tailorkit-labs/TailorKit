@@ -27,7 +27,7 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:",
-    "workerd": "1.20260927.1",
-    "wrangler": "4.141.0"
+    "workerd": "1.20260929.1",
+    "wrangler": "4.143.0"
   }
 }

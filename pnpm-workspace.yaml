@@ -29,9 +29,9 @@ catalog:
   "@opentelemetry/sdk-node": ^0.218.0
   "@opentelemetry/sdk-trace-base": ^2.11.0
   "@tailwindcss/vite": ^4.3.3
-  "@tanstack/react-router": 1.170.39
+  "@tanstack/react-router": 1.170.40
   "@tanstack/react-router-devtools": 1.167.2
-  "@tanstack/react-start": 1.168.58
+  "@tanstack/react-start": 1.168.59
   "@types/node": 26.6.3
   "@types/pg": ^8.23.1
   "@types/react": ^19.3.0
