@@ -72,7 +72,21 @@ export const HostToIframePayload = z.discriminatedUnion("type", [
       session: z
         .strictObject({ token: z.string().max(8192), expiresAt: z.number(), url: z.url() })
         .optional(),
-      error: z.string().optional(),
+      error: z
+        .strictObject({
+          code: z.enum([
+            "BAD_REQUEST",
+            "UNAUTHORIZED",
+            "FORBIDDEN",
+            "NOT_FOUND",
+            "CONFLICT",
+            "INCOMPATIBLE_VERSION",
+            "UNAVAILABLE",
+            "INTERNAL_SERVER_ERROR",
+          ]),
+          message: z.string(),
+        })
+        .optional(),
     }),
   }),
   z.strictObject({

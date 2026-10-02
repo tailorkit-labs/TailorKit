@@ -10,8 +10,7 @@
       "@tailorkit/client-platform",
       "@tailorkit/core",
       "@tailorkit/react",
-      "@tailorkit/sandbox",
-      "@tailorkit/app-storage"
+      "@tailorkit/sandbox"
     ]
   ],
   "linked": [],

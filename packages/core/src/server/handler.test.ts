@@ -70,7 +70,6 @@ describe("createTailorKitServer", () => {
           appId: "app",
           installationId: "installation",
           userId: "user",
-          deploymentId: "deployment",
           url: "https://runtime.test/rpc",
         }),
       },
@@ -101,7 +100,6 @@ describe("createTailorKitServer", () => {
     expect(await issuedRequest.json()).toEqual({
       userId: "user",
       installationId: "installation",
-      deploymentId: "deployment",
       scopes: [{ name: "org", value: { tenant: "verified" } }],
     });
   });

@@ -120,8 +120,6 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         options.backend,
         authenticate,
         async (access, scopes) => {
-          if (!access.deploymentId)
-            throw new Error("App backend access requires a published deployment ID");
           const headers = await (typeof platformHeaders === "function"
             ? platformHeaders()
             : platformHeaders);
@@ -134,7 +132,6 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
             body: {
               userId: access.userId,
               installationId: access.installationId,
-              deploymentId: access.deploymentId,
               scopes: Object.entries(scopes).map(([name, value]) => ({ name, value })),
             },
           });

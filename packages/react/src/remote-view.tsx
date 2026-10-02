@@ -1,4 +1,4 @@
-import type { Session } from "@tailorkit/apps-server/client";
+import type { Session } from "@tailorkit/app/client";
 /* oxlint-disable react(invariant) */
 
 import {

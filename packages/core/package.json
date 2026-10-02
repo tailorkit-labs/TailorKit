@@ -69,7 +69,7 @@
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
-    "arktype": "^2.2.3",
+    "arktype": "^2.2.5",
     "tsup": "^8.5.1",
     "tsx": "catalog:",
     "typescript": "catalog:",

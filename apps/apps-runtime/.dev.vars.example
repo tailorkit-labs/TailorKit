@@ -1,2 +1,0 @@
-PLATFORM_URL=https://your-development-platform.example/api/platform
-RUNTIME_SERVICE_TOKEN=shared-private-runtime-service-token-at-least-32-characters

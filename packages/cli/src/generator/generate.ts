@@ -2,6 +2,7 @@ import { Liquid } from "liquidjs";
 import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { TEMPLATE_DRIZZLE_VERSION } from "./package-versions";
 
 import {
   clientTemplate,
@@ -13,6 +14,9 @@ import {
   packageJsonTemplate,
   tailorkitConfigTemplate,
   tsconfigTemplate,
+  serverTemplate,
+  schemaTemplate,
+  greetingTemplate,
 } from "./templates/index";
 
 export interface GenerateAppOptions {
@@ -23,11 +27,14 @@ export interface GenerateAppOptions {
   linting: boolean;
   packageName: string;
   packageVersions: {
+    drizzleKit?: string;
+    drizzleOrm?: string;
     oxfmt: string;
     oxlint: string;
     preact: string;
     tailorkit: string;
     typescript: string;
+    zod?: string;
   };
   useWorkspaceDependencies?: boolean;
 }
@@ -88,9 +95,13 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     preactVersion: packageVersions.preact,
     tailorkitVersion,
     typescriptVersion: packageVersions.typescript,
+    zodVersion: packageVersions.zod ?? "^4.0.0",
+    drizzleKitVersion: packageVersions.drizzleKit ?? TEMPLATE_DRIZZLE_VERSION,
+    drizzleOrmVersion: packageVersions.drizzleOrm ?? TEMPLATE_DRIZZLE_VERSION,
   };
 
   await ensureDirectory(path.join(targetDirectory, "src", "views"));
+  await ensureDirectory(path.join(targetDirectory, "src", "functions"));
 
   const files: { template: string; dest: string; condition?: boolean }[] = [
     { template: packageJsonTemplate, dest: "package.json" },
@@ -102,6 +113,9 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     { template: clientTemplate, dest: path.join("src", "client.ts") },
     { template: defaultViewTemplate, dest: path.join("src", "views", "default.tsx") },
     { template: genTemplate, dest: path.join("src", "tailorkit.gen.ts") },
+    { template: serverTemplate, dest: path.join("src", "server.ts") },
+    { template: schemaTemplate, dest: path.join("src", "schema.ts") },
+    { template: greetingTemplate, dest: path.join("src", "functions", "greeting.ts") },
   ];
 
   await Promise.all(

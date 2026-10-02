@@ -34,21 +34,29 @@
       "development": "./src/app-asset-url.ts",
       "types": "./dist/app-asset-url.d.mts",
       "default": "./dist/app-asset-url.mjs"
+    },
+    "./app-auth": {
+      "development": "./src/app-auth.ts",
+      "types": "./dist/app-auth.d.mts",
+      "default": "./dist/app-auth.mjs"
     }
   },
   "scripts": {
-    "build": "vp pack src/rate-limiting.ts src/hashing.ts src/dev-delay.ts src/app-asset-url.ts --format esm --dts --clean",
+    "build": "vp pack src/rate-limiting.ts src/hashing.ts src/dev-delay.ts src/app-asset-url.ts src/app-auth.ts --format esm --dts --clean",
     "check-types": "tsc --noEmit",
     "test": "vp test run"
   },
   "dependencies": {
     "@orpc/ratelimit": "catalog:",
     "@orpc/server": "catalog:",
+    "@tailorkit/app": "workspace:*",
     "@tailorkit/env": "workspace:*",
     "@tailorkit/kv": "workspace:*",
     "@tailorkit/observability": "workspace:*",
     "@upstash/ratelimit": "^2.2.0",
     "@vercel/functions": "^3.9.9",
+    "effect": "catalog:",
+    "jose": "6.2.12",
     "zod": "catalog:"
   },
   "devDependencies": {

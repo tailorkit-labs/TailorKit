@@ -1,4 +1,4 @@
-import { issueAppRuntimeToken } from "../app-runtime-auth";
+import { publishRuntimeMetadata, runtimeSession } from "./runtime";
 import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { db } from "@tailorkit/db";
@@ -55,7 +55,7 @@ const listApps = protectedRouter
                 and(eq(fields.scopeKey, scopeKey), eq(fields.scope, scope)),
               ),
             ),
-          )!,
+          ) ?? eq(fields.projectId, context.project.id),
       },
       orderBy: {
         createdAt: "desc",
@@ -251,45 +251,30 @@ const deploy = protectedRouter
       throw new ORPCError("BAD_REQUEST", { message: "Failed to deploy app." });
     }
 
+    const server = await db.query.appDeploymentFile.findFirst({
+      where: {
+        appDeploymentId: deployment.id,
+        status: "verified",
+        objectKey: `teams/${context.organization.publicId}/projects/${context.project.id}/apps/${context.app.publicId}/deployments/${deployment.publicId}/server/server.js`,
+      },
+    });
+    if (server?.checksum) {
+      await publishRuntimeMetadata({
+        projectId: context.project.id,
+        appId: context.app.id,
+        deploymentId: deployment.id,
+        objectKey: server.objectKey,
+        checksum: server.checksum,
+        contentLength: server.contentLength,
+      });
+    }
+
     return {
       body: withAppAssetUrl(
         { ...updatedApp, currentDeployment: deployment },
         context.organization.publicId,
         context.project.id,
       ),
-    };
-  });
-
-// Hosts authenticate with their project key and assert membership using verified scopes.
-const runtimeSession = protectedRouter
-  .meta(openapi({ path: "/apps/{appId}/runtime/session", method: "POST" }))
-  .input(
-    z.object({
-      params: z.object({ appId: z.string().min(1).max(256) }),
-      body: z.object({
-        scopes: scopesSchema,
-        userId: z.string().min(1).max(256),
-        installationId: z.string().min(1).max(256),
-        deploymentId: z.string().min(1).max(256),
-      }),
-    }),
-  )
-  .output(z.object({ body: z.object({ token: z.string(), expiresAt: z.number() }) }))
-  .use(
-    requireAppInScopes.adaptInput(({ params: { appId }, body: { scopes } }) => ({ appId, scopes })),
-  )
-  .handler(async ({ context, input }) => {
-    const deployment = context.app.currentDeployment;
-    if (!deployment || deployment.id !== input.body.deploymentId)
-      throw new ORPCError("CONFLICT", { message: "App deployment changed; reload the app." });
-    return {
-      body: await issueAppRuntimeToken({
-        userId: input.body.userId,
-        installationId: input.body.installationId,
-        projectId: context.project.id,
-        appId: context.app.id,
-        deploymentId: deployment.id,
-      }),
     };
   });
 

@@ -33,11 +33,11 @@
     "test": "vp test run"
   },
   "dependencies": {
-    "@better-auth/api-key": "1.7.5",
-    "@better-auth/core": "1.7.5",
-    "@better-auth/drizzle-adapter": "1.7.5",
+    "@better-auth/api-key": "1.7.6",
+    "@better-auth/core": "1.7.6",
+    "@better-auth/drizzle-adapter": "1.7.6",
     "@better-auth/infra": "^0.4.11",
-    "@better-auth/passkey": "1.7.5",
+    "@better-auth/passkey": "1.7.6",
     "@simplewebauthn/server": "^13.3.1",
     "@tailorkit/db": "workspace:*",
     "@tailorkit/email": "workspace:*",
@@ -54,7 +54,7 @@
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
-    "auth": "1.7.5",
+    "auth": "1.7.6",
     "typescript": "catalog:"
   }
 }

@@ -1,9 +1,11 @@
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile, symlink, readdir } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { generateApp } from "./generate";
+import { buildApp } from "@tailorkit/app/builder";
 
 const testDirectories: string[] = [];
 
@@ -36,6 +38,127 @@ afterEach(async () => {
 });
 
 describe("generateApp", () => {
+  it("generates and checks database migrations using only TailorKit config", async () => {
+    const targetDirectory = await createTempDir();
+    await generateApp({ ...defaultOptions, targetDirectory, useWorkspaceDependencies: true });
+    await symlink(
+      path.resolve(import.meta.dirname, "../../../../examples/apps/backend-todo/node_modules"),
+      path.join(targetDirectory, "node_modules"),
+      "dir",
+    );
+    await expect(readFile(path.join(targetDirectory, "drizzle.config.ts"))).rejects.toThrow();
+    const packageJson = JSON.parse(
+      await readFile(path.join(targetDirectory, "package.json"), "utf8"),
+    );
+    expect(packageJson.scripts["db:generate"]).toBe("tailorkit db generate");
+    await writeFile(
+      path.join(targetDirectory, "tailorkit.config.ts"),
+      'export default { host: "https://host.example.com", server: { migrations: "./src/migrations" } };',
+    );
+    const schema =
+      'import { table, text } from "tailorkit/server";\nexport const notes = table("notes", { id: text().primaryKey() });\n';
+    await writeFile(path.join(targetDirectory, "src/schema.ts"), schema);
+    const command = path.resolve(import.meta.dirname, "../../bin/tailorkit.js");
+    const run = (name: string) =>
+      spawnSync(
+        process.execPath,
+        [command, "db", "generate", "--cwd", targetDirectory, "--name", name],
+        { encoding: "utf8" },
+      );
+    const initial = run("initial");
+    expect(initial.stdout + initial.stderr).not.toContain("config file");
+    expect(initial.status, initial.stdout + initial.stderr).toBe(0);
+    const directory = path.join(targetDirectory, "src/migrations");
+    const first = await readdir(directory);
+    expect(first).toHaveLength(1);
+    expect(first[0]).toMatch(/_initial$/u);
+    const sql = await readFile(path.join(directory, first[0]!, "migration.sql"), "utf8");
+    expect(sql).toContain("CREATE TABLE `notes`");
+    await expect(readFile(path.join(targetDirectory, "drizzle.config.ts"))).rejects.toThrow();
+
+    await writeFile(
+      path.join(targetDirectory, "src/schema.ts"),
+      schema.replace("id: text().primaryKey()", "id: text().primaryKey(), label: text()"),
+    );
+    const updated = run("add_label");
+    expect(updated.status, updated.stdout + updated.stderr).toBe(0);
+    expect(await readdir(directory)).toHaveLength(2);
+    expect(await readFile(path.join(directory, first[0]!, "migration.sql"), "utf8")).toBe(sql);
+    await expect(readdir(path.join(targetDirectory, "migrations"))).rejects.toThrow();
+  }, 15_000);
+
+  it("infers backend API changes before building and keeps server code out of the client", async () => {
+    const targetDirectory = await createTempDir();
+    await generateApp({ ...defaultOptions, targetDirectory, useWorkspaceDependencies: true });
+    const dependencies = path.resolve(
+      import.meta.dirname,
+      "../../../../examples/apps/backend-todo/node_modules",
+    );
+    await symlink(dependencies, path.join(targetDirectory, "node_modules"), "dir");
+    const checkArgs = [
+      path.join(dependencies, "typescript/bin/tsc"),
+      "--noEmit",
+      "--skipLibCheck",
+      "-p",
+      targetDirectory,
+    ];
+    const checked = spawnSync(process.execPath, checkArgs, { encoding: "utf-8" });
+    expect(checked.stdout + checked.stderr).toBe("");
+    expect(checked.status).toBe(0);
+
+    const serverPath = path.join(targetDirectory, "src/server.ts");
+    const serverSource = await readFile(serverPath, "utf-8");
+    await writeFile(
+      serverPath,
+      serverSource
+        .replace("import { defineServer }", "import { defineServer, tk }")
+        .replace(
+          "defineServer(functions)",
+          'defineServer({ ...functions, count: tk.query.handler(() => 42), save: tk.mutation.handler(() => "saved"), perform: tk.action.handler(async () => true) })',
+        ),
+    );
+    await writeFile(
+      path.join(targetDirectory, "src/api.test-d.ts"),
+      `import { api } from "#tailorkit";
+import { useQuery, useMutation, useAction } from "tailorkit/client";
+const count: number | undefined = useQuery(api.count).data;
+const save: Promise<string> = useMutation(api.save).mutateAsync();
+const perform: Promise<boolean> = useAction(api.perform).executeAsync();
+// @ts-expect-error Unknown functions are not part of Api.
+api.missing;
+// @ts-expect-error Query inputs retain their required types.
+useQuery(api.greeting, { name: 42 });
+// @ts-expect-error Function kinds are inferred from the server.
+useMutation(api.count);
+`,
+    );
+    const updated = spawnSync(process.execPath, checkArgs, {
+      encoding: "utf-8",
+    });
+    expect(updated.stdout + updated.stderr).toBe("");
+    expect(updated.status).toBe(0);
+    const sourcesBeforeBuild = await readdir(path.join(targetDirectory, "src"), {
+      recursive: true,
+    });
+    await buildApp({ cwd: targetDirectory });
+    expect(await readdir(path.join(targetDirectory, "src"), { recursive: true })).toEqual(
+      sourcesBeforeBuild,
+    );
+    expect(await readFile(serverPath, "utf-8")).toContain("export default app;");
+    expect(await readFile(serverPath, "utf-8")).not.toContain("export type Api");
+    const browser = await readFile(
+      path.join(targetDirectory, ".tailorkit/client/client.js"),
+      "utf-8",
+    );
+    const server = await readFile(
+      path.join(targetDirectory, ".tailorkit/server/server.js"),
+      "utf-8",
+    );
+    expect(server).toContain("Hello,");
+    expect(browser).not.toContain("Hello,");
+    expect(browser).not.toContain("createAppFacet");
+  });
+
   it("generates all expected files", async () => {
     const targetDirectory = await createTempDir();
     await generateApp({ ...defaultOptions, targetDirectory });
@@ -48,6 +171,9 @@ describe("generateApp", () => {
       path.join("src", "client.ts"),
       path.join("src", "views", "default.tsx"),
       path.join("src", "tailorkit.gen.ts"),
+      path.join("src", "server.ts"),
+      path.join("src", "schema.ts"),
+      path.join("src", "functions", "greeting.ts"),
     ];
 
     for (const file of files) {
@@ -211,7 +337,8 @@ describe("generateApp", () => {
     await generateApp({ ...defaultOptions, targetDirectory });
 
     const content = await readFile(path.join(targetDirectory, "src", "client.ts"), "utf-8");
-    expect(content).toContain('import { defineClient } from "tailorkit/app"');
+    expect(content).toContain('import { ClientProvider, defineClient } from "tailorkit/client"');
+    expect(content).toContain("component: ClientProvider");
     expect(content).toContain('import defaultView from "./views/default"');
     expect(content).toContain("defineClient");
     expect(content).toContain('"/": defaultView');
@@ -232,7 +359,11 @@ describe("generateApp", () => {
     await generateApp({ ...defaultOptions, targetDirectory });
 
     const content = await readFile(path.join(targetDirectory, "src", "tailorkit.gen.ts"), "utf-8");
-    expect(content).toContain('import { createRemoteComponent } from "tailorkit/app"');
+    expect(content).toContain(
+      'import { createApi, createRemoteComponent } from "tailorkit/client"',
+    );
+    expect(content).toContain('import type app from "./server"');
+    expect(content).toContain("export const api = createApi<typeof app.functions>();");
     expect(content).toContain('"/": {');
     expect(content).toContain("user: {");
     expect(content).toContain("name: string;");

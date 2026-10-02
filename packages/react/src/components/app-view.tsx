@@ -1,4 +1,4 @@
-import { createSessionProvider } from "@tailorkit/apps-server/client";
+import { createSessionProvider } from "@tailorkit/app/client";
 import { useCallback, useEffect, useId, useMemo, useRef, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import { isViewAncestor } from "@tailorkit/core/views";

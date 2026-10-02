@@ -192,9 +192,13 @@ describe("platform deployment uploads", () => {
     expect(created.body.server?.file.objectKey).toMatch(/\/server\/server\.js$/u);
     expect(uploads).toHaveBeenCalledTimes(2);
     const lookup = { params: { appId: currentApp.id }, body: { scope: productionScope } };
-    await expect(call(deploymentRouter.server, lookup, { context })).rejects.toMatchObject({
-      code: "NOT_FOUND",
-    });
+    await expect(
+      call(
+        deploymentRouter.runtime,
+        { params: lookup.params, body: {} },
+        { context: { ...context, runtimeService: true } },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
     expect(context.storage.createDownloadUrl).not.toHaveBeenCalled();
     context.storage.head = vi.fn().mockResolvedValue({
       checksumSha256: logoChecksumBase64,
@@ -239,24 +243,6 @@ describe("platform deployment uploads", () => {
       contentLength: 11,
     });
     expect(context.storage.createDownloadUrl).not.toHaveBeenCalled();
-    const resolved = await call(deploymentRouter.server, lookup, { context });
-    expect(resolved.body).toEqual({
-      url: "https://private.example/server",
-      checksum: logoChecksum,
-      contentLength: 11,
-    });
-    expect(context.storage.createDownloadUrl).toHaveBeenCalledWith({
-      key: created.body.server?.file.objectKey,
-      expiresInSeconds: 60,
-    });
-    await expect(
-      call(
-        deploymentRouter.server,
-        { ...lookup, body: { scope: { name: "environment", value: { environment: "other" } } } },
-        { context },
-      ),
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
-    expect(context.storage.createDownloadUrl).toHaveBeenCalledOnce();
     const files = await db.query.appDeploymentFile.findMany({
       where: { appDeploymentId: created.body.deployment.id },
     });

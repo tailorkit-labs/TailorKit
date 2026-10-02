@@ -24,7 +24,6 @@ export type AppsRuntimeSessionData = {
     }>;
     userId: string;
     installationId: string;
-    deploymentId: string;
   };
   path: {
     appId: string;
@@ -765,36 +764,6 @@ export type DeploymentsPublishResponses = {
 
 export type DeploymentsPublishResponse =
   DeploymentsPublishResponses[keyof DeploymentsPublishResponses];
-
-export type DeploymentsServerData = {
-  body: {
-    scope: {
-      name: string;
-      value: {
-        [key: string]: Schema0;
-      };
-    };
-  };
-  path: {
-    appId: string;
-  };
-  query?: never;
-  url: "/apps/{appId}/server";
-};
-
-export type DeploymentsServerResponses = {
-  /**
-   * OK
-   */
-  200: {
-    url: string;
-    checksum: string;
-    contentLength: number;
-  };
-};
-
-export type DeploymentsServerResponse =
-  DeploymentsServerResponses[keyof DeploymentsServerResponses];
 
 export type DeploymentsRuntimeData = {
   body: {

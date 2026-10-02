@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { isViewAncestor } from "@tailorkit/core/views";
 
@@ -64,7 +64,7 @@ const generatedHeader = `/* eslint-disable */
 // Do not make changes to this file directly, as it will be overwritten.
 // Exclude this file from linting and formatting to avoid checking generated code.
 
-import { createRemoteComponent } from "tailorkit/app";
+import { createRemoteComponent } from "tailorkit/client";
 `;
 
 const fallbackObjectType = "Record<string, never>";
@@ -458,14 +458,17 @@ const renderActionRuntime = (actions: SerializedActions, pathParts: string[] = [
   return lines.join("\n");
 };
 
-export const renderGeneratedTypes = (schema: TailorKitSchemaFile): string => {
+export const renderGeneratedTypes = (
+  schema: TailorKitSchemaFile,
+  options: { serverModule?: string } = {},
+): string => {
   const actionsType = renderActions(schema.actions ?? {});
   const components = schema.components ?? {};
   const fieldAliases = collectFieldTypeAliases(components);
   const chunks = [
     generatedHeader,
     renderViewProps(schema.views ?? {}),
-    `declare module "tailorkit/app" {
+    `declare module "tailorkit/client" {
   interface TailorKitViews extends ViewPropsByPath {}
   interface TailorKitSlots { ${Object.entries(schema.slots ?? {})
     .map(([name, slot]) => `${quote(name)}: ${slot.views.map(quote).join(" | ") || "never"};`)
@@ -478,6 +481,14 @@ export type TailorKitActions = ${actionsType};
 export const actions = ${renderActionRuntime(schema.actions ?? {})} as TailorKitActions;`,
     renderTypeAliases(components, fieldAliases),
   ];
+
+  if (options.serverModule) {
+    chunks.splice(
+      1,
+      0,
+      `import { createApi } from "tailorkit/client";\nimport type app from ${quote(options.serverModule)};\n\nexport const api = createApi<typeof app.functions>();`,
+    );
+  }
 
   for (const [name, component] of Object.entries(components)) {
     const { children } = SerializedComponentSchema.parse(component);
@@ -510,7 +521,25 @@ export const generateTypes = async (options: GenerateTypesOptions = {}): Promise
   const loaded = await loadTailorKitConfig(options.configPath, root);
   const schema = await fetchSchemaFromHost(loaded.config.host);
 
-  const output = renderGeneratedTypes(schema);
+  const serverEntry = path.resolve(loaded.root, loaded.config.server?.entry ?? "src/server.ts");
+  const serverExists = await stat(serverEntry)
+    .then((file) => file.isFile())
+    .catch((error: unknown) => {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === "ENOENT" || code === "ENOTDIR") {
+        return false;
+      }
+      throw error;
+    });
+  let serverModule: string | undefined;
+  if (serverExists) {
+    const relative = path
+      .relative(path.dirname(outPath), serverEntry)
+      .replaceAll(path.sep, "/")
+      .replace(/\.tsx?$/u, "");
+    serverModule = relative.startsWith(".") ? relative : `./${relative}`;
+  }
+  const output = renderGeneratedTypes(schema, { serverModule });
 
   await mkdir(path.dirname(outPath), { recursive: true });
   await writeFile(outPath, output, "utf-8");

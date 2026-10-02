@@ -2,17 +2,17 @@ import { z } from "zod";
 
 export const tailorkitUploadManifestSchema = z.object({
   assets: z.object({
-    client: z.literal("client.js"),
-    server: z.literal("server.js").optional(),
+    client: z.literal("client/client.js"),
+    server: z.literal("server/server.js").optional(),
     logos: z
       .object({
         dark: z
           .string()
-          .regex(/^logo-dark\.(?:png|svg|webp)$/u)
+          .regex(/^client\/logo-dark\.(?:png|svg|webp)$/u)
           .optional(),
         light: z
           .string()
-          .regex(/^logo-light\.(?:png|svg|webp)$/u)
+          .regex(/^client\/logo-light\.(?:png|svg|webp)$/u)
           .optional(),
       })
       .optional(),
@@ -28,8 +28,8 @@ export const createTailorKitUploadManifest = (
 ): TailorKitUploadManifest =>
   tailorkitUploadManifestSchema.parse({
     assets: {
-      client: "client.js",
-      ...(server ? { server: "server.js" } : {}),
+      client: "client/client.js",
+      ...(server ? { server: "server/server.js" } : {}),
       ...(logos && Object.keys(logos).length > 0 ? { logos } : {}),
     },
     version: 1,

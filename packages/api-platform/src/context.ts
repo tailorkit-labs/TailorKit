@@ -1,4 +1,4 @@
-import { runtimeProjectAccess } from "./runtime-access";
+import { runtimeProjectAccess } from "./runtime/access";
 import { env } from "./env";
 import type { Organization } from "@tailorkit/db/schema/auth";
 import type { Project } from "@tailorkit/db/schema/project";

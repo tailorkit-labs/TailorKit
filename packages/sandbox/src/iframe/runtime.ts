@@ -1,5 +1,5 @@
 import { createIframeBackend } from "./backend";
-import type { Session } from "@tailorkit/apps-server/client";
+import type { Session } from "@tailorkit/app/client";
 import { iframeReadyType, sandboxMessageType } from "../bridge";
 import { readElementProps } from "../host/serialize";
 import type {

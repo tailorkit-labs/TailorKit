@@ -12,7 +12,7 @@ import { createTestDb } from "../test/pglite";
 
 const testState = vi.hoisted(() => ({
   db: undefined as unknown,
-  issueToken: vi.fn(async () => ({ token: "platform-token", expiresAt: Date.now() + 120_000 })),
+  issueToken: vi.fn(async () => ({ token: "platform-token", expiresAt: Date.now() + 300_000 })),
 }));
 
 vi.mock("@tailorkit/kv", () => ({ getKV: () => undefined }));
@@ -24,7 +24,7 @@ vi.mock("@tailorkit/db", () => ({
   },
 }));
 
-vi.mock("../app-runtime-auth", () => ({ issueAppRuntimeToken: testState.issueToken }));
+vi.mock("../runtime/auth", () => ({ issueAppRuntimeToken: testState.issueToken }));
 
 const { appRouter } = await import("./apps");
 const { canonicalizeScope } = await import("../scope");
@@ -417,7 +417,6 @@ describe("platform appRouter", () => {
         scopes: [productionScope],
         userId: "verified-user",
         installationId: "installation",
-        deploymentId: deployment.id,
       },
     };
     const session = await call(appRouter.runtimeSession, input, { context });
@@ -441,13 +440,6 @@ describe("platform appRouter", () => {
         context: { ...context, project: { ...context.project, id: otherProjectId } },
       }),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
-    await expect(
-      call(
-        appRouter.runtimeSession,
-        { ...input, body: { ...input.body, deploymentId: "old" } },
-        { context },
-      ),
-    ).rejects.toMatchObject({ code: "CONFLICT" });
 
     const deleted = await call(
       appRouter.delete,

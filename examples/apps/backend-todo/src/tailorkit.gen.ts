@@ -6,7 +6,10 @@
 // Do not make changes to this file directly, as it will be overwritten.
 // Exclude this file from linting and formatting to avoid checking generated code.
 
-import { createRemoteComponent } from "tailorkit/app";
+import { createApi, createRemoteComponent } from "tailorkit/client";
+import type app from "./server";
+
+export const api = createApi<typeof app.functions>();
 
 export interface ViewPropsByPath {
   "/": {
@@ -14,7 +17,7 @@ export interface ViewPropsByPath {
   };
 }
 
-declare module "tailorkit/app" {
+declare module "tailorkit/client" {
   interface TailorKitViews extends ViewPropsByPath {}
   interface TailorKitSlots {
     panel: "/";

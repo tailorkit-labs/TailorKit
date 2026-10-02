@@ -4,9 +4,6 @@ export interface HostBackendAccess {
   userId: string;
   appId: string;
   installationId: string;
-  /** Required by apps-runtime; resolved by the trusted host, never supplied by the app. */
-  projectId?: string;
-  deploymentId?: string;
   url: string;
 }
 

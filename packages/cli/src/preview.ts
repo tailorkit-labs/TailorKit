@@ -37,7 +37,6 @@ const isEndedSessionError = (error: unknown): boolean =>
 export interface PreviewOptions {
   configPath?: string;
   cwd: string;
-  entry?: string;
   mode?: string;
   outDir?: string;
   replace?: boolean;
@@ -143,7 +142,6 @@ export async function uploadPreviewSnapshot(
 const previewOptionsSchema = z.object({
   config: z.string().optional(),
   cwd: z.string().default("."),
-  entry: z.string().optional(),
   mode: z.string().optional(),
   outDir: z.string().optional(),
   replace: z.boolean().optional(),
@@ -153,7 +151,6 @@ export const toPreviewOptions = (options: Record<string, unknown>): PreviewOptio
   return {
     configPath: parsed.config,
     cwd: parsed.cwd,
-    entry: parsed.entry,
     mode: parsed.mode,
     outDir: parsed.outDir,
     replace: parsed.replace,
@@ -211,7 +208,7 @@ export async function runPreview(options: PreviewOptions): Promise<void> {
   let root: string;
   let latest: Snapshot;
   try {
-    root = await realpath(outDir);
+    root = await realpath(path.join(outDir, "client"));
     latest = await capturePreviewSnapshot(root);
   } catch (error) {
     try {
@@ -393,5 +390,5 @@ export async function runPreview(options: PreviewOptions): Promise<void> {
   const shareUrl = new URL(auth.hostUrl);
   shareUrl.pathname = `${shareUrl.pathname.replace(/\/+$/u, "")}/preview/${data.shareId}`;
   log.info(pc.green(`Host preview: ${shareUrl.href}`));
-  log.info(pc.dim(`Uploading built app assets from ${outDir}`));
+  log.info(pc.dim(`Uploading built app assets from ${root}`));
 }

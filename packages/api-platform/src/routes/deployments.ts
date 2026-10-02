@@ -1,3 +1,4 @@
+import { getRuntimeBundle, publishRuntimeMetadata } from "./runtime";
 import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { maxDeploymentBytes } from "@tailorkit/asset-delivery";
@@ -587,88 +588,20 @@ const publishAppDeployment = protectedRouter
         .update(app)
         .set({ currentDeploymentId: publishedDeployment.id })
         .where(and(eq(app.id, context.app.id), eq(app.projectId, context.project.id)));
+      const server = files.find((file) => file.objectKey.endsWith("/server/server.js"));
+      if (server?.checksum) {
+        await publishRuntimeMetadata({
+          projectId: context.project.id,
+          appId: context.app.id,
+          deploymentId: publishedDeployment.id,
+          objectKey: server.objectKey,
+          checksum: server.checksum,
+          contentLength: server.contentLength,
+        });
+      }
     }
 
     return { body: publishedDeployment };
-  });
-
-// Only the authenticated platform API can mint a short-lived private download URL.
-// This route is deliberately absent from the browser/host SDK router.
-const getServerBundle = protectedRouter
-  .meta(openapi({ path: "/apps/{appId}/server", method: "POST" }))
-  .input(
-    z.object({ params: z.object({ appId: z.string() }), body: z.object({ scope: scopeSchema }) }),
-  )
-  .output(
-    z.object({ body: z.object({ url: z.url(), checksum: z.string(), contentLength: z.number() }) }),
-  )
-  .use(requireApp.adaptInput(({ params, body }) => ({ appId: params.appId, scope: body.scope })))
-  .handler(async ({ context }) => {
-    const deployment = context.app.currentDeployment;
-    if (!deployment) throw new ORPCError("NOT_FOUND");
-    const key = `teams/${context.organization.publicId}/projects/${context.project.id}/apps/${context.app.publicId}/deployments/${deployment.publicId}/server/server.js`;
-    const file = await db.query.appDeploymentFile.findFirst({
-      where: { appDeploymentId: deployment.id, objectKey: key, status: "verified" },
-    });
-    if (!file?.checksum) throw new ORPCError("NOT_FOUND");
-    const download = await context.storage.createDownloadUrl({
-      key: file.objectKey,
-      expiresInSeconds: 60,
-    });
-    return {
-      body: { url: download.url, checksum: file.checksum, contentLength: file.contentLength },
-    };
-  });
-
-// Trusted runtime metadata: return the authorized private R2 key without minting a download URL.
-const getRuntimeBundle = protectedRouter
-  .meta(openapi({ path: "/apps/{appId}/runtime", method: "POST" }))
-  .input(z.object({ params: z.object({ appId: z.string() }), body: z.object({}) }))
-  .output(
-    z.object({
-      body: z.object({
-        projectId: z.string(),
-        appId: z.string(),
-        deploymentId: z.string(),
-        objectKey: z.string(),
-        checksum: z.string(),
-        contentLength: z.number(),
-      }),
-    }),
-  )
-  .use(
-    o
-      .middleware(async ({ context, next }, input: { appId: string }) => {
-        if (!context.runtimeService) throw new ORPCError("FORBIDDEN");
-
-        const app = await db.query.app.findFirst({
-          where: { id: input.appId, projectId: context.project.id },
-          with: { currentDeployment: { where: { status: "published" } } },
-        });
-        if (!app) throw new ORPCError("NOT_FOUND");
-
-        return next({ context: { ...context, app } });
-      })
-      .adaptInput(({ params }) => ({ appId: params.appId })),
-  )
-  .handler(async ({ context }) => {
-    const deployment = context.app.currentDeployment;
-    if (!deployment) throw new ORPCError("NOT_FOUND");
-    const key = `teams/${context.organization.publicId}/projects/${context.project.id}/apps/${context.app.publicId}/deployments/${deployment.publicId}/server/server.js`;
-    const file = await db.query.appDeploymentFile.findFirst({
-      where: { appDeploymentId: deployment.id, objectKey: key, status: "verified" },
-    });
-    if (!file?.checksum) throw new ORPCError("NOT_FOUND");
-    return {
-      body: {
-        projectId: context.project.id,
-        appId: context.app.id,
-        deploymentId: deployment.id,
-        objectKey: file.objectKey,
-        checksum: file.checksum,
-        contentLength: file.contentLength,
-      },
-    };
   });
 
 export const deploymentRouter = o.router({
@@ -676,6 +609,5 @@ export const deploymentRouter = o.router({
   get: getAppDeployment,
   create: createAppDeployment,
   publish: publishAppDeployment,
-  server: getServerBundle,
   runtime: getRuntimeBundle,
 });

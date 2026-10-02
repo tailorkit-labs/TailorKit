@@ -1,0 +1,62 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tailorkit-apps-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "rules": [
+    {
+      "type": "Text",
+      "globs": ["**/bootstrap.txt"],
+      "fallthrough": true,
+    },
+  ],
+  "compatibility_flags": ["enable_request_signal"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "worker_loaders": [
+    {
+      "binding": "LOADER",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUNDLES",
+      "bucket_name": "tailorkit-app-assets-prod",
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "STORES",
+        "class_name": "AppInstallation",
+      },
+    ],
+  },
+  "exports": {
+    "AppInstallation": {
+      "type": "durable-object",
+      "storage": "sqlite",
+    },
+  },
+  "secrets": {
+    "required": ["RUNTIME_SERVICE_TOKEN"],
+  },
+  "vars": {
+    "PLATFORM_URL": "https://tailorkit.dev/api/platform",
+    "APP_RUNTIME_PUBLIC_KEYS": {
+      "keys": [],
+    },
+  },
+  "observability": {
+    "enabled": true,
+    "traces": {
+      "enabled": true,
+    },
+  },
+  "kv_namespaces": [
+    {
+      "binding": "DEPLOYMENTS",
+      "id": "06b12b0c61164472887d9cf967f577b6",
+    },
+  ],
+}

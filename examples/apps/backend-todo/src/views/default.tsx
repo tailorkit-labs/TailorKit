@@ -1,69 +1,54 @@
-import { createView } from "tailorkit/app";
-import { createClient } from "@tailorkit/apps-server/client";
-import { useEffect, useState } from "preact/hooks";
-import { Box, Button, Flex } from "#tailorkit";
-import { api } from "../server.gen";
+import { createView } from "tailorkit/client";
+import { useAction, useMutation, useQuery } from "tailorkit/client";
+import { api, Box, Button, Flex } from "#tailorkit";
 
-const storage = createClient();
 const view = createView("/", { component: View });
 function View() {
-  const [todos, setTodos] = useState<{ id: string; text: string; done: boolean }[]>([]);
-  const [status, setStatus] = useState("connecting");
-  const [error, setError] = useState<string | null>(null);
-  useEffect(
-    () =>
-      storage.subscribe(
-        api.list,
-        {},
-        (rows) => {
-          setTodos(rows);
-          setStatus("connected");
-        },
-        {
-          onError: (failure) => setError(failure.message),
-        },
-      ),
-    [],
-  );
-  const mutate = (action: Promise<unknown>) => {
-    void action.catch((error) => setError(String(error)));
-  };
+  const todos = useQuery(api.list);
+  const add = useMutation(api.add);
+  const toggle = useMutation(api.toggle);
+  const remove = useMutation(api.remove);
+  const importTodo = useAction(api.importTodo);
+  const rows = todos.data ?? [];
+  const error = todos.error ?? add.error ?? toggle.error ?? remove.error ?? importTodo.error;
+  const pending = add.isPending || toggle.isPending || remove.isPending || importTodo.isPending;
   return (
     <Box padding="md">
       <Flex direction="column" gap="md">
-        <Box>Persistent todos · {status}</Box>
-        {error && <Box>{error}</Box>}
-        <Button
-          onClick={() => mutate(storage.mutate(api.add, { text: `Todo ${todos.length + 1}` }))}
-        >
-          Add todo
-        </Button>
-        <Button
-          onClick={() =>
-            mutate(
-              storage.action(api.importTodo, {
-                url: "https://jsonplaceholder.typicode.com/posts/1",
-              }),
-            )
-          }
-        >
-          Import from an external API
-        </Button>
-        {todos.map((todo) => (
+        <Box>Persistent todos</Box>
+        {todos.isLoading && <Box>Loading…</Box>}
+        {error && <Box>{error.message}</Box>}
+        {pending && <Box>Saving…</Box>}
+        {todos.isSuccess && !pending && (
+          <>
+            <Button onClick={() => add.mutate({ text: `Todo ${rows.length + 1}` })}>
+              Add todo
+            </Button>
+            <Button
+              onClick={() =>
+                importTodo.execute({ url: "https://jsonplaceholder.typicode.com/posts/1" })
+              }
+            >
+              Import from an external API
+            </Button>
+          </>
+        )}
+        {rows.map((todo) => (
           <Flex key={todo.id} direction="column" gap="xs">
             <Box>
               {todo.done ? "Done: " : "Open: "}
               {todo.text}
             </Box>
-            <Button onClick={() => mutate(storage.mutate(api.toggle, { id: todo.id }))}>
-              {todo.done ? "Reopen" : "Complete"}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => mutate(storage.mutate(api.remove, { id: todo.id }))}
-            >
-              Delete
-            </Button>
+            {!pending && (
+              <>
+                <Button onClick={() => toggle.mutate({ id: todo.id })}>
+                  {todo.done ? "Reopen" : "Complete"}
+                </Button>
+                <Button variant="secondary" onClick={() => remove.mutate({ id: todo.id })}>
+                  Delete
+                </Button>
+              </>
+            )}
           </Flex>
         ))}
       </Flex>

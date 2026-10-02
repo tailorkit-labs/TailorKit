@@ -28,7 +28,7 @@ export const loadTailorKitConfig = async (
   }
   if (result.config && typeof result.config === "object" && "storage" in result.config) {
     throw new Error(
-      "The legacy storage configuration was removed. Use server configuration and @tailorkit/apps-server.",
+      "The legacy storage configuration was removed. Use server configuration and @tailorkit/app.",
     );
   }
 

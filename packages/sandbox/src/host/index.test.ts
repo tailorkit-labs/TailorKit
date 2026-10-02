@@ -64,7 +64,7 @@ describe("createIframeUiHost", () => {
     expect(host.iframe.hidden).toBe(true);
     expect(host.iframe.getAttribute("sandbox")).toBe("allow-scripts");
     expect(host.iframe.getAttribute("sandbox")).not.toContain("allow-same-origin");
-    expect(host.iframe.srcdoc).toContain("connect-src 'none'");
+    expect(host.iframe.srcdoc).toContain("connect-src http: https: ws: wss:");
     expect(host.iframe.srcdoc).toContain("worker-src 'none'");
     expect(host.iframe.srcdoc).not.toContain("new Worker");
     expect(fetch).toHaveBeenCalledWith(new URL("https://assets.test/app.js"), {
@@ -184,7 +184,7 @@ describe("backend JWT bridge", () => {
     document.body.replaceChildren();
     vi.restoreAllMocks();
   });
-  it("allows only the host-authorized backend origin and renews scoped sessions", async () => {
+  it("mounts without fetching a session and renews scoped sessions", async () => {
     const session = {
       token: "scoped-token",
       expiresAt: Date.now() + 120_000,
@@ -199,7 +199,7 @@ describe("backend JWT bridge", () => {
     });
     host.mount();
     await vi.waitFor(() => expect(host.iframe.isConnected).toBe(true));
-    expect(host.iframe.srcdoc).toContain("connect-src wss://runtime.test");
+    expect(host.iframe.srcdoc).toContain("connect-src http: https: ws: wss:");
     expect(host.iframe.srcdoc).not.toContain("scoped-token");
     const postMessage = vi.spyOn(getContentWindow(host.iframe), "postMessage");
     const channel = getChannel(host.iframe);
@@ -212,7 +212,7 @@ describe("backend JWT bridge", () => {
         data: { id: "forged", refresh: true, appId: "another-app" },
       },
     });
-    expect(getBackendSession).toHaveBeenCalledTimes(1);
+    expect(getBackendSession).not.toHaveBeenCalled();
     expect(onError).toHaveBeenCalledOnce();
     emitFromIframe(host.iframe, {
       channel,
@@ -241,7 +241,7 @@ describe("backend JWT bridge", () => {
     });
     host.mount();
     await vi.waitFor(() => expect(host.iframe.isConnected).toBe(true));
-    expect(host.iframe.srcdoc).toContain("connect-src 'none'");
+    expect(host.iframe.srcdoc).toContain("connect-src http: https: ws: wss:");
     host.destroy();
   });
 });

@@ -43,8 +43,6 @@ import type {
   DeploymentsPublishResponses,
   DeploymentsRuntimeData,
   DeploymentsRuntimeResponses,
-  DeploymentsServerData,
-  DeploymentsServerResponses,
   PreviewAcceptData,
   PreviewAcceptedData,
   PreviewAcceptedResponses,
@@ -260,18 +258,6 @@ export const deploymentsPublish = <ThrowOnError extends boolean = false>(
 ): RequestResult<DeploymentsPublishResponses, unknown, ThrowOnError> =>
   (options.client ?? client).post<DeploymentsPublishResponses, unknown, ThrowOnError>({
     url: "/deployments/{deploymentId}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-export const deploymentsServer = <ThrowOnError extends boolean = false>(
-  options: Options<DeploymentsServerData, ThrowOnError>,
-): RequestResult<DeploymentsServerResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).post<DeploymentsServerResponses, unknown, ThrowOnError>({
-    url: "/apps/{appId}/server",
     ...options,
     headers: {
       "Content-Type": "application/json",

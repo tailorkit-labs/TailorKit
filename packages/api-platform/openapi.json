@@ -107,14 +107,9 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 256
-                  },
-                  "deploymentId": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 256
                   }
                 },
-                "required": ["scopes", "userId", "installationId", "deploymentId"]
+                "required": ["scopes", "userId", "installationId"]
               }
             }
           }
@@ -3077,82 +3072,6 @@
         }
       }
     },
-    "/apps/{appId}/server": {
-      "post": {
-        "operationId": "deployments.server",
-        "parameters": [
-          {
-            "in": "path",
-            "required": true,
-            "name": "appId",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "scope": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string",
-                        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
-                      },
-                      "value": {
-                        "type": "object",
-                        "propertyNames": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 64
-                        },
-                        "additionalProperties": {
-                          "$ref": "#/components/schemas/__schema0"
-                        }
-                      }
-                    },
-                    "required": ["name", "value"],
-                    "additionalProperties": false
-                  }
-                },
-                "required": ["scope"]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "url": {
-                      "type": "string",
-                      "format": "uri"
-                    },
-                    "checksum": {
-                      "type": "string"
-                    },
-                    "contentLength": {
-                      "type": "number"
-                    }
-                  },
-                  "required": ["url", "checksum", "contentLength"],
-                  "additionalProperties": false
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/apps/{appId}/runtime": {
       "post": {
         "operationId": "deployments.runtime",
@@ -3186,22 +3105,33 @@
                   "type": "object",
                   "properties": {
                     "projectId": {
-                      "type": "string"
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
                     },
                     "appId": {
-                      "type": "string"
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
                     },
                     "deploymentId": {
-                      "type": "string"
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
                     },
                     "objectKey": {
-                      "type": "string"
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4096
                     },
                     "checksum": {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
                     },
                     "contentLength": {
-                      "type": "number"
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     }
                   },
                   "required": [

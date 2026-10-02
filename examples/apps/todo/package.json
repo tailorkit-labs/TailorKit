@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build": "tailorkit build",
+    "db:generate": "tailorkit db generate",
     "generate": "tailorkit generate",
     "lint": "vp lint",
     "lint:fix": "vp lint --fix",
@@ -25,11 +26,14 @@
     "fix": "pnpm run lint:fix && pnpm run format:fix"
   },
   "dependencies": {
-    "@tailorkit/app": "workspace:*",
-    "preact": "^10.29.8"
+    "preact": "^10.29.8",
+    "tailorkit": "workspace:*",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@tailorkit/cli": "workspace:*",
+    "drizzle-kit": "catalog:",
+    "drizzle-orm": "catalog:",
     "typescript": "catalog:"
   }
 }

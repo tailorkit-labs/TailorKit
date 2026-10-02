@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-const clientConfigSchema = z.object({
-  entry: z.string().default("./src/client.ts"),
-});
-
 const buildConfigSchema = z.object({
   outDir: z.string().default(".tailorkit"),
 });
@@ -13,16 +9,16 @@ const logosConfigSchema = z.object({
   light: z.string().min(1).optional(),
 });
 
-const tailorkitConfigSchema = z.object({
+const tailorkitConfigSchema = z.strictObject({
   appId: z.string().min(1).optional(),
   build: buildConfigSchema.optional(),
-  client: clientConfigSchema.optional(),
+  client: z.strictObject({ entry: z.string().min(1).default("src/client.ts") }).optional(),
   host: z.string().url(),
   logos: logosConfigSchema.optional(),
   server: z
-    .object({
-      entry: z.string().default("./src/server.ts"),
-      references: z.string().default("./src/server.gen.ts"),
+    .strictObject({
+      entry: z.string().min(1).default("src/server.ts"),
+      migrations: z.string().min(1).optional(),
     })
     .optional(),
 });
