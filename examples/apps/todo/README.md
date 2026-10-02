@@ -6,7 +6,7 @@ This example stores todos in the app backend's installation-scoped SQLite databa
 
 **Import a sample todo** demonstrates an async action: it fetches a todo from JSONPlaceholder, validates the response and calls the `add` mutation. External calls run in actions; queries and mutations use synchronous database handlers.
 
-The client receives its backend session through the host bridge. The host must configure `backend.resolveInstallation` to authorize the app and resolve its installation and runtime URL. No runtime URL, installation ID or credentials are supplied by this example.
+The client receives its backend session through the host bridge. The host SDK uses its existing `authenticate` callback and forwards verified scopes to the platform, which authorizes the app and resolves its installation and runtime URL. No additional host backend configuration is required. No runtime URL, installation ID or credentials are supplied by this example.
 
 `src/server.ts` default-exports the app. Views import `api` from `#tailorkit`; its input/output types follow the server functions immediately, without building or generating backend references. The shared module imports the server only as a type and infers `typeof app.functions`, keeping the schema and handlers out of the browser bundle. `tailorkit build` builds the client and private server without changing source files.
 

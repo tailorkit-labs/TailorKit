@@ -1,32 +1,14 @@
 import type { TailorKitScopes } from "./types";
 
-export interface HostBackendAccess {
-  userId: string;
-  appId: string;
-  installationId: string;
-  url: string;
-}
-
-export interface HostBackendOptions {
-  /** Authorize membership and resolve a stable installation from the host's verified scopes.
-   * Return null for unauthorized apps. The client cannot choose a storage ID or runtime URL.
-   */
-  resolveInstallation(context: {
-    request: Request;
-    appId: string;
-    scopes: TailorKitScopes;
-  }): HostBackendAccess | null | Promise<HostBackendAccess | null>;
-}
 // Keep the request/build lifecycle and its failure paths together.
 // eslint-disable-next-line complexity
 export async function handleBackendSession(
   request: Request,
-  options: HostBackendOptions,
   authenticate: (input: { request: Request }) => Promise<{ scopes: TailorKitScopes } | null>,
   issueSession: (
-    access: HostBackendAccess,
+    appId: string,
     scopes: TailorKitScopes,
-  ) => Promise<{ token: string; expiresAt: number }>,
+  ) => Promise<{ token: string; expiresAt: number; url: string } | Response>,
 ) {
   const headers = { "cache-control": "no-store" };
   const origin = request.headers.get("origin");
@@ -81,26 +63,11 @@ export async function handleBackendSession(
   ) {
     return new Response("Invalid app", { status: 400, headers });
   }
-  const access = await options.resolveInstallation({
-    request,
-    appId: input.appId,
-    scopes: viewer.scopes,
-  });
-  if (!access || access.appId !== input.appId) {
-    return new Response("Forbidden", { status: 403, headers });
+  const session = await issueSession(input.appId, viewer.scopes);
+  if (session instanceof Response) {
+    const responseHeaders = new Headers(session.headers);
+    responseHeaders.set("cache-control", "no-store");
+    return new Response(session.body, { status: session.status, headers: responseHeaders });
   }
-  try {
-    const url = new URL(access.url);
-    if (
-      url.protocol !== "https:" &&
-      !(url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname))
-    ) {
-      throw new Error("App runtime URLs require HTTPS (or loopback for local development)");
-    }
-  } catch (error) {
-    console.error("Invalid app runtime URL configuration", error);
-    return new Response("Invalid app runtime configuration", { status: 500, headers });
-  }
-  const session = await issueSession(access, viewer.scopes);
-  return Response.json({ ...session, url: access.url }, { headers });
+  return Response.json(session, { headers });
 }

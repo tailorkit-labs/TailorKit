@@ -22,8 +22,6 @@ export type AppsRuntimeSessionData = {
         [key: string]: Schema0;
       };
     }>;
-    userId: string;
-    installationId: string;
   };
   path: {
     appId: string;
@@ -39,6 +37,7 @@ export type AppsRuntimeSessionResponses = {
   200: {
     token: string;
     expiresAt: number;
+    url: string;
   };
 };
 

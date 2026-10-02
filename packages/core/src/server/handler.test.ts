@@ -65,18 +65,14 @@ describe("createTailorKitServer", () => {
       projectKey: "project-key",
       scopes: { org: testScopeSchema },
       components: {},
-      backend: {
-        resolveInstallation: () => ({
-          appId: "app",
-          installationId: "installation",
-          userId: "user",
-          url: "https://runtime.test/rpc",
-        }),
-      },
       $internal: {
         platformFetch: async (input, init) => {
           requests.push(input instanceof Request ? input : new Request(input, init));
-          return Response.json({ token: "platform-token", expiresAt: 123 });
+          return Response.json({
+            token: "platform-token",
+            expiresAt: 123,
+            url: "https://runtime.test/rpc",
+          });
         },
       },
     });
@@ -98,10 +94,35 @@ describe("createTailorKitServer", () => {
     expect(issuedRequest.url).toBe("https://tailorkit.dev/api/platform/apps/app/runtime/session");
     expect(issuedRequest.headers.get("authorization")).toBe("Bearer project-key");
     expect(await issuedRequest.json()).toEqual({
-      userId: "user",
-      installationId: "installation",
       scopes: [{ name: "org", value: { tenant: "verified" } }],
     });
+  });
+
+  it("returns platform scope denials without issuing a backend session", async () => {
+    const requests: Request[] = [];
+    const server = createTailorKitServer({
+      projectKey: "project-key",
+      scopes: { org: testScopeSchema },
+      components: {},
+      $internal: {
+        platformFetch: async (input, init) => {
+          requests.push(input instanceof Request ? input : new Request(input, init));
+          return Response.json({ code: "NOT_FOUND", message: "Not found" }, { status: 404 });
+        },
+      },
+    });
+    const response = await server.handler(
+      new Request("https://host.test/api/tailorkit/backend/session", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ appId: "not-in-scope" }),
+      }),
+      { authenticate: () => ({ scopes: { org: { tenant: "verified" } } }) },
+    );
+    expect(response.status).toBe(404);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toMatchObject({ code: "NOT_FOUND" });
+    expect(requests).toHaveLength(1);
   });
 
   it("selects only requested authenticated scope names for host app reads", async () => {
