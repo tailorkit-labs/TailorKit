@@ -1,10 +1,10 @@
 {
   "name": "@tailorkit/cli",
-  "version": "0.1.0-beta.15",
+  "version": "0.1.0-beta.17",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AlfieJones/tailorkit.git",
+    "url": "git+https://github.com/tailorkit-labs/TailorKit.git",
     "directory": "packages/cli"
   },
   "bin": {
@@ -32,15 +32,16 @@
     "@tailorkit/client-platform": "workspace:*",
     "@tailorkit/core": "workspace:*",
     "cac": "^7.0.0",
+    "jose": "6.2.12",
     "liquidjs": "^10.29.0",
     "picocolors": "^1.1.1",
+    "vite": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
     "vite-plus": "catalog:"
   }
 }

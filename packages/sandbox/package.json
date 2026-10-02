@@ -1,10 +1,10 @@
 {
   "name": "@tailorkit/sandbox",
-  "version": "0.1.0-beta.15",
+  "version": "0.1.0-beta.17",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AlfieJones/tailorkit.git",
+    "url": "git+https://github.com/tailorkit-labs/TailorKit.git",
     "directory": "packages/sandbox"
   },
   "files": [
@@ -30,6 +30,7 @@
     "build": "vp build && tsc -p tsconfig.build.json"
   },
   "dependencies": {
+    "@tailorkit/app": "workspace:*",
     "@tailorkit/core": "workspace:*",
     "zod": "catalog:"
   },

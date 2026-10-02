@@ -31,12 +31,40 @@ const formatBytes = (bytes: number): string => {
   return `${value.toFixed(value >= 10 ? 1 : 2)} ${units[unitIndex]}`;
 };
 
+const loginWithApproval = async (options: Parameters<typeof runLogin>[0], open = true) => {
+  const approvalSpinner = spinner();
+  let isWaitingForApproval = false;
+  try {
+    const result = await runLogin(options, ({ expiresAt, hostUrl, userCode }) => {
+      const approvalUrl = createCliAuthApprovalUrl(hostUrl, userCode);
+      if (open) {
+        void openUrlInBrowser(approvalUrl);
+      }
+
+      log.info(`Enter this code in the host app: ${pc.bold(userCode)}`);
+      log.info(`Approval URL: ${pc.cyan(approvalUrl)}`);
+      log.info(`Code expires at ${expiresAt.toLocaleString()}.`);
+      log.info("Waiting for approval...");
+      approvalSpinner.start("Checking approval status");
+      isWaitingForApproval = true;
+    });
+    if (isWaitingForApproval) {
+      approvalSpinner.stop("Approved.");
+    }
+    return result;
+  } catch (error) {
+    if (isWaitingForApproval) {
+      approvalSpinner.stop("Approval failed.");
+    }
+    throw error;
+  }
+};
+
 cli.option("--cwd <path>", "Working directory", { default: "." });
 
 cli
   .command("preview", "Preview the app inside a host app")
   .option("--config <path>", "Path to tailorkit config")
-  .option("--entry <path>", "Client entry file")
   .option("--out-dir <path>", "Build output directory")
   .option("--mode <mode>", "Vite mode")
   .option("--replace", "End the active preview for this app and start a new one")
@@ -57,43 +85,22 @@ cli
   .option("--timeout <seconds>", "Seconds to wait for approval", { default: 1800 })
   .action(async (options: Record<string, unknown>) => {
     intro(pc.bold("TailorKit"));
-    const approvalSpinner = spinner();
-    let isWaitingForApproval = false;
     try {
       const timeoutSeconds = Number.parseInt(String(options.timeout ?? "1800"), 10);
       if (!Number.isInteger(timeoutSeconds) || timeoutSeconds <= 0) {
         throw new Error("--timeout must be a positive integer.");
       }
 
-      await runLogin(
+      await loginWithApproval(
         {
           configPath: options.config as string | undefined,
           cwd: String(options.cwd ?? "."),
           timeout: timeoutSeconds * 1000,
         },
-        ({ expiresAt, hostUrl, userCode }) => {
-          const approvalUrl = createCliAuthApprovalUrl(hostUrl, userCode);
-          if (options.open !== false) {
-            void openUrlInBrowser(approvalUrl);
-          }
-
-          log.info(`Enter this code in the host app: ${pc.bold(userCode)}`);
-          log.info(`Approval URL: ${pc.cyan(approvalUrl)}`);
-          log.info(`Code expires at ${expiresAt.toLocaleString()}.`);
-          log.info("Waiting for approval...");
-          approvalSpinner.start("Checking approval status");
-          isWaitingForApproval = true;
-        },
+        options.open !== false,
       );
-
-      if (isWaitingForApproval) {
-        approvalSpinner.stop("Approved.");
-      }
       outro("Authenticated successfully.");
     } catch (error) {
-      if (isWaitingForApproval) {
-        approvalSpinner.stop("Approval failed.");
-      }
       log.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
@@ -144,7 +151,6 @@ cli
 cli
   .command("deploy", "Build and deploy the TailorKit app")
   .option("--config <path>", "Path to tailorkit config")
-  .option("--entry <path>", "Client entry file")
   .option("--out-dir <path>", "Build output directory")
   .option("--mode <mode>", "Vite mode")
   .action(async (options: Record<string, unknown>) => {
@@ -155,8 +161,16 @@ cli
       const result = await runDeploy({
         configPath: options.config as string | undefined,
         cwd: String(options.cwd ?? "."),
-        entry: options.entry as string | undefined,
         mode: options.mode as string | undefined,
+        onLoginRequired: async () => {
+          deploySpinner.stop("Authentication required.");
+          const auth = await loginWithApproval({
+            configPath: options.config as string | undefined,
+            cwd: String(options.cwd ?? "."),
+          });
+          deploySpinner.start("Building and deploying app");
+          return auth;
+        },
         onMissingAppId: async ({ appName, configPath, hostUrl, reason }) => {
           deploySpinner.stop("App not linked.");
           log.info(
@@ -234,7 +248,6 @@ cli
 cli
   .command("build", "Build the TailorKit app")
   .option("--config <path>", "Path to tailorkit config")
-  .option("--entry <path>", "Client entry file")
   .option("--out-dir <path>", "Build output directory")
   .option("--mode <mode>", "Vite mode")
   .action(async (options: Record<string, unknown>) => {
@@ -244,11 +257,33 @@ cli
       await buildApp({
         configPath: options.config as string | undefined,
         cwd: String(options.cwd ?? "."),
-        entry: options.entry as string | undefined,
         mode: options.mode as string | undefined,
         outDir: options.outDir as string | undefined,
       });
       outro("Built app.");
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exit(1);
+    }
+  });
+
+cli
+  .command("db <command>", "Generate database migrations with db generate")
+  .option("--config <path>", "Path to tailorkit config")
+  .option("--name <name>", "Migration name")
+  .action(async (command: string, options: Record<string, unknown>) => {
+    intro(pc.bold("TailorKit"));
+    try {
+      if (command !== "generate") {
+        throw new Error(`Unknown database command: ${command}. Use tailorkit db generate.`);
+      }
+      const { generateAppMigrations } = await import("@tailorkit/app/builder");
+      const directory = await generateAppMigrations({
+        configPath: options.config as string | undefined,
+        cwd: String(options.cwd ?? "."),
+        name: options.name as string | undefined,
+      });
+      outro(`Migrations are up to date in ${pc.cyan(directory)}.`);
     } catch (error) {
       log.error(error instanceof Error ? error.message : String(error));
       process.exit(1);

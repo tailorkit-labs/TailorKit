@@ -1,5 +1,6 @@
+import { handleBackendSession } from "./backend";
 import { RPCHandler } from "@orpc/server/fetch";
-import { appsList, previewAccepted } from "@tailorkit/client-platform/client";
+import { appsList, appsRuntimeSession, previewAccepted } from "@tailorkit/client-platform/client";
 import { createClient } from "@tailorkit/client-platform/client/client/index";
 import type {
   NoComponentFieldCallbackConflicts,
@@ -113,6 +114,29 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
     };
     const url = new URL(request.url);
     const previewPrefix = `${basePath}/preview/`;
+    if (url.pathname === `${basePath}/backend/session`) {
+      return handleBackendSession(request, authenticate, async (appId, scopes) => {
+        const headers = await (typeof platformHeaders === "function"
+          ? platformHeaders()
+          : platformHeaders);
+        const session = await appsRuntimeSession({
+          client: platform,
+          responseStyle: "fields",
+          throwOnError: false,
+          headers,
+          path: { appId },
+          body: {
+            scopes: Object.entries(scopes).map(([name, value]) => ({ name, value })),
+          },
+        });
+        if (session.data) {
+          return session.data;
+        }
+        return Response.json(session.error ?? { error: "Unable to authorize the app backend" }, {
+          status: session.response?.status ?? 502,
+        });
+      });
+    }
     if (url.pathname === `${basePath}/schema`) {
       return Response.json(schema.serialize());
     }

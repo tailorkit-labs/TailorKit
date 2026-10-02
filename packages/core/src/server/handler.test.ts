@@ -59,6 +59,72 @@ optionalSchemaTailor.handler(new Request("https://example.com/api/tailorkit/sche
 });
 
 describe("createTailorKitServer", () => {
+  it("requests app backend tokens from the platform with host credentials and verified scopes", async () => {
+    const requests: Request[] = [];
+    const server = createTailorKitServer({
+      projectKey: "project-key",
+      scopes: { org: testScopeSchema },
+      components: {},
+      $internal: {
+        platformFetch: async (input, init) => {
+          requests.push(input instanceof Request ? input : new Request(input, init));
+          return Response.json({
+            token: "platform-token",
+            expiresAt: 123,
+            url: "https://runtime.test/rpc",
+          });
+        },
+      },
+    });
+    const response = await server.handler(
+      new Request("https://host.test/api/tailorkit/backend/session", {
+        method: "POST",
+        headers: { "content-type": "application/json", origin: "https://host.test" },
+        body: JSON.stringify({ appId: "app" }),
+      }),
+      { authenticate: () => ({ scopes: { org: { tenant: "verified" } } }) },
+    );
+    expect(await response.json()).toEqual({
+      token: "platform-token",
+      expiresAt: 123,
+      url: "https://runtime.test/rpc",
+    });
+    const issuedRequest = requests[0];
+    if (!issuedRequest) throw new Error("Expected a platform token request");
+    expect(issuedRequest.url).toBe("https://tailorkit.dev/api/platform/apps/app/runtime/session");
+    expect(issuedRequest.headers.get("authorization")).toBe("Bearer project-key");
+    expect(await issuedRequest.json()).toEqual({
+      scopes: [{ name: "org", value: { tenant: "verified" } }],
+    });
+  });
+
+  it("returns platform scope denials without issuing a backend session", async () => {
+    const requests: Request[] = [];
+    const server = createTailorKitServer({
+      projectKey: "project-key",
+      scopes: { org: testScopeSchema },
+      components: {},
+      $internal: {
+        platformFetch: async (input, init) => {
+          requests.push(input instanceof Request ? input : new Request(input, init));
+          return Response.json({ code: "NOT_FOUND", message: "Not found" }, { status: 404 });
+        },
+      },
+    });
+    const response = await server.handler(
+      new Request("https://host.test/api/tailorkit/backend/session", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ appId: "not-in-scope" }),
+      }),
+      { authenticate: () => ({ scopes: { org: { tenant: "verified" } } }) },
+    );
+    expect(response.status).toBe(404);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toMatchObject({ code: "NOT_FOUND" });
+    expect(requests).toHaveLength(1);
+  });
+
   it("selects only requested authenticated scope names for host app reads", async () => {
     const platformBodies: unknown[] = [];
     const server = createTailorKitServer({

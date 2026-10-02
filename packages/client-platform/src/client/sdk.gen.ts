@@ -19,6 +19,8 @@ import type {
   AppsGetResponses,
   AppsListData,
   AppsListResponses,
+  AppsRuntimeSessionData,
+  AppsRuntimeSessionResponses,
   AppsUpdateData,
   AppsUpdateResponses,
   CliAuthApproveData,
@@ -39,6 +41,8 @@ import type {
   DeploymentsListResponses,
   DeploymentsPublishData,
   DeploymentsPublishResponses,
+  DeploymentsRuntimeData,
+  DeploymentsRuntimeResponses,
   PreviewAcceptData,
   PreviewAcceptedData,
   PreviewAcceptedResponses,
@@ -68,6 +72,18 @@ export type Options<
    */
   meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
+
+export const appsRuntimeSession = <ThrowOnError extends boolean = false>(
+  options: Options<AppsRuntimeSessionData, ThrowOnError>,
+): RequestResult<AppsRuntimeSessionResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<AppsRuntimeSessionResponses, unknown, ThrowOnError>({
+    url: "/apps/{appId}/runtime/session",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
 
 export const appsList = <ThrowOnError extends boolean = false>(
   options: Options<AppsListData, ThrowOnError>,
@@ -242,6 +258,18 @@ export const deploymentsPublish = <ThrowOnError extends boolean = false>(
 ): RequestResult<DeploymentsPublishResponses, unknown, ThrowOnError> =>
   (options.client ?? client).post<DeploymentsPublishResponses, unknown, ThrowOnError>({
     url: "/deployments/{deploymentId}",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const deploymentsRuntime = <ThrowOnError extends boolean = false>(
+  options: Options<DeploymentsRuntimeData, ThrowOnError>,
+): RequestResult<DeploymentsRuntimeResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<DeploymentsRuntimeResponses, unknown, ThrowOnError>({
+    url: "/apps/{appId}/runtime",
     ...options,
     headers: {
       "Content-Type": "application/json",

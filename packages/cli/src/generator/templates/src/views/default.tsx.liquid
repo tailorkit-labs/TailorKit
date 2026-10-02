@@ -1,13 +1,14 @@
-import { createView } from "tailorkit/app";
+import { createView, useQuery } from "tailorkit/client";
+import { api{% if useBox %}, Box{% endif %} } from "#tailorkit";
 
-const view = createView("/", {
+const view = createView({{ viewPath }}, {
   component: ViewComponent,
 });
 
 function ViewComponent() {
-  const context = view.useContext();
+  const greeting = useQuery(api.greeting, { name: "TailorKit" });
 
-  return <div>{context.user.name}</div>;
+  return <{% if useBox %}Box{% endif %}>{greeting.isLoading ? "Loading…" : greeting.error?.message ?? greeting.data}</{% if useBox %}Box{% endif %}>;
 }
 
 export default view;

@@ -1,0 +1,35 @@
+{
+  "name": "@tailorkit/apps-worker",
+  "private": true,
+  "license": "BUSL-1.1",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-bootstrap.mjs && wrangler deploy --dry-run --outdir dist",
+    "check-types": "pnpm types && tsc --noEmit",
+    "types": "wrangler types src/worker-env.d.ts --env-interface Env --strict-vars=false",
+    "dev": "node scripts/build-bootstrap.mjs && wrangler dev --local --persist-to .tailorkit/state",
+    "test": "pnpm build && vp test run",
+    "deploy": "node scripts/build-bootstrap.mjs && wrangler deploy"
+  },
+  "dependencies": {
+    "@orpc/client": "catalog:",
+    "@orpc/experimental-effect": "2.0.0-beta.40",
+    "@orpc/hibernation": "2.0.0-beta.40",
+    "@orpc/server": "catalog:",
+    "@standard-server/peer": "0.9.2",
+    "@tailorkit/api-utils": "workspace:*",
+    "@tailorkit/app": "workspace:*",
+    "@tailorkit/asset-delivery": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "effect": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "workerd": "1.20260929.1",
+    "wrangler": "4.143.0"
+  }
+}

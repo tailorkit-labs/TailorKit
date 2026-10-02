@@ -168,10 +168,19 @@ const subscribe = o.output(asyncIteratorObject(event)).handler(async function* s
   };
   const unsubscribe = await store.subscribe(context.sessionId, notify);
   const timer = setInterval(notify, 10_000);
-  const expiryTimer =
-    context.role === "viewer"
-      ? setTimeout(notify, Math.max(0, context.viewerTokenExpiresAt - Date.now()))
-      : undefined;
+  let expiryTimer: ReturnType<typeof setTimeout> | undefined;
+  const notifyWhenExpired = () => {
+    if (context.role !== "viewer") {
+      return;
+    }
+    const remaining = context.viewerTokenExpiresAt - Date.now();
+    if (remaining > 0) {
+      expiryTimer = setTimeout(notifyWhenExpired, remaining);
+    } else {
+      notify();
+    }
+  };
+  notifyWhenExpired();
   let lastRevision = 0;
   try {
     for (;;) {

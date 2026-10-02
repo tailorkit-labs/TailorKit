@@ -400,15 +400,38 @@ describe("platform preview lifecycle and grants", () => {
 
   it("ends an idle viewer stream when its bearer token expires", async () => {
     const started = await start();
-    const stream = await call(previewWebSocketRouter.subscribe, undefined, {
-      context: {
-        sessionId: started.body.sessionId,
-        role: "viewer",
-        viewerTokenExpiresAt: Date.now() + 30,
-      },
+    const current = vi.spyOn(state.kv as ReturnType<typeof fakeKV>, "get");
+    vi.useFakeTimers({
+      toFake: ["Date", "setTimeout", "setInterval", "clearTimeout", "clearInterval"],
     });
-    const iterator = stream[Symbol.asyncIterator]();
-    await expect(iterator.next()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    const deadline = Date.now() + 1000;
+    const clock = vi.spyOn(Date, "now");
+    try {
+      const stream = await call(previewWebSocketRouter.subscribe, undefined, {
+        context: {
+          sessionId: started.body.sessionId,
+          role: "viewer",
+          viewerTokenExpiresAt: deadline,
+        },
+      });
+      const iterator = stream[Symbol.asyncIterator]();
+      const expired = expect(iterator.next()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+      await vi.waitFor(() =>
+        expect(current).toHaveBeenCalledWith(`preview:current:${started.body.sessionId}`),
+      );
+      // Simulate a timer waking just before the wall-clock expiry deadline.
+      clock.mockReturnValue(deadline - 1);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(vi.getTimerCount()).toBe(2);
+      clock.mockRestore();
+      await vi.advanceTimersByTimeAsync(1);
+      await expired;
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      clock.mockRestore();
+      vi.useRealTimers();
+      current.mockRestore();
+    }
   });
 
   it("allows five active apps per scope, retires expired sessions, and frees a slot on stop", async () => {

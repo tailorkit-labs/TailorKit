@@ -11,6 +11,8 @@ const publishablePackages = [
 ];
 
 const allowedPrerelease = /-(?:alpha|beta)(?:\.|$)/u;
+const releaseRepository = process.env.GITHUB_REPOSITORY ?? "tailorkit-labs/TailorKit";
+const expectedRepositoryUrl = `git+https://github.com/${releaseRepository}.git`;
 const errors = [];
 const manifests = [];
 
@@ -28,6 +30,12 @@ for (const manifestPath of publishablePackages) {
 
   if (manifest.publishConfig?.access !== "public") {
     errors.push(`${manifest.name} does not publish with public access`);
+  }
+
+  if (manifest.repository?.url !== expectedRepositoryUrl) {
+    errors.push(
+      `${manifest.name} repository.url must be ${expectedRepositoryUrl} for trusted publishing`,
+    );
   }
 }
 

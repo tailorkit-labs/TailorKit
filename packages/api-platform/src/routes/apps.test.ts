@@ -8,17 +8,40 @@ import { project as projectTable } from "@tailorkit/db/schema/project";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Context } from "../context";
+import type * as RuntimeModule from "./runtime";
 import { createTestDb } from "../test/pglite";
 
 const testState = vi.hoisted(() => ({
   db: undefined as unknown,
+  publishMetadata: vi.fn(),
+  env: { APP_RUNTIME_URL: undefined as string | undefined },
+  issueToken: vi.fn(
+    async (_identity: {
+      userId: string;
+      installationId: string;
+      projectId: string;
+      appId: string;
+      deploymentId: string;
+    }) => ({ token: "platform-token", expiresAt: Date.now() + 300_000 }),
+  ),
 }));
+
+vi.mock("../env", () => ({ env: testState.env }));
+
+vi.mock("@tailorkit/kv", () => ({ getKV: () => undefined }));
 
 vi.mock("@tailorkit/db", () => ({
   createDb: () => testState.db,
   get db() {
     return testState.db;
   },
+}));
+
+vi.mock("../runtime/auth", () => ({ issueAppRuntimeToken: testState.issueToken }));
+
+vi.mock("./runtime", async (importOriginal) => ({
+  ...(await importOriginal<typeof RuntimeModule>()),
+  publishRuntimeMetadata: testState.publishMetadata,
 }));
 
 const { appRouter } = await import("./apps");
@@ -66,6 +89,7 @@ describe("platform appRouter", () => {
   let db: Awaited<ReturnType<typeof createTestDb>>["db"];
 
   beforeEach(async () => {
+    testState.env.APP_RUNTIME_URL = undefined;
     const testDb = await createTestDb();
     client = testDb.client;
     db = testDb.db;
@@ -254,7 +278,7 @@ describe("platform appRouter", () => {
 
     expect(result.body.items[0]?.currentDeployment?.id).toBe(deployment.id);
     expect(result.body.items[0]?.clientPath).toBe(
-      `https://team0000000001.tailorkit.app/p/${projectId}/a/notes00001/d/deploy0001/client.js`,
+      `https://team0000000001.tailorkit.app/p/${projectId}/a/notes00001/d/deploy0001/client/client.js`,
     );
   });
 
@@ -355,6 +379,58 @@ describe("platform appRouter", () => {
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
+  it.each(["uploading", "deploying", "verifying", "published"] as const)(
+    "publishes verified runtime metadata only for a published deployment (%s)",
+    async (status) => {
+      const context = createContext();
+      const [created] = await db
+        .insert(appTable)
+        .values({
+          name: "Runtime",
+          projectId,
+          publicId: "runtime00001",
+          ...canonicalizeScope(productionScope),
+        })
+        .returning();
+      if (!created) {
+        throw new Error("Expected test app");
+      }
+      const [deployment] = await db
+        .insert(appDeployment)
+        .values({ appId: created.id, publicId: "runtime00002", status })
+        .returning();
+      if (!deployment) {
+        throw new Error("Expected test deployment");
+      }
+      const objectKey = `teams/${context.organization?.publicId}/projects/${projectId}/apps/${created.publicId}/deployments/${deployment.publicId}/server/server.js`;
+      await db.insert(appDeploymentFile).values({
+        appDeploymentId: deployment.id,
+        objectKey,
+        status: "verified",
+        checksum: "0".repeat(64),
+        contentLength: 1,
+        contentType: "application/javascript",
+        encoding: "utf-8",
+      });
+      await call(
+        appRouter.deploy,
+        {
+          params: { appId: created.publicId },
+          body: { deploymentId: deployment.publicId, scope: productionScope },
+        },
+        { context },
+      );
+      if (status === "published") {
+        expect(testState.publishMetadata).toHaveBeenCalledWith(
+          expect.objectContaining({ deploymentId: deployment.id, objectKey }),
+          created.publicId,
+        );
+      } else {
+        expect(testState.publishMetadata).not.toHaveBeenCalled();
+      }
+    },
+  );
+
   it("uses the JSON body scope for app mutations", async () => {
     const context = createContext();
     const [created] = await db
@@ -412,5 +488,125 @@ describe("platform appRouter", () => {
       { context },
     );
     expect(deleted.body.id).toBe(created.id);
+  });
+  it("authorizes backend sessions with existing scopes and resolves canonical installation identities", async () => {
+    const context = createContext();
+    const [created] = await db
+      .insert(appTable)
+      .values({
+        id: "55555555-5555-7555-8555-555555555555",
+        name: "Inbox",
+        projectId,
+        publicId: "inbox0000001",
+        ...canonicalizeScope(productionScope),
+      })
+      .returning();
+    if (!created) throw new Error("Expected test app");
+    const [deployment] = await db
+      .insert(appDeployment)
+      .values({
+        appId: created.id,
+        publicId: "deploy0002",
+        status: "published",
+      })
+      .returning();
+    if (!deployment) throw new Error("Expected test deployment");
+    await db
+      .update(appTable)
+      .set({ currentDeploymentId: deployment.id })
+      .where(eq(appTable.id, created.id));
+    const input = {
+      params: { appId: created.publicId },
+      body: {
+        scopes: [productionScope],
+      },
+    };
+    const session = await call(appRouter.runtimeSession, input, { context });
+    expect(session.body.token).toBe("platform-token");
+    expect(testState.issueToken).toHaveBeenCalledWith({
+      userId: `scope:${created.scopeKey}`,
+      installationId: created.id,
+      appId: created.id,
+      projectId,
+      deploymentId: deployment.id,
+      publicTeamId: context.organization.publicId,
+      appPublicId: created.publicId,
+    });
+    await expect(
+      call(
+        appRouter.runtimeSession,
+        { ...input, body: { ...input.body, scopes: [stagingScope] } },
+        { context },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(
+      call(appRouter.runtimeSession, input, {
+        context: { ...context, project: { ...context.project, id: otherProjectId } },
+      }),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+    expect(testState.issueToken).toHaveBeenCalledTimes(1);
+    const handler = new OpenAPIHandler({ apps: appRouter });
+    const http = await handler.handle(
+      new Request(`https://platform.test/api/platform/apps/${created.publicId}/runtime/session`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ scopes: [productionScope] }),
+      }),
+      { prefix: "/api/platform", context },
+    );
+    expect(http.response?.status).toBe(200);
+    await expect(http.response?.json()).resolves.toMatchObject({
+      token: "platform-token",
+      url: `https://team0000000001.tailorkit.app/p/${projectId}/a/${created.publicId}/rpc`,
+    });
+
+    expect(session.body.url).toBe(
+      `https://team0000000001.tailorkit.app/p/${projectId}/a/${created.publicId}/rpc`,
+    );
+    const identity = testState.issueToken.mock.calls.at(-1)?.[0];
+    for (const appId of [created.id, created.publicId]) {
+      for (const scopes of [
+        [stagingScope, productionScope],
+        [productionScope, stagingScope],
+      ]) {
+        await call(appRouter.runtimeSession, { params: { appId }, body: { scopes } }, { context });
+        expect(testState.issueToken).toHaveBeenLastCalledWith(identity);
+      }
+    }
+    // Removed host-selected IDs cannot override the authorized database identity.
+    await call(
+      appRouter.runtimeSession,
+      {
+        ...input,
+        body: { ...input.body, installationId: "victim", userId: "victim" },
+      } as typeof input,
+      { context },
+    );
+    expect(testState.issueToken).toHaveBeenLastCalledWith(identity);
+
+    const tokenCalls = testState.issueToken.mock.calls.length;
+    for (const runtimeUrl of [
+      "http://runtime.test",
+      "ftp://localhost",
+      "https://user:pass@runtime.test",
+      "https://runtime.test?redirect=attacker",
+      "https://runtime.test#fragment",
+    ]) {
+      testState.env.APP_RUNTIME_URL = runtimeUrl;
+      await expect(call(appRouter.runtimeSession, input, { context })).rejects.toMatchObject({
+        code: "SERVICE_UNAVAILABLE",
+      });
+    }
+    expect(testState.issueToken.mock.calls).toHaveLength(tokenCalls);
+    testState.env.APP_RUNTIME_URL = "http://localhost:8787/other";
+    const local = await call(appRouter.runtimeSession, input, { context });
+    expect(local.body.url).toBe(`http://localhost:8787/p/${projectId}/a/${created.publicId}/rpc`);
+    testState.env.APP_RUNTIME_URL = undefined;
+
+    await db.update(appTable).set({ currentDeploymentId: null }).where(eq(appTable.id, created.id));
+    await expect(call(appRouter.runtimeSession, input, { context })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
   });
 });

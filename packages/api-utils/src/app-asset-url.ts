@@ -28,9 +28,8 @@ export function withAppAssetUrl<
   if (deployment?.status === "published" && deployment.clientEntryFileId) {
     const appBase = `${assetBaseUrl}/p/${projectId}/a/${app.publicId}`;
     const deploymentBase = `${appBase}/d/${deployment.publicId}`;
-    clientPath = `${deploymentBase}/client.js`;
-    const getLogoUrl = (path: string) =>
-      path.startsWith("logos/") ? `${appBase}/${path}` : `${deploymentBase}/${path}`;
+    clientPath = `${deploymentBase}/client/client.js`;
+    const getLogoUrl = (path: string) => `${deploymentBase}/${path}`;
     const logos = {
       ...(deployment.logoDarkPath ? { dark: getLogoUrl(deployment.logoDarkPath) } : {}),
       ...(deployment.logoLightPath ? { light: getLogoUrl(deployment.logoLightPath) } : {}),

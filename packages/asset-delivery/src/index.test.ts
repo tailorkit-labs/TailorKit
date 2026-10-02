@@ -13,7 +13,7 @@ const teamId = "abc123def45678";
 const projectId = "22222222-2222-4222-8222-222222222222";
 const appId = "app000000001";
 const deploymentId = "deploy000001";
-const assetPath = `/p/${projectId}/a/${appId}/d/${deploymentId}/client.js`;
+const assetPath = `/p/${projectId}/a/${appId}/d/${deploymentId}/client/client.js`;
 const logoHash = "b".repeat(64);
 const localUrl = `http://localhost:3000/api/assets/t/${teamId}${assetPath}`;
 const hostedUrl = `https://${teamId}.tailorkit.app${assetPath}`;
@@ -23,7 +23,7 @@ describe("asset delivery contract", () => {
     const expected = {
       appId,
       deploymentId,
-      key: `teams/${teamId}/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/files/client.js`,
+      key: `teams/${teamId}/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/client/client.js`,
       projectId,
       publicTeamId: teamId,
       contentType: "application/javascript",
@@ -32,23 +32,13 @@ describe("asset delivery contract", () => {
     expect(parseHostedAssetRequest(new Request(hostedUrl), "tailorkit.app")).toEqual(expected);
   });
 
-  it("maps logo variants to their storage keys and content types", () => {
-    expect(
-      parseNodeAssetRequest(new Request(localUrl.replace("client.js", "logo-dark.svg"))),
-    ).toEqual(
-      expect.objectContaining({
-        contentType: "image/svg+xml",
-        key: expect.stringMatching(/\/files\/logo-dark\.svg$/u),
-      }),
-    );
-  });
-
   it("maps content-addressed app logos to shared storage keys", () => {
-    const logoPath = `/p/${projectId}/a/${appId}/logos/${logoHash}.webp`;
+    const logoPath = `/p/${projectId}/a/${appId}/d/${deploymentId}/logos/${logoHash}.webp`;
     expect(
       parseNodeAssetRequest(new Request(`http://localhost:3000/api/assets/t/${teamId}${logoPath}`)),
     ).toEqual({
       appId,
+      deploymentId,
       contentType: "image/webp",
       key: `teams/${teamId}/projects/${projectId}/apps/${appId}/logos/${logoHash}.webp`,
       projectId,
@@ -107,4 +97,23 @@ describe("asset delivery contract", () => {
       "image/png",
     );
   });
+});
+
+it("rejects retired flat asset and app-scoped logo URLs", () => {
+  for (const path of [
+    assetPath.replace("/client/client.js", "/client.js"),
+    assetPath.replace("/client/client.js", "/logo-light.svg"),
+    assetPath.replace("/client/client.js", "/logos/logo-light.svg"),
+    `/p/${projectId}/a/${appId}/logos/${logoHash}.svg`,
+  ]) {
+    expect(
+      parseHostedAssetRequest(
+        new Request(`https://${teamId}.tailorkit.app${path}`),
+        "tailorkit.app",
+      ),
+    ).toBeUndefined();
+    expect(
+      parseNodeAssetRequest(new Request(`http://localhost:3000/api/assets/t/${teamId}${path}`)),
+    ).toBeUndefined();
+  }
 });

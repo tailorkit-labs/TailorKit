@@ -110,7 +110,7 @@ export type TailorKitJsonValue =
   | { [key: string]: TailorKitJsonValue };
 
 /** A JSON object that identifies one named app scope. */
-export type TailorKitScope = { [key: string]: TailorKitJsonValue };
+export type TailorKitScope = Record<string, TailorKitJsonValue>;
 
 export interface TailorKitNamedScope {
   name: string;

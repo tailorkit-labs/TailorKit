@@ -1,10 +1,10 @@
 {
   "name": "@tailorkit/core",
-  "version": "0.1.0-beta.15",
+  "version": "0.1.0-beta.17",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AlfieJones/tailorkit.git",
+    "url": "git+https://github.com/tailorkit-labs/TailorKit.git",
     "directory": "packages/core"
   },
   "files": [
@@ -60,6 +60,7 @@
   },
   "dependencies": {
     "@orpc/client": "catalog:",
+    "@orpc/contract": "catalog:",
     "@orpc/server": "catalog:",
     "@standard-schema/spec": "^1.1.0",
     "@tailorkit/client-platform": "workspace:*",
@@ -68,7 +69,7 @@
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
-    "arktype": "^2.2.3",
+    "arktype": "^2.2.5",
     "tsup": "^8.5.1",
     "tsx": "catalog:",
     "typescript": "catalog:",

@@ -1,3 +1,4 @@
+import { createSessionProvider } from "@tailorkit/app/client";
 import { useCallback, useEffect, useId, useMemo, useRef, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import { isViewAncestor } from "@tailorkit/core/views";
@@ -18,6 +19,10 @@ export const AppView = ({
   const { store, client } = useTailorRootContext("AppView");
   const { theme, components: wrappedComponents } = client;
   const reactId = useId();
+  const getBackendSession = useMemo(
+    () => createSessionProvider({ baseUrl: store.baseUrl, appId: app.id }),
+    [store.baseUrl, app.id],
+  );
   const currentView = useSyncExternalStore(
     store.views.subscribe,
     store.views.getSnapshot,
@@ -108,6 +113,7 @@ export const AppView = ({
             appUrl ?? new URL(`preview/${previewSessionId}/client.js`, store.baseUrl)
           ).toString()}
           sourceText={previewSnapshot.source ?? undefined}
+          getBackendSession={getBackendSession}
           components={wrappedComponents}
           createIframe={createIframe}
           props={runtimeProps}
@@ -127,7 +133,7 @@ function resolveAppUrl(app: TailorKitApp, baseUrl: URL, assetsBaseUrl: string | 
   }
 
   return new URL(
-    `projects/${app.projectId}/apps/${app.id}/deployments/${app.currentDeployment.id}/files/client.js`,
+    `projects/${app.projectId}/apps/${app.id}/deployments/${app.currentDeployment.id}/client/client.js`,
     toBaseUrl(assetsBaseUrl),
   );
 }

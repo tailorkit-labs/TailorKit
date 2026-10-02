@@ -1,3 +1,5 @@
+import { createIframeBackend } from "./backend";
+import type { Session } from "@tailorkit/app/client";
 import { iframeReadyType, sandboxMessageType } from "../bridge";
 import { readElementProps } from "../host/serialize";
 import type {
@@ -37,6 +39,11 @@ export function startIframeRuntime(options: {
       parentWindow.postMessage({ channel, payload, type: sandboxMessageType }, "*");
     }
   };
+  const backend = createIframeBackend((data) => send({ type: "backendSessionRequest", data }));
+  const backendGlobal = globalThis as typeof globalThis & {
+    __tailorkitBackendSession?: (options: { refresh: boolean }) => Promise<Session>;
+  };
+  backendGlobal.__tailorkitBackendSession = backend.getSession;
   const sendError = (error: unknown) =>
     send({
       data: { message: error instanceof Error ? error.stack || error.message : String(error) },
@@ -146,7 +153,9 @@ export function startIframeRuntime(options: {
       return;
     }
     const payload = event.data.payload as HostToIframePayload;
-    if (payload?.type === "init") {
+    if (payload?.type === "backendSessionResult") {
+      backend.receive(payload.data);
+    } else if (payload?.type === "init") {
       pendingLoad = pendingLoad.then(() => loadApp(payload.data)).catch(sendError);
     } else if (payload?.type === "dispatchCallback") {
       const target = nodes.get(payload.data.nodeId)?.deref();
@@ -168,6 +177,9 @@ export function startIframeRuntime(options: {
   parentWindow.postMessage({ channel, type: iframeReadyType }, "*");
   send({ type: "ready" });
   return () => {
+    backend.close();
+    if (backendGlobal.__tailorkitBackendSession === backend.getSession)
+      delete backendGlobal.__tailorkitBackendSession;
     destroyed = true;
     observer.disconnect();
     window.removeEventListener("message", handleMessage);

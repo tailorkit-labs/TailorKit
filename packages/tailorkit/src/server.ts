@@ -8,3 +8,4 @@ export type {
   TailorKitServer,
   TailorKitServerOptions,
 } from "@tailorkit/core/server/types";
+export * from "@tailorkit/app/server";
