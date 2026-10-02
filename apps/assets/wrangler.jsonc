@@ -2,9 +2,10 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "tailorkit-assets",
   "main": "src/index.ts",
-  // Wrangler bundles this workspace source directly; don't rebuild shared dist during type generation.
-  "alias": {
-    "@tailorkit/asset-delivery": "../../packages/asset-delivery/src/index.ts",
+  // Workers Builds invokes Wrangler directly, without Turbo's dependency builds.
+  "build": {
+    "command": "pnpm --filter @tailorkit/asset-delivery build",
+    "watch_dir": ["src", "../../packages/asset-delivery/src"],
   },
   // Match the latest date supported by the pinned local workerd runtime.
   "compatibility_date": "2026-08-27",
