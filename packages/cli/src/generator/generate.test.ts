@@ -44,6 +44,8 @@ describe("generateApp", () => {
       "package.json",
       "tsconfig.json",
       "tailorkit.config.ts",
+      "logo-dark.svg",
+      "logo-light.svg",
       ".gitignore",
       path.join("src", "client.ts"),
       path.join("src", "views", "default.tsx"),
@@ -194,7 +196,39 @@ describe("generateApp", () => {
     expect(content).toContain('import type { TailorKitConfig } from "tailorkit/app/config"');
     expect(content).toContain("satisfies TailorKitConfig");
     expect(content).toContain('host: "https://host.example.com/api/tailorkit"');
+    expect(content).toContain('dark: "logo-dark.svg"');
+    expect(content).toContain('light: "logo-light.svg"');
     expect(content).not.toContain("defineTailorKitConfig");
+  });
+
+  it("generates TailorKit logos for both themes", async () => {
+    const targetDirectory = await createTempDir();
+    await generateApp({ ...defaultOptions, targetDirectory });
+
+    for (const variant of ["dark", "light"]) {
+      const content = await readFile(path.join(targetDirectory, `logo-${variant}.svg`), "utf-8");
+      const brandMark = await readFile(
+        new URL(`../../../../apps/web/public/brand/mark-${variant}.svg`, import.meta.url),
+        "utf-8",
+      );
+      expect(content).toBe(brandMark);
+    }
+  });
+
+  it("protects existing logos unless force is enabled", async () => {
+    for (const variant of ["dark", "light"]) {
+      const targetDirectory = await createTempDir();
+      const logoPath = path.join(targetDirectory, `logo-${variant}.svg`);
+      await writeFile(logoPath, "custom logo", "utf-8");
+
+      await expect(generateApp({ ...defaultOptions, targetDirectory })).rejects.toThrow(
+        "already exists. Use --force to overwrite it.",
+      );
+      expect(await readFile(logoPath, "utf-8")).toBe("custom logo");
+
+      await generateApp({ ...defaultOptions, targetDirectory, force: true });
+      expect(await readFile(logoPath, "utf-8")).toContain("<svg");
+    }
   });
 
   it("generates a default view for the default schema", async () => {

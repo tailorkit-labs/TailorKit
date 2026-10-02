@@ -10,6 +10,8 @@ import genTemplate from "./src/tailorkit.gen.ts.liquid";
 import serverTemplate from "./src/server.ts.liquid";
 import schemaTemplate from "./src/schema.ts.liquid";
 import greetingTemplate from "./src/functions/greeting.ts.liquid";
+import logoDarkTemplate from "./logo-dark.svg.liquid";
+import logoLightTemplate from "./logo-light.svg.liquid";
 
 export {
   packageJsonTemplate,
@@ -24,4 +26,6 @@ export {
   serverTemplate,
   schemaTemplate,
   greetingTemplate,
+  logoDarkTemplate,
+  logoLightTemplate,
 };

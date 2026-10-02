@@ -17,6 +17,8 @@ import {
   serverTemplate,
   schemaTemplate,
   greetingTemplate,
+  logoDarkTemplate,
+  logoLightTemplate,
 } from "./templates/index";
 
 export interface GenerateAppOptions {
@@ -107,6 +109,8 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     { template: packageJsonTemplate, dest: "package.json" },
     { template: tsconfigTemplate, dest: "tsconfig.json" },
     { template: tailorkitConfigTemplate, dest: "tailorkit.config.ts" },
+    { template: logoDarkTemplate, dest: "logo-dark.svg" },
+    { template: logoLightTemplate, dest: "logo-light.svg" },
     { template: gitignoreTemplate, dest: ".gitignore" },
     { template: oxlintConfigTemplate, dest: "oxlint.config.ts", condition: linting },
     { template: oxfmtConfigTemplate, dest: "oxfmt.config.ts", condition: formatting },
