@@ -1,0 +1,21 @@
+packages/app/src/builder/schema-check.test.ts
+  s_6c7043da608411::t_0eb9c48a5b85c6 54
+packages/app/src/builder/server.test.ts
+  s_6c7043da608411::t_d361dfd5d97a45 71,140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "26fc3350edb712b86be9cdd8beda9df7e870da20",
+  "prompts": {},
+  "sessions": {
+    "s_6c7043da608411": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f97c-33f2-7b00-ae53-ee745576a301",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
