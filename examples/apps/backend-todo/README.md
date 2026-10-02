@@ -16,7 +16,7 @@ The runtime integration test bundles this server, loads it from disposable local
 
 For a hosted deployment, set `appId` and `host` in `tailorkit.config.ts`, then use `tailorkit deploy`. Both the public client and private server go through the platform's normal blob upload flow. The server artifact includes the committed `migrations/` migrations. Each installation applies pending migrations before database calls run. After changing `src/schema.ts`, run `pnpm --filter backend-todo db:generate`, commit the generated migration folder, then rebuild and deploy.
 
-`src/server.ts` exports `type Api = typeof app.functions`. Views import `api` from `#tailorkit`, whose type-only server import infers the current functions without a build step. The app definition and SQLite schema stay in the private server artifact; builds do not generate backend reference files.
+`src/server.ts` default-exports the app. Views import `api` from `#tailorkit`, whose type-only server import infers the current functions without a build step. The app definition and SQLite schema stay in the private server artifact; builds do not generate backend reference files.
 
 The “Import from an external API” button calls `importTodo`. Its action fetches JSON and calls `ctx.mutations.add(...)`; the mutation updates every active todo subscription. The integration test substitutes the external API, so tests make no Internet requests.
 

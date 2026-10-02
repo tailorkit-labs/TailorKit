@@ -251,22 +251,24 @@ const deploy = protectedRouter
       throw new ORPCError("BAD_REQUEST", { message: "Failed to deploy app." });
     }
 
-    const server = await db.query.appDeploymentFile.findFirst({
-      where: {
-        appDeploymentId: deployment.id,
-        status: "verified",
-        objectKey: `teams/${context.organization.publicId}/projects/${context.project.id}/apps/${context.app.publicId}/deployments/${deployment.publicId}/server/server.js`,
-      },
-    });
-    if (server?.checksum) {
-      await publishRuntimeMetadata({
-        projectId: context.project.id,
-        appId: context.app.id,
-        deploymentId: deployment.id,
-        objectKey: server.objectKey,
-        checksum: server.checksum,
-        contentLength: server.contentLength,
+    if (deployment.status === "published") {
+      const server = await db.query.appDeploymentFile.findFirst({
+        where: {
+          appDeploymentId: deployment.id,
+          status: "verified",
+          objectKey: `teams/${context.organization.publicId}/projects/${context.project.id}/apps/${context.app.publicId}/deployments/${deployment.publicId}/server/server.js`,
+        },
       });
+      if (server?.checksum) {
+        await publishRuntimeMetadata({
+          projectId: context.project.id,
+          appId: context.app.id,
+          deploymentId: deployment.id,
+          objectKey: server.objectKey,
+          checksum: server.checksum,
+          contentLength: server.contentLength,
+        });
+      }
     }
 
     return {

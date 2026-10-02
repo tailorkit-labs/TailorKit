@@ -87,7 +87,6 @@ export function createClient(
       },
       reconnect: {
         enabled: true,
-        maxAttempt: 3,
         delay: (info) => (info.attempt === 1 ? 0 : (options.retryDelayMs ?? 1000)),
       },
     }),

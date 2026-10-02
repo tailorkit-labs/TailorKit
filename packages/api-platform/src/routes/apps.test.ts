@@ -8,10 +8,12 @@ import { project as projectTable } from "@tailorkit/db/schema/project";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Context } from "../context";
+import type * as RuntimeModule from "./runtime";
 import { createTestDb } from "../test/pglite";
 
 const testState = vi.hoisted(() => ({
   db: undefined as unknown,
+  publishMetadata: vi.fn(),
   issueToken: vi.fn(async () => ({ token: "platform-token", expiresAt: Date.now() + 300_000 })),
 }));
 
@@ -25,6 +27,11 @@ vi.mock("@tailorkit/db", () => ({
 }));
 
 vi.mock("../runtime/auth", () => ({ issueAppRuntimeToken: testState.issueToken }));
+
+vi.mock("./runtime", async (importOriginal) => ({
+  ...(await importOriginal<typeof RuntimeModule>()),
+  publishRuntimeMetadata: testState.publishMetadata,
+}));
 
 const { appRouter } = await import("./apps");
 const { canonicalizeScope } = await import("../scope");
@@ -359,6 +366,57 @@ describe("platform appRouter", () => {
       ),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
+
+  it.each(["uploading", "deploying", "verifying", "published"] as const)(
+    "publishes verified runtime metadata only for a published deployment (%s)",
+    async (status) => {
+      const context = createContext();
+      const [created] = await db
+        .insert(appTable)
+        .values({
+          name: "Runtime",
+          projectId,
+          publicId: "runtime00001",
+          ...canonicalizeScope(productionScope),
+        })
+        .returning();
+      if (!created) {
+        throw new Error("Expected test app");
+      }
+      const [deployment] = await db
+        .insert(appDeployment)
+        .values({ appId: created.id, publicId: "runtime00002", status })
+        .returning();
+      if (!deployment) {
+        throw new Error("Expected test deployment");
+      }
+      const objectKey = `teams/${context.organization?.publicId}/projects/${projectId}/apps/${created.publicId}/deployments/${deployment.publicId}/server/server.js`;
+      await db.insert(appDeploymentFile).values({
+        appDeploymentId: deployment.id,
+        objectKey,
+        status: "verified",
+        checksum: "0".repeat(64),
+        contentLength: 1,
+        contentType: "application/javascript",
+        encoding: "utf-8",
+      });
+      await call(
+        appRouter.deploy,
+        {
+          params: { appId: created.publicId },
+          body: { deploymentId: deployment.publicId, scope: productionScope },
+        },
+        { context },
+      );
+      if (status === "published") {
+        expect(testState.publishMetadata).toHaveBeenCalledWith(
+          expect.objectContaining({ deploymentId: deployment.id, objectKey }),
+        );
+      } else {
+        expect(testState.publishMetadata).not.toHaveBeenCalled();
+      }
+    },
+  );
 
   it("uses the JSON body scope for app mutations", async () => {
     const context = createContext();

@@ -80,3 +80,53 @@ it("rejects unauthenticated requests, uninstalled apps, forged store IDs and cro
     ).status,
   ).toBe(400);
 });
+
+it.each(["not a URL", "http://runtime.test/rpc", "ftp://localhost/rpc"])(
+  "returns an uncached configuration error for runtime URL %s",
+  async (url) => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const issue = vi.fn();
+    try {
+      const response = await rawHandleBackendSession(
+        request({ appId: "installed-app" }),
+        {
+          resolveInstallation: () => ({
+            appId: "installed-app",
+            userId: "user",
+            installationId: "installation",
+            url,
+          }),
+        },
+        authenticate,
+        issue,
+      );
+      expect(response.status).toBe(500);
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(log).toHaveBeenCalledOnce();
+      expect(issue).not.toHaveBeenCalled();
+    } finally {
+      log.mockRestore();
+    }
+  },
+);
+it.each([
+  "https://runtime.test/rpc",
+  "http://localhost/rpc",
+  "http://127.0.0.1/rpc",
+  "http://[::1]/rpc",
+])("accepts runtime URL %s", async (url) => {
+  const response = await handleBackendSession(
+    request({ appId: "installed-app" }),
+    {
+      resolveInstallation: () => ({
+        appId: "installed-app",
+        userId: "user",
+        installationId: "installation",
+        url,
+      }),
+    },
+    authenticate,
+  );
+  expect(response.status).toBe(200);
+  expect(response.headers.get("cache-control")).toBe("no-store");
+});

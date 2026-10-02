@@ -30,10 +30,13 @@ export function migrateDatabase(persistence: Persistence, migrations: readonly A
     ).rows;
     for (const [index, row] of applied.entries()) {
       const migration = migrations[index];
-      if (!migration || row[0] !== index || row[1] !== migration.id || row[2] !== migration.hash) {
+      if (
+        row[0] !== index ||
+        (migration && (row[1] !== migration.id || row[2] !== migration.hash))
+      ) {
         throw new AppError(
           "INCOMPATIBLE_VERSION",
-          "Applied app migrations must not be changed, removed or reordered",
+          "Applied app migrations must not be changed or reordered",
         );
       }
     }

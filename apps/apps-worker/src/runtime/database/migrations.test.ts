@@ -94,12 +94,19 @@ it("rolls back the entire pending upgrade and journal if a migration fails, and 
   });
 });
 
-it("rejects changed, removed, inserted or reordered applied migration history", () => {
+it("allows older migration prefixes but rejects changed, inserted or reordered history", () => {
   const { sqlite, persistence } = fixture();
   migrateDatabase(persistence, [initial, priority]);
+  expect(() => migrateDatabase(persistence, [])).not.toThrow();
+  expect(() => migrateDatabase(persistence, [initial])).not.toThrow();
+  expect(
+    sqlite
+      .prepare("PRAGMA table_info(todos)")
+      .all()
+      .map((row) => row.name),
+  ).toContain("priority");
   for (const history of [
-    [],
-    [initial],
+    [{ ...initial, hash: "a".repeat(64) }],
     [{ ...initial, hash: "a".repeat(64) }, priority],
     [{ ...initial, id: "20260901000000_inserted" }, initial, priority],
   ])

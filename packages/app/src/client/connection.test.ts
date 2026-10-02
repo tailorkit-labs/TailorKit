@@ -287,3 +287,25 @@ it("retries when the connection drops while reading a mutation response body", a
     vi.useRealTimers();
   }
 });
+
+it("keeps reconnecting an active subscription beyond three failures", async () => {
+  const socket = Object.assign(new EventTarget(), { readyState: 1, send: vi.fn(), close: vi.fn() });
+  const connect = vi.fn(() => {
+    if (connect.mock.calls.length <= 5) {
+      return Promise.reject(new Error("Offline"));
+    }
+    return Promise.resolve(socket as unknown as WebSocket);
+  });
+  const client = createClient({
+    getSession: () => Promise.resolve(session),
+    connect,
+    retryDelayMs: 0,
+  });
+  const stop = client.subscribe(reference("todos.list", "query"), {}, vi.fn());
+  try {
+    await vi.waitFor(() => expect(connect).toHaveBeenCalledTimes(6));
+  } finally {
+    stop();
+    client.close();
+  }
+});

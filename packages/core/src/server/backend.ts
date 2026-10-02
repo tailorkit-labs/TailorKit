@@ -89,12 +89,17 @@ export async function handleBackendSession(
   if (!access || access.appId !== input.appId) {
     return new Response("Forbidden", { status: 403, headers });
   }
-  const url = new URL(access.url);
-  if (
-    url.protocol !== "https:" &&
-    !(url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname))
-  ) {
-    throw new Error("App runtime URLs require HTTPS (or loopback for local development)");
+  try {
+    const url = new URL(access.url);
+    if (
+      url.protocol !== "https:" &&
+      !(url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname))
+    ) {
+      throw new Error("App runtime URLs require HTTPS (or loopback for local development)");
+    }
+  } catch (error) {
+    console.error("Invalid app runtime URL configuration", error);
+    return new Response("Invalid app runtime configuration", { status: 500, headers });
   }
   const session = await issueSession(access, viewer.scopes);
   return Response.json({ ...session, url: access.url }, { headers });

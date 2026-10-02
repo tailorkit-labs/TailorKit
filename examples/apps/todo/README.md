@@ -8,7 +8,7 @@ This example stores todos in the app backend's installation-scoped SQLite databa
 
 The client receives its backend session through the host bridge. The host must configure `backend.resolveInstallation` to authorize the app and resolve its installation and runtime URL. No runtime URL, installation ID or credentials are supplied by this example.
 
-`src/server.ts` exports `type Api = typeof app.functions`. Views import `api` from `#tailorkit`; its input/output types follow the server functions immediately, without building or generating backend references. The shared module imports `Api` only as a type, keeping the schema and handlers out of the browser bundle. `tailorkit build` builds the client and private server without changing source files.
+`src/server.ts` default-exports the app. Views import `api` from `#tailorkit`; its input/output types follow the server functions immediately, without building or generating backend references. The shared module imports the server only as a type and infers `typeof app.functions`, keeping the schema and handlers out of the browser bundle. `tailorkit build` builds the client and private server without changing source files.
 
 The builder bundles the committed Drizzle migrations from `migrations/` into the private server. Each installation applies pending migrations before its database handlers run. After changing `src/schema.ts`, run `pnpm --filter todo db:generate`, commit the generated migration folder, then rebuild and deploy. Generation needs no running database. Keep applied migration files unchanged; subsequent changes should append new migrations.
 
