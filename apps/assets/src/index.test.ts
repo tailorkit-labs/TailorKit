@@ -7,7 +7,7 @@ const appId = "app000000001";
 const deploymentId = "deploy000001";
 const path = `/p/${projectId}/a/${appId}/d/${deploymentId}/client.js`;
 const url = `https://abc123def45678.tailorkit.app${path}`;
-const key = `teams/abc123def45678/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/files/client.js`;
+const key = `teams/abc123def45678/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/client/client.js`;
 const bundle = "export default 'tenant bundle';";
 const get = vi.fn();
 const head = vi.fn();
@@ -40,6 +40,27 @@ afterEach(() => {
 });
 
 describe("tenant asset gateway", () => {
+  it("never serves server bundles, manifests or migrations publicly", async () => {
+    for (const suffix of [
+      "server.js",
+      "server/server.js",
+      "client/server.js",
+      "artifact.json",
+      "migration.sql",
+      "../server/server.js",
+    ]) {
+      for (const method of ["GET", "HEAD", "OPTIONS"]) {
+        const response = await fetchAsset(
+          new Request(url.replace("client.js", suffix), { method }),
+        );
+        expect(response.status).toBe(404);
+      }
+    }
+    expect(get).not.toHaveBeenCalled();
+    expect(head).not.toHaveBeenCalled();
+    expect(match).not.toHaveBeenCalled();
+  });
+
   it("caches an immutable bundle at the edge while preventing downstream caching", async () => {
     get.mockResolvedValueOnce(object());
     const response = await fetchAsset(new Request(url));
@@ -54,6 +75,13 @@ describe("tenant asset gateway", () => {
     expect(response.headers.get("Content-Type")).toBe("application/javascript; charset=utf-8");
     expect(response.headers.get("Access-Control-Allow-Origin")).toBe("*");
     expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
+  });
+
+  it("keeps already published files/client.js readable while new uploads use client/", async () => {
+    get.mockResolvedValueOnce(null).mockResolvedValueOnce(object());
+    const response = await fetchAsset(new Request(url));
+    expect(await response.text()).toBe(bundle);
+    expect(get).toHaveBeenNthCalledWith(2, key.replace("/client/", "/files/"));
   });
 
   it("serves an edge cache hit without reading R2", async () => {

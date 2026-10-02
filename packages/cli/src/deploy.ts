@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
+import { execFile } from "node:child_process";
 import { createRequire } from "node:module";
 import { existsSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile, mkdtemp, rm } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { gzip } from "node:zlib";
@@ -21,7 +22,6 @@ export interface TypecheckFailure {
 interface DeployOptions {
   configPath?: string;
   cwd: string;
-  entry?: string;
   mode?: string;
   onMissingAppId?: (details: {
     appName: string;
@@ -45,6 +45,7 @@ interface DeploymentLogoUpload {
 
 interface DeploymentCreateResult {
   assets: DeploymentAssetUpload[];
+  server?: DeploymentAssetUpload;
   deployment: {
     id: string;
   };
@@ -207,140 +208,67 @@ const resolveTsconfig = (root: string): string | undefined => {
   }
 };
 
-interface TypeScriptModule {
-  createCompilerHost(options: unknown): unknown;
-  createProgram(options: { options: unknown; rootNames: string[]; host: unknown }): {
-    emit(): { diagnostics: readonly unknown[] };
-  };
-  flattenDiagnosticMessageText(messageText: unknown, newLine: string): string;
-  getLineAndCharacterOfPosition(
-    sourceFile: unknown,
-    position: number,
-  ): {
-    character: number;
-    line: number;
-  };
-  getPreEmitDiagnostics(program: unknown): readonly unknown[];
-  parseJsonConfigFileContent(
-    json: unknown,
-    host: unknown,
-    basePath: string,
-    existingOptions?: Record<string, unknown>,
-    configFileName?: string,
-  ): {
-    errors: readonly unknown[];
-    options: unknown;
-  };
-  readConfigFile(
-    configFileName: string,
-    readFile: (path: string) => string | undefined,
-  ): {
-    config?: unknown;
-    error?: unknown;
-  };
-  sys: {
-    fileExists: (path: string) => boolean;
-    readDirectory: unknown;
-    readFile: (path: string) => string | undefined;
-    useCaseSensitiveFileNames: boolean;
-  };
-}
-
-interface TypeScriptDiagnostic {
-  category: number;
-  code: number;
-  file?: {
-    fileName: string;
-  };
-  messageText: unknown;
-  start?: number;
-}
-
-const loadTypeScript = (root: string): TypeScriptModule | undefined => {
-  const requireFromApp = createRequire(path.join(root, "package.json"));
-  try {
-    return requireFromApp("typescript") as TypeScriptModule;
-  } catch {
-    return undefined;
-  }
-};
-
-const formatDiagnostics = (
-  ts: TypeScriptModule,
-  diagnostics: readonly unknown[],
-  root: string,
-): string =>
-  diagnostics
-    .map((diagnostic) => {
-      const typedDiagnostic = diagnostic as TypeScriptDiagnostic;
-      const message = ts.flattenDiagnosticMessageText(typedDiagnostic.messageText, "\n");
-      if (typedDiagnostic.file === undefined || typedDiagnostic.start === undefined) {
-        return `TS${typedDiagnostic.code}: ${message}`;
-      }
-
-      const position = ts.getLineAndCharacterOfPosition(
-        typedDiagnostic.file,
-        typedDiagnostic.start,
-      );
-      const fileName = path.relative(root, typedDiagnostic.file.fileName);
-      return `${fileName}(${position.line + 1},${position.character + 1}): error TS${typedDiagnostic.code}: ${message}`;
-    })
-    .join("\n");
-
-const typecheckClientEntry = (
+const typecheckAppEntries = async (
   loaded: LoadedTailorKitConfig,
-  options: DeployOptions,
-): TypecheckFailure | undefined => {
-  const ts = loadTypeScript(loaded.root);
+): Promise<TypecheckFailure | undefined> => {
   const baseTsconfig = resolveTsconfig(loaded.root);
-  if (ts === undefined || baseTsconfig === undefined) {
-    return undefined;
+  if (!baseTsconfig) {
+    return;
   }
-
-  const entry = options.entry ?? loaded.config.client?.entry ?? "./src/client.ts";
-  const entryPath = path.resolve(loaded.root, entry);
-  const readResult = ts.readConfigFile(baseTsconfig, ts.sys.readFile);
-  if (readResult.error !== undefined) {
+  const requireFromApp = createRequire(path.join(loaded.root, "package.json"));
+  let compiler: string;
+  try {
+    compiler = path.join(
+      path.dirname(requireFromApp.resolve("typescript/package.json")),
+      "bin/tsc",
+    );
+  } catch {
+    return;
+  }
+  const entryPath = path.resolve(loaded.root, loaded.config.client?.entry ?? "src/client.ts");
+  // Check both application entry points with the project compiler options.
+  const temporary = await mkdtemp(path.join(loaded.root, ".tailorkit-typecheck-"));
+  try {
+    const config = path.join(temporary, "tsconfig.json");
+    await writeFile(
+      config,
+      JSON.stringify({
+        extends: baseTsconfig,
+        compilerOptions: { noEmit: true, incremental: false, composite: false },
+        files: [
+          entryPath,
+          ...(loaded.config.server
+            ? [path.resolve(loaded.root, loaded.config.server.entry ?? "src/server.ts")]
+            : []),
+        ],
+        include: [],
+      }),
+    );
+    await promisify(execFile)(
+      process.execPath,
+      [compiler, "--noEmit", "--project", config, "--pretty", "false"],
+      { cwd: loaded.root, maxBuffer: 4 * 1024 * 1024 },
+    );
+  } catch (error) {
+    const failure = error as {
+      code?: string | number;
+      stdout?: string;
+      stderr?: string;
+      message?: string;
+    };
     return {
       command: `tsc --noEmit ${path.relative(loaded.root, entryPath)}`,
-      exitCode: 1,
-      output: formatDiagnostics(ts, [readResult.error], loaded.root),
+      exitCode: typeof failure.code === "number" ? failure.code : null,
+      output:
+        `${failure.stdout ?? ""}${failure.stderr ?? ""}`.trim() || failure.message || String(error),
     };
+  } finally {
+    await rm(temporary, { recursive: true, force: true });
   }
-
-  const parsed = ts.parseJsonConfigFileContent(
-    readResult.config,
-    ts.sys,
-    loaded.root,
-    { noEmit: true },
-    baseTsconfig,
-  );
-  if (parsed.errors.length > 0) {
-    return {
-      command: `tsc --noEmit ${path.relative(loaded.root, entryPath)}`,
-      exitCode: 1,
-      output: formatDiagnostics(ts, parsed.errors, loaded.root),
-    };
-  }
-
-  const host = ts.createCompilerHost(parsed.options);
-  const program = ts.createProgram({
-    host,
-    options: parsed.options,
-    rootNames: [entryPath],
-  });
-  const diagnostics = [...ts.getPreEmitDiagnostics(program), ...program.emit().diagnostics];
-  if (diagnostics.length === 0) {
-    return undefined;
-  }
-
-  return {
-    command: `tsc --noEmit ${path.relative(loaded.root, entryPath)}`,
-    exitCode: 1,
-    output: formatDiagnostics(ts, diagnostics, loaded.root),
-  };
 };
 
+// Keep the request/build lifecycle and its failure paths together.
+// eslint-disable-next-line complexity
 export const runDeploy = async (options: DeployOptions): Promise<DeployResult> => {
   const loaded = await loadTailorKitConfig(options.configPath, options.cwd);
   let appId = loaded.config.appId;
@@ -358,7 +286,7 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
   const { buildApp, tailorkitUploadManifestSchema } = await import("@tailorkit/app/builder");
   const [buildResult, typecheckResult] = await Promise.allSettled([
     buildApp(options),
-    typecheckClientEntry(loaded, options),
+    typecheckAppEntries(loaded),
   ]);
 
   if (buildResult.status === "rejected") {
@@ -384,6 +312,9 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
   const clientAssetPath = path.join(outDir, manifest.assets.client);
   const clientAsset = await readFile(clientAssetPath);
   const clientAssetGzip = await gzipAsync(clientAsset);
+  const serverAsset = manifest.assets.server
+    ? await readFile(path.join(outDir, manifest.assets.server))
+    : undefined;
   const logoEntries = Object.entries(manifest.assets.logos ?? {}) as ["dark" | "light", string][];
   const logoAssets = await Promise.all(
     logoEntries.map(async ([variant, filename]) => {
@@ -450,6 +381,15 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
             objectKey: "client.js" as const,
           },
         ],
+        server: serverAsset
+          ? {
+              checksum: sha256Hex(serverAsset),
+              contentLength: serverAsset.byteLength,
+              contentType: "application/javascript" as const,
+              encoding: "utf-8" as const,
+              objectKey: "server.js" as const,
+            }
+          : undefined,
         logos:
           logoAssets.length > 0
             ? Object.fromEntries(
@@ -481,7 +421,11 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
   if (created.assets.length !== 1 || !created.assets[0]) {
     throw new Error("Deployment did not return an upload URL for the client asset.");
   }
+  if (serverAsset && !created.server) {
+    throw new Error("Deployment did not return an upload URL for the server asset.");
+  }
   await Promise.all([
+    ...(serverAsset && created.server ? [uploadAsset(created.server, serverAsset)] : []),
     uploadAsset(created.assets[0], clientAsset),
     ...logoAssets.map((logo) => {
       const upload = created.logos?.[logo.variant];
@@ -510,6 +454,16 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
     }),
   );
 
+  const uploadedServer = [];
+  if (serverAsset && manifest.assets.server) {
+    const compressed = await gzipAsync(serverAsset);
+    uploadedServer.push({
+      gzipSize: compressed.byteLength,
+      path: manifest.assets.server,
+      size: serverAsset.byteLength,
+    });
+  }
+
   return {
     appId,
     createdApp,
@@ -522,6 +476,7 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
         path: manifest.assets.client,
         size: clientAsset.byteLength,
       },
+      ...uploadedServer,
       ...uploadedLogos,
     ],
   };

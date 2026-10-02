@@ -4,6 +4,10 @@ import { createEnv } from "@tailorkit/env";
 export const env = createEnv({
   scope: "api-platform",
   schema: {
+    APP_RUNTIME_SIGNING_KEY: z.string().optional(),
+    APP_RUNTIME_PREVIOUS_PUBLIC_KEYS: z.string().optional(),
+    APP_RUNTIME_URL: z.url().optional(),
+    APP_RUNTIME_SERVICE_TOKEN: z.string().min(32).optional(),
     AUTH_SECRET: z.string().min(32).optional(),
     PORT: z.coerce.number().optional(),
     VERCEL_ENV: z.string().optional(),

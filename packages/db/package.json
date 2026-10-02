@@ -46,7 +46,7 @@
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
-    "drizzle-kit": "1.0.0-rc.4-5d5b77c",
+    "drizzle-kit": "catalog:",
     "typescript": "catalog:"
   }
 }

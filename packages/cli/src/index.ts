@@ -36,7 +36,6 @@ cli.option("--cwd <path>", "Working directory", { default: "." });
 cli
   .command("preview", "Preview the app inside a host app")
   .option("--config <path>", "Path to tailorkit config")
-  .option("--entry <path>", "Client entry file")
   .option("--out-dir <path>", "Build output directory")
   .option("--mode <mode>", "Vite mode")
   .option("--replace", "End the active preview for this app and start a new one")
@@ -144,7 +143,6 @@ cli
 cli
   .command("deploy", "Build and deploy the TailorKit app")
   .option("--config <path>", "Path to tailorkit config")
-  .option("--entry <path>", "Client entry file")
   .option("--out-dir <path>", "Build output directory")
   .option("--mode <mode>", "Vite mode")
   .action(async (options: Record<string, unknown>) => {
@@ -155,7 +153,6 @@ cli
       const result = await runDeploy({
         configPath: options.config as string | undefined,
         cwd: String(options.cwd ?? "."),
-        entry: options.entry as string | undefined,
         mode: options.mode as string | undefined,
         onMissingAppId: async ({ appName, configPath, hostUrl, reason }) => {
           deploySpinner.stop("App not linked.");
@@ -234,7 +231,6 @@ cli
 cli
   .command("build", "Build the TailorKit app")
   .option("--config <path>", "Path to tailorkit config")
-  .option("--entry <path>", "Client entry file")
   .option("--out-dir <path>", "Build output directory")
   .option("--mode <mode>", "Vite mode")
   .action(async (options: Record<string, unknown>) => {
@@ -244,11 +240,33 @@ cli
       await buildApp({
         configPath: options.config as string | undefined,
         cwd: String(options.cwd ?? "."),
-        entry: options.entry as string | undefined,
         mode: options.mode as string | undefined,
         outDir: options.outDir as string | undefined,
       });
       outro("Built app.");
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exit(1);
+    }
+  });
+
+cli
+  .command("db <command>", "Generate database migrations with db generate")
+  .option("--config <path>", "Path to tailorkit config")
+  .option("--name <name>", "Migration name")
+  .action(async (command: string, options: Record<string, unknown>) => {
+    intro(pc.bold("TailorKit"));
+    try {
+      if (command !== "generate") {
+        throw new Error(`Unknown database command: ${command}. Use tailorkit db generate.`);
+      }
+      const { generateAppMigrations } = await import("@tailorkit/app/builder");
+      const directory = await generateAppMigrations({
+        configPath: options.config as string | undefined,
+        cwd: String(options.cwd ?? "."),
+        name: options.name as string | undefined,
+      });
+      outro(`Migrations are up to date in ${pc.cyan(directory)}.`);
     } catch (error) {
       log.error(error instanceof Error ? error.message : String(error));
       process.exit(1);

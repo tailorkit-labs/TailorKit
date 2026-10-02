@@ -26,6 +26,11 @@ export const loadTailorKitConfig = async (
   if (result === null) {
     throw new Error(`Could not find tailorkit config from ${searchFrom}.`);
   }
+  if (result.config && typeof result.config === "object" && "storage" in result.config) {
+    throw new Error(
+      "The legacy storage configuration was removed. Use server configuration and @tailorkit/app.",
+    );
+  }
 
   return {
     config: tailorkitConfigSchema.parse(result.config),

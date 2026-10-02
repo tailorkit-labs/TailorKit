@@ -1,5 +1,6 @@
+import { handleBackendSession } from "./backend";
 import { RPCHandler } from "@orpc/server/fetch";
-import { appsList, previewAccepted } from "@tailorkit/client-platform/client";
+import { appsList, appsRuntimeSession, previewAccepted } from "@tailorkit/client-platform/client";
 import { createClient } from "@tailorkit/client-platform/client/client/index";
 import type {
   NoComponentFieldCallbackConflicts,
@@ -113,6 +114,31 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
     };
     const url = new URL(request.url);
     const previewPrefix = `${basePath}/preview/`;
+    if (url.pathname === `${basePath}/backend/session` && options.backend) {
+      return handleBackendSession(
+        request,
+        options.backend,
+        authenticate,
+        async (access, scopes) => {
+          const headers = await (typeof platformHeaders === "function"
+            ? platformHeaders()
+            : platformHeaders);
+          const session = await appsRuntimeSession({
+            client: platform,
+            responseStyle: "fields",
+            throwOnError: true,
+            headers,
+            path: { appId: access.appId },
+            body: {
+              userId: access.userId,
+              installationId: access.installationId,
+              scopes: Object.entries(scopes).map(([name, value]) => ({ name, value })),
+            },
+          });
+          return session.data;
+        },
+      );
+    }
     if (url.pathname === `${basePath}/schema`) {
       return Response.json(schema.serialize());
     }

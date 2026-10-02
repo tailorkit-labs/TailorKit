@@ -53,7 +53,7 @@ function createIdentity(publicTeamId: string, pathname: string): AssetIdentity |
     return {
       appId,
       deploymentId,
-      key: `teams/${publicTeamId}/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/files/${filename}`,
+      key: `teams/${publicTeamId}/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/client/${filename}`,
       projectId,
       publicTeamId,
       contentType: getAssetContentType(filename),
@@ -153,4 +153,9 @@ export function assetHeaders(input: {
     headers.set("ETag", input.etag);
   }
   return headers;
+}
+
+/** Read compatibility for already published client assets; never accepts server keys. */
+export function legacyClientKey(identity: AssetIdentity): string | undefined {
+  return identity.deploymentId ? identity.key.replace("/client/", "/files/") : undefined;
 }

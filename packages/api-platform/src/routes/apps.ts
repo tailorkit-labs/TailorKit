@@ -1,3 +1,4 @@
+import { publishRuntimeMetadata, runtimeSession } from "./runtime";
 import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { db } from "@tailorkit/db";
@@ -54,7 +55,7 @@ const listApps = protectedRouter
                 and(eq(fields.scopeKey, scopeKey), eq(fields.scope, scope)),
               ),
             ),
-          )!,
+          ) ?? eq(fields.projectId, context.project.id),
       },
       orderBy: {
         createdAt: "desc",
@@ -250,6 +251,26 @@ const deploy = protectedRouter
       throw new ORPCError("BAD_REQUEST", { message: "Failed to deploy app." });
     }
 
+    if (deployment.status === "published") {
+      const server = await db.query.appDeploymentFile.findFirst({
+        where: {
+          appDeploymentId: deployment.id,
+          status: "verified",
+          objectKey: `teams/${context.organization.publicId}/projects/${context.project.id}/apps/${context.app.publicId}/deployments/${deployment.publicId}/server/server.js`,
+        },
+      });
+      if (server?.checksum) {
+        await publishRuntimeMetadata({
+          projectId: context.project.id,
+          appId: context.app.id,
+          deploymentId: deployment.id,
+          objectKey: server.objectKey,
+          checksum: server.checksum,
+          contentLength: server.contentLength,
+        });
+      }
+    }
+
     return {
       body: withAppAssetUrl(
         { ...updatedApp, currentDeployment: deployment },
@@ -260,6 +281,7 @@ const deploy = protectedRouter
   });
 
 export const appRouter = o.router({
+  runtimeSession,
   list: listApps,
   get: getApp,
   create: createApp,

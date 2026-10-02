@@ -48,6 +48,9 @@ describe("generateApp", () => {
       path.join("src", "client.ts"),
       path.join("src", "views", "default.tsx"),
       path.join("src", "tailorkit.gen.ts"),
+      path.join("src", "server.ts"),
+      path.join("src", "schema.ts"),
+      path.join("src", "functions", "greeting.ts"),
     ];
 
     for (const file of files) {
@@ -211,7 +214,8 @@ describe("generateApp", () => {
     await generateApp({ ...defaultOptions, targetDirectory });
 
     const content = await readFile(path.join(targetDirectory, "src", "client.ts"), "utf-8");
-    expect(content).toContain('import { defineClient } from "tailorkit/app"');
+    expect(content).toContain('import { ClientProvider, defineClient } from "tailorkit/client"');
+    expect(content).toContain("component: ClientProvider");
     expect(content).toContain('import defaultView from "./views/default"');
     expect(content).toContain("defineClient");
     expect(content).toContain('"/": defaultView');
@@ -232,7 +236,11 @@ describe("generateApp", () => {
     await generateApp({ ...defaultOptions, targetDirectory });
 
     const content = await readFile(path.join(targetDirectory, "src", "tailorkit.gen.ts"), "utf-8");
-    expect(content).toContain('import { createRemoteComponent } from "tailorkit/app"');
+    expect(content).toContain(
+      'import { createApi, createRemoteComponent } from "tailorkit/client"',
+    );
+    expect(content).toContain('import type app from "./server"');
+    expect(content).toContain("export const api = createApi<typeof app.functions>();");
     expect(content).toContain('"/": {');
     expect(content).toContain("user: {");
     expect(content).toContain("name: string;");

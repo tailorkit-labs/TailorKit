@@ -27,6 +27,18 @@
     "./builder": {
       "types": "./dist/builder/index.d.ts",
       "import": "./dist/builder.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./protocol": {
+      "types": "./dist/protocol.d.ts",
+      "import": "./dist/protocol.js"
     }
   },
   "publishConfig": {
@@ -34,11 +46,16 @@
   },
   "scripts": {
     "build": "tsup --config tsup.config.ts && tsc -p tsconfig.build.json",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vp test run"
   },
   "dependencies": {
-    "@tailorkit/core": "workspace:*",
+    "@orpc/client": "catalog:",
+    "@orpc/contract": "catalog:",
+    "@tanstack/preact-store": "0.13.3",
+    "@tanstack/store": "0.11.1",
     "cosmiconfig": "^10.0.1",
+    "drizzle-orm": "catalog:",
     "vite": "catalog:",
     "zod": "catalog:"
   },
@@ -46,9 +63,11 @@
     "@tailorkit/asset-delivery": "workspace:*",
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
+    "happy-dom": "^20.14.5",
     "preact": "^10.29.8",
     "tsup": "^8.5.1",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
   },
   "peerDependencies": {
     "preact": "^10.0.0"

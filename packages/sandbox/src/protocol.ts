@@ -66,6 +66,30 @@ export type RemotePatch =
 
 export const HostToIframePayload = z.discriminatedUnion("type", [
   z.strictObject({
+    type: z.literal("backendSessionResult"),
+    data: z.strictObject({
+      id: z.string().min(1).max(128),
+      session: z
+        .strictObject({ token: z.string().max(8192), expiresAt: z.number(), url: z.url() })
+        .optional(),
+      error: z
+        .strictObject({
+          code: z.enum([
+            "BAD_REQUEST",
+            "UNAUTHORIZED",
+            "FORBIDDEN",
+            "NOT_FOUND",
+            "CONFLICT",
+            "INCOMPATIBLE_VERSION",
+            "UNAVAILABLE",
+            "INTERNAL_SERVER_ERROR",
+          ]),
+          message: z.string(),
+        })
+        .optional(),
+    }),
+  }),
+  z.strictObject({
     data: z.strictObject({
       appSource: z.string(),
       appUrl: z.string(),
@@ -153,6 +177,10 @@ const RemotePatchSchema: z.ZodType<RemotePatch> = z.discriminatedUnion("op", [
 ]);
 
 export const IframeToHostPayload = z.discriminatedUnion("type", [
+  z.strictObject({
+    type: z.literal("backendSessionRequest"),
+    data: z.strictObject({ id: z.string().min(1).max(128), refresh: z.boolean() }),
+  }),
   z.strictObject({ type: z.literal("ready") }),
   z.strictObject({
     data: z.strictObject({

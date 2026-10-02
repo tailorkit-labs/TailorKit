@@ -21,6 +21,8 @@ const clientAssetInput = z.object({
   objectKey: z.literal("client.js"),
 });
 
+const serverAssetInput = clientAssetInput.extend({ objectKey: z.literal("server.js") });
+
 const logoAssetInput = z.object({
   checksum: z.string(),
   contentLength: z
@@ -67,7 +69,12 @@ export const deploymentRouter = {
   create: o
     .use(requireCliDeployToken)
     .input(
-      z.object({ appId: z.string(), assets: deploymentAssetsInput, logos: deploymentLogosInput }),
+      z.object({
+        appId: z.string(),
+        assets: deploymentAssetsInput,
+        server: serverAssetInput.optional(),
+        logos: deploymentLogosInput,
+      }),
     )
     .handler(async ({ context, input }) => {
       try {
@@ -75,6 +82,7 @@ export const deploymentRouter = {
           body: {
             appId: input.appId,
             assets: input.assets,
+            server: input.server,
             logos: input.logos,
             scope: getTailorKitScope(context),
           },

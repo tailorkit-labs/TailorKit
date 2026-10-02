@@ -59,6 +59,51 @@ optionalSchemaTailor.handler(new Request("https://example.com/api/tailorkit/sche
 });
 
 describe("createTailorKitServer", () => {
+  it("requests app backend tokens from the platform with host credentials and verified scopes", async () => {
+    const requests: Request[] = [];
+    const server = createTailorKitServer({
+      projectKey: "project-key",
+      scopes: { org: testScopeSchema },
+      components: {},
+      backend: {
+        resolveInstallation: () => ({
+          appId: "app",
+          installationId: "installation",
+          userId: "user",
+          url: "https://runtime.test/rpc",
+        }),
+      },
+      $internal: {
+        platformFetch: async (input, init) => {
+          requests.push(input instanceof Request ? input : new Request(input, init));
+          return Response.json({ token: "platform-token", expiresAt: 123 });
+        },
+      },
+    });
+    const response = await server.handler(
+      new Request("https://host.test/api/tailorkit/backend/session", {
+        method: "POST",
+        headers: { "content-type": "application/json", origin: "https://host.test" },
+        body: JSON.stringify({ appId: "app" }),
+      }),
+      { authenticate: () => ({ scopes: { org: { tenant: "verified" } } }) },
+    );
+    expect(await response.json()).toEqual({
+      token: "platform-token",
+      expiresAt: 123,
+      url: "https://runtime.test/rpc",
+    });
+    const issuedRequest = requests[0];
+    if (!issuedRequest) throw new Error("Expected a platform token request");
+    expect(issuedRequest.url).toBe("https://tailorkit.dev/api/platform/apps/app/runtime/session");
+    expect(issuedRequest.headers.get("authorization")).toBe("Bearer project-key");
+    expect(await issuedRequest.json()).toEqual({
+      userId: "user",
+      installationId: "installation",
+      scopes: [{ name: "org", value: { tenant: "verified" } }],
+    });
+  });
+
   it("selects only requested authenticated scope names for host app reads", async () => {
     const platformBodies: unknown[] = [];
     const server = createTailorKitServer({

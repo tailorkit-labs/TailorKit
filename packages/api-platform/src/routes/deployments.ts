@@ -1,3 +1,4 @@
+import { getRuntimeBundle, publishRuntimeMetadata } from "./runtime";
 import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { maxDeploymentBytes } from "@tailorkit/asset-delivery";
@@ -55,6 +56,11 @@ const createDeploymentAssetInput = z.object({
   objectKey: z.literal("client.js"),
 });
 
+const createDeploymentServerInput = createDeploymentAssetInput.extend({
+  objectKey: z.literal("server.js"),
+  contentLength: z.number().int().min(1).max(maxDeploymentBytes),
+});
+
 const createDeploymentLogoInput = z.object({
   ...deploymentFileMetadataShape,
   contentLength: z.number().int().min(1).max(maxLogoBytes),
@@ -65,6 +71,7 @@ const createDeploymentInput = z
   .object({
     appId: z.string(),
     assets: z.tuple([createDeploymentAssetInput]),
+    server: createDeploymentServerInput.optional(),
     logos: z
       .object({
         dark: createDeploymentLogoInput.optional(),
@@ -295,6 +302,7 @@ const createAppDeployment = protectedRouter
     z.object({
       body: z.object({
         assets: z.array(deploymentAssetUpload),
+        server: deploymentAssetUpload.optional(),
         deployment: AppDeployment,
         logos: deploymentLogoUploads.optional(),
       }),
@@ -316,7 +324,8 @@ const createAppDeployment = protectedRouter
       ...new Map(requestedLogos.map(({ asset }) => [asset.objectKey, asset])).values(),
     ];
     const requestedAssets = [
-      ...input.body.assets.map((asset) => ({ asset, kind: "deployment" as const })),
+      ...input.body.assets.map((asset) => ({ asset, kind: "client" as const })),
+      ...(input.body.server ? [{ asset: input.body.server, kind: "server" as const }] : []),
       ...uniqueLogoAssets.map((asset) => ({ asset, kind: "logo" as const })),
     ];
     const assets = await Promise.all(
@@ -326,7 +335,7 @@ const createAppDeployment = protectedRouter
         const objectKey =
           kind === "logo"
             ? `${appBaseKey}/${asset.objectKey}`
-            : `${appBaseKey}/deployments/${deploymentPublicId}/files/${asset.objectKey}`;
+            : `${appBaseKey}/deployments/${deploymentPublicId}/${kind}/${asset.objectKey}`;
         const shouldReuse =
           kind === "logo" && (await hasMatchingLogo(context.storage, asset, objectKey));
         const uploadUrl = shouldReuse
@@ -428,6 +437,10 @@ const createAppDeployment = protectedRouter
       }
       return { ...upload, uploadUrl: upload.uploadUrl };
     });
+    const serverUpload = input.body.server ? uploadedAssetByName.get("server.js") : undefined;
+    if (input.body.server && !serverUpload?.uploadUrl) {
+      throw new ORPCError("BAD_REQUEST", { message: "Failed to create server upload URL." });
+    }
     const uploadedLogos = Object.fromEntries(
       requestedLogos.map(({ asset, variant }) => {
         const upload = uploadedAssetByName.get(asset.objectKey);
@@ -441,6 +454,9 @@ const createAppDeployment = protectedRouter
     return {
       body: {
         assets: uploadedAssets,
+        ...(serverUpload?.uploadUrl
+          ? { server: { ...serverUpload, uploadUrl: serverUpload.uploadUrl } }
+          : {}),
         deployment: createdDeployment,
         ...(Object.keys(uploadedLogos).length > 0 ? { logos: uploadedLogos } : {}),
       },
@@ -572,6 +588,17 @@ const publishAppDeployment = protectedRouter
         .update(app)
         .set({ currentDeploymentId: publishedDeployment.id })
         .where(and(eq(app.id, context.app.id), eq(app.projectId, context.project.id)));
+      const server = files.find((file) => file.objectKey.endsWith("/server/server.js"));
+      if (server?.checksum) {
+        await publishRuntimeMetadata({
+          projectId: context.project.id,
+          appId: context.app.id,
+          deploymentId: publishedDeployment.id,
+          objectKey: server.objectKey,
+          checksum: server.checksum,
+          contentLength: server.contentLength,
+        });
+      }
     }
 
     return { body: publishedDeployment };
@@ -582,4 +609,5 @@ export const deploymentRouter = o.router({
   get: getAppDeployment,
   create: createAppDeployment,
   publish: publishAppDeployment,
+  runtime: getRuntimeBundle,
 });

@@ -1,0 +1,1 @@
+ALTER TABLE `todos` ADD `required` text NOT NULL;

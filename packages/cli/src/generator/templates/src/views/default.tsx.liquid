@@ -1,4 +1,5 @@
-import { createView } from "tailorkit/app";
+import { createView, useQuery } from "tailorkit/client";
+import { api, Card } from "#tailorkit";
 
 const view = createView("/", {
   component: ViewComponent,
@@ -6,8 +7,9 @@ const view = createView("/", {
 
 function ViewComponent() {
   const context = view.useContext();
+  const greeting = useQuery(api.greeting, { name: context.user.name });
 
-  return <div>{context.user.name}</div>;
+  return <Card>{greeting.isLoading ? "Loading…" : greeting.error?.message ?? greeting.data}</Card>;
 }
 
 export default view;

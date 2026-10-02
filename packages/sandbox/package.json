@@ -30,6 +30,7 @@
     "build": "vp build && tsc -p tsconfig.build.json"
   },
   "dependencies": {
+    "@tailorkit/app": "workspace:*",
     "@tailorkit/core": "workspace:*",
     "zod": "catalog:"
   },

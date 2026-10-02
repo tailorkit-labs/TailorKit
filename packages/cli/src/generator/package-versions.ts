@@ -1,10 +1,16 @@
 export interface TemplatePackageVersions {
+  drizzleKit: string;
+  drizzleOrm: string;
   oxfmt: string;
   oxlint: string;
   preact: string;
   tailorkit: string;
   typescript: string;
+  zod: string;
 }
+
+// Match the SDK's supported Drizzle v1 snapshot format and runtime version.
+export const TEMPLATE_DRIZZLE_VERSION = "1.0.0-rc.4-5d5b77c";
 
 interface PackageVersionRequest {
   fallback: string;
@@ -28,7 +34,11 @@ const REQUESTS = {
   preact: { fallback: "^10.29.1", matcher: "^10", packageName: "preact" },
   tailorkit: { fallback: "latest", matcher: "^0", packageName: "tailorkit" },
   typescript: { fallback: "^6.0.3", matcher: "^6", packageName: "typescript" },
-} satisfies Record<keyof TemplatePackageVersions, PackageVersionRequest>;
+  zod: { fallback: "^4.0.0", matcher: "^4", packageName: "zod" },
+} satisfies Record<
+  Exclude<keyof TemplatePackageVersions, "drizzleKit" | "drizzleOrm">,
+  PackageVersionRequest
+>;
 
 const parseStableVersion = (version: string): SemverVersion | undefined => {
   const match = /^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$/u.exec(version);
@@ -93,12 +103,22 @@ const resolvePackageVersion = async ({
 };
 
 export const resolveTemplatePackageVersions = async (): Promise<TemplatePackageVersions> => {
-  const [oxfmt, oxlint, preact, tailorkit, typescript] = await Promise.all([
+  const [oxfmt, oxlint, preact, tailorkit, typescript, zod] = await Promise.all([
     resolvePackageVersion(REQUESTS.oxfmt),
     resolvePackageVersion(REQUESTS.oxlint),
     resolvePackageVersion(REQUESTS.preact),
     resolvePackageVersion(REQUESTS.tailorkit),
     resolvePackageVersion(REQUESTS.typescript),
+    resolvePackageVersion(REQUESTS.zod),
   ]);
-  return { oxfmt, oxlint, preact, tailorkit, typescript };
+  return {
+    drizzleKit: TEMPLATE_DRIZZLE_VERSION,
+    drizzleOrm: TEMPLATE_DRIZZLE_VERSION,
+    oxfmt,
+    oxlint,
+    preact,
+    tailorkit,
+    typescript,
+    zod,
+  };
 };

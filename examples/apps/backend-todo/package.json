@@ -1,0 +1,26 @@
+{
+  "name": "backend-todo",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "imports": {
+    "#tailorkit": "./src/tailorkit.gen.ts"
+  },
+  "scripts": {
+    "build": "tailorkit build",
+    "db:generate": "tailorkit db generate",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "preact": "^10.29.8",
+    "tailorkit": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@tailorkit/cli": "workspace:*",
+    "@types/node": "catalog:",
+    "drizzle-kit": "catalog:",
+    "drizzle-orm": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -1,10 +1,106 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
 import { z } from "zod";
 import { createTailorKitSchema } from "@tailorkit/core/schema";
 import { TailorKitSchemaSpec } from "@tailorkit/core/spec";
 
-import { renderGeneratedTypes } from "./types";
+import { generateTypes, renderGeneratedTypes } from "./types";
+
+it("links the app to the configured server entry and never falls back to an unrelated default file", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "tailorkit-configured-server-types-"));
+  const fetch = vi
+    .spyOn(globalThis, "fetch")
+    .mockImplementation(() => Promise.resolve(Response.json({ components: {}, views: {} })));
+  try {
+    await mkdir(path.join(root, "backend"));
+    await mkdir(path.join(root, "src"));
+    await writeFile(
+      path.join(root, "tailorkit.config.mjs"),
+      'export default { host: "https://host.test", server: { entry: "./backend/api.ts" } };',
+    );
+    await writeFile(
+      path.join(root, "backend/api.ts"),
+      'throw new Error("Never evaluate server code");',
+    );
+    await writeFile(path.join(root, "src/server.ts"), 'throw new Error("Unused default server");');
+    const generated = await generateTypes({ cwd: root });
+    expect(await readFile(generated, "utf8")).toContain('import type app from "../backend/api"');
+    const custom = await generateTypes({ cwd: root, outFile: "src/generated/host.ts" });
+    expect(await readFile(custom, "utf8")).toContain('import type app from "../../backend/api"');
+    await rm(path.join(root, "backend/api.ts"));
+    await generateTypes({ cwd: root });
+    expect(await readFile(generated, "utf8")).not.toContain("createApi");
+  } finally {
+    fetch.mockRestore();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+it("preserves the type-only API link when regenerating host types, including custom paths", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "tailorkit-host-types-"));
+  const fetch = vi
+    .spyOn(globalThis, "fetch")
+    .mockImplementation(() => Promise.resolve(Response.json({ components: {}, views: {} })));
+  try {
+    await mkdir(path.join(root, "src"));
+    await writeFile(
+      path.join(root, "src/server.ts"),
+      'throw new Error("Never evaluate server code");',
+    );
+    await writeFile(
+      path.join(root, "tailorkit.config.mjs"),
+      'export default { host: "https://host.test", server: {} };',
+    );
+    const generated = await generateTypes({ cwd: root });
+    const output = await readFile(generated, "utf-8");
+    expect(output).toContain('import type app from "./server"');
+    expect(output).toContain("export const api = createApi<typeof app.functions>();");
+    const custom = await generateTypes({ cwd: root, outFile: "src/generated/host.ts" });
+    expect(await readFile(custom, "utf-8")).toContain('import type app from "../server"');
+    await rm(path.join(root, "src/server.ts"));
+    const missing = await generateTypes({ cwd: root });
+    expect(await readFile(missing, "utf-8")).not.toContain("createApi");
+  } finally {
+    fetch.mockRestore();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+it("detects the default server file without server configuration and removes stale API imports", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "tailorkit-detect-server-"));
+  const fetch = vi
+    .spyOn(globalThis, "fetch")
+    .mockImplementation(() => Promise.resolve(Response.json({ components: {}, views: {} })));
+  try {
+    await writeFile(
+      path.join(root, "tailorkit.config.mjs"),
+      'export default { host: "https://host.test" };',
+    );
+    const generated = await generateTypes({ cwd: root });
+    expect(await readFile(generated, "utf-8")).not.toContain("createApi");
+    const server = path.join(root, "src/server.ts");
+    await writeFile(server, 'throw new Error("Never evaluate server code");');
+    await generateTypes({ cwd: root });
+    expect(await readFile(generated, "utf-8")).toContain('import type app from "./server"');
+    expect(await readFile(generated, "utf-8")).toContain(
+      "export const api = createApi<typeof app.functions>();",
+    );
+    const custom = await generateTypes({ cwd: root, outFile: "src/generated/host.ts" });
+    expect(await readFile(custom, "utf-8")).toContain('import type app from "../server"');
+    await rm(server);
+    await generateTypes({ cwd: root });
+    expect(await readFile(generated, "utf-8")).not.toContain("createApi");
+    await mkdir(server);
+    await generateTypes({ cwd: root });
+    expect(await readFile(generated, "utf-8")).not.toContain("createApi");
+  } finally {
+    fetch.mockRestore();
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 describe("renderGeneratedTypes", () => {
   it("generates view props from schema views", () => {

@@ -1,3 +1,5 @@
+import { runtimeProjectAccess } from "./runtime/access";
+import { env } from "./env";
 import type { Organization } from "@tailorkit/db/schema/auth";
 import type { Project } from "@tailorkit/db/schema/project";
 import { getStorage } from "@tailorkit/storage";
@@ -10,6 +12,8 @@ export interface Context {
   project: Project;
   organization: Organization;
   storage: Storage;
+  /** Internal metadata-only access; not a project host credential. */
+  runtimeService?: boolean;
 }
 
 export async function createContext({ request }: { request: Request }): Promise<Context> {
@@ -30,15 +34,16 @@ export async function createContext({ request }: { request: Request }): Promise<
       throw new Error("Invalid authorization scheme");
     }
 
-    const apiKey = await auth.api.verifyApiKey({ body: { configId: "project-host", key } });
+    const runtimeProject = await runtimeProjectAccess(request, env.APP_RUNTIME_SERVICE_TOKEN);
+    let projectId: string;
 
-    if (!apiKey || !apiKey.valid) {
-      throw new Error("Invalid API key");
-    }
-
-    const projectId: string = apiKey.key?.metadata?.projectId;
-    if (!projectId) {
-      throw new Error("Project ID not found in API key metadata");
+    if (runtimeProject) {
+      projectId = runtimeProject;
+    } else {
+      const apiKey = await auth.api.verifyApiKey({ body: { configId: "project-host", key } });
+      if (!apiKey?.valid) throw new Error("Invalid API key");
+      projectId = apiKey.key?.metadata?.projectId;
+      if (!projectId) throw new Error("Project ID not found in API key metadata");
     }
 
     const project = await db.query.project.findFirst({
@@ -66,6 +71,7 @@ export async function createContext({ request }: { request: Request }): Promise<
       project,
       organization: project.organization,
       storage,
+      runtimeService: Boolean(runtimeProject),
     };
   });
 }
