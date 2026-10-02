@@ -45,9 +45,7 @@ const setup = (contents: string | null = code) => {
 afterEach(() => vi.restoreAllMocks());
 
 it("resolves authorized metadata separately from R2 code and never follows redirects with credentials", async () => {
-  const fetch = vi
-    .spyOn(globalThis, "fetch")
-    .mockResolvedValue(Response.json({ body: deployment }));
+  const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json(deployment));
   const { source, get } = setup();
 
   expect(await Effect.runPromise(source.current(identity))).toEqual(deployment);
@@ -86,7 +84,7 @@ it("serves KV hits to old clients and fills misses from the platform", async () 
   });
   const fetch = vi
     .spyOn(globalThis, "fetch")
-    .mockImplementation(async () => Response.json({ body: { ...deployment, deploymentId: "v2" } }));
+    .mockImplementation(async () => Response.json({ ...deployment, deploymentId: "v2" }));
   const source = deploymentSource({
     PLATFORM_URL: "https://platform.test",
     RUNTIME_SERVICE_TOKEN: "private",
