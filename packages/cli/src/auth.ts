@@ -254,8 +254,16 @@ export const runWhoami = async (
     result = verifiedCliAuthResultSchema.parse(
       "data" in verifyResult ? verifyResult.data : verifyResult,
     );
-  } catch {
-    throw new NotLoggedInError(hostUrl);
+  } catch (error) {
+    if (
+      error !== null &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "UNAUTHORIZED"
+    ) {
+      throw new NotLoggedInError(hostUrl);
+    }
+    throw error;
   }
 
   await saveDeployToken(hostUrl, {
