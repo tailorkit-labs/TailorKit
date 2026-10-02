@@ -35,13 +35,13 @@
     "jose": "6.2.12",
     "liquidjs": "^10.29.0",
     "picocolors": "^1.1.1",
+    "vite": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
     "vite-plus": "catalog:"
   }
 }

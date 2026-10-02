@@ -83,35 +83,59 @@ it("uploads server and client code without a provisioned Worker or migration upl
   expect(mocks.publish).toHaveBeenCalledOnce();
 });
 
-it.each(["config", "$config"])("links and deploys the init config exported as %s", async (name) => {
-  const template = await readFile(
-    path.join(import.meta.dirname, "generator/templates/tailorkit.config.ts.liquid"),
-    "utf-8",
-  );
-  const source = template
-    .replace("{{ hostUrl }}", "https://host.example")
-    .replace("const config =", `const ${name} =`)
-    .replace("export default config;", `export default ${name};`);
-  const configPath = path.join(root, "tailorkit.config.ts");
-  await writeFile(configPath, source);
-  mocks.load.mockResolvedValue({ root, filepath: configPath, config: { server: {} } });
-  const createApp = vi.fn().mockResolvedValue({ id: "new-app-id" });
-  mocks.client.mockReturnValue({
-    apps: { create: createApp },
-    deployments: { create: mocks.create, publish: mocks.publish },
-  });
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
+it.each([
+  { name: "config", annotation: "", prelude: "" },
+  { name: "$config", annotation: "", prelude: "" },
+  { name: "config", annotation: ": TailorKitConfig", prelude: "" },
+  { name: "config", annotation: ": TailorKitConfig & { callback?: () => void }", prelude: "" },
+  {
+    name: "config",
+    annotation: "",
+    prelude: 'function nested() {\nconst config = {\n  host: "https://nested.example",\n};\n}\n',
+  },
+  {
+    name: "config",
+    annotation: ": TailorKitConfig",
+    prelude:
+      'function nested() {\nconst config: TailorKitConfig = {\n  host: "https://nested.example",\n};\n}\n',
+  },
+])(
+  "links the init config exported as $name with annotation '$annotation' and prelude '$prelude'",
+  async ({ name, annotation, prelude }) => {
+    const template = await readFile(
+      path.join(import.meta.dirname, "generator/templates/tailorkit.config.ts.liquid"),
+      "utf-8",
+    );
+    const source =
+      prelude +
+      template
+        .replace("{{ hostUrl }}", "https://host.example")
+        .replace("const config =", `const ${name}${annotation} =`)
+        .replace("export default config;", `export default ${name};`);
+    const configPath = path.join(root, "tailorkit.config.ts");
+    await writeFile(configPath, source);
+    mocks.load.mockResolvedValue({ root, filepath: configPath, config: { server: {} } });
+    const createApp = vi.fn().mockResolvedValue({ id: "new-app-id" });
+    mocks.client.mockReturnValue({
+      apps: { create: createApp },
+      deployments: { create: mocks.create, publish: mocks.publish },
+    });
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
 
-  const result = await runDeploy({ cwd: root, onMissingAppId: async () => true });
+    const result = await runDeploy({ cwd: root, onMissingAppId: async () => true });
 
-  expect(await readFile(configPath, "utf-8")).toBe(
-    source.replace(`const ${name} = {\n`, `const ${name} = {\n  appId: "new-app-id",\n`),
-  );
-  expect(result).toMatchObject({ appId: "new-app-id", createdApp: true });
-  expect(createApp).toHaveBeenCalledOnce();
-  expect(mocks.create.mock.calls[0]?.[0]).toMatchObject({ appId: "new-app-id" });
-  expect(mocks.publish).toHaveBeenCalledOnce();
-});
+    expect(await readFile(configPath, "utf-8")).toBe(
+      source.replace(
+        `const ${name}${annotation} = {\n  host: "https://host.example"`,
+        `const ${name}${annotation} = {\n  appId: "new-app-id",\n  host: "https://host.example"`,
+      ),
+    );
+    expect(result).toMatchObject({ appId: "new-app-id", createdApp: true });
+    expect(createApp).toHaveBeenCalledOnce();
+    expect(mocks.create.mock.calls[0]?.[0]).toMatchObject({ appId: "new-app-id" });
+    expect(mocks.publish).toHaveBeenCalledOnce();
+  },
+);
 
 it("preserves client-only deployment uploads", async () => {
   await writeFile(
