@@ -167,6 +167,37 @@ const writeAppIdToConfig = async (configPath: string, appId: string): Promise<vo
     return;
   }
 
+  const { parseSync } = await import("vite");
+  const { program } = parseSync(configPath, source);
+  const defaultExport = program.body.find((node) => node.type === "ExportDefaultDeclaration");
+  if (defaultExport?.declaration.type === "Identifier") {
+    const exportedVariable = defaultExport.declaration.name;
+    const declaration = program.body
+      .filter((node) => node.type === "VariableDeclaration")
+      .flatMap((node) => node.declarations)
+      .find((node) => node.id.type === "Identifier" && node.id.name === exportedVariable);
+    let initializer = declaration?.init;
+    while (
+      initializer?.type === "TSSatisfiesExpression" ||
+      initializer?.type === "TSAsExpression"
+    ) {
+      initializer = initializer.expression;
+    }
+    if (initializer?.type === "ObjectExpression") {
+      const objectSource = source.slice(initializer.start);
+      const objectOpening = /^(\{)(\r?\n)/u;
+      if (objectOpening.test(objectSource)) {
+        await writeFile(
+          configPath,
+          source.slice(0, initializer.start) +
+            objectSource.replace(objectOpening, `$1$2${appIdLine}$2`),
+          "utf-8",
+        );
+        return;
+      }
+    }
+  }
+
   throw new Error(
     `Could not write appId to ${configPath}. Add appId: ${JSON.stringify(appId)} manually.`,
   );
