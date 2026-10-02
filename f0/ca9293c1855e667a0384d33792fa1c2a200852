@@ -1,0 +1,26 @@
+packages/api-platform/src/preview-build-store.test.mjs
+  s_77ea77b6981c20::t_8f95fb7a574b85 89-119
+  s_77ea77b6981c20::t_504fef87d0f3b8 120-123,128-131
+  s_77ea77b6981c20::t_2ce8d59b028aca 124-127
+packages/api-platform/src/preview-build-store.ts
+  s_77ea77b6981c20::t_21c8883d98fd22 137-138,221,265,294-299
+  s_77ea77b6981c20::t_d6771fa145be17 53-57,223-240,242-244,247-256,258-264
+  s_77ea77b6981c20::t_1ba5c44cbbe4d5 58,217,316
+  s_77ea77b6981c20::t_22826afe6d7ce9 51-52,59,222,266-267,272-276,293
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f0ca9293c1855e667a0384d33792fa1c2a200852",
+  "prompts": {},
+  "sessions": {
+    "s_77ea77b6981c20": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0cd9e-6fe0-78c3-bfa5-b5e52cb77459",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

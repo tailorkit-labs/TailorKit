@@ -1,0 +1,19 @@
+turbo.json
+  s_1dbcbb8a3fb420::t_42e4fab31b9ada 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4905ad9b96b020a647cac130ed4f31c0969ecb96",
+  "prompts": {},
+  "sessions": {
+    "s_1dbcbb8a3fb420": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0dd95-ee76-7712-a91a-ccdf9b0aa84b",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

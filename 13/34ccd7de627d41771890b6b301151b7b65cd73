@@ -1,0 +1,40 @@
+packages/api-platform/src/assets.ts
+  s_9df97e9992d87b::t_835a684a361d7c 2,4-7,9,11,13-22,24,27-28,30-34,36,40-43,45-50,52-64
+apps/apps-worker/src/publication.ts
+  s_9df97e9992d87b::t_bef50384e30065 1-24
+packages/asset-delivery/src/index.ts
+  s_9df97e9992d87b::t_bef50384e30065 1,171-204,206-211,213-217,227-228,230,232-233
+  s_9df97e9992d87b::t_835a684a361d7c 205,212,218-226,229,234
+  s_9df97e9992d87b::t_7e4dd97c1ba75f 231
+apps/apps-worker/src/assets.ts
+  s_9df97e9992d87b::t_835a684a361d7c 2,4-7,9-10,14,22-30,32-35,37-42,44,49-59,61-63,65-68,70-87,90,92
+  s_9df97e9992d87b::t_cdaa1be01c3a78 43,46,60,64,69,88-89,91
+apps/apps-worker/src/worker.ts
+  s_9df97e9992d87b::t_bef50384e30065 14,56
+apps/apps-worker/README.md
+  s_9df97e9992d87b::t_779511fe498cf5 125
+apps/apps-worker/src/assets.test.ts
+  s_9df97e9992d87b::t_c7a40d53544c70 187-205
+packages/api-platform/src/assets.test.ts
+  s_9df97e9992d87b::t_c8702658eb79cc 95-112
+packages/asset-delivery/package.json
+  s_9df97e9992d87b::t_65bc3813665f54 24-26
+pnpm-lock.yaml
+  s_9df97e9992d87b::t_dd095c2ad639ec 1199-1202
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1334ccd7de627d41771890b6b301151b7b65cd73",
+  "prompts": {},
+  "sessions": {
+    "s_9df97e9992d87b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb9f-ac0d-7041-a89b-4751176b2edd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

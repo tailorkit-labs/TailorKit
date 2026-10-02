@@ -1,0 +1,35 @@
+apps/web/src/routes/(auth)/login.tsx
+  s_0a462de1f34d55::t_70b64ff320cf6d 17,23-24,53,105,252-277
+  s_0a462de1f34d55::t_352db4820695c0 25
+apps/web/src/routes/(auth)/route.tsx
+  s_0a462de1f34d55::t_45c9664f55d10b 8-11
+packages/api/src/routers/user.ts
+  s_0a462de1f34d55::t_45c9664f55d10b 1,14-15
+apps/web/src/lib/safe-return-url.ts
+  s_0a462de1f34d55::t_45c9664f55d10b 27-41
+apps/web/src/components/google-icon.tsx
+  s_0a462de1f34d55::t_9c8baead0f03cb 1-26
+apps/web/src/routes/(app)/account/security/index.tsx
+  s_0a462de1f34d55::t_352db4820695c0 576,578-611,617-652
+  s_0a462de1f34d55::t_14fb1374712233 37,49,261,312,574-575,577,613,615-616,654
+apps/web/src/routes/(auth)/sign-up.tsx
+  s_0a462de1f34d55::t_9c8baead0f03cb 18,23-25,53,118,177-219
+packages/auth/src/index.ts
+  s_0a462de1f34d55::t_45c9664f55d10b 90-116,171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6299f7ee0821be7119fe1d1ef1b1c77546d970db",
+  "prompts": {},
+  "sessions": {
+    "s_0a462de1f34d55": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e06e-f25e-7f23-9432-fb485284b35e",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

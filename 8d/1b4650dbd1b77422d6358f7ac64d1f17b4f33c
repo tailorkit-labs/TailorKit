@@ -1,0 +1,33 @@
+packages/cli/src/generator/templates/tailorkit.config.ts.liquid
+  s_f77d47a4f981c3::t_fde5ba1d83f4d9 5-8
+packages/cli/src/generator/generate.ts
+  s_f77d47a4f981c3::t_fde5ba1d83f4d9 20-21,112-113
+packages/cli/src/generator/generate.test.ts
+  s_f77d47a4f981c3::t_fde5ba1d83f4d9 47-48,199-200,204-210,212-232
+  s_f77d47a4f981c3::t_9a22875ebc37c0 211
+  s_f77d47a4f981c3::t_27a1fff3287fd2 233
+.changeset/friendly-init-logos.md
+  s_f77d47a4f981c3::t_fde5ba1d83f4d9 1-5
+packages/cli/src/generator/templates/logo-dark.svg.liquid
+  s_f77d47a4f981c3::t_c1e112d9946f30 1-4
+packages/cli/src/generator/templates/index.ts
+  s_f77d47a4f981c3::t_fde5ba1d83f4d9 13-14,29-30
+packages/cli/src/generator/templates/logo-light.svg.liquid
+  s_f77d47a4f981c3::t_c1e112d9946f30 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8d1b4650dbd1b77422d6358f7ac64d1f17b4f33c",
+  "prompts": {},
+  "sessions": {
+    "s_f77d47a4f981c3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb3b-27f2-7790-9705-e42a8d431168",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+apps/web/src/lib/auth-client.ts
+  s_1dbcbb8a3fb420::t_78d41bc10cf68e 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "327b25fd9e134e6bf3367c8c4d4a5546b9a5e8a9",
+  "prompts": {},
+  "sessions": {
+    "s_1dbcbb8a3fb420": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0dd95-ee76-7712-a91a-ccdf9b0aa84b",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

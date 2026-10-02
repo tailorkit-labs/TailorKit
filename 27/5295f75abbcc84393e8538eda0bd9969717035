@@ -1,0 +1,23 @@
+examples/apps/persistent-todo/package.json
+  s_6ba0854cdb659c::t_d28216556ce296 10
+examples/apps/persistent-todo/README.md
+  s_6ba0854cdb659c::t_d28216556ce296 14
+examples/apps/persistent-todo/prepare.mjs
+  s_6ba0854cdb659c::t_d28216556ce296 1-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "275295f75abbcc84393e8538eda0bd9969717035",
+  "prompts": {},
+  "sessions": {
+    "s_6ba0854cdb659c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f111-6fe2-7f91-ab5f-14a741f20094",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

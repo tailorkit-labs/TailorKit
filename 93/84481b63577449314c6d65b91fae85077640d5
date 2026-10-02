@@ -1,0 +1,24 @@
+packages/cli/src/deploy.test.ts
+  s_9bd47906ac8923::t_8cdfda567826a5 1-10,86-103,111
+  s_9bd47906ac8923::t_62dcd81c148ce1 104-110,112-115
+packages/cli/src/deploy.ts
+  s_9bd47906ac8923::t_8cdfda567826a5 169-181
+.changeset/write-init-config-app-id.md
+  s_9bd47906ac8923::t_8cdfda567826a5 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9384481b63577449314c6d65b91fae85077640d5",
+  "prompts": {},
+  "sessions": {
+    "s_9bd47906ac8923": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb39-120b-7813-bdf3-d4eac7699777",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+apps/web/src/lib/auth-client.ts
+  s_7997169f156e07::t_39d8110ae1b781 6,13-15
+packages/auth/src/captcha.test.ts
+  s_7997169f156e07::t_39d8110ae1b781 3,6,10-15,36,39-41,48,52
+apps/web/src/lib/auth-client.test.ts
+  s_7997169f156e07::t_39d8110ae1b781 4,40-42
+packages/auth/src/index.ts
+  s_7997169f156e07::t_39d8110ae1b781 15-16,26,178-182
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a73c55573379615d23fb7e1de2511e1c979c74d5",
+  "prompts": {},
+  "sessions": {
+    "s_7997169f156e07": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f1f3-0fc8-78f0-9999-c2ae065d85fe",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

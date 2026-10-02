@@ -1,0 +1,21 @@
+packages/api/src/routers/user.ts
+  s_a6fa8534aa32ec::t_da7f74227d2612 4,14-78,85-106
+apps/web/src/routes/(app)/account/security/index.tsx
+  s_a6fa8534aa32ec::t_da7f74227d2612 342-348,592
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a9998e3fb4e8d95e679c9994d97b109d866aae85",
+  "prompts": {},
+  "sessions": {
+    "s_a6fa8534aa32ec": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e05f-6b27-79c1-9f01-eed8a599e013",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

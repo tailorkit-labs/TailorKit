@@ -1,0 +1,21 @@
+packages/api-platform/src/preview-ws.ts
+  s_e45336e2e9a86d::t_2648fc2dfba83c 5,44-55,111-115,127-141,146-150
+  s_e45336e2e9a86d::t_6cdf0b3b71641d 110,126,145
+  s_e45336e2e9a86d::t_3a8f6932f8c11f 151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "19ab02395d5e241ff1af530b235a63d3ee5ef7f8",
+  "prompts": {},
+  "sessions": {
+    "s_e45336e2e9a86d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0d18c-e005-7280-9767-c47e84cff1cd",
+        "model": "gpt-6-luna"
+      },
+      "human_author": null
+    }
+  }
+}

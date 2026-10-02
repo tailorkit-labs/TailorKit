@@ -1,0 +1,56 @@
+apps/docs/content/docs/(getting-started)/installation.mdx
+  s_c45799f166e49a::t_f1b8f5f3532905 271,273,293,299-302
+apps/docs/content/docs/(guides)/views.mdx
+  s_c45799f166e49a::t_f1b8f5f3532905 36,44,47-51,54-55,72-75,82,137,184-186
+packages/react/src/components/root.tsx
+  s_c45799f166e49a::t_f1b8f5f3532905 4,13
+examples/tanstack-start/src/routes/customers.$customerId.tsx
+  s_c45799f166e49a::t_f1b8f5f3532905 9
+apps/docs/content/docs/(guides)/components.mdx
+  s_c45799f166e49a::t_f1b8f5f3532905 235-236
+examples/nextjs/lib/tailorkit-client.tsx
+  s_c45799f166e49a::t_f1b8f5f3532905 37,39
+examples/nextjs/components/customer-screen.tsx
+  s_c45799f166e49a::t_f1b8f5f3532905 3
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_c45799f166e49a::t_f1b8f5f3532905 39
+examples/nextjs/components/tailorkit-shell.tsx
+  s_c45799f166e49a::t_f1b8f5f3532905 7,14
+packages/react/src/hooks/use-view.ts
+  s_c45799f166e49a::t_f1b8f5f3532905 7-8,37,45,52-59,61
+packages/react/src/tailor-kit.tsx
+  s_c45799f166e49a::t_f1b8f5f3532905 14-17,78,80,82,84,86,96,101-107,111,114-116,206,211-216
+  s_c45799f166e49a::t_49cb1b0962a1f8 217
+.changeset/calm-clients-bind-react.md
+  s_c45799f166e49a::t_348c8c6df1c646 1-5
+packages/react/src/components/context.ts
+  s_c45799f166e49a::t_f1b8f5f3532905 4,8
+apps/demo/src/routes/embed-panel.tsx
+  s_c45799f166e49a::t_f1b8f5f3532905 4,68,87,137-141
+examples/tanstack-start/src/routes/customers.tsx
+  s_c45799f166e49a::t_f1b8f5f3532905 5
+packages/react/src/index.ts
+  s_c45799f166e49a::t_f1b8f5f3532905 3,7
+examples/tanstack-start/src/components/tailorkit-shell.tsx
+  s_c45799f166e49a::t_f1b8f5f3532905 7,10
+examples/tanstack-start/src/lib/tailorkit-client.tsx
+  s_c45799f166e49a::t_f1b8f5f3532905 35,37
+apps/docs/content/docs/(guides)/layouts-and-styles.mdx
+  s_c45799f166e49a::t_f1b8f5f3532905 70-71,229-230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d3a873e525e28c77c1072e0bf3a0843b0a1ff51d",
+  "prompts": {},
+  "sessions": {
+    "s_c45799f166e49a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e2b3-d11b-7801-8685-979768c2de0d",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

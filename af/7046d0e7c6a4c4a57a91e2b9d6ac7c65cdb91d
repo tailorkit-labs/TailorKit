@@ -1,0 +1,46 @@
+apps/docs/package.json
+  s_102ff8eebdeba3::t_1d69b717f44897 72-73
+packages/cli/package.json
+  s_102ff8eebdeba3::t_1d69b717f44897 43-44
+packages/sandbox/package.json
+  s_102ff8eebdeba3::t_1d69b717f44897 41-42
+.vite-hooks/pre-commit
+  s_102ff8eebdeba3::t_ee565602ad4e06 3,5-22,27-33,37-42,45-47
+  s_102ff8eebdeba3::t_bcc972f9c4ea30 25-26,34-35,48
+packages/kv/.gitignore
+  s_102ff8eebdeba3::t_0616588826b7ad 35-36
+packages/auth/.gitignore
+  s_102ff8eebdeba3::t_0616588826b7ad 35-36
+apps/assets/.gitignore
+  s_102ff8eebdeba3::t_0616588826b7ad 1-3
+apps/web/turbo.json
+  s_102ff8eebdeba3::t_0616588826b7ad 5
+examples/apps/notes/package.json
+  s_102ff8eebdeba3::t_1d69b717f44897 33-34
+apps/demo/package.json
+  s_102ff8eebdeba3::t_1d69b717f44897 46
+apps/web/package.json
+  s_102ff8eebdeba3::t_1d69b717f44897 74-75
+examples/tanstack-start/package.json
+  s_102ff8eebdeba3::t_1d69b717f44897 49-50
+package.json
+  s_102ff8eebdeba3::t_1d69b717f44897 38-39
+pnpm-lock.yaml
+  s_102ff8eebdeba3::t_d60aaa90c3c98c 284-289,379-381,512-514,666-668,698-703,861-863,1161-1163,1479-1481,17771-17795,17829-17852,19270-19324
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "af7046d0e7c6a4c4a57a91e2b9d6ac7c65cdb91d",
+  "prompts": {},
+  "sessions": {
+    "s_102ff8eebdeba3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0dd7e-fe77-7f01-8b44-eadeb98bc878",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

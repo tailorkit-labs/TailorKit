@@ -1,0 +1,22 @@
+apps/web/src/tests/preview-ws.test.mjs
+  s_83dc76b7551d25::t_fec5ac1c03278a 70-102
+apps/web/src/nitro/routes/api/platform/preview/ws.ts
+  s_83dc76b7551d25::t_8559a1226c64eb 9-14,40,42-47,50,56-57,68,71-83,86
+  s_83dc76b7551d25::t_fec5ac1c03278a 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "88a8e538a68fa988efcc6089a4324767b2743863",
+  "prompts": {},
+  "sessions": {
+    "s_83dc76b7551d25": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0d06e-ff3b-7980-9c14-b5f6411b112d",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

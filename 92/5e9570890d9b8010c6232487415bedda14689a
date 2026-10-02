@@ -1,0 +1,46 @@
+packages/client-platform/package.json
+  s_a90e8aada6b184::t_65a67b10350c5b 7
+packages/core/package.json
+  s_a90e8aada6b184::t_65a67b10350c5b 7
+packages/react/package.json
+  s_a90e8aada6b184::t_65a67b10350c5b 7
+packages/app/package.json
+  s_a90e8aada6b184::t_65a67b10350c5b 7
+scripts/check-prerelease.mjs
+  s_a90e8aada6b184::t_10c39527ddc2b6 14-15,34-38
+  s_0ba66be4c15c4c::t_a0d7e9c24bf32a 39
+SECURITY.md
+  s_a90e8aada6b184::t_a228f12bde2d9a 8
+RELEASING.md
+  s_a90e8aada6b184::t_a228f12bde2d9a 15
+packages/tailorkit/package.json
+  s_a90e8aada6b184::t_65a67b10350c5b 7
+packages/sandbox/package.json
+  s_a90e8aada6b184::t_65a67b10350c5b 7
+packages/cli/package.json
+  s_a90e8aada6b184::t_65a67b10350c5b 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "925e9570890d9b8010c6232487415bedda14689a",
+  "prompts": {},
+  "sessions": {
+    "s_0ba66be4c15c4c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fad7-e446-7d53-a46e-ebf4cf455734",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_a90e8aada6b184": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fadb-6823-7423-bf27-5d85d3a34aee",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

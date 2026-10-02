@@ -1,0 +1,24 @@
+turbo.json
+  s_3d0991fdb1f2d5::t_f819434baf7253 8
+  s_3d0991fdb1f2d5::t_bf7f9adad118f8 9-15
+packages/env/src/index.ts
+  s_3d0991fdb1f2d5::t_7d4f0c3aa82009 8-10
+  s_3d0991fdb1f2d5::t_fef7abdf4c3221 7,11
+  s_3d0991fdb1f2d5::t_bda0f26d7b9faa 12-13,79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "35642511312e060c457fa69b77b8067a3456b15c",
+  "prompts": {},
+  "sessions": {
+    "s_3d0991fdb1f2d5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0db9a-b24c-7a23-9518-937366441cbe",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

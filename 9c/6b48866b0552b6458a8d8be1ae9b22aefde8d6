@@ -1,0 +1,18 @@
+apps/web/package.json
+  h_18044dd1b61a81 74
+apps/web/vite.config.ts
+  h_18044dd1b61a81 70-71
+pnpm-lock.yaml
+  h_18044dd1b61a81 656,663-665,3749-3870,8914-8917,12377-12433,13129,14907,14914,18127-18148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9c6b48866b0552b6458a8d8be1ae9b22aefde8d6",
+  "prompts": {},
+  "humans": {
+    "h_18044dd1b61a81": {
+      "author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

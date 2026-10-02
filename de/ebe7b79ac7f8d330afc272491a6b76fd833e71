@@ -1,0 +1,53 @@
+packages/db/src/migrations/20260928020750_optimal_carlie_cooper/migration.sql
+  s_05cda6dec60af2::t_25a19f7cc8be92 16,20,25,29
+packages/api-platform/src/scope.test.ts
+  s_9d227b7fe04659::t_ae31c680767e3e 44-49
+packages/api-platform/src/scope.ts
+  s_9d227b7fe04659::t_b2905e81003b11 203
+packages/core/src/server/cli-auth-page.ts
+  s_05cda6dec60af2::t_63b897ee42829a 222
+packages/core/src/server/handler.test.ts
+  s_2e6747c009154b::t_1400b9f1f3e353 346,352-356,360-388
+packages/react/src/__tests__/scope-query.test.ts
+  s_d83cd550b2d1e2::t_5613a6040c5cfd 1-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "deebe7b79ac7f8d330afc272491a6b76fd833e71",
+  "prompts": {},
+  "sessions": {
+    "s_05cda6dec60af2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e738-2a46-78b0-b09b-bd9fd027f8e7",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_2e6747c009154b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e739-3b2d-7063-9011-b408ff373cf9",
+        "model": "unknown"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_9d227b7fe04659": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e739-56c1-7ed3-9866-02f00d8b5808",
+        "model": "unknown"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_d83cd550b2d1e2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e739-691c-78e3-b29e-be9add4de87a",
+        "model": "unknown"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

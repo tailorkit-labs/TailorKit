@@ -1,0 +1,73 @@
+apps/web/src/routes/(app)/onboarding.tsx
+  s_904c22dc094ce5::t_a9df9ddd062a83 7
+  s_904c22dc094ce5::t_27b13d72758a17 8-9
+  s_904c22dc094ce5::t_bd999598137378 6
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.index.tsx
+  s_904c22dc094ce5::t_a9df9ddd062a83 51
+  s_904c22dc094ce5::t_27b13d72758a17 57-58
+  s_904c22dc094ce5::t_bd999598137378 50
+apps/web/src/routes/(app)/$orgSlug/~/(org)/projects.tsx
+  s_904c22dc094ce5::t_bd999598137378 37
+  s_904c22dc094ce5::t_a9df9ddd062a83 38
+  s_904c22dc094ce5::t_27b13d72758a17 39-40
+apps/web/src/routes/index.tsx
+  s_904c22dc094ce5::t_27b13d72758a17 8-9,24-25
+  s_904c22dc094ce5::t_a9df9ddd062a83 7,23
+  s_904c22dc094ce5::t_bd999598137378 6,22
+apps/web/src/routes/(app)/account/security/index.tsx
+  s_904c22dc094ce5::t_bd999598137378 47,51,55
+  s_904c22dc094ce5::t_a9df9ddd062a83 48,52,56
+  s_904c22dc094ce5::t_27b13d72758a17 49-50,53-54,57-58
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/settings/api-keys.tsx
+  s_904c22dc094ce5::t_27b13d72758a17 40-41
+  s_904c22dc094ce5::t_bd999598137378 36
+  s_904c22dc094ce5::t_a9df9ddd062a83 37
+apps/web/src/routes/(app)/$orgSlug/~/(org)/settings/members.tsx
+  s_904c22dc094ce5::t_bd999598137378 20,25,29-30
+  s_904c22dc094ce5::t_27b13d72758a17 22-23
+  s_904c22dc094ce5::t_a9df9ddd062a83 21,26
+apps/web/src/routes/(app)/account/invites.tsx
+  s_904c22dc094ce5::t_bd999598137378 25
+  s_904c22dc094ce5::t_a9df9ddd062a83 26
+  s_904c22dc094ce5::t_27b13d72758a17 27-28
+apps/web/src/routes/(app)/account/organizations.tsx
+  s_904c22dc094ce5::t_27b13d72758a17 30-31,34-35
+  s_904c22dc094ce5::t_a9df9ddd062a83 29,33
+  s_904c22dc094ce5::t_bd999598137378 28,32
+apps/web/src/routes/(app)/$orgSlug/route.tsx
+  s_904c22dc094ce5::t_a9df9ddd062a83 13,27
+  s_904c22dc094ce5::t_27b13d72758a17 14-15
+  s_904c22dc094ce5::t_bd999598137378 12,26,28-29
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/route.tsx
+  s_904c22dc094ce5::t_bd999598137378 10
+  s_904c22dc094ce5::t_a9df9ddd062a83 11
+  s_904c22dc094ce5::t_27b13d72758a17 14-15
+apps/web/src/routes/(auth)/route.tsx
+  s_904c22dc094ce5::t_a9df9ddd062a83 9
+  s_904c22dc094ce5::t_27b13d72758a17 10-11
+  s_904c22dc094ce5::t_bd999598137378 8
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.$appId.tsx
+  s_904c22dc094ce5::t_27b13d72758a17 35-36
+  s_904c22dc094ce5::t_bd999598137378 27
+  s_904c22dc094ce5::t_a9df9ddd062a83 28
+apps/web/src/routes/(app)/route.tsx
+  s_904c22dc094ce5::t_bd999598137378 5,17
+  s_904c22dc094ce5::t_27b13d72758a17 7-8,19-20
+  s_904c22dc094ce5::t_a9df9ddd062a83 6,18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d8d4ea6ad405dd52a7b58e958bbfe99996c7f030",
+  "prompts": {},
+  "sessions": {
+    "s_904c22dc094ce5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e090-1026-7ea3-a135-c8ebdffc9128",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

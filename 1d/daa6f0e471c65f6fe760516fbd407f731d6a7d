@@ -1,0 +1,21 @@
+packages/cli/turbo.json
+  s_6c7043da608411::t_f6a65054333fd2 1-8
+apps/apps-worker/turbo.json
+  s_6c7043da608411::t_f6a65054333fd2 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1ddaa6f0e471c65f6fe760516fbd407f731d6a7d",
+  "prompts": {},
+  "sessions": {
+    "s_6c7043da608411": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f97c-33f2-7b00-ae53-ee745576a301",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

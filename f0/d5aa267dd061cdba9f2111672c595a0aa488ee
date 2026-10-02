@@ -1,0 +1,31 @@
+turbo.json
+  s_48d6f5cc87270d::t_d4cadfd24acd31 6
+apps/web/vite.config.ts
+  s_48d6f5cc87270d::t_d4cadfd24acd31 27-30
+apps/web/src/lib/auth-client.ts
+  s_48d6f5cc87270d::t_d4cadfd24acd31 6,9
+apps/web/src/env.ts
+  s_48d6f5cc87270d::t_d4cadfd24acd31 6-10
+apps/web/src/lib/orpc.ts
+  s_48d6f5cc87270d::t_d4cadfd24acd31 10,31
+apps/web/src/lib/deployment-headers.ts
+  s_48d6f5cc87270d::t_d4cadfd24acd31 1-4
+apps/web/turbo.json
+  s_48d6f5cc87270d::t_d4cadfd24acd31 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f0d5aa267dd061cdba9f2111672c595a0aa488ee",
+  "prompts": {},
+  "sessions": {
+    "s_48d6f5cc87270d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ddb8-cb3d-7c10-8944-73c580c65c38",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

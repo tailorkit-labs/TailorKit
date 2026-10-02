@@ -1,0 +1,19 @@
+packages/ui/src/components/button.tsx
+  s_24e784c60065e8::t_e460fa8ff6a10a 12,27,31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3b95e038642e5303f8fe5d222eda5cb3a97f6e55",
+  "prompts": {},
+  "sessions": {
+    "s_24e784c60065e8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e684-d9da-79a1-827d-e6349cfc9b0f",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

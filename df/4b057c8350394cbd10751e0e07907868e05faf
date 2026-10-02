@@ -1,0 +1,39 @@
+packages/api-platform/src/preview-ws-auth.ts
+  s_77ea77b6981c20::t_931184042a27da 5,30-31
+packages/api-platform/src/preview-token.test.ts
+  s_77ea77b6981c20::t_2877c547981fed 1-19
+packages/react/src/preview-manager.ts
+  s_77ea77b6981c20::t_931184042a27da 182-183
+packages/react/src/__tests__/preview-manager.test.ts
+  s_77ea77b6981c20::t_350dac57ce3724 50-61,64-72,74-75
+  s_77ea77b6981c20::t_f2e24254dc1154 7-12,19-23,87-89,177
+  s_77ea77b6981c20::t_7091dfb9fc4481 13-14
+  s_77ea77b6981c20::t_030e5342458446 31-32,34
+  s_77ea77b6981c20::t_80edc522719406 46,48-49,62-63,73,76-84
+  s_77ea77b6981c20::t_cd49fc4ae7ca56 47
+  s_77ea77b6981c20::t_7b34b44cb58621 85
+packages/api-platform/src/preview-token.ts
+  s_77ea77b6981c20::t_931184042a27da 31-38,41,45,51-53
+packages/api-platform/src/routes/preview.test.ts
+  s_77ea77b6981c20::t_fefa3f498a89eb 23,183-193
+  s_77ea77b6981c20::t_91c4220d7974e0 194-195
+packages/api-platform/src/preview-ws.ts
+  s_77ea77b6981c20::t_350dac57ce3724 39-48,152-155
+  s_77ea77b6981c20::t_931184042a27da 49-53,138,164,176,186,194,201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "df4b057c8350394cbd10751e0e07907868e05faf",
+  "prompts": {},
+  "sessions": {
+    "s_77ea77b6981c20": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0cd9e-6fe0-78c3-bfa5-b5e52cb77459",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

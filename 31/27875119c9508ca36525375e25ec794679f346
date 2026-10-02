@@ -1,0 +1,19 @@
+packages/cli/src/init.ts
+  s_1b2930c7c7c803::t_9f837774f0d153 5,35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3127875119c9508ca36525375e25ec794679f346",
+  "prompts": {},
+  "sessions": {
+    "s_1b2930c7c7c803": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0dd5a-8827-7a60-8b69-fa45e4717568",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

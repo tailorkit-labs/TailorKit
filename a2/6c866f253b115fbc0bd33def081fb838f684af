@@ -1,0 +1,43 @@
+packages/core/src/server/backend.test.ts
+  s_6c7043da608411::t_dd7c026fa18579 83-91,100-111
+  s_6c7043da608411::t_6adfeca2f4c47a 92-99,112-132
+apps/apps-worker/README.md
+  s_6c7043da608411::t_1733d8ef511929 95,97-98
+examples/apps/backend-todo/README.md
+  s_6c7043da608411::t_1733d8ef511929 19
+packages/app/src/client/connection.test.ts
+  s_6c7043da608411::t_dd7c026fa18579 290-292,304-311
+  s_6c7043da608411::t_684af6ac204586 293-303
+examples/apps/todo/README.md
+  s_6c7043da608411::t_1733d8ef511929 11
+apps/apps-worker/src/runtime/database/migrations.test.ts
+  s_6c7043da608411::t_6adfeca2f4c47a 102-107
+  s_6c7043da608411::t_1733d8ef511929 97,100-101,109
+packages/api-platform/src/routes/apps.ts
+  s_6c7043da608411::t_1733d8ef511929 254-260,262-271
+packages/core/src/server/backend.ts
+  s_6c7043da608411::t_1733d8ef511929 92-102
+packages/api-platform/src/routes/apps.test.ts
+  s_6c7043da608411::t_684af6ac204586 11,32,383-385,390-402
+  s_6c7043da608411::t_dd7c026fa18579 16,31,33-35,371-373,411,415-419
+  s_6c7043da608411::t_6adfeca2f4c47a 370,374-382,386-389,403-410,412-414
+  s_6c7043da608411::t_8ce506bffabc18 420
+apps/apps-worker/src/runtime/database/migrations.ts
+  s_6c7043da608411::t_1733d8ef511929 33-36,39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a26c866f253b115fbc0bd33def081fb838f684af",
+  "prompts": {},
+  "sessions": {
+    "s_6c7043da608411": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f97c-33f2-7b00-ae53-ee745576a301",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+.github/workflows/ci.yml
+  s_3ded48b58354d0::t_466bb690cee025 26-28,43,45-48,64-66,81,83-86,93-95,110,112-114
+  s_3ded48b58354d0::t_172edaef0ba4f3 44,82,111
+  s_3ded48b58354d0::t_83d0055a6b9840 115
+.github/workflows/release.yml
+  s_3ded48b58354d0::t_9c06242150968a 125-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "740d5a3d32907882c23f149961deee3bd6748b22",
+  "prompts": {},
+  "sessions": {
+    "s_3ded48b58354d0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0dd45-132d-7aa3-a90c-009781a3c6c5",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

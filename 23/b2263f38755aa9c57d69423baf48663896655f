@@ -1,0 +1,23 @@
+apps/web/vercel.json
+  s_3d0991fdb1f2d5::t_2b31174ade857b 3
+packages/auth/package.json
+  s_3d0991fdb1f2d5::t_b8f43d113f1156 41
+pnpm-lock.yaml
+  s_3d0991fdb1f2d5::t_ec93a9ecfc95d0 1055-1056
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "23b2263f38755aa9c57d69423baf48663896655f",
+  "prompts": {},
+  "sessions": {
+    "s_3d0991fdb1f2d5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0db9a-b24c-7a23-9518-937366441cbe",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+packages/ui/src/components/sidebar.tsx
+  s_927b63d94af524::t_cda345e21f76dd 194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a76bac80ce4e59561714c0c5faf67338b705118e",
+  "prompts": {},
+  "sessions": {
+    "s_927b63d94af524": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e5c2-5adb-7943-87f1-8152e32c3f0d",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

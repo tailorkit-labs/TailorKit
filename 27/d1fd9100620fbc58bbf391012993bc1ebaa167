@@ -1,0 +1,59 @@
+apps/web/src/nitro/routes/api/platform/preview/ws.ts
+  s_77ea77b6981c20::t_23d3e2aedd2145 6,30-31,34
+  s_77ea77b6981c20::t_6e74ce6b73da89 10-14
+packages/kv/package.json
+  s_77ea77b6981c20::t_6e74ce6b73da89 34-35
+packages/api-platform/src/preview-token.ts
+  s_77ea77b6981c20::t_49f0ff91ca4876 4,7,31-32,35-36
+packages/kv/src/preview-presence.ts
+  s_77ea77b6981c20::t_ca45706870b9a1 2,22,36
+  s_77ea77b6981c20::t_6e74ce6b73da89 23-26,28,31
+packages/core/src/server/preview-consent.ts
+  s_77ea77b6981c20::t_6e74ce6b73da89 21-23
+  s_77ea77b6981c20::t_ca45706870b9a1 3,7-9,56,73-74,77
+packages/react/src/preview-manager.ts
+  s_77ea77b6981c20::t_23d3e2aedd2145 156
+  s_77ea77b6981c20::t_6e74ce6b73da89 1-4
+packages/cli/src/preview.ts
+  s_77ea77b6981c20::t_49f0ff91ca4876 13,111-116,118-119,127
+  s_77ea77b6981c20::t_5f8adad44cbef8 120-126
+packages/client-platform/tests/preview.test.ts
+  s_77ea77b6981c20::t_74336065a46080 2-6
+  s_77ea77b6981c20::t_8fa48892d4f005 1,7-63
+packages/api-platform/src/routes/preview-grants.ts
+  s_77ea77b6981c20::t_6e74ce6b73da89 26-30
+  s_77ea77b6981c20::t_409eec26e0d0f4 31,133
+packages/client-platform/package.json
+  s_77ea77b6981c20::t_8975f630819d36 42-43
+packages/client-platform/src/preview.ts
+  s_77ea77b6981c20::t_f43bb5590b7957 24-35,37-53,55-58
+  s_77ea77b6981c20::t_6e74ce6b73da89 6-9,16-20,60-72,88-93,111-114
+  s_77ea77b6981c20::t_c5171d9e740358 54
+  s_77ea77b6981c20::t_0e205652dbad97 36
+  s_77ea77b6981c20::t_69ac6cc23998f3 10-11
+  s_77ea77b6981c20::t_3889ccb86a7415 3,5,13-15,21-23,59,73-85,87,94-96,99-102,106,108-110,115-124
+packages/api-platform/src/preview-build-store.ts
+  s_77ea77b6981c20::t_6e74ce6b73da89 40,42-48,50-62,67-68
+  s_77ea77b6981c20::t_5f8adad44cbef8 63-66
+  s_77ea77b6981c20::t_bffd3fb4067b2b 196-198,279-280
+  s_77ea77b6981c20::t_49f0ff91ca4876 162
+  s_77ea77b6981c20::t_8975f630819d36 3,38,49,81,127,258,286-287,291
+pnpm-lock.yaml
+  s_77ea77b6981c20::t_4720e0ae21b9ec 1197-1199,1391-1393
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "27d1fd9100620fbc58bbf391012993bc1ebaa167",
+  "prompts": {},
+  "sessions": {
+    "s_77ea77b6981c20": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0cd9e-6fe0-78c3-bfa5-b5e52cb77459",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

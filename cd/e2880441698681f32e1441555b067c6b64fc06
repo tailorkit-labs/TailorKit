@@ -1,0 +1,165 @@
+packages/db/src/schema/index.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 2
+packages/db/src/schema/preview-session.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 2-11,17,37,44-45,63,65,75-78
+packages/react/src/store.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 2,5,13-21,35,40,48-64,80,85-89,92-96,99-101,105-106,109,112,115-116,122,125,133,136-137,144,182-183,191-204,209-213
+packages/react/src/components/context.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 4,13-16,21-24
+  s_f9597ac6bedee3::t_114b4d11d6b5f7 25
+packages/api-platform/package.json
+  s_f9597ac6bedee3::t_be031b2cccc203 43
+packages/db/src/schema/apps.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 5,18,31-32,49,57-58
+apps/demo/src/routes/api/tailorkit.$.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 20,24
+examples/tanstack-start/src/lib/tailorkit.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 4,9
+README.md
+  s_f9597ac6bedee3::t_be031b2cccc203 41
+packages/core/src/server/preview.test.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 3,8,13,15,26-30,47-48,125,136,156-157,164,187,201,214,220-222,264,277,305-309,315-316,319,341-351
+packages/api-platform/src/routes/cli-auth.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 10,99,106,110-111,172,210,212-225,247-255,257-262,269-270,274,284,296,309-318,321
+packages/core/src/server/types.test-d.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 1,3-9,15,17,22,25,29,31,35,42,47,53,59-119
+examples/nextjs/app/api/tailorkit/[[...path]]/route.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 15
+packages/client-platform/src/client/sdk.gen.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 75-88,90-93,114-117,207-220,222-225
+packages/react/src/index.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 2-8,10
+apps/docs/content/docs/(guides)/deploying-to-production.mdx
+  s_f9597ac6bedee3::t_be031b2cccc203 108-112,172
+packages/core/src/server/scope.test.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 1-189
+packages/api-platform/src/routes/deployments.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 17,21,25-31,73,148,163-192,196-198,203-204,206,222-223,227,231,233,259-260,265,269,271,294,449,456,458
+packages/api-platform/src/routes/deployments.test.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 5,20,26,57,65,122-162,244,327,389,407,437
+packages/core/src/server/procedures.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 4-5,17-41,65,69-79
+packages/db/src/schema/scope.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 1-197
+apps/docs/content/docs/(guides)/actions.mdx
+  s_f9597ac6bedee3::t_be031b2cccc203 44,123,133-137,212,216,268
+apps/docs/content/docs/(writing-apps)/writing-apps.mdx
+  s_f9597ac6bedee3::t_be031b2cccc203 119-121
+packages/db/src/migrations/20260928020750_optimal_carlie_cooper/snapshot.json
+  s_f9597ac6bedee3::t_be031b2cccc203 1-3576
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_f9597ac6bedee3::t_be031b2cccc203 4,21-24,43,47,68,94,156-171
+packages/react/src/tailorkit.tsx
+  s_f9597ac6bedee3::t_be031b2cccc203 1-257
+packages/core/src/server/context.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 3-4,8,17,30,49
+packages/react/src/hooks/use-view.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 59-62
+packages/db/package.json
+  s_f9597ac6bedee3::t_be031b2cccc203 30
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_f9597ac6bedee3::t_be031b2cccc203 1,10,12-13,77-81,105,110,141,146,236-241,261,276-354,404,442,493,497,519-539,548,554,664-671,676,682-683,695,710,724,731,762-767,777,779,781-782,787,789-790,794,796-797,845
+packages/core/src/server/routes/deployments.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 9,79,90,94,102-106,112,116,131
+packages/react/src/preview-manager.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 6
+packages/core/src/server/scope.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 1-301
+apps/demo/src/lib/tailorkit.tsx
+  s_f9597ac6bedee3::t_be031b2cccc203 132
+packages/react/src/scope-query.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 1-23
+packages/react/src/components/root.tsx
+  s_f9597ac6bedee3::t_be031b2cccc203 4
+packages/cli/src/auth.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 18-22,25,42,45,48-64,71-75,77,181,211,213-214,219,233,250-252,259,264
+packages/api-platform/src/scope.test.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 1-128
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.index.tsx
+  s_f9597ac6bedee3::t_be031b2cccc203 9,66,127-128,130-139
+packages/api-platform/src/routes/apps.test.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 23,29-30,123,135,143,148,164,214,224-272,280,291,299-377
+packages/core/src/server/handler.test.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 10,13,30,41,57,62-133,141,152,168,195,215,255,275,300,315,327,346,352-356,360-388,393,406-420,424,446,454,462,485,493,507,523,531-533,569-571,579-581,584,588,596-598,636-656,658-675
+packages/react/src/__tests__/scope-query.test.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 1-12
+apps/docs/content/docs/(guides)/views.mdx
+  s_f9597ac6bedee3::t_be031b2cccc203 17-19,22,38-110,129-132
+packages/react/src/hooks/use-apps.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 3,5-9,22-23,25-30,32-34,38-39,41-44
+packages/api-platform/openapi.json
+  s_f9597ac6bedee3::t_be031b2cccc203 13-14,16-153,155,170-171,174-175,178-179,181-303,306-307,312-313,323-324,347-348,351-352,355-356,365-366,376-377,387-388,446-447,453-454,457-458,467,484-486,489-491,503-505,507-517,525-534,536-803,808-809,832-833,836-837,840-841,850-851,861-862,872-873,931-932,938-939,942-943,952,967-1877,1880-1881,1886-1887,1897-1898,1921-1922,1925-1926,1929-1930,1939-1940,1950-1951,1961-1962,2020-2021,2027-2028,2031-2032,2041,2054-2058,2076,2079-2084,2086-2183,2185-2187,2190,2204-2205,2208-2209,2212-2213,2215-2337,2340-2341,2346-2347,2357-2358,2381-2382,2385-2386,2389-2390,2399-2400,2410-2411,2421-2422,2480-2481,2487-2488,2491-2492,2501,2516,2518,2526-2538,2540-2544,2546-2547,2549-2550,2552-2553,2555-2588,2590-2629,2632-2634,2637-2638,2641,2677-2678,2717-2718,2757-2879,2885,2956-2957,2973-3243,3245-3247,3251,3266-3267,3270-3271,3274-3275,3284-3285,3295-3296,3306-3307,3367-3369,3372-3374,3386-3637,3657-3658,3661-3663,3692-3693,3696-3698,3711-3712,3715-3717,3726-3836,3839,3861-3862,3865-3866,3869-3871,3894-3896,3901-3902,3947-3948,3958-3959,3962-3963,3966-3967,3976-3977,3987-3988,3998-3999,4061-4062,4065-4066,4069-4071,4089-4091,4096-4097,4142-4143,4155-4156,4159-4160,4163-4165,4183-4185,4190-4191,4236-4237,4254-4255,4266-4285,4287-4376,4378,4380-4381,4388,4402-4403,4406-4407,4410-4411,4420-4421,4431-4432,4442-4443,4512-4513,4516-4517,4548-4549,4572-4573,4585-4586,4617-4618,4639-4640,4660-4661,4672-4780,4783,4797-4798,4801-4802,4825,4827-4828,4831-4944,4947,4969-4970,4973-4974,4977-4978,4980-5094,5097-5098,5103-5104,5114-5115,5138-5139,5142-5143,5146-5147,5161-5162,5172-5173,5183-5184,5242-5243,5249-5250,5253-5254,5263,5276-5277,5285-5286
+packages/api-platform/src/routes/cli-auth.test.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 1-199
+packages/core/src/server/preview-consent.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 4-5,40,58,77-78,104-115,118,144-149,153
+apps/web/vite.config.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 22,32-47,52-70,72-74
+examples/tanstack-start/src/routes/api/tailorkit.$.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 16
+packages/db/src/schema/cli-auth.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 2-11,15,34-35,50,68-69,88,97-98,104-105
+.changeset/calm-clients-bind-react.md
+  s_f9597ac6bedee3::t_be031b2cccc203 1-7
+examples/nextjs/lib/tailorkit.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 4,9
+packages/api-platform/src/procedures.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 7-8,12-35,47-63,70-74
+packages/cli/src/auth.test.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 66,71,83-100,115,126,138,153,210-259
+apps/docs/content/docs/(guides)/layouts-and-styles.mdx
+  s_f9597ac6bedee3::t_be031b2cccc203 20,23,33,36,46,49,151,169,179,197,207,225
+packages/api-platform/src/scope.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 1-229
+apps/docs/content/docs/(getting-started)/installation.mdx
+  s_f9597ac6bedee3::t_be031b2cccc203 60-61,116-122,139-140,176-177,201-202,235-236,262-263,329
+packages/react/src/components/app-view.tsx
+  s_f9597ac6bedee3::t_be031b2cccc203 9
+packages/api-platform/src/routes/preview-grants.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 13-19,37,71,77,98,116,133,147-150
+packages/api/src/routers/apps.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 64,123-126,128,137-138,173-174,177
+packages/core/src/server/handler.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 17-21,27,29,51-53,58,99-100,103-113,140-141,162-163,169-178,180,204-205,213-220,227,240,267-268,287-288,305-316
+  s_f9597ac6bedee3::t_6b43c858ca9fac 317
+packages/core/src/server/routes/cli-auth.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 9,28,34,82
+packages/db/src/migrations/20260928020750_optimal_carlie_cooper/migration.sql
+  s_f9597ac6bedee3::t_be031b2cccc203 1-43
+packages/api-platform/src/routes/apps.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 7,10,12,36-37,39,42-43,46-54,86-87,92,96,108,113,121-122,146,150,164,169,200,205
+packages/core/src/server/cli-auth-page.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 3-4,9,23-29,42,44,48-52,65-66,68,73-74,83,90-94,97,122-123,131-132,137-149,222,234,237,247-269,693-698
+apps/docs/content/docs/(guides)/components.mdx
+  s_f9597ac6bedee3::t_be031b2cccc203 161,166,193
+packages/core/src/server/types.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 1-3,25-27,33-34,104-134,139,142,145-146,151,155,157,160-163,170,174
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.$appId.tsx
+  s_f9597ac6bedee3::t_be031b2cccc203 169,177-196
+packages/client-platform/src/client/types.gen.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 8,11-41,43-45,57-87,122,124-157,160,163,171-201,228,230-264,266-268,271,279-309,336-388,394-424,429,441-471,503-533,538,550-580,611-641,702-732,778-808,816,820-850,852-854,885-946,971-1001,1090-1120,1225-1255,1279-1309,1326-1356
+packages/api-platform/src/routes/preview.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 16,45-54,91-99,108-114,144-145,176-177,193-194,266-267,276-284
+packages/core/src/server/routes/apps.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 10,29,40,52,60,64,72,78,81,94
+packages/api-platform/src/routes/preview.test.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 23,33-35,142,147-158,230-237,294,299,305,317,392-399,411,443-450
+packages/cli/src/index.ts
+  s_f9597ac6bedee3::t_be031b2cccc203 136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cde2880441698681f32e1441555b067c6b64fc06",
+  "prompts": {},
+  "sessions": {
+    "s_f9597ac6bedee3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ebe5-fa29-7940-a1cf-9966713193dc",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

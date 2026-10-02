@@ -1,0 +1,36 @@
+apps/apps-worker/src/worker.ts
+  s_9df97e9992d87b::t_26c17c78bbd6de 33-41,51-61,63,70,77-80,87,89,92-97,99
+  s_9df97e9992d87b::t_655541f084a436 42-45,48-50,62,64-69,71-76,88,98
+apps/apps-worker/src/installation.ts
+  s_9df97e9992d87b::t_26c17c78bbd6de 42-48,50-67,69-83,85
+  s_9df97e9992d87b::t_922aac93c331b1 84
+apps/apps-worker/src/supervisor/auth.test.ts
+  s_9df97e9992d87b::t_26c17c78bbd6de 5,39,41-42,52,54,63,65
+  s_9df97e9992d87b::t_61e7f5d60eb1f9 53,64
+apps/apps-worker/src/routing.test.ts
+  s_9df97e9992d87b::t_26c17c78bbd6de 1-2,32,51,75
+  s_9df97e9992d87b::t_a67e501594af6e 130-139
+apps/apps-worker/src/transport.ts
+  s_9df97e9992d87b::t_26c17c78bbd6de 71,99,102,106-108,110-137,139-144
+  s_9df97e9992d87b::t_59cefb56e4461a 138
+apps/apps-worker/src/supervisor/auth.ts
+  s_9df97e9992d87b::t_26c17c78bbd6de 34,42
+apps/apps-worker/src/transport.test.ts
+  s_9df97e9992d87b::t_89dc5c4c458db3 60,74,86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e421ffdc6ecef01db2e725a2181ab90342feea15",
+  "prompts": {},
+  "sessions": {
+    "s_9df97e9992d87b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb9f-ac0d-7041-a89b-4751176b2edd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

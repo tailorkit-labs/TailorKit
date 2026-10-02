@@ -1,0 +1,74 @@
+packages/core/src/schema/views.test-d.ts
+  s_47199295061026::t_6c790cc9d484c5 7
+apps/docs/content/docs/(getting-started)/installation.mdx
+  s_47199295061026::t_44b3b0f28377b2 77,79
+apps/docs/content/docs/(guides)/components.mdx
+  s_47199295061026::t_2b2a900ba1fdee 262
+  s_47199295061026::t_bdedd71f36dbb6 159,166
+examples/nextjs/lib/tailorkit.ts
+  s_47199295061026::t_3e2dcabc7e08d9 1,13
+packages/core/src/schema/schema.test-d.ts
+  s_47199295061026::t_1697d51f51b81d 44
+  s_47199295061026::t_367c42ae7d46f3 28-30,43,45,61,64,74,167-168,170,176,181,188,190,192,194,196,198-200
+packages/core/src/server/types.test-d.ts
+  s_47199295061026::t_cfcc415f52e720 2,43,48
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_47199295061026::t_f85f427c800d55 74-78
+packages/core/src/schema/schema.ts
+  s_47199295061026::t_7aa92b5905c4cf 71
+  s_47199295061026::t_18cb744616d20a 13,23,42,48,57,60-61,64,74,80-81,137,188
+  s_47199295061026::t_f784935bdc358a 54
+packages/core/src/schema/slots.test.ts
+  s_47199295061026::t_1ef2cf43f35ec6 4
+  s_47199295061026::t_c48011e2c27de3 10,34
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_47199295061026::t_7e9ca0363742c3 29-35
+packages/core/src/schema/index.ts
+  s_47199295061026::t_510caa67645d84 36
+packages/react/src/tailor-kit.tsx
+  s_47199295061026::t_adbd07d0f0f943 141,157-158
+apps/docs/content/docs/(guides)/views.mdx
+  s_47199295061026::t_714e3fbb13705b 20-23
+packages/core/src/schema/views.ts
+  s_47199295061026::t_b5761b55fbe7c2 3-7,12
+  s_47199295061026::t_c0bf44199394a7 34
+packages/cli/src/generator/types.test.ts
+  s_47199295061026::t_49212ee6c7ef54 342-344
+examples/tanstack-start/src/lib/tailorkit.ts
+  s_47199295061026::t_cf758e6568b97e 1,13
+apps/demo/src/lib/tailorkit.tsx
+  s_47199295061026::t_484e442e83da88 156-157
+packages/tailorkit/src/index.ts
+  s_47199295061026::t_0388684f09239c 8
+.changeset/bright-contexts.md
+  s_47199295061026::t_1b2997cdfe635b 1-6
+packages/react/src/hooks/use-view.ts
+  s_47199295061026::t_ffe4bf3a45d2a1 11-12
+  s_47199295061026::t_c0bc696ce13127 10
+packages/core/src/server/types.ts
+  s_47199295061026::t_a500ee8631e7f1 9,71-72,79,85-86,96
+  s_47199295061026::t_9b91a57fdfbf97 66,93
+  s_47199295061026::t_fd8334bc3101d7 97-98,119,141
+packages/core/src/server/handler.ts
+  s_47199295061026::t_f5800bf0f2c2f1 20,31,36-37,41,49,58
+examples/shared/src/index.ts
+  s_47199295061026::t_abb1d03b55bf7a 2,122
+  s_47199295061026::t_c2e0225bc97f70 114-115,117-118,120-121
+  s_47199295061026::t_5fbe380bf7151a 112-113,116,119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ad98d809fa5f44c33404fa76bd33b644f73e8887",
+  "prompts": {},
+  "sessions": {
+    "s_47199295061026": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0cd0a-cfc6-7b41-b9c5-424f505db7eb",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

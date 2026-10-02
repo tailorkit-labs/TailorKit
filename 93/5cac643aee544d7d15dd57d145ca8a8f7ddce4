@@ -1,0 +1,41 @@
+packages/api-platform/openapi.json
+  s_b70f1992c81368::t_4a4c433de7e7d5 11
+packages/core/src/server/handler.test.ts
+  s_b70f1992c81368::t_4a4c433de7e7d5 177,216,229-233,243-245,247,268-270,289,312,330-332
+  s_b70f1992c81368::t_1795cd325efdcf 186-198
+packages/api-utils/src/rate-limiting.ts
+  s_b70f1992c81368::t_4a4c433de7e7d5 14
+packages/core/src/server/preview-transport.test.ts
+  s_b70f1992c81368::t_4a4c433de7e7d5 65
+packages/core/src/server/client.ts
+  s_b70f1992c81368::t_4a4c433de7e7d5 22,34
+packages/api-platform/src/routes/preview.test.ts
+  s_b70f1992c81368::t_1795cd325efdcf 3-4,175-198
+  s_b70f1992c81368::t_c3cf73b279ca0a 199
+packages/core/src/server/routes/actions.ts
+  s_b70f1992c81368::t_4a4c433de7e7d5 20
+packages/api-utils/src/rate-limiting.test.ts
+  s_b70f1992c81368::t_4a4c433de7e7d5 9,19,42
+packages/api/src/procedures.ts
+  s_b70f1992c81368::t_4a4c433de7e7d5 4,10
+.changeset/orpc-v2-beta.md
+  s_b70f1992c81368::t_4a4c433de7e7d5 6-8
+packages/api-platform/src/procedures.ts
+  s_b70f1992c81368::t_4a4c433de7e7d5 4,11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "935cac643aee544d7d15dd57d145ca8a8f7ddce4",
+  "prompts": {},
+  "sessions": {
+    "s_b70f1992c81368": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f0d3-c505-7b93-8669-433ab84da5ad",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

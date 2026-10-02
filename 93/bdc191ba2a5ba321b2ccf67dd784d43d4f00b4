@@ -1,0 +1,19 @@
+apps/web/src/routes/(app)/account/security/-two-factor-settings.tsx
+  s_536e926af85936::t_6c11fab76c2110 215
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "93bdc191ba2a5ba321b2ccf67dd784d43d4f00b4",
+  "prompts": {},
+  "sessions": {
+    "s_536e926af85936": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e05d-b99a-7672-b995-c472d163202e",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

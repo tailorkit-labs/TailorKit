@@ -1,0 +1,19 @@
+.changeset/bright-contexts.md
+  s_47199295061026::t_324b18083ff58e 2-3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "16a7d00fcc4372068b1358866e197becc56a4b42",
+  "prompts": {},
+  "sessions": {
+    "s_47199295061026": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0cd0a-cfc6-7b41-b9c5-424f505db7eb",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

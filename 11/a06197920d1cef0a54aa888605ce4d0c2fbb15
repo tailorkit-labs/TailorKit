@@ -1,0 +1,21 @@
+packages/cli/src/generator/types.ts
+  s_b47b49a89d8223::t_c4dce153694527 163-169,209-222,226
+packages/cli/src/generator/types-schema.test.ts
+  s_b47b49a89d8223::t_0036e9237d9bd0 198-265,371-382,391-404
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "11a06197920d1cef0a54aa888605ce4d0c2fbb15",
+  "prompts": {},
+  "sessions": {
+    "s_b47b49a89d8223": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb53-4b11-7e80-bd1b-4484c0146e2b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

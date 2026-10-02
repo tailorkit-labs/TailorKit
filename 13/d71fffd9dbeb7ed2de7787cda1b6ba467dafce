@@ -1,0 +1,31 @@
+apps/web/src/tests/preview-ws.test.mjs
+  s_48d6f5cc87270d::t_1b1c8049d6a47a 24,26-33
+apps/web/vite.config.ts
+  s_48d6f5cc87270d::t_1f715a35fad0cc 33
+apps/web/src/routes/api/platform.preview.ws.ts
+  s_48d6f5cc87270d::t_1b1c8049d6a47a 1-108
+apps/web/package.json
+  s_48d6f5cc87270d::t_1f715a35fad0cc 56
+  s_48d6f5cc87270d::t_1b1c8049d6a47a 21
+apps/web/src/routeTree.gen.ts
+  s_48d6f5cc87270d::t_439be9c658c60c 189,192,900
+  s_48d6f5cc87270d::t_d27f377a839fce 40,190-191,193,267,300,340,380,413,452,477,678-684
+pnpm-lock.yaml
+  s_48d6f5cc87270d::t_80fe37e31de3fe 614-616
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "13d71fffd9dbeb7ed2de7787cda1b6ba467dafce",
+  "prompts": {},
+  "sessions": {
+    "s_48d6f5cc87270d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ddb8-cb3d-7c10-8944-73c580c65c38",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

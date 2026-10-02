@@ -1,0 +1,87 @@
+packages/ui/src/forms/form.tsx
+  s_927b63d94af524::t_b50eca72434ed9 5,21,24-25,196,211,214-216
+apps/web/src/routes/auth/error.tsx
+  s_927b63d94af524::t_33f0fdfa1020b6 1,48-52,54
+apps/web/src/components/sidebar/sidebar-back-button.tsx
+  s_927b63d94af524::t_14795916d9b3f0 4,10-17,19,22
+examples/nextjs/app/customers/[customerId]/page.tsx
+  s_927b63d94af524::t_8954ecaa34821d 7,31-32,34
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/settings/api-keys.tsx
+  s_927b63d94af524::t_10454f5b524fd5 308
+apps/docs/src/routes/home.tsx
+  s_927b63d94af524::t_ccedd5dbceaebf 1,59-68
+apps/web/src/components/sidebar/org-switcher.tsx
+  s_927b63d94af524::t_14795916d9b3f0 103-108,110,112
+  s_927b63d94af524::t_8d68313971cc15 3
+apps/docs/src/components/navbar-auth.tsx
+  s_927b63d94af524::t_ccedd5dbceaebf 3,69-73,75-76,78,84,86
+apps/web/src/routes/(auth)/login.tsx
+  s_927b63d94af524::t_b50eca72434ed9 4
+apps/web/src/routes/(auth)/forgot-password.tsx
+  s_927b63d94af524::t_d2b69e21f41509 355,364
+  s_927b63d94af524::t_b50eca72434ed9 6
+  s_927b63d94af524::t_33f0fdfa1020b6 7,350-354,357,359-363,366
+apps/web/src/routes/(app)/account/security/-two-factor-settings.tsx
+  s_927b63d94af524::t_b50eca72434ed9 2
+  s_927b63d94af524::t_10454f5b524fd5 592,773
+examples/nextjs/app/deals/[dealId]/page.tsx
+  s_927b63d94af524::t_8954ecaa34821d 5,20-21,23
+examples/tanstack-start/src/routes/customers.$customerId.tsx
+  s_927b63d94af524::t_8954ecaa34821d 3,42-43,45
+apps/docs/src/components/home-cta.tsx
+  s_927b63d94af524::t_ccedd5dbceaebf 1,17-22
+apps/web/src/routes/(auth)/verify-email.tsx
+  s_927b63d94af524::t_d2b69e21f41509 204
+  s_927b63d94af524::t_b50eca72434ed9 5
+  s_927b63d94af524::t_33f0fdfa1020b6 6,199-203,206
+apps/web/src/components/not-found.tsx
+  s_927b63d94af524::t_33f0fdfa1020b6 2,26-27,29
+packages/ui/src/styles/globals.css
+  s_927b63d94af524::t_48799223dc3d27 144
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.$appId.tsx
+  s_927b63d94af524::t_8d68313971cc15 9,160-163,165,167
+apps/web/src/routes/(app)/account/security/index.tsx
+  s_927b63d94af524::t_b50eca72434ed9 6
+  s_927b63d94af524::t_10454f5b524fd5 213,235,621,660
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/settings/index.tsx
+  s_927b63d94af524::t_b50eca72434ed9 2
+  s_927b63d94af524::t_10454f5b524fd5 190
+packages/ui/src/components/button.tsx
+  s_927b63d94af524::t_daf5d12c2f8c85 5-6,10,12,14-19,21-35,40,42-43,45-51,54
+  s_927b63d94af524::t_73e798a5bd8aa8 52
+  s_927b63d94af524::t_d650ef17261bfa 55
+  s_927b63d94af524::t_cdee079f3740bc 1-2
+apps/docs/src/components/home-hero.tsx
+  s_927b63d94af524::t_ccedd5dbceaebf 1,83-92
+apps/docs/src/components/footer.tsx
+  s_927b63d94af524::t_ccedd5dbceaebf 2,62-64
+apps/web/src/routes/(app)/account/organizations.tsx
+  s_927b63d94af524::t_8d68313971cc15 12,60-64,71,73-74,76,105-109,111
+apps/web/src/components/loading-button.tsx
+  s_927b63d94af524::t_af5e07db7e3c30 3,13,19-24
+  s_927b63d94af524::t_b50eca72434ed9 1-2,4-12,14-18,25-29
+apps/web/src/routes/(auth)/sign-up.tsx
+  s_927b63d94af524::t_b50eca72434ed9 4
+apps/web/src/routes/(auth)/two-factor.tsx
+  s_927b63d94af524::t_b50eca72434ed9 5
+examples/tanstack-start/src/routes/deals.$dealId.tsx
+  s_927b63d94af524::t_8954ecaa34821d 2,27-28,30
+apps/web/src/routes/(app)/account/request-organization.tsx
+  s_927b63d94af524::t_8d68313971cc15 7,38-43,46,52-55,57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "658dd2ef8ebc01f252c9245d2dd132759dee1375",
+  "prompts": {},
+  "sessions": {
+    "s_927b63d94af524": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e5c2-5adb-7943-87f1-8152e32c3f0d",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

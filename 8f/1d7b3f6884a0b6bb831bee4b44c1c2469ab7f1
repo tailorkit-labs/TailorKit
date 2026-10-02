@@ -1,0 +1,20 @@
+packages/ui/src/forms/form.tsx
+  s_a6fa8534aa32ec::t_cd37c3f1880942 183-188,197
+  s_a6fa8534aa32ec::t_7ab4d78ceb7f65 204
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8f1d7b3f6884a0b6bb831bee4b44c1c2469ab7f1",
+  "prompts": {},
+  "sessions": {
+    "s_a6fa8534aa32ec": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e05f-6b27-79c1-9f01-eed8a599e013",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

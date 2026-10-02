@@ -1,0 +1,43 @@
+packages/apps-server/README.md
+  s_6ba0854cdb659c::t_410d816a0f5039 28-35
+packages/apps-server/src/client.ts
+  s_6ba0854cdb659c::t_1b0c96dc553e68 1-2
+packages/apps-server/src/client/connection.ts
+  s_6ba0854cdb659c::t_c6c257161a5951 1-172
+packages/apps-server/src/client/host.ts
+  s_6ba0854cdb659c::t_d8192a2f0b2c88 1-2
+packages/apps-server/src/database/driver.ts
+  s_6ba0854cdb659c::t_acd9730ff09e6f 12-13
+packages/apps-server/src/database/types.ts
+  s_6ba0854cdb659c::t_37eafc892c7877 1-5
+packages/apps-server/src/index.ts
+  s_6ba0854cdb659c::t_3c6c42bd7d3c15 1-3,24
+packages/apps-server/src/runtime.ts
+  s_6ba0854cdb659c::t_83dfc56ed88917 1-6
+packages/apps-server/src/server/execution.test.ts
+  s_6ba0854cdb659c::t_68a11c3d9034de 4,6
+packages/apps-server/src/server/execution.ts
+  s_6ba0854cdb659c::t_ac4c214c41ef31 2-3,5
+packages/apps-server/src/server/functions.ts
+  s_6ba0854cdb659c::t_b0ba4e8418c357 2
+packages/apps-server/src/server/realtime.ts
+  s_6ba0854cdb659c::t_608265ae489955 3
+packages/apps-server/src/server/transport.ts
+  s_6ba0854cdb659c::t_532961f18ae3e3 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "68f8b679e0d3423431be35c019e8a288d8169e81",
+  "prompts": {},
+  "sessions": {
+    "s_6ba0854cdb659c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f111-6fe2-7f91-ab5f-14a741f20094",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+packages/cli/src/preview-startup.test.ts
+  s_83dc76b7551d25::t_41cd6e2126bfa1 1,15,21-23,38-70,75-83
+  s_83dc76b7551d25::t_5852fdf150b771 71-74
+packages/react/src/__tests__/preview-manager.test.ts
+  s_83dc76b7551d25::t_8f15d06a50c7e8 129-130,132-133,140-158
+  s_83dc76b7551d25::t_5852fdf150b771 134-139
+  s_83dc76b7551d25::t_b08a5280d6b92f 131
+packages/cli/src/preview.ts
+  s_83dc76b7551d25::t_1154f8b5a2f472 26-33,231-250,329-339
+packages/react/src/components/app-view.tsx
+  s_83dc76b7551d25::t_a5f541600de1a3 67-69
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_83dc76b7551d25::t_f6bd3d0c95d151 181,183,185,200,211,217,220,223-225,227
+packages/react/src/preview-manager.ts
+  s_83dc76b7551d25::t_a5f541600de1a3 32,34,164,166-169,225-231
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "86248a8de69c0dff685381d40dc5bba09e33f824",
+  "prompts": {},
+  "sessions": {
+    "s_83dc76b7551d25": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0d06e-ff3b-7980-9c14-b5f6411b112d",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

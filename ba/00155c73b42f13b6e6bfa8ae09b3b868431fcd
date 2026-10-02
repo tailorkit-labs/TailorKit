@@ -1,0 +1,43 @@
+.changeset/automatic-backend-sessions.md
+  s_23773510fc6739::t_187772479fabbb 1-6
+apps/apps-worker/README.md
+  s_23773510fc6739::t_c49685eccb1298 7-9
+examples/apps/todo/README.md
+  s_23773510fc6739::t_578e1dc21b7ef8 9
+packages/api-platform/openapi.json
+  s_23773510fc6739::t_c76e6cc07c0a1c 102,120-123,126
+packages/api-platform/src/procedures.ts
+  s_23773510fc6739::t_b2a06d7b0863c2 12
+packages/api-platform/src/routes/apps.test.ts
+  s_23773510fc6739::t_c29afaafd2b071 17-26,29-30,92,484-516,526-527,545-578,581-606
+packages/api-platform/src/routes/runtime.ts
+  s_23773510fc6739::t_8b082f862a9e8a 48,52,57-84
+packages/app/README.md
+  s_23773510fc6739::t_a3721d3a18d60e 99
+packages/client-platform/src/client/types.gen.ts
+  s_23773510fc6739::t_e754fd5784839c 40
+packages/core/src/server/backend.test.ts
+  s_23773510fc6739::t_2747fab1a7b19f 3-4,6-8,15-20,23-59,61-70,72-73,75-83,86,88-92,94,96-97
+packages/core/src/server/backend.ts
+  s_23773510fc6739::t_075b39335dcf3a 9,11,66-70,72
+packages/core/src/server/handler.test.ts
+  s_23773510fc6739::t_32a8f8ae313ab4 71-75,101-127
+packages/core/src/server/handler.ts
+  s_23773510fc6739::t_ee85ace4a4d3d3 117-132,134-138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ba00155c73b42f13b6e6bfa8ae09b3b868431fcd",
+  "prompts": {},
+  "sessions": {
+    "s_23773510fc6739": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb55-c70a-73e3-984d-f3b842a44472",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

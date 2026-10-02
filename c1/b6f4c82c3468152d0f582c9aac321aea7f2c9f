@@ -1,0 +1,46 @@
+examples/nextjs/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-6,10-13
+packages/api-utils/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-6,14-16
+packages/db/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-9
+apps/demo/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-8
+apps/web/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-8
+examples/tanstack-start/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-6,10-13
+packages/api-platform/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-6,13-16
+packages/api/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-8
+packages/email/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-6,19-22
+packages/auth/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-6,21-24
+packages/kv/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-6,11-13
+packages/env/src/index.ts
+  s_3d0991fdb1f2d5::t_c6a5bee7d1d1ea 5,86-87,89-92,94-96
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 88,93,97
+packages/observability/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-6,16-18
+packages/storage/src/env.ts
+  s_3d0991fdb1f2d5::t_d16d1ed256c0c4 4-6,13-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c1b6f4c82c3468152d0f582c9aac321aea7f2c9f",
+  "prompts": {},
+  "sessions": {
+    "s_3d0991fdb1f2d5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0db9a-b24c-7a23-9518-937366441cbe",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

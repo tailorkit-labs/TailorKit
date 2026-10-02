@@ -1,0 +1,61 @@
+packages/db/src/index.ts
+  s_3d0991fdb1f2d5::t_99500363adfccb 15-28
+apps/web/package.json
+  s_3d0991fdb1f2d5::t_33e464c9238b4d 7,9,13
+apps/demo/package.json
+  s_3d0991fdb1f2d5::t_bb7995abf43de0 7,9,13
+apps/docs/package.json
+  s_3d0991fdb1f2d5::t_2b039e833ebba5 9,13
+examples/apps/email/package.json
+  s_3d0991fdb1f2d5::t_2bafb237dd9c34 10,14
+examples/apps/notes/package.json
+  s_3d0991fdb1f2d5::t_91373665625772 10,14
+examples/apps/todo/package.json
+  s_3d0991fdb1f2d5::t_03b308397d39cb 10,14
+examples/nextjs/package.json
+  s_3d0991fdb1f2d5::t_a02257cbc2cd6d 7,9,13
+examples/shared/package.json
+  s_3d0991fdb1f2d5::t_78f6b5cff1ec7b 8,12
+examples/tanstack-start/package.json
+  s_3d0991fdb1f2d5::t_a3817ff2440161 7,9,13
+packages/api-platform/package.json
+  s_3d0991fdb1f2d5::t_3202946a5197f9 8,10,14
+packages/api-utils/package.json
+  s_3d0991fdb1f2d5::t_0132ea29faf72b 8,10,14
+packages/api/package.json
+  s_3d0991fdb1f2d5::t_af56c002e0fe24 8,10,14
+packages/auth/package.json
+  s_3d0991fdb1f2d5::t_1e3b1e656cf56e 8,10,14
+packages/config/package.json
+  s_3d0991fdb1f2d5::t_75a7df52e65938 8,12
+packages/db/package.json
+  s_3d0991fdb1f2d5::t_d1e26f115584dd 8,10,14
+packages/email/package.json
+  s_3d0991fdb1f2d5::t_b7c1c42fd56483 8,10,14
+packages/env/package.json
+  s_3d0991fdb1f2d5::t_e15734665c1388 9,13
+packages/kv/package.json
+  s_3d0991fdb1f2d5::t_8ed17263439ce1 8,10,14
+packages/observability/package.json
+  s_3d0991fdb1f2d5::t_2561f008bbf234 8,10,14
+packages/storage/package.json
+  s_3d0991fdb1f2d5::t_725b2c1f2261ff 8,10,14
+packages/ui/package.json
+  s_3d0991fdb1f2d5::t_7540210a743e5a 9,13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c097b7b46fb128fe485c99a234fb714df21e7d4d",
+  "prompts": {},
+  "sessions": {
+    "s_3d0991fdb1f2d5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0db9a-b24c-7a23-9518-937366441cbe",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

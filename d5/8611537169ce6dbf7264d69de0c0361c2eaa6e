@@ -1,0 +1,24 @@
+.changeset/nullable-generated-types.md
+  s_b47b49a89d8223::t_9f4d6c80f4bf07 1-5
+packages/cli/src/generator/types.test.ts
+  s_b47b49a89d8223::t_9f4d6c80f4bf07 106-154,156
+  s_b47b49a89d8223::t_af55856b3ce818 155
+packages/cli/src/generator/types.ts
+  s_b47b49a89d8223::t_22928c7d27b2e0 125-130,132-134,145-146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d58611537169ce6dbf7264d69de0c0361c2eaa6e",
+  "prompts": {},
+  "sessions": {
+    "s_b47b49a89d8223": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fb53-4b11-7e80-bd1b-4484c0146e2b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+apps/web/turbo.json
+  s_1dbcbb8a3fb420::t_5940e411e838d5 5
+apps/web/src/lib/orpc.ts
+  s_1dbcbb8a3fb420::t_5940e411e838d5 30-34
+apps/web/src/env.ts
+  s_1dbcbb8a3fb420::t_5940e411e838d5 6-10
+turbo.json
+  s_1dbcbb8a3fb420::t_5940e411e838d5 5
+apps/web/vite.config.ts
+  s_1dbcbb8a3fb420::t_5940e411e838d5 27-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "10f9fd2102402a86430f4e8f3c7f052ca24e41b6",
+  "prompts": {},
+  "sessions": {
+    "s_1dbcbb8a3fb420": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0dd95-ee76-7712-a91a-ccdf9b0aa84b",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

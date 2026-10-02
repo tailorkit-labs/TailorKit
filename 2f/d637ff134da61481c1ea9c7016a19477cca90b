@@ -1,0 +1,74 @@
+examples/nextjs/components/tailorkit-shell.tsx
+  s_7198615d50d8ad::t_eeaab3d5f26aca 7,165
+packages/api-platform/src/routes/preview.ts
+  s_7198615d50d8ad::t_616c5b02cae44f 126-129
+packages/react/src/components/app-view.tsx
+  s_7198615d50d8ad::t_52f8a9409052a3 105-107,109-113,119,121,123-124,126-127,130,133-134
+  s_7198615d50d8ad::t_59d916f5ffb8b4 57-58,72,83-84,87
+  s_7198615d50d8ad::t_7fa73dc9d96f32 150-152
+  s_7198615d50d8ad::t_1213a7cfffeb2b 63-66,95-96,98,102-104,115-116,128-129,131-132,136,139-142,144
+packages/api-platform/src/preview-tunnel.ts
+  s_7198615d50d8ad::t_d20e34abbad5fa 4-8,59-61
+apps/web/src/nitro/routes/api/preview-updates.ts
+  s_7198615d50d8ad::t_9653226620e2fb 6
+  s_7198615d50d8ad::t_0bd4e02e204e50 20
+  s_7198615d50d8ad::t_8518d92a746aa1 1-5,7-19,21-73
+packages/core/src/server/handler.ts
+  s_7198615d50d8ad::t_7fa73dc9d96f32 116-130,141-143
+  s_7198615d50d8ad::t_cd7c8b578826c9 28,113-114,138-140,144-145,153,341
+  s_7198615d50d8ad::t_97509b03762d8f 161-168,170-172,174-179
+  s_7198615d50d8ad::t_22d5e09b558ccf 332-333
+  s_7198615d50d8ad::t_282c6cf8a34d89 289,292-305
+  s_7198615d50d8ad::t_ecf7a54da84bbf 29-34,115,131-133,291
+  s_7198615d50d8ad::t_5055ea7d9d2b2c 90-97,109-112,134-137,157-160,169,173,180-182,190-193,252,284,288,342
+  s_7198615d50d8ad::t_7e1fd7d177807c 146-152,154-156,183-189
+  s_7198615d50d8ad::t_1d4a2c9c79ccc3 290
+  s_7198615d50d8ad::t_832b21291d3cb5 306-307
+  s_7198615d50d8ad::t_d166add9decf50 334-335
+  s_7198615d50d8ad::t_eb06fa70a3de7c 343-344
+  s_7198615d50d8ad::t_da437950c502eb 347-348
+packages/cli/src/preview.ts
+  s_7198615d50d8ad::t_f5e971625e2393 157-160
+  s_7198615d50d8ad::t_b2e681c0a4f2c7 140
+  s_7198615d50d8ad::t_324e600bdc088d 135,139,143,146-156,161-170,176-178,204,209,211
+  s_7198615d50d8ad::t_7fa73dc9d96f32 264-266
+  s_7198615d50d8ad::t_7229f7414362c5 133,205-208,210,212-213,223,292,298,344-349,351-355
+  s_7198615d50d8ad::t_8dba853602c09c 263,267-274,276
+examples/tanstack-start/README.md
+  s_7198615d50d8ad::t_9a64cec2fab9bc 50-56
+packages/cli/src/preview.test.ts
+  s_7198615d50d8ad::t_49499b85e1b0bf 14,16,22,24-32
+packages/api-platform/src/preview-tunnel-relay.ts
+  s_7198615d50d8ad::t_d20e34abbad5fa 43,184-202
+packages/app/src/builder/index.ts
+  s_7198615d50d8ad::t_f7e543d61b2046 27,249-252
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_7198615d50d8ad::t_2e210b42c64117 19-38,159,171,329-330,342-343,358,364,366,378-379,394-395,397,414-415
+  s_7198615d50d8ad::t_4cb228b6d61c33 338-341,344,361,374-377,380,410-413,416
+packages/react/src/components/root.tsx
+  s_7198615d50d8ad::t_6b4235e9d70d01 21
+  s_7198615d50d8ad::t_c1145e341f0a39 18
+packages/api-platform/src/preview-token.ts
+  s_7198615d50d8ad::t_0fb0b2efb81b7a 19
+  s_7198615d50d8ad::t_5ef362f789e047 6,20-25
+packages/react/src/tailor-kit.tsx
+  s_7198615d50d8ad::t_0fb0b2efb81b7a 48-54
+packages/react/src/store.ts
+  s_7198615d50d8ad::t_8389d58b0feedf 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2fd637ff134da61481c1ea9c7016a19477cca90b",
+  "prompts": {},
+  "sessions": {
+    "s_7198615d50d8ad": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0cca2-7b61-7092-a993-d8b44c2726b0",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

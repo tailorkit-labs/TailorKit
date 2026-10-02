@@ -1,0 +1,42 @@
+packages/react/src/hooks/use-view.ts
+  s_c45799f166e49a::t_d0a95c3a2e2492 59-61
+  s_c45799f166e49a::t_392ad38ad0673e 62
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_c45799f166e49a::t_0fe0468470c101 1,103,138,311,349,433,439,549-556,561,568,580,595,609,647-652,662,664,666-667,672,674-675,679,681-682
+  s_927b63d94af524::t_d7f11733ae54cf 567
+packages/react/src/components/context.ts
+  s_c45799f166e49a::t_d0a95c3a2e2492 13-16,21-22,24
+  s_c45799f166e49a::t_28d6c0be6cd5bf 23
+  s_c45799f166e49a::t_637ffb364eca60 25
+.changeset/calm-clients-bind-react.md
+  s_c45799f166e49a::t_88f2532cdc3e3a 5-7
+packages/react/src/tailorkit.tsx
+  s_c45799f166e49a::t_d0a95c3a2e2492 14-17,116,214,216-217,219-230,232-233
+  s_c45799f166e49a::t_90bc7f57df5aef 212,218
+packages/react/src/index.ts
+  s_c45799f166e49a::t_d0a95c3a2e2492 3-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bfa41abcf2d63e5679a08142e24c878166fa9fc6",
+  "prompts": {},
+  "sessions": {
+    "s_927b63d94af524": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e5c2-5adb-7943-87f1-8152e32c3f0d",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_c45799f166e49a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e2b3-d11b-7801-8685-979768c2de0d",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+packages/kv/src/redis.ts
+  s_a6fa8534aa32ec::t_eac916f74e1a25 98-99
+packages/kv/src/upstash.ts
+  s_a6fa8534aa32ec::t_eac916f74e1a25 117-121
+examples/nextjs/components/theme-provider.tsx
+  s_a6fa8534aa32ec::t_02b395e0b816db 3,6-8
+apps/web/src/routes/(app)/account/security/index.tsx
+  s_a6fa8534aa32ec::t_eac916f74e1a25 16,32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f2cbea0d6553d23d926a7550e6abf3134f5c63c6",
+  "prompts": {},
+  "sessions": {
+    "s_a6fa8534aa32ec": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e05f-6b27-79c1-9f01-eed8a599e013",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

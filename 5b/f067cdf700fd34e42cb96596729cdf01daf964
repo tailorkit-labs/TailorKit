@@ -1,0 +1,23 @@
+apps/web/src/lib/auth-client.ts
+  s_1dbcbb8a3fb420::t_87a863f9da0035 6,9
+apps/web/src/lib/deployment-headers.ts
+  s_1dbcbb8a3fb420::t_87a863f9da0035 1-4
+apps/web/src/lib/orpc.ts
+  s_1dbcbb8a3fb420::t_87a863f9da0035 10,31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5bf067cdf700fd34e42cb96596729cdf01daf964",
+  "prompts": {},
+  "sessions": {
+    "s_1dbcbb8a3fb420": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0dd95-ee76-7712-a91a-ccdf9b0aa84b",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

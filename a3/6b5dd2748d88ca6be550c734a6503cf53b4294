@@ -1,0 +1,38 @@
+packages/kv/src/types.ts
+  s_77ea77b6981c20::t_08a52ce8a9e4c4 29-33
+packages/kv/src/redis.ts
+  s_77ea77b6981c20::t_08a52ce8a9e4c4 12-15,17,20-21,112,114
+  s_77ea77b6981c20::t_b62782e36cdc4c 126-137
+packages/kv/src/upstash.ts
+  s_77ea77b6981c20::t_08a52ce8a9e4c4 13-16,18,21-22,137,139
+  s_77ea77b6981c20::t_b62782e36cdc4c 152-156
+packages/api-platform/src/preview-build-store.ts
+  s_77ea77b6981c20::t_09ef8ecca9bef2 271,273-274,289
+  s_77ea77b6981c20::t_5d6a5f0e33f9aa 284-288
+packages/kv/src/contract.test.ts
+  s_77ea77b6981c20::t_9a2a920628d9da 208,219-220,231,243
+  s_77ea77b6981c20::t_4591de58dd3d65 76-77,79-82,84,88-89,91,137-139,141,145-146,148
+  s_77ea77b6981c20::t_b62782e36cdc4c 95-98,210-217,222-229,234-242,244-252
+packages/kv/src/preview-presence.test.ts
+  s_77ea77b6981c20::t_9a2a920628d9da 24
+packages/api-platform/src/preview-build-store.test.mjs
+  s_77ea77b6981c20::t_1ebf198813be95 157-184,187-191
+  s_77ea77b6981c20::t_5d6a5f0e33f9aa 185-186
+  s_77ea77b6981c20::t_09ef8ecca9bef2 25-28,34,112,114,119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a36b5dd2748d88ca6be550c734a6503cf53b4294",
+  "prompts": {},
+  "sessions": {
+    "s_77ea77b6981c20": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0cd9e-6fe0-78c3-bfa5-b5e52cb77459",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}

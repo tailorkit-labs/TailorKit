@@ -1,0 +1,61 @@
+packages/api-platform/src/routes/apps.test.ts
+  s_f3e800461aea44::t_0d1bc18fcac418 299-318
+packages/cli/src/auth.ts
+  s_f3e800461aea44::t_b022766664640d 61-65,199,201-202,207,238-240
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.$appId.tsx
+  s_f3e800461aea44::t_010289822e4247 181-186
+  s_f3e800461aea44::t_1ecd78026fdaa2 187,190
+packages/api-platform/src/routes/deployments.test.ts
+  s_f3e800461aea44::t_795b32d96c0a8f 130
+  s_f3e800461aea44::t_13f894e4291c1b 5,122-129,131-134
+  s_f3e800461aea44::t_eb6f28454f7077 135-136
+packages/api-platform/src/routes/cli-auth.test.ts
+  s_f3e800461aea44::t_13f894e4291c1b 3,6,136-154,156-168,174
+  s_f3e800461aea44::t_6f95fda4ba54be 155,169-173
+  s_f3e800461aea44::t_0d1bc18fcac418 26-28,32,117,126,131-132
+  s_f3e800461aea44::t_e9261144285f0e 25,175-178
+packages/cli/src/auth.test.ts
+  s_f3e800461aea44::t_94740b1babbdfa 234-256
+packages/core/src/server/handler.test.ts
+  s_f3e800461aea44::t_b022766664640d 524
+packages/db/src/schema/scope.ts
+  s_f3e800461aea44::t_88ebcac6e6c6df 95-100,121-128
+packages/core/src/server/scope.ts
+  s_f3e800461aea44::t_1f1ee6cb049031 267-269
+packages/api-platform/src/scope.test.ts
+  s_f3e800461aea44::t_4412c7d2f1d2e0 2,57-63
+  s_f3e800461aea44::t_c311f02794aa8c 64-67
+packages/api-platform/src/scope.ts
+  s_f3e800461aea44::t_af5424b6d9e292 123
+packages/core/src/server/types.test-d.ts
+  s_f3e800461aea44::t_8621e2675c298e 5-9,65-75,77-78
+  s_f3e800461aea44::t_1003395b2e21ee 76,79
+packages/api-platform/src/routes/preview.ts
+  s_f3e800461aea44::t_0d1bc18fcac418 45-50
+packages/core/src/server/scope.test.ts
+  s_f3e800461aea44::t_1f1ee6cb049031 112-120
+packages/core/src/server/types.ts
+  s_f3e800461aea44::t_b022766664640d 25-27,34,131,134
+packages/api-platform/src/routes/deployments.ts
+  s_f3e800461aea44::t_0d1bc18fcac418 159-169,174
+packages/api-platform/src/routes/cli-auth.ts
+  s_f3e800461aea44::t_0d1bc18fcac418 215-222,252-259,309-314
+packages/api-platform/src/routes/preview.test.ts
+  s_f3e800461aea44::t_13f894e4291c1b 230-237
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fff1e39f256c58834a746078991e75ff9143faaa",
+  "prompts": {},
+  "sessions": {
+    "s_f3e800461aea44": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0e28e-78c9-72e0-90fd-5c6df82f980b",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
