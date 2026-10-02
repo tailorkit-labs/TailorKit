@@ -1,4 +1,13 @@
-import { mkdir, mkdtemp, rm, writeFile, rename, symlink, readdir } from "node:fs/promises";
+import {
+  mkdir,
+  mkdtemp,
+  rm,
+  writeFile,
+  rename,
+  symlink,
+  readdir,
+  readFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
@@ -71,6 +80,36 @@ it("uploads server and client code without a provisioned Worker or migration upl
   }));
   expect(uploaded).toContainEqual({ url: "https://uploads.example/server", code: "server-code" });
   expect(uploaded).toContainEqual({ url: "https://uploads.example/client", code: "client-code" });
+  expect(mocks.publish).toHaveBeenCalledOnce();
+});
+
+it.each(["config", "$config"])("links and deploys the init config exported as %s", async (name) => {
+  const template = await readFile(
+    path.join(import.meta.dirname, "generator/templates/tailorkit.config.ts.liquid"),
+    "utf-8",
+  );
+  const source = template
+    .replace("{{ hostUrl }}", "https://host.example")
+    .replace("const config =", `const ${name} =`)
+    .replace("export default config;", `export default ${name};`);
+  const configPath = path.join(root, "tailorkit.config.ts");
+  await writeFile(configPath, source);
+  mocks.load.mockResolvedValue({ root, filepath: configPath, config: { server: {} } });
+  const createApp = vi.fn().mockResolvedValue({ id: "new-app-id" });
+  mocks.client.mockReturnValue({
+    apps: { create: createApp },
+    deployments: { create: mocks.create, publish: mocks.publish },
+  });
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
+
+  const result = await runDeploy({ cwd: root, onMissingAppId: async () => true });
+
+  expect(await readFile(configPath, "utf-8")).toBe(
+    source.replace(`const ${name} = {\n`, `const ${name} = {\n  appId: "new-app-id",\n`),
+  );
+  expect(result).toMatchObject({ appId: "new-app-id", createdApp: true });
+  expect(createApp).toHaveBeenCalledOnce();
+  expect(mocks.create.mock.calls[0]?.[0]).toMatchObject({ appId: "new-app-id" });
   expect(mocks.publish).toHaveBeenCalledOnce();
 });
 

@@ -166,6 +166,19 @@ const writeAppIdToConfig = async (configPath: string, appId: string): Promise<vo
     return;
   }
 
+  const exportedVariable = /^\s*export\s+default\s+([\w$]+)\s*;?\s*$/mu.exec(source)?.[1];
+  if (exportedVariable) {
+    const escapedVariable = exportedVariable.replace(/\$/gu, "\\$");
+    const variableObject = new RegExp(
+      `(^\\s*(?:const|let|var)\\s+${escapedVariable}\\s*=\\s*\\{)(\\r?\\n)`,
+      "mu",
+    );
+    if (variableObject.test(source)) {
+      await writeFile(configPath, source.replace(variableObject, `$1$2${appIdLine}$2`), "utf-8");
+      return;
+    }
+  }
+
   throw new Error(
     `Could not write appId to ${configPath}. Add appId: ${JSON.stringify(appId)} manually.`,
   );
