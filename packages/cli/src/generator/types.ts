@@ -160,6 +160,13 @@ const toTypeScriptType = (schema: JsonSchema | undefined, depth = 0): string => 
         const type = toTypeScriptType(item, depth);
         return index < (schema.minItems ?? 0) ? type : `(${type})?`;
       });
+      const additionalRequired = (schema.minItems ?? 0) - schema.prefixItems.length;
+      if (additionalRequired > 0 && schema.items === false) {
+        return "never";
+      }
+      for (let index = 0; index < additionalRequired; index += 1) {
+        tupleItems.push(toTypeScriptType(items, depth));
+      }
       if (schema.items !== false) {
         tupleItems.push(`...${toArrayType(toTypeScriptType(items, depth))}`);
       }
@@ -199,19 +206,29 @@ const toObjectType = (schema: JsonSchema, depth: number): string => {
     return "never";
   }
 
+  const required = new Set(schema.required);
+  const catchallType = toTypeScriptType(
+    schema.additionalProperties === true ? undefined : schema.additionalProperties || undefined,
+    depth,
+  );
+  const additionalValueTypes = [catchallType];
+  if (catchallType !== "unknown") {
+    for (const [key, propertySchema] of propertyEntries) {
+      additionalValueTypes.push(toTypeScriptType(propertySchema, depth));
+      if (!required.has(key)) {
+        additionalValueTypes.push("undefined");
+      }
+    }
+  }
   const additionalType =
     schema.additionalProperties === false || schema.additionalProperties === undefined
       ? undefined
-      : `Record<string, ${toTypeScriptType(
-          schema.additionalProperties === true ? undefined : schema.additionalProperties,
-          depth,
-        )}>`;
+      : `Record<string, ${[...new Set(additionalValueTypes)].join(" | ")}>`;
 
   if (propertyEntries.length === 0) {
     return additionalType ?? fallbackObjectType;
   }
 
-  const required = new Set(schema.required);
   const currentIndent = " ".repeat(depth);
   const propertyIndent = " ".repeat(depth + 2);
   const lines = ["{"];

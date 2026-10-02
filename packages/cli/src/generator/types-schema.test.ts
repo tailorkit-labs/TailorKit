@@ -195,6 +195,74 @@ const cases: { name: string; schema: z.ZodType; expected: string; optional?: boo
     expected: "{ id: string; } | null",
     optional: true,
   },
+  {
+    name: "mixed catchall",
+    schema: z.object({ id: z.string() }).catchall(z.number()),
+    expected: "{ id: string; } & Record<string, number | string>",
+  },
+  {
+    name: "optional catchall property",
+    schema: z.object({ id: z.string().optional() }).catchall(z.number()),
+    expected: "{ id?: string; } & Record<string, number | string | undefined>",
+  },
+  {
+    name: "nullable catchall property",
+    schema: z.object({ id: z.string().nullable() }).catchall(z.number()),
+    expected: "{ id: string | null; } & Record<string, number | string | null>",
+  },
+];
+
+const tupleReviewCases: { name: string; schema: JsonSchema; expected: string }[] = [
+  {
+    name: "required rest items",
+    schema: {
+      type: "array",
+      prefixItems: [{ type: "string" }],
+      minItems: 3,
+      items: { type: "number" },
+    },
+    expected: "[string, number, number, ...number[]]",
+  },
+  {
+    name: "required nullable rest items",
+    schema: {
+      type: "array",
+      prefixItems: [{ type: "boolean" }],
+      minItems: 2,
+      items: { type: ["number", "null"] },
+    },
+    expected: "[boolean, number | null, ...(number | null)[]]",
+  },
+  {
+    name: "required unrestricted rest items",
+    schema: { type: "array", prefixItems: [{ type: "string" }], minItems: 2, items: true },
+    expected: "[string, unknown, ...unknown[]]",
+  },
+  {
+    name: "required unspecified rest items",
+    schema: { type: "array", prefixItems: [], minItems: 2 },
+    expected: "[unknown, unknown, ...unknown[]]",
+  },
+  {
+    name: "impossible required rest items",
+    schema: { type: "array", prefixItems: [{ type: "string" }], minItems: 2, items: false },
+    expected: "never",
+  },
+  {
+    name: "optional prefix with rest",
+    schema: {
+      type: "array",
+      prefixItems: [{ type: "string" }, { type: "boolean" }],
+      minItems: 1,
+      items: { type: "number" },
+    },
+    expected: "[string, (boolean)?, ...number[]]",
+  },
+  {
+    name: "closed required prefix",
+    schema: { type: "array", prefixItems: [{ type: "string" }], minItems: 1, items: false },
+    expected: "[string]",
+  },
 ];
 
 const normalize = (text: string): string => text.replaceAll(/\s+/gu, " ").trim();
@@ -300,6 +368,18 @@ describe("JSON Schema type generation", () => {
     expect(output).toContain(`value: ${expected};`);
   });
 
+  it.each(tupleReviewCases)("handles reviewed tuple case: $name", ({ schema, expected }) => {
+    expect(
+      normalize(
+        renderDeclaration({
+          type: "object",
+          properties: { value: schema, sibling: { type: "string" } },
+          required: ["value", "sibling"],
+        }),
+      ),
+    ).toContain(`value: ${expected};`);
+  });
+
   it("generates TypeScript types equivalent to the expected types", async () => {
     const source = [
       "type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;",
@@ -308,6 +388,20 @@ describe("JSON Schema type generation", () => {
         declarations[index]!.replace("ViewPropsByPath", `Case${index}`),
         `type Check${index} = Assert<Equal<Case${index}["/"]["context"]["value"], ${expected}${optional ? " | undefined" : ""}>>;`,
       ]),
+      ...tupleReviewCases.flatMap(({ schema, expected }, index) => [
+        renderDeclaration({
+          type: "object",
+          properties: { value: schema, sibling: { type: "string" } },
+          required: ["value", "sibling"],
+        }).replace("ViewPropsByPath", `TupleCase${index}`),
+        `type TupleCheck${index} = Assert<Equal<TupleCase${index}["/"]["context"]["value"], ${expected}>>;`,
+      ]),
+      `const customer: Case${cases.findIndex(({ name }) => name === "mixed catchall")}["/"]["context"]["value"] = { id: "customer-1", extra: 42 };`,
+      'const tuple: TupleCase0["/"]["context"]["value"] = ["first", 1, 2];',
+      "// @ts-expect-error Required rest items must not be omitted.",
+      'const shortTuple: TupleCase0["/"]["context"]["value"] = ["first"];',
+      "// @ts-expect-error Required rest items must use the items schema type.",
+      'const invalidTuple: TupleCase0["/"]["context"]["value"] = ["first", false, 2];',
     ].join("\n");
     const root = await mkdtemp(path.join(tmpdir(), "tailorkit-generated-type-check-"));
     try {
