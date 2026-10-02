@@ -19,6 +19,8 @@ const publicKeys = {
   keys: [{ ...(await crypto.subtle.exportKey("jwk", pair.publicKey)), kid: "platform" }],
 };
 const identity = {
+  publicTeamId: "abc123def45678",
+  appPublicId: "app000000001",
   userId: "user",
   projectId: "project",
   appId: "app",

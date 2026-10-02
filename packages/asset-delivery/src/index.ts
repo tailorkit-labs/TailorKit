@@ -3,11 +3,7 @@ import type { LogoContentType } from "./logo-validation";
 const uuid = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 const publicId = "[0-9a-z]{10}(?:[0-9a-z]{2})?";
 const deploymentAssetPath = new RegExp(
-  `^/p/(${uuid})/a/(${publicId})/d/(${publicId})/(client\\.js|logo-(?:light|dark)\\.(?:svg|png|webp))$`,
-  "u",
-);
-const appLogoPath = new RegExp(
-  `^/p/(${uuid})/a/(${publicId})/logos/([a-f0-9]{64}\\.(?:svg|png|webp))$`,
+  `^/p/(${uuid})/a/(${publicId})/d/(${publicId})/(?:client/(client\\.js)|logos/([a-f0-9]{64}\\.(?:svg|png|webp)))$`,
   "u",
 );
 const teamIdPattern = /^[a-z0-9][a-z0-9-]{12}[a-z0-9]$/u;
@@ -19,7 +15,7 @@ export const maxAssetBytes = maxDeploymentBytes;
 
 export interface AssetIdentity {
   appId: string;
-  deploymentId?: string;
+  deploymentId: string;
   key: string;
   projectId: string;
   publicTeamId: string;
@@ -44,33 +40,18 @@ function createIdentity(publicTeamId: string, pathname: string): AssetIdentity |
     return;
   }
 
-  const deploymentMatch = deploymentAssetPath.exec(pathname);
-  if (deploymentMatch) {
-    const [, projectId, appId, deploymentId, filename] = deploymentMatch;
-    if (!projectId || !appId || !deploymentId || !filename) {
-      return;
-    }
-    return {
-      appId,
-      deploymentId,
-      key: `teams/${publicTeamId}/projects/${projectId}/apps/${appId}/deployments/${deploymentId}/client/${filename}`,
-      projectId,
-      publicTeamId,
-      contentType: getAssetContentType(filename),
-    };
-  }
-
-  const logoMatch = appLogoPath.exec(pathname);
-  if (!logoMatch) {
-    return;
-  }
-  const [, projectId, appId, filename] = logoMatch;
-  if (!projectId || !appId || !filename) {
-    return;
-  }
+  const match = deploymentAssetPath.exec(pathname);
+  if (!match) return;
+  const [, projectId, appId, deploymentId, clientFilename, logoFilename] = match;
+  const filename = clientFilename ?? logoFilename;
+  if (!projectId || !appId || !deploymentId || !filename) return;
+  const appKey = `teams/${publicTeamId}/projects/${projectId}/apps/${appId}`;
   return {
     appId,
-    key: `teams/${publicTeamId}/projects/${projectId}/apps/${appId}/logos/${filename}`,
+    deploymentId,
+    key: clientFilename
+      ? `${appKey}/deployments/${deploymentId}/client/${filename}`
+      : `${appKey}/logos/${filename}`,
     projectId,
     publicTeamId,
     contentType: getAssetContentType(filename),
@@ -155,7 +136,34 @@ export function assetHeaders(input: {
   return headers;
 }
 
-/** Read compatibility for already published client assets; never accepts server keys. */
-export function legacyClientKey(identity: AssetIdentity): string | undefined {
-  return identity.deploymentId ? identity.key.replace("/client/", "/files/") : undefined;
+/** Hosted app routes use public team/app IDs and the canonical project UUID. */
+const hostedAppPath = new RegExp(`^/p/(${uuid})/a/(${publicId})(/rpc(?:/.*)?)$`, "u");
+const publicationPath = new RegExp(`^/p/(${uuid})/a/(${publicId})/new-deployment$`, "u");
+
+export function parseHostedAppRoute(request: Request, assetDomain: string) {
+  const url = new URL(request.url);
+  const suffix = `.${assetDomain}`;
+  const local =
+    url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+  if (!local && (url.protocol !== "https:" || url.port || !url.hostname.endsWith(suffix))) return;
+  const publicTeamId = local ? undefined : url.hostname.slice(0, -suffix.length);
+  if (!local && (!publicTeamId || !teamIdPattern.test(publicTeamId))) return;
+  const match = hostedAppPath.exec(url.pathname);
+  if (!match) return;
+  return { publicTeamId, projectId: match[1]!, appPublicId: match[2]!, rpcPath: match[3]! };
+}
+
+/** Publication uses the reserved internal hostname, never a tenant hostname. */
+export function parseDeploymentPublicationRoute(request: Request, assetDomain: string) {
+  const url = new URL(request.url);
+  if (
+    url.protocol !== "https:" ||
+    url.port ||
+    url.search ||
+    url.hostname !== `internal.${assetDomain}`
+  )
+    return;
+  const match = publicationPath.exec(url.pathname);
+  if (!match) return;
+  return { projectId: match[1]!, appPublicId: match[2]! };
 }

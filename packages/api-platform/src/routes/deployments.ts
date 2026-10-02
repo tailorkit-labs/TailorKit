@@ -590,14 +590,17 @@ const publishAppDeployment = protectedRouter
         .where(and(eq(app.id, context.app.id), eq(app.projectId, context.project.id)));
       const server = files.find((file) => file.objectKey.endsWith("/server/server.js"));
       if (server?.checksum) {
-        await publishRuntimeMetadata({
-          projectId: context.project.id,
-          appId: context.app.id,
-          deploymentId: publishedDeployment.id,
-          objectKey: server.objectKey,
-          checksum: server.checksum,
-          contentLength: server.contentLength,
-        });
+        await publishRuntimeMetadata(
+          {
+            projectId: context.project.id,
+            appId: context.app.id,
+            deploymentId: publishedDeployment.id,
+            objectKey: server.objectKey,
+            checksum: server.checksum,
+            contentLength: server.contentLength,
+          },
+          context.app.publicId,
+        );
       }
     }
 

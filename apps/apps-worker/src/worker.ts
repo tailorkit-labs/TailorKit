@@ -9,10 +9,18 @@ import { AppError } from "@tailorkit/app/server";
 import { verifier } from "./supervisor/auth";
 import { routeInstallation, rpcErrorResponse } from "./transport";
 import { Effect } from "effect";
+import { parseHostedAppRoute, parseDeploymentPublicationRoute } from "@tailorkit/asset-delivery";
+import assets from "./assets";
 import { appError } from "./runtime/errors";
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const domain = env.ASSET_DOMAIN;
+    const publication = parseDeploymentPublicationRoute(request, domain);
+    const appRoute = parseHostedAppRoute(request, domain);
+    if (!publication && !appRoute) {
+      return assets.fetch(request as Parameters<typeof assets.fetch>[0], env, ctx);
+    }
     const cors = new Headers({
       "cache-control": "no-store",
       "access-control-allow-origin": "*",
@@ -23,10 +31,10 @@ export default {
     const response = await Effect.runPromise(
       Effect.tryPromise({
         try: async () => {
-          if (
-            new URL(request.url).pathname === "/internal/deployments" &&
-            request.method === "POST"
-          ) {
+          if (publication) {
+            if (request.method !== "POST") {
+              return new Response("Method not allowed", { status: 405 });
+            }
             if (!(await runtimeServiceAuthorized(request, env.RUNTIME_SERVICE_TOKEN))) {
               throw new AppError("UNAUTHORIZED", "Runtime service credential required");
             }
@@ -44,6 +52,22 @@ export default {
             if (!parsed.success) {
               throw new AppError("BAD_REQUEST", "Invalid deployment metadata");
             }
+            // Public URL identifiers must describe the same private bundle as the payload.
+            const segments = parsed.data.objectKey.split("/");
+            if (
+              parsed.data.projectId !== publication.projectId ||
+              segments.length !== 10 ||
+              segments[0] !== "teams" ||
+              segments[2] !== "projects" ||
+              segments[3] !== publication.projectId ||
+              segments[4] !== "apps" ||
+              segments[5] !== publication.appPublicId ||
+              segments[6] !== "deployments" ||
+              segments[8] !== "server" ||
+              segments[9] !== "server.js"
+            ) {
+              throw new AppError("BAD_REQUEST", "Deployment metadata does not match the route");
+            }
             await env.DEPLOYMENTS.put(
               deploymentMetadataKey(parsed.data),
               JSON.stringify(parsed.data),
@@ -51,8 +75,23 @@ export default {
             );
             return new Response(null, { status: 204 });
           }
-          return routeInstallation(request, {
-            verify: verifier(env),
+          if (!appRoute) return new Response("Not found", { status: 404 });
+          const url = new URL(request.url);
+          url.pathname = appRoute.rpcPath;
+          const routedRequest = new Request(url, request);
+          return routeInstallation(routedRequest, {
+            verify: async (token) => {
+              const identity = await verifier(env)(token);
+              if (
+                (appRoute.publicTeamId !== undefined &&
+                  identity.publicTeamId !== appRoute.publicTeamId) ||
+                identity.projectId !== appRoute.projectId ||
+                identity.appPublicId !== appRoute.appPublicId
+              ) {
+                throw new AppError("FORBIDDEN", "App token does not match the route");
+              }
+              return identity;
+            },
             installation: (identity) =>
               env.STORES.getByName(installationName(identity, appRuntimeIssuer(env.PLATFORM_URL))),
           });

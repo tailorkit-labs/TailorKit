@@ -2,6 +2,10 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tailorkit-apps-worker",
   "main": "src/index.ts",
+  "build": {
+    "command": "pnpm exec turbo run build --filter=@tailorkit/api-utils... --filter=@tailorkit/app... --filter=@tailorkit/asset-delivery... && node scripts/build-bootstrap.mjs",
+    "watch_dir": ["src", "../../packages/asset-delivery/src"],
+  },
   "compatibility_date": "2026-10-01",
   "rules": [
     {
@@ -13,6 +17,10 @@
   "compatibility_flags": ["enable_request_signal"],
   "workers_dev": false,
   "preview_urls": false,
+  "routes": [
+    { "pattern": "*.tailorkit.app/*", "zone_name": "tailorkit.app" },
+    { "pattern": "internal.tailorkit.app", "custom_domain": true },
+  ],
   "worker_loaders": [
     {
       "binding": "LOADER",
@@ -42,6 +50,7 @@
     "required": ["RUNTIME_SERVICE_TOKEN"],
   },
   "vars": {
+    "ASSET_DOMAIN": "tailorkit.app",
     "PLATFORM_URL": "https://tailorkit.dev/api/platform",
     "APP_RUNTIME_PUBLIC_KEYS": {
       "keys": [

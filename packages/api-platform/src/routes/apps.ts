@@ -260,14 +260,17 @@ const deploy = protectedRouter
         },
       });
       if (server?.checksum) {
-        await publishRuntimeMetadata({
-          projectId: context.project.id,
-          appId: context.app.id,
-          deploymentId: deployment.id,
-          objectKey: server.objectKey,
-          checksum: server.checksum,
-          contentLength: server.contentLength,
-        });
+        await publishRuntimeMetadata(
+          {
+            projectId: context.project.id,
+            appId: context.app.id,
+            deploymentId: deployment.id,
+            objectKey: server.objectKey,
+            checksum: server.checksum,
+            contentLength: server.contentLength,
+          },
+          context.app.publicId,
+        );
       }
     }
 

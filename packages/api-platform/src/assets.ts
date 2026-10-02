@@ -3,7 +3,6 @@ import {
   assetHeaders,
   assetPreflight,
   isAssetMethod,
-  legacyClientKey,
   isValidAssetSize,
   parseNodeAssetRequest,
 } from "@tailorkit/asset-delivery";
@@ -40,13 +39,8 @@ export async function handleAssetRequest(
   }
 
   try {
-    let key = identity.key;
-    const object = await storage.head({ key }).catch(async (error: unknown) => {
-      const legacy = legacyClientKey(identity);
-      if (!isNotFound(error) || !legacy) throw error;
-      key = legacy;
-      return storage.head({ key });
-    });
+    const key = identity.key;
+    const object = await storage.head({ key });
     if (!isValidAssetSize(object.contentLength)) {
       return assetFailure(404);
     }

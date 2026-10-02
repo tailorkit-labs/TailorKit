@@ -5,7 +5,12 @@ import { AppError } from "@tailorkit/app/client";
 import type { Identity } from "@tailorkit/app/server";
 import { APP_TOKEN_LIFETIME_SECONDS } from "./policy";
 
-export type AppTokenIdentity = Omit<Identity, "expiresAt">;
+export type AppTokenIdentity = Omit<Identity, "expiresAt"> & {
+  publicTeamId: string;
+  appPublicId: string;
+};
+export type VerifiedAppTokenIdentity = Identity &
+  Pick<AppTokenIdentity, "publicTeamId" | "appPublicId">;
 
 export function appRuntimeIssuer(platformUrl: string) {
   const url = new URL(platformUrl);
@@ -32,6 +37,8 @@ export interface AppTokenTrust {
   publicKeys: { keys: (JsonWebKey & { kid: string })[] };
 }
 const access = z.object({
+  publicTeamId: z.string().min(1).max(256),
+  appPublicId: z.string().min(1).max(256),
   projectId: z.string().min(1).max(256),
   deploymentId: z.string().min(1).max(256),
   sub: z.string().min(1).max(256),
@@ -76,6 +83,8 @@ export function issueAppTokenEffect(options: AppSigningOptions, identity: AppTok
     yield* Effect.try({
       try: () =>
         access.parse({
+          publicTeamId: identity.publicTeamId,
+          appPublicId: identity.appPublicId,
           projectId: identity.projectId,
           deploymentId: identity.deploymentId,
           sub: identity.userId,
@@ -96,6 +105,8 @@ export function issueAppTokenEffect(options: AppSigningOptions, identity: AppTok
     const token = yield* Effect.tryPromise({
       try: () =>
         new SignJWT({
+          publicTeamId: identity.publicTeamId,
+          appPublicId: identity.appPublicId,
           projectId: identity.projectId,
           deploymentId: identity.deploymentId,
           appId: identity.appId,
@@ -133,7 +144,7 @@ export function appTokenVerifierEffect(trust: AppTokenTrust) {
   const keys = createLocalJWKSet({
     keys: publicKeys.keys.map((key) => ({ ...key, alg: "ES256", use: "sig" })),
   });
-  return (token: string): Effect.Effect<Identity, AppError> =>
+  return (token: string): Effect.Effect<VerifiedAppTokenIdentity, AppError> =>
     Effect.gen(function* verifyToken() {
       const now = yield* Clock.currentTimeMillis;
       const invalidToken = () => new AppError("UNAUTHORIZED", "Invalid or expired app token");
@@ -152,6 +163,8 @@ export function appTokenVerifierEffect(trust: AppTokenTrust) {
               "installationId",
               "projectId",
               "deploymentId",
+              "publicTeamId",
+              "appPublicId",
             ],
             maxTokenAge: APP_TOKEN_LIFETIME_SECONDS,
             currentDate: new Date(now),
@@ -171,6 +184,8 @@ export function appTokenVerifierEffect(trust: AppTokenTrust) {
         return yield* Effect.fail(invalidToken());
       }
       return Object.freeze({
+        publicTeamId: claims.publicTeamId,
+        appPublicId: claims.appPublicId,
         projectId: claims.projectId,
         deploymentId: claims.deploymentId,
         userId: claims.sub,

@@ -20,6 +20,8 @@ it("publishes only public keys and issues platform-bound short-lived access", as
   const publicKeys = appRuntimePublicKeys();
   expect(publicKeys.keys[0]).not.toHaveProperty("d");
   const identity = {
+    publicTeamId: "abc123def45678",
+    appPublicId: "app000000001",
     userId: "user",
     projectId: "project",
     appId: "app",

@@ -3,7 +3,6 @@ import {
   assetHeaders,
   assetPreflight,
   isAssetMethod,
-  legacyClientKey,
   isValidAssetSize,
   parseHostedAssetRequest,
 } from "@tailorkit/asset-delivery";
@@ -36,16 +35,15 @@ export default {
     }
 
     try {
+      // Node/DOM ambient types omit Cloudflare's default edge cache.
+      const edgeCache = caches as CacheStorage & { readonly default: Cache };
       const cacheKey = new Request(request.url);
-      const cached = await caches.default.match(cacheKey).catch(() => null);
+      const cached = await edgeCache.default.match(cacheKey).catch(() => null);
       if (cached) {
         return downstreamResponse(cached, request.method);
       }
-      const legacyKey = legacyClientKey(identity);
       if (request.method === "HEAD") {
-        const object =
-          (await env.ASSETS.head(identity.key)) ??
-          (legacyKey ? await env.ASSETS.head(legacyKey) : null);
+        const object = await env.BUNDLES.head(identity.key);
         if (!object || !isValidAssetSize(object.size)) {
           return assetFailure(404);
         }
@@ -60,9 +58,7 @@ export default {
           request.method,
         );
       }
-      const object =
-        (await env.ASSETS.get(identity.key)) ??
-        (legacyKey ? await env.ASSETS.get(legacyKey) : null);
+      const object = await env.BUNDLES.get(identity.key);
       if (!object || !isValidAssetSize(object.size)) {
         return assetFailure(404);
       }
@@ -74,7 +70,7 @@ export default {
         }),
       });
       ctx.waitUntil(
-        caches.default.put(cacheKey, response.clone()).catch(() => {
+        edgeCache.default.put(cacheKey, response.clone()).catch(() => {
           console.error(JSON.stringify({ message: "Asset cache write failed" }));
         }),
       );
