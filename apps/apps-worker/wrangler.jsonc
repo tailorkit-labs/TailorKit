@@ -44,7 +44,17 @@
   "vars": {
     "PLATFORM_URL": "https://tailorkit.dev/api/platform",
     "APP_RUNTIME_PUBLIC_KEYS": {
-      "keys": [],
+      "keys": [
+        {
+          "kty": "EC",
+          "x": "qgJufcvDXWvETxxY9GW7a_5Pp2Ywm10wRRkNY69h200",
+          "y": "tqSG2ZTbYUQY5KaaTKxdgfSe_92Q4ai76b6wNfMpsDs",
+          "crv": "P-256",
+          "kid": "tailorkit-runtime-2026-10-02",
+          "alg": "ES256",
+          "use": "sig",
+        },
+      ],
     },
   },
   "observability": {
