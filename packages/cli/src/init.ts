@@ -5,6 +5,7 @@ import path from "node:path";
 import { CANCEL_SYMBOL, cancel, confirm, isCancel, select, spinner, text } from "@clack/prompts";
 import pc from "picocolors";
 import { generateApp, resolveTemplatePackageVersions } from "./generator";
+import { fetchSchemaFromHost } from "./generator/types";
 import { normalizeHostUrl } from "./utils/url";
 
 export interface InitOptions {
@@ -188,6 +189,15 @@ export const runInit = async (options: InitOptions): Promise<string> => {
   const install = await promptInstall(options.install);
 
   const s = spinner();
+  s.start("Fetching host schema");
+  let schema;
+  try {
+    schema = await fetchSchemaFromHost(hostUrl);
+    s.stop("Fetched host schema.");
+  } catch (error) {
+    s.stop("Unable to fetch host schema.");
+    throw error;
+  }
   s.start("Resolving package versions");
   const packageVersions = await resolveTemplatePackageVersions();
   s.stop("Resolved package versions.");
@@ -201,6 +211,7 @@ export const runInit = async (options: InitOptions): Promise<string> => {
     linting,
     packageName,
     packageVersions,
+    schema,
     targetDirectory,
   });
 

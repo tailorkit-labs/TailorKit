@@ -1,9 +1,10 @@
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { generateApp } from "./generate";
+import type { TailorKitSchemaFile } from "./types";
 
 const testDirectories: string[] = [];
 
@@ -17,6 +18,15 @@ const defaultOptions = {
   force: false,
   formatting: false,
   hostUrl: "https://host.example.com/api/tailorkit",
+  schema: {
+    slots: { sidebar: { views: ["/customers"] } },
+    views: {
+      "/customers": { context: { type: "object", properties: { customer: { type: "string" } } } },
+    },
+    components: {
+      Box: { children: true, fields: { type: "object", properties: {} }, callbacks: {} },
+    },
+  },
   linting: false,
   packageName: "test-app",
   packageVersions: {
@@ -231,7 +241,7 @@ describe("generateApp", () => {
     }
   });
 
-  it("generates a default view for the default schema", async () => {
+  it("generates a default view for the host schema", async () => {
     const targetDirectory = await createTempDir();
     await generateApp({ ...defaultOptions, targetDirectory });
 
@@ -239,8 +249,9 @@ describe("generateApp", () => {
       path.join(targetDirectory, "src", "views", "default.tsx"),
       "utf-8",
     );
-    expect(content).toContain('createView("/", {');
-    expect(content).toContain("context.user.name");
+    expect(content).toContain('createView("/customers", {');
+    expect(content).not.toContain("context.user");
+    expect(content).toContain("<Box>");
   });
 
   it("generates a client entry with the default view", async () => {
@@ -252,11 +263,11 @@ describe("generateApp", () => {
     expect(content).toContain("component: ClientProvider");
     expect(content).toContain('import defaultView from "./views/default"');
     expect(content).toContain("defineClient");
-    expect(content).toContain('"/": defaultView');
+    expect(content).toContain('"/customers": defaultView');
     expect(content).not.toContain("fallbackView");
   });
 
-  it("does not generate fallback view props for the default schema", async () => {
+  it("does not generate fallback view props for the host schema", async () => {
     const targetDirectory = await createTempDir();
     await generateApp({ ...defaultOptions, targetDirectory });
 
@@ -270,16 +281,14 @@ describe("generateApp", () => {
     await generateApp({ ...defaultOptions, targetDirectory });
 
     const content = await readFile(path.join(targetDirectory, "src", "tailorkit.gen.ts"), "utf-8");
-    expect(content).toContain(
-      'import { createApi, createRemoteComponent } from "tailorkit/client"',
-    );
+    expect(content).toContain('import { createRemoteComponent } from "tailorkit/client"');
+    expect(content).toContain('import { createApi } from "tailorkit/client"');
     expect(content).toContain('import type app from "./server"');
     expect(content).toContain("export const api = createApi<typeof app.functions>();");
-    expect(content).toContain('"/": {');
-    expect(content).toContain("user: {");
-    expect(content).toContain("name: string;");
-    expect(content).toContain("export const Button");
-    expect(content).toContain("export const Card");
+    expect(content).toContain('"/customers": {');
+    expect(content).toContain("customer?: string;");
+    expect(content).toContain("export const Box");
+    expect(content).not.toContain("export const Card");
   });
 
   it("generates a valid tsconfig.json", async () => {
@@ -290,5 +299,65 @@ describe("generateApp", () => {
     const tsconfig = JSON.parse(content);
     expect(tsconfig.compilerOptions.jsx).toBe("react-jsx");
     expect(tsconfig.compilerOptions.jsxImportSource).toBe("preact");
+  });
+
+  it("selects the first supported view and slot alphabetically", async () => {
+    const targetDirectory = await createTempDir();
+    await generateApp({
+      ...defaultOptions,
+      targetDirectory,
+      schema: {
+        views: { "/zebra": {}, "/aardvark": {}, "/accounts": {} },
+        slots: { zebra: { views: ["/zebra", "/accounts"] }, alpha: { views: ["/accounts"] } },
+      },
+    });
+    const client = await readFile(path.join(targetDirectory, "src/client.ts"), "utf-8");
+    const view = await readFile(path.join(targetDirectory, "src/views/default.tsx"), "utf-8");
+    expect(client).toContain('"alpha": { "/accounts": defaultView }');
+    expect(view).toContain('createView("/accounts", {');
+    expect(view).toContain("return <>");
+    expect(view).not.toContain("Box");
+    expect(view).not.toContain("useContext");
+  });
+
+  it.each([
+    { children: false, callbacks: {} },
+    { children: true, callbacks: {}, fields: { type: "object", required: ["variant"] } },
+  ])("uses a fragment when Box cannot wrap the example: %j", async (Box) => {
+    const targetDirectory = await createTempDir();
+    await generateApp({
+      ...defaultOptions,
+      targetDirectory,
+      schema: { ...defaultOptions.schema, components: { Box } },
+    });
+    const view = await readFile(path.join(targetDirectory, "src/views/default.tsx"), "utf-8");
+    expect(view).toContain("return <>");
+    expect(view).not.toContain("Box");
+  });
+
+  it.each([
+    {},
+    { views: { "/accounts": {} }, slots: {} },
+    { views: { "/accounts": {} }, slots: { panel: { views: ["/missing"] } } },
+  ] as TailorKitSchemaFile[])(
+    "rejects hosts without a renderable view before writing files: %j",
+    async (schema) => {
+      const targetDirectory = await createTempDir();
+      await expect(generateApp({ ...defaultOptions, targetDirectory, schema })).rejects.toThrow(
+        "no views supported by a slot",
+      );
+      await expect(readFile(path.join(targetDirectory, "package.json"))).rejects.toThrow();
+    },
+  );
+
+  it("does not overwrite existing bindings without force", async () => {
+    const targetDirectory = await createTempDir();
+    await mkdir(path.join(targetDirectory, "src"));
+    const bindings = path.join(targetDirectory, "src/tailorkit.gen.ts");
+    await writeFile(bindings, "existing bindings");
+    await expect(generateApp({ ...defaultOptions, targetDirectory })).rejects.toThrow(
+      "already exists",
+    );
+    expect(await readFile(bindings, "utf-8")).toBe("existing bindings");
   });
 });
