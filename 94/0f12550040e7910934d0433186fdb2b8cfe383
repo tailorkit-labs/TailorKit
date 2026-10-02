@@ -1,0 +1,83 @@
+packages/app-agent/agent/skills/tailorkit-apps/SKILL.md
+  s_6c7043da608411::t_130b956a08b6e6 1-60
+packages/app-agent/.gitignore
+  s_6c7043da608411::t_130b956a08b6e6 1-2
+apps/web/package.json
+  s_6c7043da608411::t_130b956a08b6e6 55
+packages/app-agent/turbo.json
+  s_6c7043da608411::t_130b956a08b6e6 1-8
+packages/app-agent/agent/skills/tailorkit-apps/references/data-and-access.md
+  s_6c7043da608411::t_130b956a08b6e6 1-51
+apps/web/vercel.json
+  s_6c7043da608411::t_130b956a08b6e6 8-15,50-57
+  s_6c7043da608411::t_9fb5209a2e54ef 58
+packages/app-agent/agent/channels/eve.ts
+  s_6c7043da608411::t_130b956a08b6e6 1-7
+packages/app-agent/agent/instructions.md
+  s_6c7043da608411::t_130b956a08b6e6 1-60
+apps/docs/content/docs/(getting-started)/how-apps-work.mdx
+  s_6c7043da608411::t_130b956a08b6e6 67-71
+packages/app-agent/agent/skills/tailorkit-apps/references/platform.md
+  s_6c7043da608411::t_130b956a08b6e6 1-44
+packages/app-agent/agent/skills/tailorkit-apps/references/verification.md
+  s_6c7043da608411::t_130b956a08b6e6 1-77
+apps/web/src/lib/auth-client.ts
+  s_6c7043da608411::t_130b956a08b6e6 6-7,10-16
+  s_6c7043da608411::t_f58fbc62db4f99 17
+packages/auth/src/lib/captcha-endpoints.ts
+  s_6c7043da608411::t_130b956a08b6e6 1-14
+packages/auth/package.json
+  s_6c7043da608411::t_130b956a08b6e6 30,49
+packages/auth/src/index.ts
+  s_6c7043da608411::t_130b956a08b6e6 15-16,26,178-182
+apps/docs/content/docs/(guides)/deploying-to-production.mdx
+  s_6c7043da608411::t_130b956a08b6e6 23-27
+packages/app-agent/agent/lib/package-policy.ts
+  s_6c7043da608411::t_130b956a08b6e6 1-5
+packages/auth/src/captcha.test.ts
+  s_6c7043da608411::t_130b956a08b6e6 1-98
+packages/app-agent/package.json
+  s_6c7043da608411::t_130b956a08b6e6 1-29
+.changeset/sandbox-secure-connections.md
+  s_6c7043da608411::t_130b956a08b6e6 1-5
+packages/app-agent/agent/agent.ts
+  s_6c7043da608411::t_130b956a08b6e6 1-5
+packages/app-agent/agent/skills/tailorkit-apps/references/preact.md
+  s_6c7043da608411::t_130b956a08b6e6 1-169
+packages/app-agent/agent/sandbox/sandbox.ts
+  s_6c7043da608411::t_130b956a08b6e6 1-24
+packages/app-agent/agent/tools/create-app.ts
+  s_6c7043da608411::t_130b956a08b6e6 1-119
+packages/app-agent/tsconfig.json
+  s_6c7043da608411::t_130b956a08b6e6 1-10
+packages/app-agent/agent/skills/tailorkit-apps/references/layout.md
+  s_6c7043da608411::t_130b956a08b6e6 1-91
+packages/app-agent/LICENSE.md
+  s_6c7043da608411::t_130b956a08b6e6 1-87
+packages/app-agent/test/create-app.test.ts
+  s_6c7043da608411::t_130b956a08b6e6 1-100
+apps/web/src/lib/auth-client.test.ts
+  s_6c7043da608411::t_130b956a08b6e6 1-79
+packages/auth/README.md
+  s_6c7043da608411::t_130b956a08b6e6 1-28
+packages/app-agent/README.md
+  s_6c7043da608411::t_130b956a08b6e6 1-170
+pnpm-lock.yaml
+  s_6c7043da608411::t_6a6531245e6ded 459,677-679,1188-1209,1263-1265,1805-1806,1811-1812,1817-1818,6884-6885,7093-7103,8008-8033,10521-10524,10915,10917-10918,10922,10924,10931,12593,12595,15936,15938-15940,16199-16208,17090-17097,20363-20364
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "940f12550040e7910934d0433186fdb2b8cfe383",
+  "prompts": {},
+  "sessions": {
+    "s_6c7043da608411": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f97c-33f2-7b00-ae53-ee745576a301",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
