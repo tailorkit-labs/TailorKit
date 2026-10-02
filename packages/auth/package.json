@@ -27,7 +27,7 @@
     }
   },
   "scripts": {
-    "build": "vp pack src/index.ts src/lib/email.ts src/lib/permissions.ts src/lib/public-team-id.ts --format esm --dts --clean",
+    "build": "vp pack src/index.ts src/lib/captcha-endpoints.ts src/lib/email.ts src/lib/permissions.ts src/lib/public-team-id.ts --format esm --dts --clean",
     "check-types": "tsc --noEmit",
     "generate": "auth generate --config src/index.ts --output ../db/src/schema/auth.generated.ts --yes",
     "test": "vp test run"
@@ -46,6 +46,7 @@
     "@tailorkit/observability": "workspace:*",
     "@vercel/functions": "^3.9.9",
     "better-auth": "catalog:",
+    "botid": "1.5.11",
     "jose": "6.2.12",
     "nanoid": "^6.0.1",
     "uuid": "^14.0.2",

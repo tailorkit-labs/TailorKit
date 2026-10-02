@@ -52,6 +52,7 @@
     "@tanstack/react-table": "^9.2.4",
     "@vercel/functions": "^3.9.9",
     "better-auth": "catalog:",
+    "botid": "1.5.11",
     "crossws": "0.4.12",
     "drizzle-orm": "catalog:",
     "lucide-react": "catalog:",
