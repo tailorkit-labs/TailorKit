@@ -29,7 +29,7 @@ const server = createTailorKitServer({
   components: {
     Button: {},
   },
-  contexts: {
+  views: {
     "/": typedSchema<{ user: { id: string } }>(),
     "/home": typedSchema<{ page: { title: string } }>(),
     "/home/detail": typedSchema<{

@@ -20,7 +20,7 @@ type EmptyActionMap = Record<never, never>;
 
 export interface TailorKitSchema<
   TComponents extends Record<string, unknown> = ComponentDefinitions,
-  TContexts extends Record<string, unknown> = ContextDefinitions,
+  TViews extends Record<string, unknown> = ContextDefinitions,
   TActions extends ActionTree = EmptyActionMap,
 > {
   /**
@@ -39,46 +39,46 @@ export interface TailorKitSchema<
       [TName in keyof TComponents]: ResolvedComponentMetadata;
     };
     views: {
-      [TName in keyof TContexts]: ResolvedViewMetadata;
+      [TName in keyof TViews]: ResolvedViewMetadata;
     };
   };
   slots: SlotDefinitions;
   actions: TActions;
   components: TComponents;
-  contexts: TContexts;
+  views: TViews;
   serialize(schemaSerializer?: SchemaSerializer): TailorKitSchemaSpec;
 }
 
 export const createTailorKitSchema = <
   const TComponents extends Record<string, unknown>,
-  const TContexts extends ContextDefinitions = Record<string, never>,
+  const TViews extends ContextDefinitions = Record<string, never>,
   const TActions extends ActionTree = EmptyActionMap,
 >(schema: {
-  slots?: SlotDefinitions<keyof NoInfer<TContexts> & string>;
+  slots?: SlotDefinitions<keyof NoInfer<TViews> & string>;
   actions?: TActions & NoMixedActionContexts<NoInfer<TActions>>;
   components: TComponents & NoComponentFieldCallbackConflicts<NoInfer<TComponents>>;
-  contexts?: TContexts & ViewContextHierarchy<NoInfer<TContexts>>;
-}): TailorKitSchema<TComponents, TContexts, TActions> => {
+  views?: TViews & ViewContextHierarchy<NoInfer<TViews>>;
+}): TailorKitSchema<TComponents, TViews, TActions> => {
   for (const [name, slot] of Object.entries(schema.slots ?? {})) {
     for (const view of slot.views) {
-      if (!Object.hasOwn(schema.contexts ?? {}, view)) {
+      if (!Object.hasOwn(schema.views ?? {}, view)) {
         throw new Error(`Slot "${name}" references undeclared view "${view}".`);
       }
     }
   }
   const components = {} as TailorKitSchema<
     TComponents,
-    TContexts,
+    TViews,
     TActions
   >["$internal"]["components"];
-  const views = {} as TailorKitSchema<TComponents, TContexts, TActions>["$internal"]["views"];
+  const views = {} as TailorKitSchema<TComponents, TViews, TActions>["$internal"]["views"];
 
   for (const [name, definition] of Object.entries(schema.components as ComponentDefinitions)) {
     components[name as keyof TComponents] = resolveComponentMetadata(name, definition);
   }
 
-  for (const [name, context] of Object.entries((schema.contexts ?? {}) as ContextDefinitions)) {
-    views[name as keyof TContexts] = { context };
+  for (const [name, context] of Object.entries((schema.views ?? {}) as ContextDefinitions)) {
+    views[name as keyof TViews] = { context };
   }
 
   const serialize = (
@@ -134,7 +134,7 @@ export const createTailorKitSchema = <
     slots: schema.slots ?? {},
     actions: (schema.actions ?? {}) as TActions,
     components: schema.components,
-    contexts: (schema.contexts ?? {}) as TContexts,
+    views: (schema.views ?? {}) as TViews,
     serialize,
     $internal: {
       actions: (schema.actions ?? {}) as TActions,

@@ -137,7 +137,7 @@ interface TailorKitServerShape {
   $internal: {
     schema: {
       components: Record<string, unknown>;
-      contexts: Record<string, unknown>;
+      views: Record<string, unknown>;
     };
   };
 }
@@ -153,8 +153,7 @@ type ServerComponents<TTailor extends TailorKitServerShape> = {
     : never;
 };
 
-type ServerViewMap<TTailor extends TailorKitServerShape> =
-  TTailor["$internal"]["schema"]["contexts"];
+type ServerViewMap<TTailor extends TailorKitServerShape> = TTailor["$internal"]["schema"]["views"];
 
 type ServerScopeNames<TTailor extends TailorKitServerShape> = TTailor extends {
   handler: (request: Request, options: infer TOptions) => unknown;
