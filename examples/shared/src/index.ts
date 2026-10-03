@@ -109,7 +109,7 @@ const customer = z.object({
   name: z.string(),
 });
 
-export const contexts = {
+export const views = {
   "/": z.object({
     user,
   }),

@@ -5,11 +5,19 @@ import { z } from "zod";
 
 describe("slot view contracts", () => {
   it("serializes supported view lists", () => {
-    const schema = createTailorKitSchema({
+    const userView = z.object({ userId: z.string() });
+    const host = createTailorKitSchema({
       components: {},
-      contexts: { "/": z.object({}), "/users": z.object({}) },
+      views: { "/": z.object({}), "/users": userView },
       slots: { navbar: { views: ["/"] }, panel: { views: ["/users"] } },
-    }).serialize();
+    });
+    expect(host.views["/users"]).toBe(userView);
+    const schema = host.serialize();
+    expect(schema.views["/users"]?.context).toMatchObject({
+      type: "object",
+      properties: { userId: { type: "string" } },
+      required: ["userId"],
+    });
     expect(TailorKitSchemaSpec.parse(schema).slots).toEqual({
       navbar: { views: ["/"] },
       panel: { views: ["/users"] },
@@ -31,7 +39,7 @@ describe("slot view contracts", () => {
     expect(() =>
       createTailorKitSchema({
         components: {},
-        contexts: { "/": z.object({}) },
+        views: { "/": z.object({}) },
         // @ts-expect-error Exercise runtime validation for JavaScript hosts.
         slots: { panel: { views: ["/missing"] } },
       }),

@@ -1,0 +1,36 @@
+/* Match the navbar divider in both themes. */
+@media (min-width: 1024px) {
+  #sidebar {
+    border-right: 1px solid rgb(var(--gray-500) / 0.05);
+  }
+
+  .dark #sidebar {
+    border-right-color: rgb(var(--gray-300) / 0.06);
+  }
+}
+
+/* Keep the selected navigation item neutral in both themes. */
+#sidebar a[aria-current="page"] {
+  color: rgb(var(--gray-950));
+  background-color: rgb(var(--gray-950) / 0.05);
+}
+
+.dark #sidebar a[aria-current="page"] {
+  color: #fafafa;
+  background-color: rgb(255 255 255 / 0.08);
+}
+
+/* Contents rail and current-section highlight. */
+#table-of-contents .toc-item {
+  display: block;
+  border-left: 1px solid rgb(128 128 128 / 0.2);
+  padding-left: 1rem;
+}
+
+#table-of-contents .toc-item[data-active-deepest] {
+  border-left-color: #00a6f4;
+}
+
+#table-of-contents .toc-item[data-active-deepest] > a {
+  color: #00a6f4;
+}
