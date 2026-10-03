@@ -1,7 +1,9 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
 
 import { LazyMotion, domMax } from "motion/react";
+import { useState } from "react";
 
 import appCss from "#styles/app.css?url";
 
@@ -57,6 +59,17 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60_000,
+          },
+        },
+      }),
+  );
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -65,9 +78,11 @@ function RootComponent() {
       <body className="flex flex-col min-h-screen relative">
         <div className="isolate">
           <LazyMotion features={domMax}>
-            <RootProvider>
-              <Outlet />
-            </RootProvider>
+            <QueryClientProvider client={queryClient}>
+              <RootProvider theme={{ disableTransitionOnChange: false }}>
+                <Outlet />
+              </RootProvider>
+            </QueryClientProvider>
           </LazyMotion>
         </div>
         <Scripts />

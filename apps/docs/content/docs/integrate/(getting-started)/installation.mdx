@@ -32,7 +32,7 @@ the server.
 This file defines the views, slots, components, theme tokens, and actions
 TailorKit apps can use. Host views are context layers; app views are
 implementations selected per slot. Primitives provide basic layout and styling abilities. See
-[Layouts and Styles](/docs/layouts-and-styles) for the full set.
+[Style apps](/docs/integrate/layouts-and-styles) for the full set.
 
 ```ts title="./src/lib/tailorkit.ts" tab="Zod"
 import { createActions, createTailorKit } from "tailorkit";
@@ -309,7 +309,7 @@ browser-only integration. Export `AppView`, `useApps`, and `useView` from the
 configured client so their types come from `tailorKit` without module
 augmentation. Import `Root` from `tailorkit/react` and pass it the client; use
 the other helpers beneath it.
-See [Views, views, and slots](/docs/views) for the complete React setup.
+See [Add views and slots](/docs/integrate/views) for the complete React setup.
 
 </Step>
 <Step>
@@ -330,7 +330,7 @@ authenticated scopes. Each scope is named by the schema key, such as `user`.
 
 🎉 TailorKit is installed.
 
-Continue to the [Quickstart](/docs/quickstart) to create and preview an app.
+Continue to [Create your first app](/docs/apps/quickstart) to create and preview an app.
 
 </Step>
 </Steps>

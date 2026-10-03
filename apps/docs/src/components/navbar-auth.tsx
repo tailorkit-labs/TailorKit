@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@tailorkit/ui/button";
+import { Skeleton } from "@tailorkit/ui/skeleton";
 
 type DocsSession = {
   user?: {
@@ -16,51 +17,44 @@ const authLinks = {
   signUp: "/sign-up",
 };
 
+const sessionQueryKey = ["auth", "session"] as const;
+
+async function getSession(): Promise<DocsSession> {
+  const response = await fetch("/api/auth/get-session", {
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!(response.ok && response.headers.get("content-type")?.includes("application/json"))) {
+    return null;
+  }
+
+  return (await response.json()) as DocsSession;
+}
+
 export function NavbarAuth() {
-  const [session, setSession] = useState<DocsSession>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: session, isPending } = useQuery({
+    enabled: typeof window !== "undefined",
+    queryFn: getSession,
+    queryKey: sessionQueryKey,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadSession() {
-      try {
-        const response = await fetch("/api/auth/get-session", {
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-          },
-        });
-
-        if (!(response.ok && response.headers.get("content-type")?.includes("application/json"))) {
-          return;
-        }
-
-        const nextSession = (await response.json()) as DocsSession;
-
-        if (!cancelled) {
-          setSession(nextSession);
-        }
-      } catch {
-        if (!cancelled) {
-          setSession(null);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadSession();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (isLoading) {
-    return <div className="h-8 w-28" />;
+  if (isPending) {
+    return (
+      <output
+        aria-busy="true"
+        aria-label="Loading authentication"
+        className="flex items-center gap-2"
+        role="status"
+      >
+        <Skeleton className="h-8 w-13" />
+        <Skeleton className="h-8 w-16" />
+      </output>
+    );
   }
 
   if (!session?.user) {

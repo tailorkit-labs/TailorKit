@@ -4,6 +4,7 @@ import { HomeLayout } from "fumadocs-ui/layouts/home";
 import { ArrowRight } from "lucide-react";
 import { Footer } from "#components/footer";
 import { HomeCTA } from "#components/home-cta";
+import { SiteNavbar } from "#components/site-navbar";
 import { productFeatures } from "#lib/features";
 import { baseOptions } from "#lib/layout.shared";
 
@@ -26,8 +27,10 @@ export function homeHead() {
 }
 
 export function HomePage() {
+  const base = baseOptions();
+
   return (
-    <HomeLayout {...baseOptions()}>
+    <HomeLayout {...base} nav={{ ...base.nav, component: <SiteNavbar /> }}>
       <main className="min-h-screen bg-sidebar text-foreground">
         <div className="mx-auto w-full max-w-7xl border-x border-border bg-background">
           <Hero />

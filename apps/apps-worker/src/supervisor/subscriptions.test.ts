@@ -4,7 +4,7 @@ import { RPCLink } from "@orpc/client/websocket";
 import { expect, it, vi } from "vite-plus/test";
 import { createSubscriptions } from "./subscriptions";
 import type { SubscriptionConnection, SubscriptionSession } from "./subscriptions";
-import { createSubscriptionHandler, subscriptionStream, deliverSubscription } from "../transport";
+import { createSubscriptionHandler, subscriptionStream } from "../transport";
 import type { Invocation } from "@tailorkit/app/protocol";
 import type { Identity } from "@tailorkit/app/server";
 import type { SubscriptionClient } from "@tailorkit/app/protocol";

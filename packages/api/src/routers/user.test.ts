@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { createTestDb } from "../test/pglite";
 import type { Context } from "../context";
 
+vi.mock("@tailorkit/kv", () => ({ getKV: () => null }));
+
 const testState = vi.hoisted(() => ({
   db: undefined as unknown,
   env: {

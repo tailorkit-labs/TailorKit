@@ -1,5 +1,5 @@
 ---
-title: Layouts and styles
+title: Style apps
 description: Expose responsive layout primitives and theme tokens to TailorKit apps.
 ---
 
@@ -112,32 +112,32 @@ All primitive props are responsive unless noted by the generated type:
 
 A block container with spacing, sizing, surface, overflow, and text props.
 
-<auto-type-table path="../../../src/lib/primitive-docgen.ts" name="BoxProps" />
+<auto-type-table path="../../../../src/lib/primitive-docgen.ts" name="BoxProps" />
 
 ### Flex
 
 A flex container. Includes every `Box` prop plus `direction`, `align`,
 `justify`, `gap`, and `wrap`.
 
-<auto-type-table path="../../../src/lib/primitive-docgen.ts" name="FlexProps" />
+<auto-type-table path="../../../../src/lib/primitive-docgen.ts" name="FlexProps" />
 
 ### Grid
 
 A grid container. Includes every `Box` prop plus `columns` and `gap`.
 
-<auto-type-table path="../../../src/lib/primitive-docgen.ts" name="GridProps" />
+<auto-type-table path="../../../../src/lib/primitive-docgen.ts" name="GridProps" />
 
 ### Inline
 
 Inline text/content styling. Supports spacing, surface color, radius, and text
 props.
 
-<auto-type-table path="../../../src/lib/primitive-docgen.ts" name="InlineProps" />
+<auto-type-table path="../../../../src/lib/primitive-docgen.ts" name="InlineProps" />
 
 <Callout title="Avoid Raw Styling" type="warn">
   Do not expose `className`, arbitrary CSS, or host styling internals to apps. Prefer primitives,
   theme tokens, and product-specific host components. See [Deploying to
-  production](/docs/deploying-to-production) for production guidance.
+  production](/docs/integrate/deploying-to-production) for production guidance.
 </Callout>
 
 ## Theme tokens

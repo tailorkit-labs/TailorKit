@@ -1,5 +1,5 @@
 ---
-title: Deploying to production
+title: Go to production
 description: Ship TailorKit apps with clear host-owned security boundaries.
 ---
 
@@ -100,7 +100,7 @@ or auth flows.
 
 ### Trusted actions
 
-For trusted work, expose a host-owned [action](/docs/actions).
+For trusted work, expose a host-owned [action](/docs/integrate/actions).
 
 Authorize every action using `context`, even if the UI only exposes it to a
 particular role. Validate action input and output, view database queries to the
@@ -122,7 +122,7 @@ include them in browser bundles or app-generated context.
 ### Styles and classes
 
 Avoid arbitrary `style` objects, raw class names, and HTML. Prefer
-[TailorKit primitives](/docs/layouts-and-styles) and theme tokens so apps can
+[TailorKit primitives](/docs/integrate/layouts-and-styles) and theme tokens so apps can
 feel native without controlling layout, positioning, or visual hierarchy.
 
 ### Sensitive UI

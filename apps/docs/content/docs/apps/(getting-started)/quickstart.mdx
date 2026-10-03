@@ -1,5 +1,5 @@
 ---
-title: Quickstart
+title: Create your first app
 description: Create, generate, and preview your first TailorKit app.
 ---
 
@@ -9,8 +9,8 @@ import { Step, Steps } from "fumadocs-ui/components/steps";
 Create a small app for the `/` view and preview it in your host product.
 
 <Callout title="Before you start">
-  Complete [Installation](/docs/installation) and keep your host app running. Its TailorKit handler
-  must be available at `/api/tailorkit`.
+  The team that owns the host product must complete [Installation](/docs/integrate/installation) and
+  keep the host app running. Its TailorKit handler must be available at `/api/tailorkit`.
 </Callout>
 
 <Steps>
@@ -109,7 +109,7 @@ contract changes, rerun `pnpm generate` before continuing development.
 
 ## Next steps
 
-- Add a typed route and context with [Views](/docs/views).
-- Learn about generated components and actions in [Writing apps](/docs/writing-apps).
-- Expose trusted server-side behavior with [Actions](/docs/actions).
-- Review the [production checklist](/docs/deploying-to-production) before loading third-party apps.
+- Learn how to organize views and use generated components in
+  [Build an app](/docs/apps/writing-apps).
+- Use the [app API reference](/docs/apps/client) when registering additional views.
+- Ask the host team to expose any views, components, or actions your app needs.

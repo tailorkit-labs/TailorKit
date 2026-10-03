@@ -1,0 +1,39 @@
+---
+title: Introduction
+description: Build an app that runs inside an existing TailorKit product.
+---
+
+import { Card, Cards } from "fumadocs-ui/components/card";
+import { BookOpenIcon, CodeIcon, RocketIcon } from "lucide-react";
+
+TailorKit apps add focused functionality to a product that already uses
+TailorKit. They run separately from the host product, but render with the
+host's approved components and receive only the context and actions the host
+chooses to expose.
+
+You can read this section without setting up a host product. To build or preview
+an app, the product team must first complete
+[Installation](/docs/integrate/installation) and keep the host running. Ask them
+for its TailorKit API URL.
+
+<Cards>
+  <Card href="/docs/apps/quickstart" icon={<RocketIcon />} title="Create your first app">
+    Scaffold an app, generate its bindings, and preview it locally.
+  </Card>
+  <Card href="/docs/apps/writing-apps" icon={<CodeIcon />} title="Build an app">
+    Register views, use host components, and call host actions.
+  </Card>
+  <Card href="/docs/apps/client" icon={<BookOpenIcon />} title="App API reference">
+    Look up `defineClient` and `createView`.
+  </Card>
+</Cards>
+
+## How app development works
+
+The host product publishes a typed contract. Run `pnpm generate` in your app
+project to turn that contract into local TypeScript bindings. Build your views
+with those bindings, then preview or deploy the app through the TailorKit CLI.
+
+When you need a new component, view, context field, or trusted action, ask the
+team that owns the host product to expose it. The host remains the authority
+for its data, permissions, and UI capabilities.

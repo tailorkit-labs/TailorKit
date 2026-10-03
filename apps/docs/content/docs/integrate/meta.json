@@ -1,0 +1,11 @@
+{
+  "title": "Embedding TailorKit",
+  "description": "Set up TailorKit in the product that hosts apps.",
+  "root": true,
+  "pages": [
+    "---[Rocket]Getting started---",
+    "...(getting-started)",
+    "---[Blocks]Build the integration---",
+    "...(guides)"
+  ]
+}

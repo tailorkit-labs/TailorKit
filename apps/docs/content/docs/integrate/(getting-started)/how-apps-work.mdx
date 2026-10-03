@@ -1,5 +1,5 @@
 ---
-title: How apps work
+title: How TailorKit works
 description: Apps are sandboxed extensions that render through your platform.
 ---
 
@@ -36,7 +36,7 @@ context, renders approved components, and handles sensitive work through host
 actions.
 
 For example, the host can say: "this part of the user route is the `/user`
-view, and here is the current user context." Read [Views](/docs/views)
+view, and here is the current user context." Read [Views](/docs/integrate/views)
 for the full pattern.
 
 ## What apps own
@@ -45,7 +45,7 @@ Apps are built separately from the host. They import generated bindings from the
 schema, implement one or more views, and describe UI using host-approved
 components.
 
-Read [Writing apps](/docs/writing-apps) and [Components](/docs/components) for
+Read [Build an app](/docs/apps/writing-apps) and [Components](/docs/integrate/components) for
 the app-side and host-side details.
 
 ## Sandbox and security
@@ -90,4 +90,4 @@ page-level state directly.
 
 The sandbox is one layer of the security model, not a substitute for narrow
 schemas, authorization, and output validation. For the complete checklist,
-read [Deploying to production](/docs/deploying-to-production).
+read [Go to production](/docs/integrate/deploying-to-production).

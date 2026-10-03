@@ -1,0 +1,12 @@
+{
+  "title": "Building Apps",
+  "description": "Build apps for an existing TailorKit host.",
+  "root": true,
+  "pages": [
+    "---[Rocket]Getting started---",
+    "index",
+    "...(getting-started)",
+    "---[PencilRuler]Build apps---",
+    "...(writing-apps)"
+  ]
+}

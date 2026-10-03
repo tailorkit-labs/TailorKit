@@ -50,11 +50,11 @@ work.
 
 - [Overview](https://tailorkit.dev/docs) explains the TailorKit model and core
   terminology.
-- [Installation](https://tailorkit.dev/docs/installation) walks through a host
+- [Installation](https://tailorkit.dev/docs/integrate/installation) walks through a host
   integration.
-- [Quickstart](https://tailorkit.dev/docs/quickstart) creates and previews a
+- [Quickstart](https://tailorkit.dev/docs/apps/quickstart) creates and previews a
   first TailorKit app.
-- [Writing apps](https://tailorkit.dev/docs/writing-apps) covers the app-side
+- [Writing apps](https://tailorkit.dev/docs/apps/writing-apps) covers the app-side
   runtime and generated bindings.
 
 ## Contributing
