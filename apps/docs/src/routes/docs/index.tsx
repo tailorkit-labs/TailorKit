@@ -1,7 +1,11 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { DocsContent, loadDocsPage } from "./$";
 
 export const Route = createFileRoute("/docs/")({
-  beforeLoad: () => {
-    throw redirect({ to: "/docs/$", params: { _splat: "integrate" } });
-  },
+  component: Page,
+  loader: () => loadDocsPage([]),
 });
+
+function Page() {
+  return <DocsContent data={Route.useLoaderData()} />;
+}

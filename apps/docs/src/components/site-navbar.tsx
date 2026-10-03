@@ -19,7 +19,7 @@ export function SiteNavbar({ children, docs = false }: SiteNavbarProps) {
     <header
       className={
         docs
-          ? "docs-site-navbar sticky [grid-area:header] flex flex-col top-(--fd-docs-row-1) z-30 bg-fd-background/80 backdrop-blur-lg layout:[--fd-header-height:--spacing(24)]"
+          ? "docs-site-navbar sticky [grid-area:header] flex flex-col top-(--fd-docs-row-1) z-30 bg-fd-background/80 backdrop-blur-lg layout:[--fd-header-height:--spacing(30)] sm:layout:[--fd-header-height:--spacing(24)]"
           : "sticky top-0 z-40"
       }
       data-docs-navbar={docs || undefined}
@@ -29,7 +29,10 @@ export function SiteNavbar({ children, docs = false }: SiteNavbarProps) {
         data-header-body={docs ? "" : undefined}
         className={docs ? undefined : "border-b bg-fd-background/80"}
       >
-        <nav className="mx-auto flex h-14 w-full max-w-[97rem] items-center px-4">
+        <nav
+          aria-label="Main navigation"
+          className="mx-auto flex h-20 w-full max-w-[97rem] flex-wrap items-center px-4 sm:h-14 sm:flex-nowrap"
+        >
           <Link className="inline-flex items-center gap-2.5 font-semibold" to="/home">
             <span className="flex items-center space-x-2">
               <Logo className="size-[1em]" />
@@ -42,7 +45,7 @@ export function SiteNavbar({ children, docs = false }: SiteNavbarProps) {
           >
             Docs
           </Link>
-          <div className="flex flex-1 items-center justify-end gap-1.5">
+          <div className="flex h-10 flex-1 basis-full items-center justify-end gap-1.5 sm:h-auto sm:basis-auto">
             <NavbarAuth />
             <a
               aria-label="GitHub"

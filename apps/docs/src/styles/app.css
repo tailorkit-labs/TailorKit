@@ -13,9 +13,13 @@ html > body[data-scroll-locked] {
 }
 
 /* Keep the docs controls visually separate from the shared site navigation. */
+#nd-notebook-layout {
+  container-type: inline-size;
+}
+
 #nd-subnav {
-  margin-inline-start: calc(50% - 50vw);
-  width: 100vw;
+  margin-inline-start: calc(50% - 50cqw);
+  width: 100cqw;
 }
 
 #nd-subnav [data-header-tabs] {

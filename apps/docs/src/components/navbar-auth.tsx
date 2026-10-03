@@ -45,7 +45,7 @@ export function NavbarAuth() {
 
   if (isPending) {
     return (
-      <div
+      <output
         aria-busy="true"
         aria-label="Loading authentication"
         className="flex items-center gap-2"
@@ -53,7 +53,7 @@ export function NavbarAuth() {
       >
         <Skeleton className="h-8 w-13" />
         <Skeleton className="h-8 w-16" />
-      </div>
+      </output>
     );
   }
 

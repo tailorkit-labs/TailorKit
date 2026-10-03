@@ -24,9 +24,7 @@ export const Route = createFileRoute("/docs/$")({
   component: Page,
   loader: async ({ params }) => {
     const slugs = params._splat?.split("/") ?? [];
-    const data = await serverLoader({ data: slugs });
-    await clientLoader.preload(data.path);
-    return data;
+    return loadDocsPage(slugs);
   },
 });
 
@@ -78,8 +76,18 @@ const clientLoader = browserCollections.docs.createClientLoader({
   },
 });
 
+export async function loadDocsPage(slugs: string[]) {
+  const data = await serverLoader({ data: slugs });
+  await clientLoader.preload(data.path);
+  return data;
+}
+
 function Page() {
-  const { path, pageTree, markdownUrl } = useFumadocsLoader(Route.useLoaderData());
+  return <DocsContent data={Route.useLoaderData()} />;
+}
+
+export function DocsContent({ data }: { data: Awaited<ReturnType<typeof loadDocsPage>> }) {
+  const { path, pageTree, markdownUrl } = useFumadocsLoader(data);
 
   const base = baseOptions();
 
