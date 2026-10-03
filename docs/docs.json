@@ -1,0 +1,78 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "TailorKit",
+  "colors": {
+    "primary": "#FAFAFA",
+    "light": "#FAFAFA",
+    "dark": "#00a6f4"
+  },
+  "favicon": {
+    "light": "/images/mark-background-light.svg",
+    "dark": "/images/mark-background-dark.svg"
+  },
+  "navigation": {
+    "pages": [
+      {
+        "group": "Getting Started",
+        "pages": ["index", "installation", "quickstart"]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Documentation",
+          "href": "https://mintlify.com/docs",
+          "icon": "book-open-cover"
+        },
+        {
+          "anchor": "Blog",
+          "href": "https://mintlify.com/blog",
+          "icon": "newspaper"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/images/logo-with-text-light.svg",
+    "dark": "/images/logo-with-text-dark.svg",
+    "href": "https://tailorkit.dev/home"
+  },
+  "navbar": {
+    "links": [
+      {
+        "href": "/login",
+        "label": "login"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get started",
+      "href": "https://tailorkit.dev/signup"
+    }
+  },
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/tailorkit-labs/tailorkit"
+    }
+  },
+  "description": "TailorKit lets users, AI, and partners build extensions inside your SaaS. Those extensions run in a sandbox and use the components, data, and actions you choose to expose.",
+  "icons": {
+    "library": "fontawesome"
+  },
+  "background": {
+    "color": {
+      "light": "#FAFAFA",
+      "dark": "#111111"
+    }
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs"
+  },
+  "metadata": {
+    "timestamp": false
+  }
+}

@@ -1,0 +1,436 @@
+---
+title: "Installation"
+description: "Install TailorKit, expose your host API, and render installed apps in React."
+---
+
+Set up TailorKit in the app that will host and render TailorKit apps.
+
+By the end of this guide, your backend will expose the TailorKit schema and app
+registry, and your React frontend will be ready to render installed apps.
+
+## Prerequisites
+
+- A React app using React 19.2.6 or later, with a backend that accepts standard
+  `Request` objects and returns `Response` objects.
+- TypeScript and Zod 4 or later for the examples in this guide.
+- An authentication function that reads your host session and returns a user
+  with an `id` and `name`.
+- A TailorKit project key, available to your backend as `TAILORKIT_PROJECT_KEY`.
+
+Set the key in your host app's server environment:
+
+```dotenv .env.local
+TAILORKIT_PROJECT_KEY="your-project-key"
+```
+
+Keep this value on the server. Do not give it a public environment variable prefix
+or pass it to the React client.
+
+## Set up your host
+
+<Steps>
+<Step title="Install TailorKit">
+
+Install the SDK and the schema library used below in your host project.
+
+<CodeGroup>
+
+```sh npm
+npm install tailorkit zod
+```
+
+```sh pnpm
+pnpm add tailorkit zod
+```
+
+```sh yarn
+yarn add tailorkit zod
+```
+
+```sh bun
+bun add tailorkit zod
+```
+
+</CodeGroup>
+
+</Step>
+<Step title="Create the TailorKit server">
+
+Create `tailorkit.ts` in a server-safe module such as `src/lib/`. Do not import
+this module into a browser bundle: actions and project credentials belong on
+the server.
+
+This file defines the views, slots, components, theme tokens, and actions
+TailorKit apps can use. Host views are context layers; app views are
+implementations selected per slot. Primitives provide basic layout and styling
+through host-defined tokens. Replace `var(--border)` and `var(--text)` below
+with the CSS variables used by your host theme.
+
+```ts src/lib/tailorkit.ts
+import { createActions, createTailorKit } from "tailorkit";
+import { primitives } from "tailorkit/zod";
+import { z } from "zod";
+
+// Define the components TailorKit apps can render.
+const Button = {
+  fields: z.object({
+    variant: z.enum(["default", "secondary"]),
+  }),
+  callbacks: {
+    onClick: {},
+  },
+  children: true,
+};
+
+// Type the context your server passes to actions.
+const action = createActions().context<{
+  user: { id: string; name: string };
+}>();
+
+export const tailorKit = createTailorKit({
+  projectKey: process.env.TAILORKIT_PROJECT_KEY,
+  // Give each app installation boundary a stable name and identity schema.
+  scopes: { user: z.object({ userId: z.string().min(1) }) },
+
+  components: {
+    // These provide basic layout and styling abilities.
+    ...primitives({
+      tokens: {
+        borderColor: {
+          default: "var(--border)",
+        },
+        textColor: {
+          default: "var(--text)",
+        },
+      },
+    }),
+    Button,
+  },
+
+  slots: { panel: { views: ["/"] } },
+  contexts: {
+    // Define the host context layers available to app views.
+    "/": z.object({}),
+  },
+
+  actions: {
+    // Actions let TailorKit apps run server-side logic in your app.
+    echo: action
+      .input(z.string())
+      .output(z.string())
+      // This runs on your server.
+      .handler(({ input, context }) => `${context.user.name} said '${input}'`),
+  },
+});
+```
+
+<Note>
+  Treat this configuration as a public API. Apps are built against the views, slots, components,
+  actions, children, and tokens you define. Removing or renaming them can break existing apps.
+</Note>
+
+</Step>
+<Step title="Add the API handler">
+
+Mount the handler at your TailorKit base path. The default is `/api/tailorkit`.
+
+<Info>
+  TailorKit supports any backend framework that uses standard `Request` and `Response` objects, with
+  examples for popular frameworks below.
+</Info>
+
+Pass your app's auth check as `authenticate` instead of blocking requests before
+`tailorKit.handler`. TailorKit applies the appropriate authentication to each
+route, including its CLI deployment flow.
+
+The `auth` imports below stand for your existing authentication function. Adapt
+the import paths to your project; return `null` when no valid session exists.
+
+Each entry in `scopes` names an app installation boundary, such as `user` or
+`organization`. Return the matching values from the authenticated session under
+the same names. Use stable opaque IDs for those values; TailorKit validates and
+sends them to the platform to match and display installations. When someone
+approves a CLI login, the approval page asks them to choose one named scope for
+that deploy token.
+
+<Tabs>
+
+<Tab title="Next.js App Router">
+
+```ts app/api/tailorkit/[...tailorkit]/route.ts
+import { auth } from "#lib/auth";
+import { tailorKit } from "#lib/tailorkit";
+
+async function handleRequest(request: Request) {
+  return tailorKit.handler(request, {
+    authenticate: async () => {
+      const session = await auth(request);
+
+      if (!session) {
+        return null;
+      }
+
+      return {
+        actionContext: { user: session.user },
+        // This groups installed apps for the current user.
+        scopes: { user: { userId: session.user.id } },
+      };
+    },
+  });
+}
+
+export const GET = handleRequest;
+export const POST = handleRequest;
+```
+
+</Tab>
+
+<Tab title="TanStack Start">
+
+```ts routes/api/tailorkit.$.ts
+import { auth } from "#lib/auth";
+import { tailorKit } from "#lib/tailorkit";
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/api/tailorkit/$")({
+  server: {
+    handlers: {
+      GET: handleRequest,
+      POST: handleRequest,
+    },
+  },
+});
+
+async function handleRequest({ request }: { request: Request }) {
+  return tailorKit.handler(request, {
+    authenticate: async () => {
+      const session = await auth(request);
+
+      if (!session) {
+        return null;
+      }
+
+      return {
+        actionContext: { user: session.user },
+        // This groups installed apps for the current user.
+        scopes: { user: { userId: session.user.id } },
+      };
+    },
+  });
+}
+```
+
+</Tab>
+
+<Tab title="React Router">
+
+```ts routes/api.tailorkit.$.ts
+import { auth } from "#lib/auth";
+import { tailorKit } from "#lib/tailorkit";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+
+async function handleRequest(request: Request) {
+  return tailorKit.handler(request, {
+    authenticate: async () => {
+      const session = await auth(request);
+
+      if (!session) {
+        return null;
+      }
+
+      return {
+        actionContext: { user: session.user },
+        // This groups installed apps for the current user.
+        scopes: { user: { userId: session.user.id } },
+      };
+    },
+  });
+}
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  return handleRequest(request);
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  return handleRequest(request);
+}
+```
+
+</Tab>
+
+<Tab title="Nitro">
+
+```ts server/api/tailorkit/[...].ts
+import { auth } from "#lib/auth";
+import { tailorKit } from "#lib/tailorkit";
+import { toWebRequest } from "h3";
+
+export default defineEventHandler(async (event) => {
+  const request = toWebRequest(event);
+  return tailorKit.handler(request, {
+    authenticate: async () => {
+      const session = await auth(request);
+
+      if (!session) {
+        return null;
+      }
+
+      return {
+        actionContext: { user: session.user },
+        // This groups installed apps for the current user.
+        scopes: { user: { userId: session.user.id } },
+      };
+    },
+  });
+});
+```
+
+</Tab>
+
+<Tab title="Hono">
+
+```ts src/index.ts
+import { Hono } from "hono";
+import { auth } from "#lib/auth";
+import { tailorKit } from "#lib/tailorkit";
+
+const app = new Hono();
+
+app.on(["GET", "POST"], "/api/tailorkit/*", async (c) => {
+  return tailorKit.handler(c.req.raw, {
+    authenticate: async () => {
+      const session = await auth(c.req.raw);
+
+      if (!session) {
+        return null;
+      }
+
+      return {
+        actionContext: { user: session.user },
+        // This groups installed apps for the current user.
+        scopes: { user: { userId: session.user.id } },
+      };
+    },
+  });
+});
+
+export default app;
+```
+
+</Tab>
+
+</Tabs>
+
+</Step>
+<Step title="Create the client">
+
+The TailorKit client connects your frontend to the TailorKit API handler and
+maps the components from your TailorKit config to components in your app.
+
+Create `tailorkit-client.tsx` in your frontend, wherever you keep client-side utilities.
+
+```tsx src/lib/tailorkit-client.tsx
+"use client";
+
+import { Button } from "@/components/button";
+import type { tailorKit } from "./tailorkit";
+import { createTailorKitClient, primitives } from "tailorkit/react";
+
+export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
+  // Replace this with your host origin and handler path.
+  baseUrl: "http://localhost:3000/api/tailorkit/",
+  components: {
+    ...primitives,
+
+    Button: ({ props, children }) => (
+      <Button variant={props.variant} onClick={props.onClick}>
+        {children}
+      </Button>
+    ),
+  },
+});
+
+export const { AppView, useApps, useView } = tailorKitClient;
+
+export default tailorKitClient;
+```
+
+Use an absolute URL, or construct a URL from `window.location.origin` in a
+browser-only integration. Export `AppView`, `useApps`, and `useView` from the
+configured client so their types come from `tailorKit` without module
+augmentation. Import `Root` from `tailorkit/react` and pass it the client; use
+the other helpers beneath it.
+
+Replace the `Button` import with a component from your design system that accepts
+`variant`, `onClick`, and `children`. The type-only import of `tailorKit` keeps
+the server module out of the browser bundle. In Next.js, keep this file and the
+rendering component below behind a `"use client"` boundary.
+
+</Step>
+<Step title="Render installed apps">
+
+Mount `Root` around the component that loads and renders apps. Register the `/`
+host view with `useView`, then render each installed app in the `panel` slot
+from your server configuration.
+
+```tsx src/components/tailorkit-panel.tsx
+"use client";
+
+import { Root } from "tailorkit/react";
+import { AppView, tailorKitClient, useApps, useView } from "../lib/tailorkit-client";
+
+function InstalledApps() {
+  useView("/", { context: {} });
+  const { data: apps, isPending, error } = useApps({ scopes: ["user"] });
+
+  if (isPending) return <p>Loading apps…</p>;
+  if (error) return <p>Unable to load installed apps.</p>;
+  if (!apps?.length) return <p>No apps installed yet.</p>;
+
+  return apps.map((app) => <AppView key={app.id} app={app} slot="panel" />);
+}
+
+export function TailorKitPanel() {
+  return (
+    <Root client={tailorKitClient}>
+      <InstalledApps />
+    </Root>
+  );
+}
+```
+
+Add `<TailorKitPanel />` to a signed-in page or layout in your host app. The
+`user` scope loads apps installed for the user returned by `authenticate`.
+An empty list is expected until you install or accept a preview of an app.
+
+</Step>
+<Step title="Verify the integration">
+
+Start your host app, then check these endpoints at your configured host origin:
+
+```txt
+GET /api/tailorkit/schema
+GET /api/tailorkit/meta
+GET /api/tailorkit/apps
+```
+
+The schema and metadata endpoints describe your public app contract. The apps
+endpoint requires a valid host session and returns the apps installed for the
+authenticated scopes. Each scope is named by the schema key, such as `user`.
+
+While signed in to your host, open the page containing `TailorKitPanel`. You
+should see either your installed apps or “No apps installed yet.” An
+unauthenticated request to `/api/tailorkit/apps` should be rejected.
+
+If the routes return 404, check the catch-all route and handler path. If the
+schema works but apps fail to load, check that `authenticate` returns a valid
+session and that the client points to the same origin as your host.
+
+</Step>
+</Steps>
+
+## Next steps
+
+With the host running, you can create an app, generate bindings from its schema,
+and start a preview. See the [example integrations](https://github.com/tailorkit-labs/tailorkit/tree/main/examples)
+for complete host projects.
