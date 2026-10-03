@@ -1,0 +1,1284 @@
+packages/react/src/__tests__/node-store.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+.changeset/pre/sandbox-secure-connections.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+packages/db/turbo.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-14
+packages/core/src/server/routes/preview.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-73
+examples/apps/todo/src/views/default.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,4-5,7,9-16,21-38,44-53,58-77
+apps/demo/src/routes/api/tailorkit.$.ts
+  s_96b33066483cc7::t_a49bd45256a53b 4,11,20,24
+packages/api-utils/src/rate-limiting.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-70
+packages/api/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-7
+packages/asset-delivery/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 1
+examples/apps/backend-todo/README.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-25
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/settings/index.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2,11,21-24,170
+packages/kv/src/contract.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-570
+packages/cli/turbo.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-8
+packages/observability/src/index.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,26
+packages/ui/src/components/fieldset.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+packages/ui/src/components/input.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5,25,39
+packages/tailorkit/CHANGELOG.md
+  s_96b33066483cc7::t_a49bd45256a53b 3-109
+.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 52,69-76
+packages/ui/src/components/radio-group.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6
+packages/ui/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 8-17,27-31,33-65,68,73,76,79,93-94
+.changeset/pre/init-host-schema.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+apps/docs/content/docs/apps/(writing-apps)/client.mdx
+  s_96b33066483cc7::t_a49bd45256a53b 42-45
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/settings/api-keys.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6,14,24-29,36
+packages/asset-delivery/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 20,22-25,30
+apps/web/src/routes/(auth)/login.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4,13-15,17-18,23-25,53,58-61,88-92,95-100,105-106,110-113,116-139,147-152,163-168,187,216,218,221-241,243,245-246,251-252,254-255,258-273,330
+examples/apps/backend-todo/src/functions/import-todo.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-18
+apps/web/src/components/org-slug-availability-indicator.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2-3
+apps/apps-worker/src/worker.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-111
+apps/apps-worker/src/dynamic-workers/facet.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-75
+packages/app/src/client/query-store.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-119
+packages/app/src/server/bundle.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-19
+packages/ui/src/components/context-menu.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1-319
+packages/api-platform/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 6,12
+packages/app/src/server/builder.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-74
+packages/core/src/server/routes/cli-auth.ts
+  s_96b33066483cc7::t_a49bd45256a53b 9,28,34,82
+packages/core/src/server/types.test-d.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-3,5-9,15,17,22,25,29,31,35,42,47,49,53,55,59-119
+packages/cli/src/index.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-99
+apps/apps-worker/src/transport.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-221
+packages/app/src/providers.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-44
+packages/ui/src/components/toggle.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 7
+packages/api-platform/src/routes/deployments.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,19,23,27-33,59-63,74,81,156,171-200,204-206,211-212,214,229-234,237,241,243,268-273,277,281-286,290-295,305,311,327-328,338,440-443,457-459,467-472,476,483-488,591-604,610,615
+examples/apps/todo/migrations/20261001090332_productive_smiling_tiger/migration.sql
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+packages/api/src/routers/project.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 6,10-11,65
+packages/ui/src/components/select.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 10,172,194
+.changeset/pre/nullable-generated-types.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-6
+packages/app/src/client-boundary.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-61
+examples/apps/backend-todo/src/schema.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-7
+packages/core/src/server/routes/apps.ts
+  s_96b33066483cc7::t_a49bd45256a53b 10,29,40,52,60,64,72,78,81,94
+apps/web/src/tests/preview-ws.test.mjs
+  s_96b33066483cc7::t_a49bd45256a53b 1-110
+packages/app/src/builder/server.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-140
+apps/demo/vite.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 4-5
+packages/app-agent/agent/skills/tailorkit-apps/references/verification.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-77
+apps/docs/content/docs/integrate/(getting-started)/how-apps-work.mdx
+  s_96b33066483cc7::t_a49bd45256a53b 67-71
+packages/api-utils/src/app-asset-url.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,21,31-32
+packages/app-agent/agent/skills/tailorkit-apps/references/data-and-access.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-51
+apps/web/src/routes/(auth)/verify-email.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5,14-18,197
+packages/cli/src/preview.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,6-11,13-14,16,24-35,37-48,50-85,87-88,90-94,97-104,106-108,110-112,114-116,118-135,138-140,142-156,160,162-169,171-172,174,177-179,181-195,197-394
+packages/client-platform/src/client/sdk.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 4-10,22-23,44-56,76-87,91-104,106-109,130-133,223-224,226-241,267-334
+  s_96b33066483cc7::t_ad3656e76ca428 3
+packages/db/src/migrations/20260921234115_add_preview_sessions/snapshot.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-3453
+packages/kv/src/with-timeout.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-21
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1,6,10-13,15-19,24,26-30,77-81,89-93,105,110,141,146,152-170,184-250,261,276-354,404,442,480,493,497,519-539,548,554,664-671,676,682-683,695,710,724,731,762-767,777,779,781-782,787,789-790,794,796-797,845
+packages/sandbox/src/iframe/runtime.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,42-46,156-158,180-182
+packages/api-platform/src/routes/preview.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-301
+packages/cli/src/generator/templates/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 9-13,24-28
+packages/ui/src/components/autocomplete.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6-8,218,225,269-270
+packages/ui/src/components/progress.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+packages/ui/src/components/spinner.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 3
+packages/cli/src/generator/templates/.gitignore.liquid
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,6,12-13,15-18,20-26,28-29
+packages/sandbox/src/host/serialize.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3
+packages/kv/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 35-37
+packages/app-agent/tsconfig.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-10
+packages/sandbox/src/host/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,30-33,49,108-137,179-182,204
+packages/auth/src/trusted-origins.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2
+packages/sandbox/src/protocol.ts
+  s_96b33066483cc7::t_a49bd45256a53b 68-91,180-183
+packages/ui/src/components/label.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6
+RELEASING.md
+  s_96b33066483cc7::t_a49bd45256a53b 15
+apps/apps-worker/src/worker-env.d.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-29,32-17551
+packages/client-platform/src/client/client/client.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3-6,15
+packages/ui/src/components/pagination.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 7-9
+examples/tanstack-start/src/routes/customers.$customerId.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 9
+apps/apps-worker/src/modules.d.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-6
+packages/api-platform/src/routes/runtime.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-137
+packages/api/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,6
+.changeset/pre/fresh-preview-response.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+packages/api-platform/src/scope.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-128
+packages/app-agent/agent/skills/tailorkit-apps/SKILL.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-60
+packages/db/src/migrations/20260915014045_short_nova/migration.sql
+  s_96b33066483cc7::t_a49bd45256a53b 1-14
+pnpm-workspace.yaml
+  s_96b33066483cc7::t_a49bd45256a53b 2-6,16-23,33-36,43,45-46,48-49,54,56,58-62,73-103
+packages/api/vitest.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,14
+packages/app-agent/README.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-170
+apps/web/src/routes/(app)/route.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5,14
+packages/cli/src/preview.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-158
+apps/web/src/routeTree.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 22,24,39-40,99-103,109-113,189-198,263,265,278,281,300,302,311,314,336,338,351,354,376,378,391,394,413,415,424,427,448,450,463,466,483,488,563-569,577-583,682-695,873,881,908,916,929,934
+packages/react/src/remote-view.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1,56-57,65-66,120-121,151
+apps/apps-worker/src/supervisor/capabilities.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-114
+packages/app/src/builder/drizzle.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-32
+apps/web/src/routes/(app)/account/security/-two-factor-settings.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1-781
+apps/web/src/routes/(app)/account/organizations.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 10-13,21-22,28-29
+packages/api-platform/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 8,31-35,43,45-46,53,58,62,70
+packages/api-utils/src/app-auth/policy.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-4
+packages/cli/CHANGELOG.md
+  s_96b33066483cc7::t_a49bd45256a53b 3-99
+packages/react/src/__tests__/preview-manager.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-450
+packages/app-agent/agent/tools/create-app.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-119
+packages/ui/src/components/calendar.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 3,6,21,27,31,49,67,83
+apps/apps-worker/src/runtime/context.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-33
+packages/app/src/client/session.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-102
+apps/web/src/routes/auth/error.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1-63
+.changeset/pre/direct-preview-tunnel.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-7
+examples/shared/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2,112-122
+packages/api-platform/src/routes/deployments.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 5-6,10-11,22,28,59,67,124-252,334,417,479,497,527,532-534
+packages/cli/src/generator/types.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,11-12,15-17,50,59,72,116-125,138-143,145-147,158-176,185-187,210-228,230,245-246,522-525,532,546-553,568,583-603
+packages/core/src/server/handler.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,3,16,18-22,27-28,30,37,41,46-47,51-54,59-68,71,80,96,100-101,104-114,116-139,151-157,164-165,167-177,179-190,193-204,207,210-231,233-281,291-292,311-312,329-340
+  s_96b33066483cc7::t_be9ffdd89ceba0 341
+packages/api-platform/src/runtime/access.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-51
+packages/app/src/server.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-35
+apps/web/src/components/sidebar/sidebar-brand.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/db/src/schema/auth.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,3
+packages/sandbox/src/host/index.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3,67,181-246
+  s_96b33066483cc7::t_07b9b7c08d75c4 247
+examples/apps/backend-todo/tailorkit.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-7
+packages/core/src/schema/components.test-d.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/api-utils/src/rate-limiting.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-4,7,9-10,12,14,20,24,29,35-43,50,53-54,56,60
+packages/storage/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-21
+packages/core/src/schema/schema.test-d.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3,28-30,43-45,61,64,74,167-168,170,176,181,188,190,192,194,196,198-200
+packages/app-agent/agent/agent.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+packages/app/src/builder/schema-check.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-91
+packages/ui/src/components/dropdown-menu.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6
+packages/sandbox/src/iframe/backend.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-61
+apps/web/src/components/create-org-dialog.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 3,14-15
+packages/core/src/server/preview.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-353
+packages/api-platform/src/assets.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,9-10,31-53,65-73,95-112
+examples/apps/backend-todo/src/tailorkit.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-330
+packages/app/src/config/config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 12,15,18-23,26-102
+packages/cli/src/generator/templates/src/client.ts.liquid
+  s_96b33066483cc7::t_a49bd45256a53b 1,5,7
+examples/nextjs/components/theme-provider.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 3,6-8
+packages/client-platform/src/client/types.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 7-46,48,51-56,58-60,72-77,112,114-122,125,128,136-141,168,170-179,181-183,186,194-199,226-253,259-264,269,281-286,318-323,328,340-345,376-381,442-447,493-498,506,510-515,517-519,550-586,599-605,618-623,653-670,728-737,741,745,764-765,767,769,772,775,778,783,785-788,792-959
+packages/cli/src/auth.ts
+  s_96b33066483cc7::t_a49bd45256a53b 18-22,25,42,45,48-64,71-75,77,136-143,185,215,217-218,223,237,242,254-266,271,276
+packages/ui/src/components/button.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 8-9
+packages/kv/src/kv.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/api-platform/src/preview-token.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-19
+packages/client-platform/src/client/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 9,20,22-27,44-46,78-97
+packages/core/src/server/backend.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-73
+apps/apps-worker/src/runtime/bundle.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-65
+packages/cli/src/generator/templates/src/views/default.tsx.liquid
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,4,9,11
+packages/cli/src/generator/generate.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,4,7,21-29,57-58,63-65,209-210,214-244,252-254,262-263,266,270,284-291,303-362
+apps/apps-worker/src/runtime/functions.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-73
+apps/apps-worker/tsconfig.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-14
+packages/cli/src/init.ts
+  s_96b33066483cc7::t_a49bd45256a53b 5,8,36,192-200,214
+packages/tailorkit/src/client.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+apps/apps-worker/src/runtime/errors.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-32
+apps/apps-worker/src/runtime/database/migrations.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-52
+packages/client-platform/src/client/core/bodySerializer.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3
+packages/react/src/hooks/use-apps.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3,5-9,22-23,25-30,32-34,38-39,41-44
+packages/db/drizzle.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2,22
+apps/apps-worker/src/supervisor/source.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-105
+apps/docs/content/docs/integrate/(guides)/layouts-and-styles.mdx
+  s_96b33066483cc7::t_a49bd45256a53b 20,23,33,36,46,49,76-77,151,169,179,197,207,225,241-242
+packages/api-platform/src/routes/cli-auth.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-201
+.changeset/pre/automatic-backend-sessions.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-6
+.changeset/pre/orpc-v2-beta.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-8
+apps/web/src/components/account-layout.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 25
+examples/apps/todo/migrations/20261001090332_productive_smiling_tiger/snapshot.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-50
+packages/cli/src/generator/templates/src/functions/greeting.ts.liquid
+  s_96b33066483cc7::t_a49bd45256a53b 1-6
+apps/web/src/components/sidebar/project-sidebar.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 13
+packages/react/src/__tests__/scope-query.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-12
+apps/web/src/lib/auth-client.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2,5-16,19,22,24-26
+apps/web/src/routes/index.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6,19
+.changeset/pre/quiet-preview-reconnects.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+apps/web/src/routes/api/platform.$.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,5,16,32-33
+  s_96b33066483cc7::t_7d20fefdd45dab 34
+examples/apps/todo/src/schema.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-14
+packages/api-platform/src/preview-token.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-54
+packages/client-platform/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-3
+packages/react/src/store.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2,4-5,13-21,35,40,48-64,80,85-89,92-96,99-101,105-106,109,112,114-116,122,125,133,136-137,144,182-183,191-214
+examples/tanstack-start/turbo.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-9
+apps/apps-worker/src/supervisor/actions.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-160
+packages/kv/src/types.ts
+  s_96b33066483cc7::t_a49bd45256a53b 8-22,30,32-56,59-68,70-71
+packages/api-platform/src/runtime/auth.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-50
+apps/web/src/components/not-found.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2,10
+apps/docs/content/docs/integrate/(guides)/components.mdx
+  s_96b33066483cc7::t_a49bd45256a53b 159,161,166,168,193,218-219,237-238,266
+apps/docs/content/docs/integrate/(getting-started)/installation.mdx
+  s_96b33066483cc7::t_a49bd45256a53b 60-61,79,81,116-122,139-140,176-177,201-202,235-236,262-263,280,282,302,308-311,329
+packages/ui/src/components/command.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6,17,187
+packages/core/src/views.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+apps/docs/src/components/home-hero.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2,53,58
+apps/web/src/lib/preferred-locale.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-26
+packages/auth/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 8,30,32-33,36-41,47,49,58-59
+packages/asset-delivery/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,7,19,44-49,52-55,139-234
+packages/client-platform/src/client/client/types.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3-9
+packages/api-platform/src/runtime/auth.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-50
+packages/ui/src/forms/form.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 22,66-69,183-188,197,204
+packages/core/src/server/handler.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,10,13,30,41,57,62-199,207,218,234,243,261,269,274-306,314,321-323,342,356,365,376,383-385,401,416,428,447,453-457,461-489,494,507-521,525,547,555,563,586,594,608,624,632-634,655-658,673-675,683-685,688,692,700-702,718-721,743,746-783
+packages/react/src/scope-query.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-23
+packages/core/src/server/cli-auth-page.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3-4,9,23-29,42,44,48-52,65-66,68,73-74,83,90-94,97,122-123,131-132,137-149,189,222,234,237,247-269,292,301,377-408,693-698
+.changeset/pre/secure-preview-tunnel.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-7
+.codex/environments/environment.toml
+  s_96b33066483cc7::t_a49bd45256a53b 1-6
+packages/cli/src/generator/children.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2
+packages/kv/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,3-8
+packages/ui/src/components/skeleton.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2
+packages/storage/src/storage.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+examples/tanstack-start/src/routes/customers.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+packages/app/src/builder/generate-migrations.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-40
+packages/client-platform/tests/preview.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-91
+.agents/skills/turborepo/references/configuration/tasks.md
+  s_96b33066483cc7::t_a49bd45256a53b 107
+apps/web/src/routes/(auth)/route.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 8-11
+.agents/skills/documentation-writer/SKILL.md
+  s_96b33066483cc7::t_a49bd45256a53b 3,32-35
+apps/apps-worker/src/tests/integration.test.mjs
+  s_96b33066483cc7::t_a49bd45256a53b 1-652
+packages/app/src/builder/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 9-10,22-23,32-33,36-37,44-80,85,89,106,108-144,167-171,173-183,185-194,198-218
+.codex/hooks.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-17
+apps/web/src/lib/auth-client.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-79
+packages/cli/src/generator/templates/src/server.ts.liquid
+  s_96b33066483cc7::t_a49bd45256a53b 1-6
+apps/web/src/components/members/invite-members-dialog.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4,15-18
+packages/api-utils/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 8,37-41,45-47,50,52,56-60
+packages/api-platform/src/scope.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-229
+.github/workflows/release.yml
+  s_96b33066483cc7::t_a49bd45256a53b 24,42,75,116,125-128
+  s_96b33066483cc7::t_3dbdd2277d3242 129
+apps/web/vercel.json
+  s_96b33066483cc7::t_a49bd45256a53b 3-6,8-15,50-57
+  s_96b33066483cc7::t_1e5497f7697738 58
+packages/api-platform/src/routes/cli-auth.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,6,11,57-62,95-100,104,111,115-116,137-142,167-172,181,219-232,234,256,258-271,278-279,283,293,300-305,307,320-329,332,335
+packages/ui/src/components/sidebar.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 7-12
+apps/web/src/lib/safe-return-url.ts
+  s_96b33066483cc7::t_a49bd45256a53b 27-41
+packages/app-agent/agent/skills/tailorkit-apps/references/preact.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-169
+packages/db/src/schema/cli-auth.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2-11,15,34-35,50,68-69,88,97-98,104-105
+packages/react/src/components/root.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4,13,27
+packages/ui/src/components/slider.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+packages/sandbox/src/iframe/runtime.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2
+packages/app/src/database/types.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+packages/sandbox/vite.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3
+apps/web/src/routes/(app)/account/request-organization.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 7-8
+apps/apps-worker/src/supervisor/subscriptions.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-215
+packages/ui/tsconfig.build.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-11
+packages/core/src/schema/views.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,4-8,13-15,26,31,37
+packages/db/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,8-11,15-135
+.zed/settings.json
+  s_96b33066483cc7::t_a49bd45256a53b 19,51-76
+apps/apps-worker/src/worker.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-406
+apps/apps-worker/src/tests/fixtures/todos-priority.sql
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/api-platform/turbo.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-11
+packages/db/src/schema/apps.ts
+  s_96b33066483cc7::t_a49bd45256a53b 5,18,31-32,49,57-58
+AGENTS.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-12
+packages/sandbox/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 3,7,29-30,33,40,43
+packages/api/src/procedures.ts
+  s_96b33066483cc7::t_a49bd45256a53b 4,10,64
+apps/apps-worker/src/supervisor/auth.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-50
+apps/web/src/routes/(app)/account/profile/index.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 11-12,83
+apps/apps-worker/src/runtime/execution.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-188
+packages/app/src/client.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-7
+apps/apps-worker/src/runtime/context.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-113
+packages/core/src/schema/children.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/ui/src/components/card.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6,128,165,240
+packages/api/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 8,30,32,43,52
+packages/api/src/routers/user.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,3-6,14-63,65-66,72-180
+  s_96b33066483cc7::t_1efcf44ce26019 181
+packages/sandbox/src/iframe/resolve-view.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2
+apps/apps-worker/src/runtime/database/driver.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-116
+apps/apps-worker/turbo.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-9
+packages/api-platform/src/preview-build-store.test.mjs
+  s_96b33066483cc7::t_a49bd45256a53b 1-398
+apps/demo/src/routes/embed-panel.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4,68,87,137-141
+packages/cli/src/generator/package-versions.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2-3,9,12-14,37-41,106,112,114-123
+apps/docs/src/components/line-shadow.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4
+apps/apps-worker/src/routing.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-139
+packages/app/src/preact.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-314
+packages/core/src/server/scope.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-301
+examples/apps/email/src/tailorkit.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 19-22,45-77,81-113,115-180,190-222,339,344,349,352,376,381
+apps/web/src/routes/(app)/$orgSlug/~/(org)/settings/index.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2,11-13,45
+examples/apps/backend-todo/migrations/20261001062220_init/snapshot.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-50
+packages/ui/src/components/logo.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1
+.agents/skills/turborepo/references/best-practices/structure.md
+  s_96b33066483cc7::t_a49bd45256a53b 285
+examples/tanstack-start/vite.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/kv/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-22
+packages/react/src/tailorkit.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1-257
+apps/apps-worker/src/supervisor/action-lifetimes.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-81
+packages/db/src/migrations/20260915083215_thankful_crusher_hogan/migration.sql
+  s_96b33066483cc7::t_a49bd45256a53b 1-2
+apps/web/src/components/members/invitations-table.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5-8,15,17
+packages/ui/src/components/collapsible.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+apps/web/src/routes/(app)/$orgSlug/~/(org)/route.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 25
+packages/react/CHANGELOG.md
+  s_96b33066483cc7::t_a49bd45256a53b 3-97
+packages/core/CHANGELOG.md
+  s_96b33066483cc7::t_a49bd45256a53b 3-78
+packages/app-agent/agent/skills/tailorkit-apps/references/platform.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-44
+packages/cli/src/auth.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 7-8,67,72,84-101,116,127,139,154,183-195,206,217,219,224-308
+packages/sandbox/CHANGELOG.md
+  s_96b33066483cc7::t_a49bd45256a53b 3-75
+apps/apps-worker/src/runtime/actions.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-123
+.vite-hooks/pre-commit
+  s_96b33066483cc7::t_a49bd45256a53b 1-51
+packages/api-utils/src/app-auth/deployments.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-41
+packages/api-platform/src/routes/runtime.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-173
+apps/web/src/routes/api/rpc.$.ts
+  s_96b33066483cc7::t_a49bd45256a53b 5,21
+packages/core/src/server/routes/actions.ts
+  s_96b33066483cc7::t_a49bd45256a53b 20
+packages/app/src/client/connection.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-311
+packages/cli/src/generator/templates/src/schema.ts.liquid
+  s_96b33066483cc7::t_a49bd45256a53b 1-3
+packages/react/src/components/context.ts
+  s_96b33066483cc7::t_a49bd45256a53b 4,8,13-16,21-24
+  s_96b33066483cc7::t_39156fa5ba786e 25
+packages/tailorkit/src/server.ts
+  s_96b33066483cc7::t_a49bd45256a53b 11
+packages/email/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3-4,107,168,174
+packages/kv/src/redis.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3-4,13-89,97,99,107-170,211-240,248-259
+packages/db/src/relations.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,5,23-26,41-50,66-69,89,91-96,100-105
+packages/ui/src/styles/globals.css
+  s_96b33066483cc7::t_a49bd45256a53b 151
+packages/app-agent/agent/sandbox/sandbox.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-24
+packages/core/src/server/preview-consent.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-182
+packages/observability/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 7-8
+packages/app/src/preact.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-215
+apps/apps-worker/src/runtime/builder.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-145
+apps/web/vite.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 4-5,7,15,21-22,26-29,32-47,52-70,72-74
+examples/apps/todo/src/server.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-7
+examples/apps/todo/migrations/20261001091516_silky_unus/migration.sql
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/ui/src/components/number-field.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6-7,39-40,50,102
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.$appId.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 8-9,15-17,27,169,177-196
+examples/tanstack-start/src/components/crm-ui.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 19,73
+packages/kv/src/upstash.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,4-5,14-103,109-110,116-121,132-182,223-246,254-265
+packages/sandbox/src/iframe/backend.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-43
+packages/app/src/server/builder.test-d.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-118
+packages/cli/src/generator/types-schema.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-437
+apps/apps-worker/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-3
+examples/apps/backend-todo/LICENSE.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-201
+examples/tanstack-start/src/components/user-menu.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2-3
+packages/core/src/server/router.ts
+  s_96b33066483cc7::t_a49bd45256a53b 6,13
+examples/apps/todo/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 19,21-24,29-31,35-36
+packages/email/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 8,25,30,34,37-38,41,44
+packages/db/src/migrations/20260915083215_thankful_crusher_hogan/snapshot.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-2913
+examples/nextjs/components/customer-screen.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 3
+apps/web/src/components/sidebar/sidebar-back-button.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4
+apps/demo/turbo.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-9
+examples/apps/todo/src/functions/import-todo.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-11
+packages/app-agent/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 1-2
+packages/cli/src/preview-startup.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-151
+packages/db/src/migrations/20260928020750_optimal_carlie_cooper/migration.sql
+  s_96b33066483cc7::t_a49bd45256a53b 1-43
+packages/ui/src/components/avatar.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5,11,26-29,42-45
+apps/apps-worker/src/runtime/database/migrations.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-133
+packages/cli/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/env/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 17-20,24
+packages/api-platform/src/runtime/access.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-18
+packages/ui/vite.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-9
+packages/api-utils/src/dev-delay.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2
+packages/api-platform/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-25
+packages/api-utils/src/app-auth/tokens.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-168
+packages/app/src/slots.test-d.ts
+  s_96b33066483cc7::t_a49bd45256a53b 26-45
+apps/web/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-11
+vite.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-11
+examples/tanstack-start/src/lib/tailorkit.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,3-4,7-9,11,15
+packages/client-platform/scripts/restore-openapi-params.mjs
+  s_96b33066483cc7::t_a49bd45256a53b 1-34
+examples/tanstack-start/src/components/customer-table.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 12,38-41
+packages/core/src/schema/views.test-d.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,7
+.changeset/pre/typed-preview-tunnel.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-6
+examples/nextjs/components/crm-ui.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 20,78
+packages/tailorkit/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 3,7,50-53,60
+examples/nextjs/components/customer-table.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 13,43-46
+examples/apps/backend-todo/src/functions/todos.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-32
+packages/api-platform/src/preview-lifecycle.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-53
+packages/api-platform/src/procedures.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,4,8-9,11-13,15-43,50-66,73-77
+packages/client-platform/src/client/client/utils.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3-5,10-12
+packages/asset-delivery/src/logo-validation.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/kv/src/preview-presence.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-117
+packages/react/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 3,7,26,31-32,41,45
+apps/web/src/components/members/members-table.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5-8,14,16
+packages/api-platform/src/assets.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2,4-7,9,11,13-22,24,27-34,36,40-43,45-50,52-64
+packages/ui/src/components/table.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1-6,10-14,18,20-22,31-41
+packages/api-platform/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 1
+apps/web/src/routes/(app)/$orgSlug/route.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 12,23
+packages/app-agent/LICENSE.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-87
+apps/apps-worker/src/supervisor/websockets.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-107
+packages/api/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 1
+apps/docs/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 22-25,31-32,34,36,43-46,50,73-74
+apps/apps-worker/src/publication.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-24
+apps/web/src/routes/(auth)/sign-up.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4,13-15,18,23-25,53,58-59,108-111,118-119,123-126,129-130,134,162-205,271
+packages/api-platform/src/routes/preview-grants.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-186
+examples/apps/backend-todo/migrations/20261001062220_init/migration.sql
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+packages/cli/vite.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,24
+packages/db/src/schema/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2,6
+packages/api-platform/src/asset-url.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,8,10,34-35,43,46-47,51,65,86,107
+apps/demo/src/routes/index.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 18
+packages/app/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 3,7,30-41,49-50,53-56,58,66,69-70
+packages/app/src/config/loader.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-50
+apps/demo/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 7,17-19,25,42,46-47
+examples/nextjs/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-14
+packages/auth/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 4-5,12-13,15-16,20,24,26,32-75,92-119,124,130-132,147,153-157,168-176,178-182,184-192,271,285-289
+packages/env/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-189
+apps/apps-worker/src/runtime/bundle.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-47
+packages/core/src/spec/json-schema.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3,20-26
+packages/asset-delivery/src/index.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,16,26,36,41,101-118
+  s_96b33066483cc7::t_fe052468a62ebc 119
+packages/app-agent/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-29
+packages/app/src/client/reference.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-38
+apps/web/src/components/sidebar/sidebar-user-menu.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 12-13,22-25,150
+packages/api-platform/src/routes/preview.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-514
+packages/app/src/errors.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-46
+apps/apps-worker/LICENSE.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-87
+apps/web/src/routes/(app)/$orgSlug/~/(org)/projects.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 7,15,26-27,37,221
+packages/api-platform/scripts/generate-openapi.ts
+  s_96b33066483cc7::t_a49bd45256a53b 4-5,8,11,17-22
+packages/ui/src/components/tabs.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4-10,12-15,29,34,43,47,51,57,65-74,78-80,83,100-106
+packages/app-agent/agent/lib/package-policy.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+packages/app-agent/agent/skills/tailorkit-apps/references/layout.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-91
+packages/ui/src/components/toolbar.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+packages/core/src/server/routes/deployments.ts
+  s_96b33066483cc7::t_a49bd45256a53b 9,24-25,72-77,85,87,98,102,110-114,120,124,139
+packages/api-platform/src/team-auth.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2
+packages/auth/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-52
+packages/client-platform/src/preview.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-142
+apps/docs/content/docs/integrate/(guides)/deploying-to-production.mdx
+  s_96b33066483cc7::t_a49bd45256a53b 23-27,111-115,175
+examples/apps/todo/src/tailorkit.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 9-10,12,20,22-25,48-80,84-116,118-183,193-225,343,348,353,356,380,385,391,396
+packages/app/src/protocol.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-44
+apps/apps-worker/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 1-2
+apps/apps-worker/src/transport.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-141
+apps/apps-worker/wrangler.jsonc
+  s_96b33066483cc7::t_a49bd45256a53b 1-81
+examples/nextjs/components/tailorkit-shell.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 7,10-11,14
+examples/apps/backend-todo/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-26
+packages/cli/src/generator/templates/logo-light.svg.liquid
+  s_96b33066483cc7::t_a49bd45256a53b 1-4
+packages/env/README.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-32
+packages/react/src/preview-manager.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-270
+packages/ui/src/components/field.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5,55,57
+packages/ui/src/components/toggle-group.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 7-10,26-34,43
+.worktreeinclude
+  s_96b33066483cc7::t_a49bd45256a53b 1-4
+apps/web/turbo.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-9
+packages/kv/src/preview-presence.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-108
+apps/web/src/routes/(app)/account/invites.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 8-9,18-20,25
+examples/apps/email/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 20-23
+packages/api-platform/src/team-identity.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3
+packages/ui/src/components/alert.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4
+packages/ui/src/components/combobox.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6-8,21-22,45,203,225,292,299,335,350,403-404
+  s_96b33066483cc7::t_f0424002afb9da 405
+packages/react/vitest.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+.changeset/pre/write-init-config-app-id.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+.changeset/pre/document-config-defaults.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-6
+examples/apps/backend-todo/tsconfig.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-19
+oxlint.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 9-16,79-86
+packages/cli/src/generator/templates/logo-dark.svg.liquid
+  s_96b33066483cc7::t_a49bd45256a53b 1-4
+packages/ui/src/components/breadcrumb.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 7
+.changeset/pre/bright-contexts.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-6
+apps/docs/content/docs/apps/(writing-apps)/writing-apps.mdx
+  s_96b33066483cc7::t_a49bd45256a53b 112,114-116,119-120,122-128,131-136,144
+packages/client-platform/src/client/core/params.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 123
+packages/api-platform/src/routes/apps.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3-4,9,11,16-26,29-32,40-46,48,54-55,92,140-174,184,196,204,209,225,275,281-325,327-331,341,352,360-610
+packages/ui/src/components/accordion.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6
+apps/web/src/lib/safe-return-url.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/ui/src/components/checkbox-group.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+packages/app/src/builder/migrations.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-41
+packages/email/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-35
+packages/ui/src/components/sheet.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 8-10,210
+.changeset/pre/quiet-views-render-ready.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+packages/app/src/config/loader.ts
+  s_96b33066483cc7::t_a49bd45256a53b 29-33
+packages/ui/src/components/textarea.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6,26,43
+examples/tanstack-start/src/lib/tailorkit-client.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4-7,35,37
+packages/core/src/schema/actions.test-d.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+apps/web/src/components/sidebar-layout-header.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1-2
+  s_96b33066483cc7::t_3fc9dcfbdb1975 3
+examples/apps/todo/README.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-17
+packages/app/README.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-184
+packages/cli/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 3,7,25,27,30,32,35,38,45
+packages/cli/src/generator/types.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-4,10-103,106-156,489-491
+packages/ui/src/components/badge.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 8
+packages/ui/src/components/meter.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+packages/app/src/builder/migrations.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-43
+apps/web/src/lib/orpc.ts
+  s_96b33066483cc7::t_a49bd45256a53b 10,30-31
+packages/auth/src/lib/captcha-endpoints.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-14
+SECURITY.md
+  s_96b33066483cc7::t_a49bd45256a53b 8
+packages/app-agent/agent/channels/eve.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-7
+packages/core/src/schema/schema.ts
+  s_96b33066483cc7::t_a49bd45256a53b 13,23,42,48,54,57,60-61,64,71,74,80-81,137,188
+examples/nextjs/lib/tailorkit.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,3-4,7-9,11,15
+examples/nextjs/turbo.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-9
+packages/db/src/schema/scope.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-197
+apps/apps-worker/src/supervisor/subscriptions.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-6,8-256
+  s_96b33066483cc7::t_8cdd43f129e42a 7
+packages/db/src/migrations/20260923094646_worthless_rhino/migration.sql
+  s_96b33066483cc7::t_a49bd45256a53b 1-6
+packages/app/src/builder/upload-manifest.ts
+  s_96b33066483cc7::t_a49bd45256a53b 5-6,11,15,27,31-32
+packages/react/src/hooks/use-view.ts
+  s_96b33066483cc7::t_a49bd45256a53b 7-8,11-13,37,45,52-54,56-62
+packages/ui/src/components/alert-dialog.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+apps/apps-worker/src/supervisor/runtime.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-75
+packages/react/src/components/app-view.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,10,22-25,51-74,96-100,111-116,136
+turbo.json
+  s_96b33066483cc7::t_a49bd45256a53b 4-6,10-18
+packages/kv/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 8,30-32,36-37,42
+packages/api-platform/src/context.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,15-16,37-38,40-46,74
+packages/client-platform/src/client/client/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3-4,9-14,26-27
+packages/app/src/builder/schema-check.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-54
+apps/web/src/routes/(app)/onboarding.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6
+packages/ui/src/components/input-group.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6-10,13,36,38,40,44-47,65-69,97
+packages/ui/src/components/checkbox.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+apps/web/src/routes/(app)/$orgSlug/~/(org)/settings/members.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4-6,20,24
+packages/api/src/routers/apps.ts
+  s_96b33066483cc7::t_a49bd45256a53b 64,123-126,128,137-138,173-174,177
+packages/ui/src/components/kbd.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2,8
+packages/client-platform/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/api-utils/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-16
+packages/core/src/spec/json-schema.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-27
+apps/web/src/routes/(app)/account/security/index.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1-829
+packages/app-agent/agent/instructions.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-60
+apps/apps-worker/src/supervisor/source.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-118
+packages/api-platform/src/preview-ws-auth.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-40
+examples/apps/notes/src/tailorkit.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 19-22,45-77,81-113,115-180,190-222,340,345,350,353,377,382,388,393
+packages/cli/src/deploy.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2,5,14,26,49,170-200,243,245,247-248,250-258,260-290,293-295,297-298,302-303,309-314,326,352-354,421-429,461-463,465,494-503,516
+packages/client-platform/src/client/core/utils.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3,9
+packages/ui/src/components/toast.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 12-13,25-32,87,122-123,135,141,151,159-163,185-186,196,209,219,229,237-244
+packages/ui/src/components/drawer.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 12-14,90,111,128-130,156,159,161,163,165,327,398,473,503-506,518,520,523,543,577-578,602
+packages/cli/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 10,34-62,65-80,94,100,143,165-173,271,273-274,277-286
+packages/core/src/server/scope.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-189
+packages/core/src/schema/callbacks.test-d.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/app-agent/turbo.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-8
+apps/apps-worker/src/runtime/cancellation.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-42
+apps/docs/src/components/navbar-auth.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 3
+examples/apps/backend-todo/src/server.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-7
+apps/web/src/lib/deployment-headers.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-4
+packages/auth/README.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-28
+packages/db/src/migrations/20260923094646_worthless_rhino/snapshot.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-3496
+packages/ui/src/components/separator.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 3
+apps/apps-worker/README.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-127
+packages/core/src/primitives/primitives.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3
+.agents/skills/turborepo/references/configuration/RULE.md
+  s_96b33066483cc7::t_a49bd45256a53b 231-233
+apps/apps-worker/src/installation.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-241
+apps/apps-worker/src/supervisor/auth.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-77
+apps/demo/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-7
+packages/storage/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 8,30,36-37,40-41
+packages/ui/src/components/tooltip.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+packages/ui/src/components/scroll-area.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5,12-14,19-21,27-29,36-42
+packages/api-utils/src/app-auth.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-3
+.github/workflows/db-migrate.yml
+  s_96b33066483cc7::t_a49bd45256a53b 30
+apps/apps-worker/scripts/build-bootstrap.mjs
+  s_96b33066483cc7::t_a49bd45256a53b 1-19
+examples/tanstack-start/src/components/tailorkit-shell.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2-3,7,10
+apps/apps-worker/src/runtime/actions.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-220
+packages/app/src/server/functions.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-110
+packages/client-platform/scripts/normalize-esm-imports.mjs
+  s_96b33066483cc7::t_a49bd45256a53b 1-42
+packages/client-platform/src/client/core/serverSentEvents.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3
+packages/cli/src/generator/templates/tailorkit.config.ts.liquid
+  s_96b33066483cc7::t_a49bd45256a53b 5-7
+packages/core/src/server/context.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3-4,8,17,30,49
+packages/core/src/server/preview-transport.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-67
+apps/web/src/components/google-icon.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1-32
+apps/demo/src/lib/tailorkit.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 7-8,15-16,24-27,132,157-158
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4,21-24,32-38,43,47,68,94,156-170
+packages/app/src/views.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-222
+examples/apps/backend-todo/src/client.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-9
+packages/db/AGENTS.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-6
+packages/db/src/migrations/20260915014045_short_nova/snapshot.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-2954
+packages/sandbox/src/host/store.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/core/src/schema/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 36
+packages/ui/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+.changeset/pre/skip-generated-dependency-checks.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+packages/cli/src/init.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-77
+apps/web/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 61
+examples/nextjs/components/user-menu.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5-6
+packages/app-agent/test/create-app.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-100
+examples/tanstack-start/src/routes/api/tailorkit.$.ts
+  s_96b33066483cc7::t_a49bd45256a53b 16
+apps/apps-worker/src/runtime/functions.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-61
+packages/ui/components.json
+  s_96b33066483cc7::t_a49bd45256a53b 17-21
+packages/client-platform/src/client/client.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3-10
+packages/app/src/server/functions.test-d.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-71
+packages/core/src/server/types.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-3,12,25-27,29-30,33-34,51-59,79,84-85,92,98-99,104-134,137,139,141-143,145-146,151,155,157,160-163,167,170,174,190
+examples/nextjs/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 6-15,20-23,30,33,37-38
+packages/app/src/client/connection.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-291
+packages/core/src/server/client.ts
+  s_96b33066483cc7::t_a49bd45256a53b 14,16,22,31,34
+scripts/check-prerelease.mjs
+  s_96b33066483cc7::t_a49bd45256a53b 14-15,34-38
+  s_96b33066483cc7::t_dbbb77ccd46930 39
+.changeset/pre/kv-backed-preview.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-9
+apps/web/src/routes/(auth)/two-factor.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1-298
+packages/client-platform/test/params.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+apps/docs/content/docs/apps/(getting-started)/quickstart.mdx
+  s_96b33066483cc7::t_a49bd45256a53b 75-89,92,95,98-102
+packages/react/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 1
+apps/web/src/routes/(auth)/forgot-password.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5-6,15-19,195,347
+packages/ui/src/components/dialog.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 8-10,194
+packages/ui/src/hooks/use-media-query.ts
+  s_96b33066483cc7::t_a49bd45256a53b 29,32,35
+examples/apps/todo/migrations/20261001091516_silky_unus/snapshot.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-60
+packages/core/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 3,7,59,63,67,72,76
+package.json
+  s_96b33066483cc7::t_a49bd45256a53b 6,23-26,37-39,41-43,45
+packages/core/src/schema/slots.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,4,10,34
+packages/core/src/server/backend.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-98
+packages/app/turbo.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-9
+packages/ui/src/lib/segmented-control.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-38
+packages/react/src/__tests__/primitives.test.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 3
+apps/docs/content/docs/integrate/(guides)/actions.mdx
+  s_96b33066483cc7::t_a49bd45256a53b 44,123,133-137,212,216,268
+.github/workflows/ci.yml
+  s_96b33066483cc7::t_a49bd45256a53b 26-28,34,43-48,63-66,69,72,81-86,93-95,101,110-114
+  s_96b33066483cc7::t_687155497120e4 115
+examples/apps/todo/src/client.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,5
+apps/web/src/components/nav-breadcrumb.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 9,21
+packages/api-platform/src/routes/apps.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-2,9,12,14,37-43,46-47,50-58,89-94,98,102-104,110-115,118,123,131-132,149-154,158,162,170-175,178,183,208-213,216,221,254-276,286-287
+packages/db/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 8,30,32,49
+packages/cli/src/deploy.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-317
+packages/ui/src/components/frame.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2
+packages/app/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-2
+apps/web/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 7,18-21,25-26,30,34,37-38,45,48,50,53,55-56,60,68,73-74,77
+packages/observability/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 8,25,27,35,37-38,43
+apps/apps-worker/src/assets.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-94
+packages/cli/src/generator/generate.ts
+  s_96b33066483cc7::t_a49bd45256a53b 5-6,17-21,29,33-34,40,70,77-94,109-111,123-125,129,135-136,142-144,155-157
+apps/apps-worker/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-35
+packages/cli/src/utils/open-browser.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 4
+examples/apps/backend-todo/src/views/default.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1-58
+packages/sandbox/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 1
+examples/tanstack-start/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 7,17-23,31,49-50
+packages/client-platform/src/client/core/types.gen.ts
+  s_96b33066483cc7::t_a49bd45256a53b 3-8
+.changeset/pre/friendly-deploy-login.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+README.md
+  s_96b33066483cc7::t_a49bd45256a53b 41
+apps/web/src/components/sidebar/org-switcher.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2-3,13-14
+apps/apps-worker/.dev.vars.example
+  s_96b33066483cc7::t_a49bd45256a53b 1-3
+packages/db/src/migrations/20260928020750_optimal_carlie_cooper/snapshot.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-3576
+examples/apps/notes/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 20-23,33-34
+packages/ui/src/components/empty.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 4
+examples/apps/todo/tailorkit.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 4-5,7
+packages/client-platform/CHANGELOG.md
+  s_96b33066483cc7::t_a49bd45256a53b 3-58
+packages/client-platform/package.json
+  s_96b33066483cc7::t_a49bd45256a53b 3,7,26-29,37,39-43,46,51
+packages/ui/src/components/preview-card.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+.changeset/pre/pluggable-app-storage.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-19
+packages/auth/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 35-37
+examples/nextjs/lib/tailorkit-client.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5-8,37,39
+.changeset/pre/friendly-init-logos.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+packages/app/src/client/session.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-62
+packages/db/src/schema/preview-session.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-79
+packages/ui/src/components/otp-field.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5-6,50-60
+apps/apps-worker/src/assets.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-205
+examples/tanstack-start/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-14
+packages/db/src/migrations/20260915085530_lonely_tiger_shark/migration.sql
+  s_96b33066483cc7::t_a49bd45256a53b 1-17
+packages/api-platform/src/preview-build-store.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-429
+.changeset/pre/calm-clients-bind-react.md
+  s_96b33066483cc7::t_a49bd45256a53b 1-7
+packages/api-platform/src/preview-ws.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-251
+apps/web/src/components/apps/app-logo.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2-3
+examples/nextjs/app/api/tailorkit/[[...path]]/route.ts
+  s_96b33066483cc7::t_a49bd45256a53b 15
+packages/ui/src/components/group.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 8-9,12,37,39,43-45,49
+apps/docs/src/components/platform-features.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 1,109,133
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/route.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 2,10
+apps/web/src/routes/(app)/$orgSlug/$projectSlug/apps.index.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 9-14,51,66,127-128,130-139,229-232
+packages/api-platform/openapi.json
+  s_96b33066483cc7::t_a49bd45256a53b 11-15,17-18,21-34,37-57,59,61-64,67-189,205-206,214-215,217-237,258-259,283-284,292-293,296-297,303-304,315-316,327-328,336,339,364-365,387-388,395,402-403,423-424,427-428,434-436,438-448,456-477,479-481,484,499-500,508-509,511-531,552-553,577-578,586-587,590-591,597-598,609-610,621-622,630,633,658-659,681-682,689,696-697,705-804,821-822,846-847,855-856,859-860,866-867,878-879,890-891,899,902,927-928,950-951,958,965-966,972-974,981,987-1021,1032-1033,1036-1037,1050,1077-1098,1101,1116-1117,1125-1126,1128-1148,1169-1170,1194-1195,1203-1204,1207-1208,1214-1215,1226-1227,1238-1239,1247,1250,1275-1276,1298-1299,1306,1313-1314,1329,1344-1365,1368,1383-1384,1392-1393,1395-1415,1436-1437,1461-1462,1470-1471,1474-1475,1481-1482,1493-1494,1505-1506,1514,1517,1542-1543,1565-1566,1573,1580-1581,1599-1619,1626,1643-1644,1684-1685,1719,1724,1728-1729,1735,1739-1740,1748-1768,1771,1775-1776,1782,1786-1787,1805-1806,1831-1832,1868-1888,1891-1892,1900-1901,1903-1955,1957,1973-1974,1982-1983,1986-1987,1993-1994,2005-2006,2017-2018,2026,2029,2054-2055,2075-2076,2079-2080,2086-2241,2270,2274,2278,2290-2325,2344-2345,2363-2364,2371-2391,2394,2417-2418,2422-2423,2431,2437,2442-2443,2467-2468,2492-2493,2509-2510,2513,2516-2622,2630-2631,2634-2635,2641-2642,2653-2654,2665-2666,2674,2677,2702-2703,2716-2717,2721-2722,2730-2731,2736-2737,2761-2762,2786-2787,2803-2804,2814-2815,2819-2820,2828-2829,2834-2835,2859-2860,2884-2885,2901-2902,2904-2905,2908-2909,2918-2919,2924,2930-2968,2979-2980,2988-2989,2992-2993,2999-3000,3011-3012,3023-3024,3032,3035,3060-3061,3067-3069,3071,3076,3088,3101,3103-3104,3108-3109,3111-3114,3116,3118-3119,3121,3123-3128,3132,3134-3679
+packages/cli/src/generator/templates/tsconfig.json.liquid
+  s_96b33066483cc7::t_a49bd45256a53b 12
+apps/web/public/brand/mark-qr.svg
+  s_96b33066483cc7::t_a49bd45256a53b 1-5
+packages/api-utils/src/app-auth/tokens.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-209
+packages/db/src/migrations/20260915085530_lonely_tiger_shark/snapshot.json
+  s_96b33066483cc7::t_a49bd45256a53b 1-3125
+packages/core/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 1
+apps/apps-worker/src/tests/fixtures/todos-required.sql
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/api-platform/vitest.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1,14
+packages/app/src/database/schema.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-41
+packages/core/src/server/procedures.ts
+  s_96b33066483cc7::t_a49bd45256a53b 4-5,17-31,34-44,57,65,69-79
+packages/observability/.gitignore
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/ui/src/components/popover.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+apps/docs/content/docs/integrate/(guides)/views.mdx
+  s_96b33066483cc7::t_a49bd45256a53b 17-19,22,24-27,38-72,75,82-93,95-121,124-132,135-136,153-156,163,218,250-252,266-268
+packages/ui/src/components/switch.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 5
+apps/web/src/routes/api/platform.preview.ws.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-108
+packages/app/CHANGELOG.md
+  s_96b33066483cc7::t_a49bd45256a53b 3-63
+packages/db/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-10
+packages/cli/src/generator/templates/package.json.liquid
+  s_96b33066483cc7::t_a49bd45256a53b 10,22-23,26-27
+packages/app/tsup.config.ts
+  s_96b33066483cc7::t_a49bd45256a53b 17-19
+packages/app/src/builder/server.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-119
+packages/client-platform/src/client.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1
+packages/observability/src/env.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-17
+apps/apps-worker/src/runtime/execution.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-363
+packages/react/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 2-8,10-11
+packages/tailorkit/src/index.ts
+  s_96b33066483cc7::t_a49bd45256a53b 8
+.agents/skills/turborepo/references/cli/commands.md
+  s_96b33066483cc7::t_a49bd45256a53b 225
+packages/api/src/routers/user.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 4,8-9,36,72
+examples/apps/todo/src/functions/todos.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-42
+packages/auth/src/captcha.test.ts
+  s_96b33066483cc7::t_a49bd45256a53b 1-98
+packages/db/src/migrations/20260921234115_add_preview_sessions/migration.sql
+  s_96b33066483cc7::t_a49bd45256a53b 1-23
+packages/ui/src/components/menu.tsx
+  s_96b33066483cc7::t_a49bd45256a53b 6,97-115
+  s_96b33066483cc7::t_036deaa4c8ba0e 116-121
+packages/db/src/schema/auth.generated.ts
+  s_96b33066483cc7::t_8624691673903f 1-320
+pnpm-lock.yaml
+  s_96b33066483cc7::t_465f67168281c5 10-11,15-16,20-21,25-26,30-31,35-36,40-41,46-47,52-53,58-59,64-65,70-71,76-77,82-83,87-88,92-93,99,102,105,108,111,114,117,120,123,126,129,132,135,138,141,143-156,183-187,189-196,198-202,204-205,210-211,213-214,216-217,234-235,240-244,248-250,252-253,267-268,273-274,278-280,282-283,286-287,294-295,297-298,300-301,306-307,309-310,312-313,315,317-337,341-349,351-353,357-360,362-365,367-368,375-377,383,386,388-389,392,410,414,422-423,426,432-435,437-438,446-447,449-450,455-456,462,465,468,470-471,482-483,485-486,488-489,491-492,498,503-504,531,534,538,547,556,568-571,579-583,586,589,592,594-595,605-607,614-619,631,637,639-640,643,648-649,652,654-655,657-658,663-664,667-673,676,679,683-685,697,703-704,707,716-722,728-754,756-759,790-791,793-794,804-809,814-819,829-831,837,839-840,853-855,862,889,896,909-911,917,920,922-923,926,941,945,954,960-963,969,972,992-993,996,1002,1012,1021,1024,1027,1031-1033,1046-1048,1057-1060,1063,1073,1076,1083-1085,1088-1091,1102-1103,1105-1115,1122,1129-1140,1144-1146,1149,1152,1162-1165,1171,1175-1177,1179-1189,1196,1200-1213,1215,1220-1224,1226-1227,1229-1236,1253-1254,1257-1260,1272,1279-1282,1290-1291,1295-1297,1304-1306,1313-1315,1318,1325,1329,1331,1334-1340,1343-1344,1353,1356,1365,1371-1374,1377,1385-1386,1393,1395-1396,1399,1402,1417,1420,1426,1433,1439,1447-1448,1459-1460,1468-1472,1475-1476,1482,1484-1485,1497,1500,1507,1520-1522,1529,1531-1532,1557,1559,1566-1568,1575,1588-1593,1609,1614-1615,1624,1631-1633,1639,1646,1648-1649,1655-1656,1658,1668-1670,1673-1674,1676-1677,1683,1704,1710,1717,1720,1730-1732,1739-1741,1744,1748-1750,1756,1778,1785-1790,1800-1801,1806-1807,1812-1813,1826-1828,1832-1836,1839-1840,1843-1844,1847-1848,1851-1852,1855-1856,1859-1860,1863-1864,1867-1868,1871-1872,1875-1876,1883-1888,1891-1892,1895-1896,1899-1900,1903-1904,1907-1908,1911-1912,2029-2052,2059-2064,2118-2119,2121,2123,2126-2127,2130,2140-2141,2143,2150-2151,2153,2173-2174,2176,2183-2184,2186,2189-2190,2192,2199-2210,2212,2222-2223,2225,2227,2238-2239,2241-2242,2247-2248,2259-2260,2264-2265,2311-2313,2317-2319,2323-2325,2329-2331,2335-2339,2342-2343,2350-2351,2359-2366,2371-2378,2383-2390,2395-2402,2407-2414,2419-2423,2431-2440,2463-2465,3121-3122,3129-3130,3132-3140,3143-3144,3147-3148,3152-3153,3156-3157,3336-3338,3368-3380,3414-3417,3444-3448,3456-3463,3474-3481,3493-3501,3514-3522,3535-3543,3556-3564,3576-3583,3594-3601,3642-3649,3733-3734,3736-3737,3739-3740,3742,3744-3745,3747-3748,3750-3751,3753-3755,3757,3759-3761,3764-3765,3768-3774,3776-3778,3781-3782,3784,3787-3788,3792-3793,3795-3796,3800-3801,3803,3932-3933,3942-4068,4073-4074,4079-4080,4085-4086,4091-4092,4097-4098,4103-4104,4109-4110,4115-4116,4121-4122,4127-4128,4133-4134,4139-4140,4145-4146,4151-4152,4158-4159,4165-4166,4172-4173,4179-4180,4186-4187,4193-4194,4200-4201,4207-4208,4214-4215,4221-4222,4228-4229,4235-4236,4242-4243,4249-4250,4256-4257,4263-4264,4269-4270,4275-4276,4281-4282,4287-4288,4293-4294,4299-4300,4305-4306,4311-4312,4316-4317,4321-4322,4326-4327,4331-4332,4336-4337,4341-4342,4347-4348,4353-4354,4359-4360,4365-4366,4371-4372,4377-4378,4383-4384,4389-4390,4395-4396,4401-4402,4407-4408,4413-4414,4419-4420,4425-4426,4432-4433,4439-4440,4446-4447,4453-4454,4460-4461,4467-4468,4474-4475,4481-4482,4488-4489,4495-4496,4502-4503,4509-4510,4516-4517,4523-4524,4530-4531,4537-4538,4543-4544,4549-4550,4555-4556,4561-4562,4567-4568,4573-4574,4579-4580,4589-4590,4598-4650,5031-5032,5034-5035,5039-5040,5167-5168,5172-5173,5177-5178,5182-5183,5187-5188,5192-5193,5197-5198,5203-5204,5209-5210,5215-5216,5221-5222,5227-5228,5233-5234,5239-5240,5245-5246,5251-5252,5257-5258,5263-5264,5269-5270,5275-5276,5280-5281,5285-5286,5290-5291,5295-5296,5300-5301,5342-5348,5357-5358,5377-5378,5394-5418,5434-5448,5460-5461,5463-5467,5469,5471,5474-5488,5699-5700,5714-5715,5718-5721,5726-5732,5734-5735,5737-5738,5760-5761,5763-5764,5767-5768,5772-5773,5776-5777,5784-5785,5790,5794-5795,5801-5802,5808-5809,5825-5826,5832-5833,5849-5850,5861-5862,5865-5866,5869,5875-5876,5879-5880,5884,5900-5901,5905,5911-5912,5919-5920,5931-5932,5935-5936,5939-5940,5978-5979,5983-5984,5988-5989,5993-5994,5998-5999,6003-6004,6146-6150,6184-6185,6317-6318,6320,6325-6329,6335-6336,6351-6352,6383-6384,6386,6388-6389,6391,6393-6394,6404-6405,6407-6408,6410-6411,6413-6416,6418-6419,6421-6422,6427,6478-6479,6484-6485,6490-6491,6497-6498,6504-6505,6511-6512,6518-6519,6524-6525,6537-6538,6541,6543-6544,6547,6549-6550,6553,6555-6556,6559,6561-6562,6566,6568-6569,6573,6575-6576,6580,6582-6583,6587,6589-6590,6594,6596-6597,6601,6603-6604,6607,6609-6610,6613,6619,6625,6631,6637,6644,6651,6658,6665,6672,6679,6685,6691,6697,6703,6709,6715,6722,6729,6736,6743,6750,6757,6763,6769-6772,6795-6796,6861-6863,6870-6876,6896-6900,6930-6931,6936,6949,7004-7014,7057-7073,7123-7126,7172-7181,7277-7284,7308-7312,7620-7624,7752-7754,7767-7768,7919-7944,8019-8021,8044-8046,8057-8058,8081-8082,8143-8144,8180-8181,8203-8204,8208,8320-8321,8418-8419,8586-8589,8810-8813,8862-8863,8874-8875,8877-8878,8983-8984,9108-9109,9129-9130,9132-9133,9135-9136,9205-9227,9259-9260,9336-9337,9356-9361,9373-9374,9386-9387,9390-9391,9403-9404,9408,9660-9671,9709-9711,9784-9786,9820-9822,9865-9866,10085-10100,10151-10152,10215-10218,10257-10260,10277-10280,10321-10322,10351-10361,10387-10388,10393-10394,10417-10419,10428-10431,10561-10562,10580-10582,10585-10586,10593-10594,10596,10598,10601-10602,10609-10610,10612-10614,10675-10678,10680-10681,10685-10686,10690,10726-10737,10765-10766,10784-10788,10814-10815,10822,10824-10825,10827,10829,10831,10836,10838,10852-10859,10861,10863,10865-10868,10871,10873-10879,10882,10885,10887-10891,10894,10897,10899-10900,10902,10904,10908,10910-10913,10916,10918-10920,10923,10926-10937,10939,10942,10944-10948,10951,10953-10960,10962,10965,10967-10970,10973,10975-10980,10985-10999,11002,11004-11008,11011,11013-11016,11019,11022,11024-11028,11031,11033,11035,11038,11040-11044,11047,11049,11052,11054,11204-11232,11244-11255,11280,11329-11331,11333-11335,11337,11340,11343,11347,11351,11353,11356-11369,11371,11373,11375,11378-11379,11382,11384,11386,11391,11393,11396,11398,11401,11403-11427,11430,11432,11434,11448,11450,11454,11456,11477,11479,11482,11491,11501,11532,11564-11568,11574-11577,11580-11581,11584-11585,11588-11590,11595,11597,11604,11608-11623,11625,11628,11631,11634,11637,11640-11644,11651-11657,11699-11700,12041,12045-12047,12049-12053,12056,12060,12064,12066,12068-12072,12079,12081-12083,12086-12087,12091,12215-12218,12251-12274,12290,12348-12352,12372-12375,12380-12383,12389-12392,12398-12401,12407-12410,12416-12419,12425-12428,12434-12437,12443-12446,12482-12488,12490-12491,12539,12586,12588-12591,12593,12595-12596,12599,12601-12606,12611,12613-12617,12622,12624-12629,12631-12632,12634,12636-12657,12662,12666-12672,12674,12676,12679-12690,12692,12694-12707,12709,12711-12713,12715,12717-12721,12723-12727,12729,12731-12733,12803,12809-12868,12871,12874,12877,12880,12883,12886,12889,12892,12895,12898,12901,12904,12907,12910,12913,12916,12919,12922,12925,12928,12931,12934,12937,12940,12943,12946,12949,12952,12955,12958,12961,12964,12967,12970,12973,12976,12979,12982,12985,12988,12991,12994,12997,13000,13003,13006,13009,13012,13015,13018,13021,13024,13027,13030,13033,13036,13039,13042,13045,13048,13051,13054,13057,13060,13063,13066,13069,13072,13075,13078,13081,13084,13087,13090,13093,13096,13099,13102,13105,13108,13111,13116,13118,13123-13223,13601,13604-13605,13617,13619,13622,13669-13679,13686-13687,13691,13697,13699,13702,13705,13708,13711,13714,13717,13720,13723,13726,13729,13732,13735,13738,13741,13744,13747,13750,13753,13756,13759,13762,13765,13768,13771,13821-13833,13838,13840,13845-13846,13851-13852,13857-13858,13863-13864,13867,13885-13911,13930-13943,13952-13985,14059,14064-14071,14109,14150,14156,14163,14185,14203-14207,14211-14214,14216-14232,14234,14236,14259-14269,14272,14275,14279,14281-14283,14285-14286,14288,14290,14293,14295-14296,14300,14304,14306-14309,14315,14317-14319,14324-14332,14334-14341,14344-14356,14358,14360-14361,14363,14365-14366,14384,14386-14387,14389,14391-14392,14410,14412-14414,14420,14422-14424,14430-14459,14461-14464,14466-14468,14473,14488,14490-14493,14495-14497,14502,14517,14519,14526,14532,14534,14539,14541,14547,14550,14556-14573,14575-14580,14582,14584,14589-14590,14593-14594,14596-14597,14608,14610-14611,14626,14628,14630,14635,14641-14643,14645,14655,14657,14659,14674,14680-14682,14684,14694,14696,14698,14713,14715-14759,14764,14766-14769,14776,14778,14780,14784,14819,14822,14825,14828,14831,14834,14851,15001,15003,15005-15009,15013,15017,15023,15046,15048,15119,15121,15124,15129-15133,15135,15144,15146,15153,15155,15169,15172,15174,15176,15178-15187,15191-15192,15199,15201-15241,15245-15246,15253,15255-15297,15299-15305,15307,15309-15310,15312,15314,15316,15319,15321,15323,15325,15327-15332,15334,15336-15341,15343,15345-15351,15354,15356-15364,15366,15368,15372,15374-15375,15382-15439,15445-15470,15472,15475,15478,15481,15484,15487,15490,15493,15500,15503,15506,15509,15512,15515,15518,15521,15524,15527,15530,15533,15608-15609,15628,15630-15633,15678-15681,15685,15692-15704,15721-15772,15787,15802-15834,15836-15842,15844,15847,15852,15854,15856-15857,15862,15866,15869,15873,15891-15900,15921,15934,15949-15963,16006-16013,16039,16049-16052,16126-16129,16157-16161,16468-16469,16478,16485-16497,16500,16502-16512,16522-16523,16532,16541-16542,16782-16790,16917-16918,16946,16952-16954,16962,16964-16965,16982,16984,17001,17005,17011-17012,17015,17019,17026,17028,17038-17040,17045,17048,17052,17055,17071,17075,17078,17090-17093,17105,17201,17203,17205,17209,17384,17498,17502,17657-17658,17693,17705,17715,17719,17980,18005,18221,18224,18226,18251,18253,18255,18257,18259,18292,18313,18319,18321,18330-18337,18345-18400,18422,18494,18551-18623,18625,18627-18648,18652-18675,18677-18698,18700-18707,18709-18825,18970,18977-18986,19047-19056,19093,19098,19198-19199,19274-19275,19325,19330-19354,19464,19516-19549,19695-19710,19741,19804-19807,19832-19833,19845-19846,19878-19882,19884-19898,19902,19905-19908,19910,19921,19923,19943-19953,19955,19957-19962,20003,20005,20009,20015,20019-20021,20023-20024,20029-20032,20038-20039,20092-20103,20111-20112,20153,20170,20172,20174-20175,20180,20182,20184-20195,20197-20204,20235,20237-20250,20252-20288,20290,20292-20416,20418-20420,20422-20423,20425,20427-20431,20433-20448,20450-20456,20458,20460-20462,20465,20469-20470,20472,20476-20479,20483,20486,20490,20497,20501-20504,20531-20537,20539,20541-20545,20547,20550,20553,20556,20567,20575-20576,20607,20628,20630-20631,20633-20648,20699
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "79e33dd650266e10647360b5c6f886298f8efaa8",
+  "prompts": {},
+  "sessions": {
+    "s_96b33066483cc7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ffa0-22fe-7fe2-95df-c19167888d37",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
