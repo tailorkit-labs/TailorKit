@@ -19,3 +19,18 @@
   color: #fafafa;
   background-color: rgb(255 255 255 / 0.08);
 }
+
+/* Contents rail and current-section highlight. */
+#table-of-contents .toc-item {
+  display: block;
+  border-left: 1px solid rgb(128 128 128 / 0.2);
+  padding-left: 1rem;
+}
+
+#table-of-contents .toc-item[data-active-deepest] {
+  border-left-color: #00a6f4;
+}
+
+#table-of-contents .toc-item[data-active-deepest] > a {
+  color: #00a6f4;
+}
