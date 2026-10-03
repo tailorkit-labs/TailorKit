@@ -70,6 +70,8 @@ allowBuilds:
   msw: false
   protobufjs: false
   sharp: false
+  "@scarf/scarf": true
+  keytar: true
 peerDependencyRules:
   allowAny:
     - vite

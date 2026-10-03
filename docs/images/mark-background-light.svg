@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2" viewBox="0 0 24 24">
+  <path d="M0 0h24v24H0z" style="fill:#ffffff"/>
+  <path d="M3 6h6v6H3z" style="fill:#262626" transform="translate(11 -2)"/>
+  <path d="M2 6v12h12v-6H8V6z" style="fill:#262626" transform="translate(2 2)"/>
+</svg>
