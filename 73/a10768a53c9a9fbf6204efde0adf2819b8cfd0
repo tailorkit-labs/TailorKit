@@ -1,0 +1,36 @@
+packages/ui/src/components/ui/spin.tsx
+  s_96b33066483cc7::t_2712ba56592f87 31-32,45,56,65,74,83,92,101,110,119,128
+apps/docs/src/styles/app.css
+  s_96b33066483cc7::t_093065fcbda2c9 17-19,21-22
+  s_96b33066483cc7::t_e2a0440bed665b 16
+apps/docs/content/docs/integrate/(getting-started)/installation.mdx
+  s_96b33066483cc7::t_9febfee5c1717d 35
+apps/web/src/components/sidebar-layout-header.tsx
+  s_96b33066483cc7::t_2712ba56592f87 4,8,33-55
+apps/docs/src/components/site-navbar.tsx
+  s_96b33066483cc7::t_97fa5e600fc007 22,32-35,48
+apps/docs/content/docs/apps/index.mdx
+  s_96b33066483cc7::t_9febfee5c1717d 14-17
+apps/docs/src/components/navbar-auth.tsx
+  s_96b33066483cc7::t_0fbc4a80d9d78f 48,56
+apps/docs/src/routes/docs/$.tsx
+  s_96b33066483cc7::t_a54f1633f1af1a 27,79-84,86-90
+apps/docs/src/routes/docs/index.tsx
+  s_96b33066483cc7::t_fdb546003fc247 1-2,5-6,8-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "73a10768a53c9a9fbf6204efde0adf2819b8cfd0",
+  "prompts": {},
+  "sessions": {
+    "s_96b33066483cc7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ffa0-22fe-7fe2-95df-c19167888d37",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
