@@ -3,7 +3,7 @@ import type { RouterClient } from "@orpc/server";
 import { appRouter } from "./routes/apps";
 import { cliAuthRouter } from "./routes/cli-auth";
 import { deploymentRouter } from "./routes/deployments";
-import { previewRouter } from "./routes/preview";
+import { previewRouter } from "./preview/routes";
 
 export const platformRouter = {
   apps: appRouter,

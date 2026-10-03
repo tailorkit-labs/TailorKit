@@ -28,19 +28,19 @@
       "types": "./dist/context.d.mts",
       "default": "./dist/context.mjs"
     },
-    "./preview-token": {
-      "development": "./src/preview-token.ts",
-      "types": "./dist/preview-token.d.mts",
-      "default": "./dist/preview-token.mjs"
-    },
     "./*": {
       "development": "./src/*.ts",
       "types": "./dist/*.d.mts",
       "default": "./dist/*.mjs"
+    },
+    "./preview/*": {
+      "development": "./src/preview/*.ts",
+      "types": "./dist/preview/*.d.mts",
+      "default": "./dist/preview/*.mjs"
     }
   },
   "scripts": {
-    "build": "vp pack src/index.ts src/runtime/auth.ts src/context.ts src/pagination.ts src/preview-token.ts src/preview-ws.ts src/preview-ws-auth.ts src/preview-build-store.ts src/preview-lifecycle.ts src/procedures.ts src/public-id.ts src/asset-url.ts src/assets.ts src/scope.ts src/routes/apps.ts src/routes/runtime.ts src/routes/cli-auth.ts src/routes/deployments.ts src/routes/preview.ts src/routes/preview-grants.ts --format esm --dts --clean",
+    "build": "vp pack src/index.ts src/runtime/auth.ts src/context.ts src/pagination.ts src/preview/token.ts src/preview/ws.ts src/preview/ws-auth.ts src/preview/build-store.ts src/preview/lifecycle.ts src/preview/constants.ts src/preview/manifest.ts src/preview/errors.ts src/preview/storage.ts src/preview/runtime.ts src/procedures.ts src/public-id.ts src/asset-url.ts src/assets.ts src/scope.ts src/routes/apps.ts src/routes/runtime.ts src/routes/cli-auth.ts src/routes/deployments.ts src/preview/routes.ts src/preview/grants.ts --format esm --dts --clean",
     "check-types": "tsc --noEmit",
     "generate:openapi": "node --conditions=development --import tsx scripts/generate-openapi.ts && vp fmt openapi.json",
     "test": "vp test run"

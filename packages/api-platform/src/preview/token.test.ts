@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 vi.mock("#env", () => ({ env: { AUTH_SECRET: "test-preview-secret" } }));
 
 const { createPreviewViewerToken, previewViewerTokenExpiresAt, verifyPreviewViewerToken } =
-  await import("./preview-token");
+  await import("./token");
 
 describe("preview viewer token expiry", () => {
   it("returns the verified expiry and rejects the exact expiry boundary", () => {

@@ -1,7 +1,7 @@
 import { experimental_RPCHandler as RPCHandler } from "@orpc/server/crossws";
-import { authorizePreviewSocket } from "@tailorkit/api-platform/preview-ws-auth";
-import { previewWebSocketRouter } from "@tailorkit/api-platform/preview-ws";
-import type { PreviewWebSocketContext } from "@tailorkit/api-platform/preview-ws";
+import { authorizePreviewSocket } from "@tailorkit/api-platform/preview/ws-auth";
+import { previewWebSocketRouter } from "@tailorkit/api-platform/preview/ws";
+import type { PreviewWebSocketContext } from "@tailorkit/api-platform/preview/ws";
 import { createFileRoute } from "@tanstack/react-router";
 import { defineHooks } from "crossws";
 import { z } from "zod";

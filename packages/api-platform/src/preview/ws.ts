@@ -1,33 +1,23 @@
 import { asyncIteratorObject, ORPCError, os } from "@orpc/server";
 import type { RouterClient } from "@orpc/server";
 import { db } from "@tailorkit/db";
-import { getKV } from "@tailorkit/kv";
 import { sanitizeErrorForLog } from "@tailorkit/observability";
 import z from "zod";
+import { requirePreviewKV } from "./runtime";
+import { createPreviewBuildStore } from "./build-store";
 import {
-  createPreviewBuildStore,
   previewChunkBytes,
   previewMessageBytes,
-} from "./preview-build-store";
+  previewBuildFiles,
+  previewFileBytes,
+} from "./constants";
+import { previewIdentifierSchema as id, previewManifestSchema as manifest } from "./manifest";
 import {
   endPreviewSession,
   ensurePreviewDeveloperGrace,
   recordPreviewHeartbeat,
-} from "./preview-lifecycle";
+} from "./lifecycle";
 
-const file = z.object({
-  path: z.string().min(1).max(1024),
-  contentType: z.string().min(1).max(255),
-  size: z
-    .number()
-    .int()
-    .min(0)
-    .max(1024 * 1024),
-  chunks: z.number().int().min(0).max(4),
-  sha256: z.string().regex(/^[a-f0-9]{64}$/u),
-});
-const manifest = z.object({ files: z.array(file).max(100) });
-const id = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/u);
 const event = z.discriminatedUnion("type", [
   z.object({ type: z.literal("begin"), revision: z.number().int(), buildId: id, manifest }),
   z.object({
@@ -85,12 +75,7 @@ const requireRole = async (
   if (!session || session.expiresAt <= new Date()) {
     throw new ORPCError("UNAUTHORIZED", { message: "Preview session is unavailable." });
   }
-  const kv = getKV();
-  if (!kv) {
-    throw new ORPCError("SERVICE_UNAVAILABLE", {
-      message: "Preview storage is unavailable: configure KV.",
-    });
-  }
+  const kv = requirePreviewKV();
   if (
     role === "uploader" &&
     (!session.cliToken || session.cliToken.revokedAt || session.cliToken.expiresAt <= new Date())
@@ -117,8 +102,16 @@ const uploadChunk = o
   .input(
     z.object({
       buildId: id,
-      fileIndex: z.number().int().min(0).max(99),
-      chunkIndex: z.number().int().min(0).max(3),
+      fileIndex: z
+        .number()
+        .int()
+        .min(0)
+        .max(previewBuildFiles - 1),
+      chunkIndex: z
+        .number()
+        .int()
+        .min(0)
+        .max(Math.ceil(previewFileBytes / previewChunkBytes) - 1),
       base64: z.string().max(4 * Math.ceil(previewChunkBytes / 3)),
     }),
   )
@@ -151,10 +144,7 @@ const commitBuild = o
   );
 const heartbeat = o.output(z.object({ accepted: z.literal(true) })).handler(async ({ context }) => {
   await requireRole(context, "uploader");
-  const kv = getKV();
-  if (!kv) {
-    throw new ORPCError("SERVICE_UNAVAILABLE");
-  }
+  const kv = requirePreviewKV();
   if (!(await recordPreviewHeartbeat(kv, context.sessionId))) {
     throw new ORPCError("UNAUTHORIZED", { message: "Preview session is unavailable." });
   }
