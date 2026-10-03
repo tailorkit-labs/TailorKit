@@ -1,4 +1,4 @@
-import { expectTypeOf } from "vitest";
+import { expectTypeOf } from "vite-plus/test";
 import { z } from "zod";
 import { createActions } from "./actions";
 import type { InferActionInput, InferActionOutput, ResolveActionTreeContext } from "./actions";

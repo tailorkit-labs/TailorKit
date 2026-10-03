@@ -14,11 +14,11 @@
   "menuColor": "default",
   "menuAccent": "subtle",
   "aliases": {
-    "components": "@tailorkit/ui/components",
-    "utils": "@tailorkit/ui/lib/utils",
-    "ui": "@tailorkit/ui/components",
-    "lib": "@tailorkit/ui/lib",
-    "hooks": "@tailorkit/ui/hooks"
+    "components": "#ui/components",
+    "utils": "#ui",
+    "ui": "#ui/components",
+    "lib": "#ui/lib",
+    "hooks": "#ui/hooks"
   },
   "registries": {
     "@coss": "https://coss.com/ui/r/{name}.json"

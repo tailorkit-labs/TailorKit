@@ -1,0 +1,29 @@
+{
+  "name": "@tailorkit/app-agent",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Eve coding agent for building TailorKit apps.",
+  "license": "BUSL-1.1",
+  "type": "module",
+  "scripts": {
+    "dev": "eve dev --no-default-extensions",
+    "build": "eve build",
+    "start": "eve start",
+    "info": "eve info",
+    "check-types": "tsc --noEmit",
+    "test": "vp test run"
+  },
+  "dependencies": {
+    "ai": "^7.0.116",
+    "eve": "^0.68.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@tailorkit/config": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

@@ -1,6 +1,6 @@
 import { ChevronsUpDownIcon, PlusIcon, SearchIcon } from "lucide-react";
-import { Avatar, AvatarFallback } from "@tailorkit/ui/components/avatar";
-import { Button } from "@tailorkit/ui/components/button";
+import { Avatar, AvatarFallback } from "@tailorkit/ui/avatar";
+import { Button } from "@tailorkit/ui/button";
 import {
   Combobox,
   ComboboxEmpty,
@@ -10,8 +10,8 @@ import {
   ComboboxPopup,
   ComboboxTrigger,
   ComboboxValue,
-} from "@tailorkit/ui/components/combobox";
-import { SidebarMenuButton } from "@tailorkit/ui/components/sidebar";
+} from "@tailorkit/ui/combobox";
+import { SidebarMenuButton } from "@tailorkit/ui/sidebar";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 

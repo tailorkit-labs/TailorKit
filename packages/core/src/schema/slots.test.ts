@@ -1,12 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createTailorKitSchema } from "./schema";
 import { TailorKitSchemaSpec } from "../spec/spec";
+import { z } from "zod";
 
 describe("slot view contracts", () => {
   it("serializes supported view lists", () => {
     const schema = createTailorKitSchema({
       components: {},
-      views: { "/": {}, "/users": {} },
+      contexts: { "/": z.object({}), "/users": z.object({}) },
       slots: { navbar: { views: ["/"] }, panel: { views: ["/users"] } },
     }).serialize();
     expect(TailorKitSchemaSpec.parse(schema).slots).toEqual({
@@ -30,7 +31,7 @@ describe("slot view contracts", () => {
     expect(() =>
       createTailorKitSchema({
         components: {},
-        views: { "/": {} },
+        contexts: { "/": z.object({}) },
         // @ts-expect-error Exercise runtime validation for JavaScript hosts.
         slots: { panel: { views: ["/missing"] } },
       }),

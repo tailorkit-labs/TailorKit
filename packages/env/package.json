@@ -14,30 +14,23 @@
     ]
   },
   "exports": {
-    "./server": {
-      "development": "./src/server.ts",
-      "types": "./dist/server.d.mts",
-      "default": "./dist/server.mjs"
-    },
-    "./web": {
-      "development": "./src/web.ts",
-      "types": "./dist/web.d.mts",
-      "default": "./dist/web.mjs"
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
     }
   },
   "scripts": {
-    "build": "tsdown src/server.ts src/web.ts --format esm --dts --clean",
+    "build": "vp pack src/index.ts --format esm --dts --clean",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@t3-oss/env-core": "^0.13.11",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
-    "tsdown": "catalog:",
     "typescript": "catalog:"
   }
 }

@@ -1,0 +1,81 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tailorkit-apps-worker",
+  "main": "src/index.ts",
+  "build": {
+    "command": "pnpm exec turbo run build --filter=@tailorkit/api-utils... --filter=@tailorkit/app... --filter=@tailorkit/asset-delivery... && node scripts/build-bootstrap.mjs",
+    "watch_dir": ["src", "../../packages/asset-delivery/src"],
+  },
+  "compatibility_date": "2026-10-01",
+  "rules": [
+    {
+      "type": "Text",
+      "globs": ["**/bootstrap.txt"],
+      "fallthrough": true,
+    },
+  ],
+  "compatibility_flags": ["enable_request_signal"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "*.tailorkit.app/*", "zone_name": "tailorkit.app" },
+    { "pattern": "internal.tailorkit.app", "custom_domain": true },
+  ],
+  "worker_loaders": [
+    {
+      "binding": "LOADER",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUNDLES",
+      "bucket_name": "tailorkit-app-assets-prod",
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "STORES",
+        "class_name": "AppInstallation",
+      },
+    ],
+  },
+  "exports": {
+    "AppInstallation": {
+      "type": "durable-object",
+      "storage": "sqlite",
+    },
+  },
+  "secrets": {
+    "required": ["RUNTIME_SERVICE_TOKEN"],
+  },
+  "vars": {
+    "ASSET_DOMAIN": "tailorkit.app",
+    "PLATFORM_URL": "https://tailorkit.dev/api/platform",
+    "APP_RUNTIME_PUBLIC_KEYS": {
+      "keys": [
+        {
+          "kty": "EC",
+          "x": "qgJufcvDXWvETxxY9GW7a_5Pp2Ywm10wRRkNY69h200",
+          "y": "tqSG2ZTbYUQY5KaaTKxdgfSe_92Q4ai76b6wNfMpsDs",
+          "crv": "P-256",
+          "kid": "tailorkit-runtime-2026-10-02",
+          "alg": "ES256",
+          "use": "sig",
+        },
+      ],
+    },
+  },
+  "observability": {
+    "enabled": true,
+    "traces": {
+      "enabled": true,
+    },
+  },
+  "kv_namespaces": [
+    {
+      "binding": "DEPLOYMENTS",
+      "id": "06b12b0c61164472887d9cf967f577b6",
+    },
+  ],
+}

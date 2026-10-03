@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 import { SearchIcon } from "lucide-react";
-import { Input } from "@tailorkit/ui/components/input";
-import { Tabs, TabsList, TabsPanel, TabsTab } from "@tailorkit/ui/components/tabs";
-import { toastManager } from "@tailorkit/ui/components/toast";
+import { Input } from "@tailorkit/ui/input";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@tailorkit/ui/tabs";
+import { toastManager } from "@tailorkit/ui/toast";
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { InviteMembersDialog } from "#components/members/invite-members-dialog";
 import { InvitationsTable } from "#components/members/invitations-table";
@@ -17,11 +17,11 @@ export const Route = createFileRoute("/(app)/$orgSlug/~/(org)/settings/members")
   component: OrgSettingsMembers,
   loader: async ({ context, params }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(
+      context.queryClient.query(
         context.orpc.org.getMembers.queryOptions({ input: { orgSlug: params.orgSlug } }),
       ),
       context.queryClient
-        .ensureQueryData(
+        .query(
           context.orpc.org.getOrgInvitations.queryOptions({
             input: { orgSlug: params.orgSlug },
           }),

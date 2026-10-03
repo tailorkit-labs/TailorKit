@@ -1,47 +1,8 @@
-import { defineRelations } from "drizzle-orm";
+import { defineRelations, defineRelationsPart } from "drizzle-orm";
+import { authRelations } from "./schema/auth";
 import * as schema from "./schema";
 
-export const relations = defineRelations(schema, (r) => ({
-  account: {
-    user: r.one.user({
-      from: r.account.userId,
-      to: r.user.id,
-    }),
-  },
-  invitation: {
-    user: r.one.user({
-      from: r.invitation.inviterId,
-      to: r.user.id,
-    }),
-    organization: r.one.organization({
-      from: r.invitation.organizationId,
-      to: r.organization.id,
-    }),
-  },
-  member: {
-    organization: r.one.organization({
-      from: r.member.organizationId,
-      to: r.organization.id,
-    }),
-    user: r.one.user({
-      from: r.member.userId,
-      to: r.user.id,
-    }),
-  },
-  organization: {
-    invitations: r.many.invitation({
-      from: r.organization.id,
-      to: r.invitation.organizationId,
-    }),
-    members: r.many.member({
-      from: r.organization.id,
-      to: r.member.organizationId,
-    }),
-    projects: r.many.project({
-      from: r.organization.id,
-      to: r.project.organizationId,
-    }),
-  },
+const applicationRelations = defineRelations(schema, (r) => ({
   project: {
     organization: r.one.organization({
       from: r.project.organizationId,
@@ -59,6 +20,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.project.id,
       to: r.cliToken.projectId,
     }),
+    previewSessions: r.many.previewSession({
+      from: r.project.id,
+      to: r.previewSession.projectId,
+    }),
   },
 
   cliAuthSession: {
@@ -73,6 +38,16 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.cliToken.projectId,
       to: r.project.id,
     }),
+    previewSessions: r.many.previewSession({
+      from: r.cliToken.id,
+      to: r.previewSession.cliTokenId,
+    }),
+  },
+
+  previewSession: {
+    app: r.one.app({ from: r.previewSession.appId, to: r.app.id }),
+    cliToken: r.one.cliToken({ from: r.previewSession.cliTokenId, to: r.cliToken.id }),
+    project: r.one.project({ from: r.previewSession.projectId, to: r.project.id }),
   },
 
   app: {
@@ -87,6 +62,10 @@ export const relations = defineRelations(schema, (r) => ({
     deployments: r.many.appDeployment({
       from: r.app.id,
       to: r.appDeployment.appId,
+    }),
+    previewSessions: r.many.previewSession({
+      from: r.app.id,
+      to: r.previewSession.appId,
     }),
   },
 
@@ -107,29 +86,20 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.appDeployment.id,
     }),
   },
+}));
 
-  session: {
-    user: r.one.user({
-      from: r.session.userId,
-      to: r.user.id,
-    }),
-  },
-  user: {
-    accounts: r.many.account({
-      from: r.user.id,
-      to: r.account.userId,
-    }),
-    invitations: r.many.invitation({
-      from: r.user.id,
-      to: r.invitation.inviterId,
-    }),
-    members: r.many.member({
-      from: r.user.id,
-      to: r.member.userId,
-    }),
-    sessions: r.many.session({
-      from: r.user.id,
-      to: r.session.userId,
+const organizationProjectRelations = defineRelationsPart(schema, (r) => ({
+  organization: {
+    ...authRelations.organization.relations,
+    projects: r.many.project({
+      from: r.organization.id,
+      to: r.project.organizationId,
     }),
   },
 }));
+
+export const relations = {
+  ...applicationRelations,
+  ...authRelations,
+  ...organizationProjectRelations,
+};

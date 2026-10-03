@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 import type { VariantProps } from "class-variance-authority";
 import type React from "react";
-import { cn } from "@tailorkit/ui/lib/utils";
+import { cn } from "#ui";
 
 const emptyMediaVariants = cva(
   "flex shrink-0 items-center justify-center [&_svg]:pointer-events-none [&_svg]:shrink-0",

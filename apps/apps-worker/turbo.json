@@ -1,0 +1,9 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "test": {
+      "dependsOn": ["^build", "tailorkit#build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/examples/apps/backend-todo/**"]
+    }
+  }
+}

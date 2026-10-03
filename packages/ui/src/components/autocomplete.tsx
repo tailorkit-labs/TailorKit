@@ -3,9 +3,9 @@
 import { Autocomplete as AutocompletePrimitive } from "@base-ui/react/autocomplete";
 import { ChevronsUpDownIcon, XIcon } from "lucide-react";
 import type React from "react";
-import { cn } from "@tailorkit/ui/lib/utils";
-import { Input } from "@tailorkit/ui/components/input";
-import { ScrollArea } from "@tailorkit/ui/components/scroll-area";
+import { cn } from "#ui";
+import { Input } from "#ui/input";
+import { ScrollArea } from "#ui/scroll-area";
 
 export const Autocomplete: typeof AutocompletePrimitive.Root = AutocompletePrimitive.Root;
 
@@ -215,18 +215,14 @@ export function AutocompleteRow({
   );
 }
 
-export function AutocompleteValue({
-  ...props
-}: AutocompletePrimitive.Value.Props): React.ReactElement {
-  return <AutocompletePrimitive.Value data-slot="autocomplete-value" {...props} />;
-}
+export const AutocompleteValue: typeof AutocompletePrimitive.Value = AutocompletePrimitive.Value;
 
 export function AutocompleteList({
   className,
   ...props
 }: AutocompletePrimitive.List.Props): React.ReactElement {
   return (
-    <ScrollArea scrollbarGutter scrollFade>
+    <ScrollArea overscrollContain scrollbarGutter scrollFade>
       <AutocompletePrimitive.List
         className={cn("not-empty:scroll-py-1 not-empty:p-1 in-data-has-overflow-y:pe-3", className)}
         data-slot="autocomplete-list"
@@ -270,11 +266,8 @@ export function AutocompleteStatus({
   );
 }
 
-export function AutocompleteCollection({
-  ...props
-}: AutocompletePrimitive.Collection.Props): React.ReactElement {
-  return <AutocompletePrimitive.Collection data-slot="autocomplete-collection" {...props} />;
-}
+export const AutocompleteCollection: typeof AutocompletePrimitive.Collection =
+  AutocompletePrimitive.Collection;
 
 export function AutocompleteTrigger({
   className,

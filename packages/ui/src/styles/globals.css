@@ -45,7 +45,6 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --animate-skeleton: skeleton 2s -1s infinite linear;
-
   @keyframes skeleton {
     to {
       background-position: -200% 0;
@@ -61,95 +60,75 @@
   --animate-toast-error-odd: toast-error-odd 0.28s cubic-bezier(0.5, 1, 0.89, 1);
 
   --animate-toast-error-even: toast-error-even 0.28s cubic-bezier(0.5, 1, 0.89, 1);
-
   @keyframes caret-blink {
     0%,
     70%,
     to {
       opacity: 1;
     }
-
     20%,
     50% {
       opacity: 0;
     }
   }
-
   @keyframes toast-success-odd {
     0% {
       scale: 1;
     }
-
     30% {
       scale: 1.025;
     }
-
     60% {
       scale: 0.99;
     }
-
     100% {
       scale: 1;
     }
   }
-
   @keyframes toast-error-odd {
     0% {
       translate: 0 0;
     }
-
     25% {
       translate: -3px 0;
     }
-
     50% {
       translate: 3px 0;
     }
-
     75% {
       translate: -3px 0;
     }
-
     100% {
       translate: 0 0;
     }
   }
-
   @keyframes toast-success-even {
     0% {
       scale: 1;
     }
-
     30% {
       scale: 1.025;
     }
-
     60% {
       scale: 0.99;
     }
-
     100% {
       scale: 1;
     }
   }
-
   @keyframes toast-error-even {
     0% {
       translate: 0 0;
     }
-
     25% {
       translate: -3px 0;
     }
-
     50% {
       translate: 3px 0;
     }
-
     75% {
       translate: -3px 0;
     }
-
     100% {
       translate: 0 0;
     }
@@ -169,7 +148,7 @@
   --primary-foreground: #ffffff;
   --secondary: hsl(0, 0%, 93.1%);
   --secondary-foreground: hsl(0, 0%, 9%);
-  --muted: hsl(0, 0%, 96.1%);
+  --muted: --alpha(var(--color-black) / 4%);
   --muted-foreground: hsl(0, 0%, 45.1%);
   --accent: hsla(0, 0%, 82%, 50%);
   --accent-foreground: hsl(0, 0%, 9%);

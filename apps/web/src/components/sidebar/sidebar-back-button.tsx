@@ -1,7 +1,7 @@
 import { ChevronLeftIcon } from "lucide-react";
 import type { LinkProps } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { Button } from "@tailorkit/ui/components/button";
+import { Button } from "@tailorkit/ui/button";
 
 type SidebarBackButtonProps = LinkProps & { label: string };
 

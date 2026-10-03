@@ -14,13 +14,17 @@ host publishes explicitly.
 ## Define the host contract
 
 ```ts
+import { createTailorKit } from "tailorkit";
+import { z } from "zod";
+
 export const tailorKit = createTailorKit({
   components: {},
+  scopes: { user: z.object({ userId: z.string().min(1) }) },
   slots: { navbar: { views: ["/"] }, panel: { views: ["/users", "/users/detail"] } },
-  views: {
-    "/": { context: z.object({ workspaceId: z.string() }) },
-    "/users": { context: z.object({ canManageUsers: z.boolean() }) },
-    "/users/detail": { context: z.object({ user: userSchema }) },
+  contexts: {
+    "/": z.object({ workspaceId: z.string() }),
+    "/users": z.object({ canManageUsers: z.boolean() }),
+    "/users/detail": z.object({ user: userSchema }),
   },
 });
 ```
@@ -31,9 +35,82 @@ Each view declares only its own fields. Ancestor fields are composed into the
 context received by app views. A field must have one owning view: duplicate
 field names across ancestors are rejected by the type checker and runtime.
 
-## Configure React once
+## Name multiple installation scopes
+
+Give each identity boundary its own schema key. Return values under those same
+keys from `authenticate()`, then select the identities for each app read:
+
+```ts
+import { createTailorKit } from "tailorkit";
+import { auth } from "#lib/auth";
+import { z } from "zod";
+
+export const tailorKit = createTailorKit({
+  components: {},
+  scopes: {
+    org: z.object({ orgId: z.string() }),
+    userOrg: z.object({ orgId: z.string(), userId: z.string() }),
+  },
+  // contexts and slots can be added here.
+});
+
+async function handleRequest(request: Request) {
+  return tailorKit.handler(request, {
+    authenticate: async () => {
+      const session = await auth(request);
+      if (!session) return null;
+
+      return {
+        scopes: {
+          org: { orgId: session.org.id },
+          userOrg: { orgId: session.org.id, userId: session.user.id },
+        },
+      };
+    },
+  });
+}
+```
 
 ```tsx
+import { createTailorKitClient, Root } from "tailorkit/react";
+import type { tailorKit } from "./tailorkit";
+
+export const client = createTailorKitClient<typeof tailorKit>({
+  baseUrl: "https://example.com/api/tailorkit/",
+});
+
+const { useApps } = client;
+
+function InstalledApps() {
+  const { data: apps, isLoading } = useApps({ scopes: ["org", "userOrg"] });
+  if (isLoading) return <p>Loading apps…</p>;
+  return (
+    <ul>
+      {apps?.map((app) => (
+        <li key={app.id}>{app.name}</li>
+      ))}
+    </ul>
+  );
+}
+
+export function InstalledAppsRoot() {
+  return (
+    <Root client={client}>
+      <InstalledApps />
+    </Root>
+  );
+}
+```
+
+Scope values identify installations exactly, so keep them to stable identity
+data such as opaque IDs. Do not include mutable settings or feature lists:
+changing any value changes the installation identity. Nested objects and arrays
+are supported; TailorKit sorts object keys recursively, so property insertion
+order does not change identity, while array order remains significant.
+
+## Configure React once
+
+```tsx title="./src/lib/tailorkit-client.tsx"
 import { createTailorKitClient } from "tailorkit/react";
 import type { tailorKit } from "./tailorkit";
 
@@ -41,19 +118,22 @@ export const client = createTailorKitClient<typeof tailorKit>({
   baseUrl: "https://example.com/api/tailorkit/",
 });
 
-declare module "tailorkit/react" {
-  interface Register {
-    client: typeof client;
-  }
-}
+export const { AppView, useApps, useView } = client;
 ```
 
-The registration types the standalone host hooks. Pass the stable client
-configuration to `Root`; all rendering and hooks below it use React context.
-Each root owns an independent registry, even when roots share a client.
+The helpers carry the view and slot types from the client. Import `Root` from
+`tailorkit/react` and pass it the client; use `useApps`, `useView`, and
+`AppView` beneath it. Each root owns an independent registry, even when roots
+share a client. Separate clients can expose different view and slot contracts
+in the same TypeScript project.
+The bound `useApps` also types `scopes` from the server schema. Pass names to
+select which authenticated identities to list. Calling `useApps()` with no
+options loads every scope returned by `authenticate()`. Passing `scopes: []`
+loads no apps.
 
 ```tsx
-import { Root, AppView } from "tailorkit/react";
+import { Root } from "tailorkit/react";
+import { AppView, client } from "./tailorkit-client";
 
 function Host({ app, children }) {
   return (
@@ -70,17 +150,17 @@ function Host({ app, children }) {
 }
 ```
 
-Use `useApps()` below `Root` to load installed apps. For a supplied app list,
-pass `apps` to `Root`; the hook returns that list without fetching. Updates to
-the list are reflected in the hook, and removing the prop resumes discovery. The client configuration
-no longer exposes bound React hooks or components.
+Use the exported `useApps()` below `Root` to load installed apps. For a
+supplied app list, pass `apps` to `Root`; the hook returns that list without
+fetching. Updates to the list are reflected in the hook, and removing the prop
+resumes discovery.
 
 ## Publish each layer
 
 Call `useView` in the layout or page that owns the data:
 
 ```tsx
-import { useView } from "tailorkit/react";
+import { useView } from "./tailorkit-client";
 
 function WorkspaceLayout({ workspaceId }) {
   useView("/", { context: { workspaceId } });
@@ -135,7 +215,7 @@ Each slot searches the active path, then its ancestors, considering only
 paths in its supported `views` list. A supported ancestor remains eligible when
 the current, more specific view is not supported.
 Fallback never crosses slot boundaries. An empty supported view list disables
-all views in that slot. View lists are typed against the global definitions;
+all views in that slot. View lists are typed from the configured client schema;
 app bindings and explicit `AppView` views are restricted to the selected slot.
 
 Supported lists control view implementations, not context inheritance. For
@@ -167,8 +247,9 @@ then combine readiness for that view and its ancestors. Errors take priority
 over loading. Descendant loading does not block a parent view in another
 slot. Loading never triggers fallback to a different implementation.
 
-Apps can provide `loading` and `error` components to `createView`; omitted
-handlers render nothing. `useContext()` is available only to the ready component.
+Loading and error remain host context states, but app views render nothing in
+either state. `createView` accepts only the ready `component`, with no app-provided
+loading or error components. `useContext()` is available only to the ready component.
 
 Call the hook before early returns. When using Suspense or router loaders,
 publish the loading/error view from a boundary that actually mounts in that
@@ -182,7 +263,9 @@ A widget or dedicated page can choose its own view independently of the current
 route:
 
 ```tsx
-<AppView app={app} slot="panel" view="/users/detail" context={{ user }} />
+import { AppView } from "./tailorkit-client";
+
+<AppView app={app} slot="panel" view="/users/detail" context={{ user }} />;
 ```
 
 The override supplies that view's own context; matching mounted ancestors still

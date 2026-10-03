@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { createTailorKitStore, toBaseUrl } from "../store";
-import type { TailorKitApp, TailorKitInstance } from "../tailor-kit";
+import type { TailorKitApp, TailorKitClientConfig } from "../tailorkit";
 import type { ComponentProps } from "./render";
 import { mergeProps, useRender } from "./render";
 import { TailorRootContext } from "./context";
@@ -10,7 +10,7 @@ import type { TailorRootContextValue } from "./context";
 export interface RootProps extends ComponentProps<"div"> {
   apps?: TailorKitApp[];
   children?: ReactNode;
-  client: TailorKitInstance;
+  client: TailorKitClientConfig;
 }
 
 export function Root({ apps: appsProp, children, render, client, ...props }: RootProps): ReactNode {
@@ -24,6 +24,7 @@ export function Root({ apps: appsProp, children, render, client, ...props }: Roo
   useEffect(() => {
     store.setProvidedApps(appsProp);
   }, [store, appsProp]);
+  useEffect(() => () => store.previews.dispose(), [store]);
 
   const context = useMemo<TailorRootContextValue>(
     () => ({

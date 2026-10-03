@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vite-plus";
 import packageJson from "./package.json" with { type: "json" };
 
 const liquidRawPlugin = () => ({
@@ -21,6 +21,7 @@ export default defineConfig({
     rollupOptions: {
       external: [
         /^node:/u,
+        /^@tailorkit\/app(?:\/|$)/u,
         "@clack/prompts",
         "@standard-schema/spec",
         "arktype",

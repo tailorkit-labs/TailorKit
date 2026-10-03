@@ -7,10 +7,10 @@ import { CreateOrgDialog } from "#components/create-org-dialog";
 import { PageLayout } from "#components/page-layout";
 import { isOrgCreationManaged } from "#lib/org-creation";
 import { orpc } from "#lib/orpc";
-import { Avatar, AvatarFallback } from "@tailorkit/ui/components/avatar";
-import { Badge } from "@tailorkit/ui/components/badge";
-import { Button } from "@tailorkit/ui/components/button";
-import { Card, CardFrame } from "@tailorkit/ui/components/card";
+import { Avatar, AvatarFallback } from "@tailorkit/ui/avatar";
+import { Badge } from "@tailorkit/ui/badge";
+import { Button } from "@tailorkit/ui/button";
+import { Card, CardFrame } from "@tailorkit/ui/card";
 import {
   Empty,
   EmptyContent,
@@ -18,22 +18,15 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@tailorkit/ui/components/empty";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@tailorkit/ui/components/table";
+} from "@tailorkit/ui/empty";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tailorkit/ui/table";
 
 export const Route = createFileRoute("/(app)/account/organizations")({
   component: OrganizationsPage,
   loader: async ({ context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(context.orpc.user.getOrgs.queryOptions()),
-      context.queryClient.ensureQueryData(context.orpc.user.getPendingInvitations.queryOptions()),
+      context.queryClient.query(context.orpc.user.getOrgs.queryOptions()),
+      context.queryClient.query(context.orpc.user.getPendingInvitations.queryOptions()),
     ]);
   },
 });

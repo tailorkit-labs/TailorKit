@@ -8,49 +8,185 @@
       "url": "https://tailorkit.dev/api/platform"
     }
   ],
-  "openapi": "3.1.1",
+  "openapi": "3.2.0",
+  "components": {
+    "schemas": {
+      "__schema0": {
+        "anyOf": [
+          {
+            "type": "string",
+            "maxLength": 255
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          },
+          {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/__schema0"
+            }
+          },
+          {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "additionalProperties": {
+              "$ref": "#/components/schemas/__schema0"
+            }
+          }
+        ]
+      }
+    }
+  },
   "paths": {
-    "/apps": {
-      "get": {
-        "operationId": "apps.list",
+    "/apps/{appId}/runtime/session": {
+      "post": {
+        "operationId": "apps.runtimeSession",
         "parameters": [
           {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 9007199254740991,
-              "default": 1
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
-          },
-          {
-            "name": "scopeId",
-            "in": "query",
+            "in": "path",
             "required": true,
+            "name": "appId",
             "schema": {
-              "type": "string"
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scopes": {
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": ["scopes"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "expiresAt": {
+                      "type": "number"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": ["token", "expiresAt", "url"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apps/list": {
+      "post": {
+        "operationId": "apps.list",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "default": 1,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "pageSize": {
+                    "default": 20,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "scopes": {
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": ["scopes"]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -66,7 +202,8 @@
                         "properties": {
                           "id": {
                             "type": "string",
-                            "format": "uuid"
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                           },
                           "publicId": {
                             "type": "string",
@@ -74,11 +211,30 @@
                           },
                           "projectId": {
                             "type": "string",
-                            "format": "uuid"
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                           },
-                          "scopeId": {
-                            "type": "string",
-                            "maxLength": 255
+                          "scope": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                              },
+                              "value": {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 64
+                                },
+                                "additionalProperties": {
+                                  "$ref": "#/components/schemas/__schema0"
+                                }
+                              }
+                            },
+                            "required": ["name", "value"],
+                            "additionalProperties": false
                           },
                           "name": {
                             "type": "string",
@@ -99,7 +255,8 @@
                             "anyOf": [
                               {
                                 "type": "string",
-                                "format": "uuid"
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                               },
                               {
                                 "type": "null"
@@ -123,7 +280,8 @@
                                 "properties": {
                                   "id": {
                                     "type": "string",
-                                    "format": "uuid"
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                   },
                                   "publicId": {
                                     "type": "string",
@@ -131,17 +289,19 @@
                                   },
                                   "appId": {
                                     "type": "string",
-                                    "format": "uuid"
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                   },
                                   "status": {
-                                    "enum": ["uploading", "deploying", "verifying", "published"],
-                                    "type": "string"
+                                    "type": "string",
+                                    "enum": ["uploading", "deploying", "verifying", "published"]
                                   },
                                   "clientEntryFileId": {
                                     "anyOf": [
                                       {
                                         "type": "string",
-                                        "format": "uuid"
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                       },
                                       {
                                         "type": "null"
@@ -152,7 +312,8 @@
                                     "anyOf": [
                                       {
                                         "type": "string",
-                                        "format": "uuid"
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                       },
                                       {
                                         "type": "null"
@@ -163,7 +324,8 @@
                                     "anyOf": [
                                       {
                                         "type": "string",
-                                        "format": "uuid"
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                       },
                                       {
                                         "type": "null"
@@ -171,24 +333,10 @@
                                     ]
                                   },
                                   "logoLightPath": {
-                                    "anyOf": [
-                                      {
-                                        "type": "string"
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
+                                    "type": ["string", "null"]
                                   },
                                   "logoDarkPath": {
-                                    "anyOf": [
-                                      {
-                                        "type": "string"
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
+                                    "type": ["string", "null"]
                                   },
                                   "createdAt": {
                                     "type": "string",
@@ -213,7 +361,8 @@
                                   "logoDarkPath",
                                   "createdAt",
                                   "updatedAt"
-                                ]
+                                ],
+                                "additionalProperties": false
                               },
                               {
                                 "type": "null"
@@ -235,21 +384,23 @@
                                 "type": "string",
                                 "format": "uri"
                               }
-                            }
+                            },
+                            "additionalProperties": false
                           }
                         },
                         "required": [
                           "id",
                           "publicId",
                           "projectId",
-                          "scopeId",
+                          "scope",
                           "name",
                           "description",
                           "currentDeploymentId",
                           "createdAt",
                           "updatedAt",
                           "currentDeployment"
-                        ]
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "pagination": {
@@ -269,16 +420,289 @@
                           "maximum": 100
                         }
                       },
-                      "required": ["hasMore", "page", "pageSize"]
+                      "required": ["hasMore", "page", "pageSize"],
+                      "additionalProperties": false
                     }
                   },
-                  "required": ["items", "pagination"]
+                  "required": ["items", "pagination"],
+                  "additionalProperties": false
                 }
               }
             }
           }
         }
-      },
+      }
+    },
+    "/apps/{appId}/lookup": {
+      "post": {
+        "operationId": "apps.get",
+        "parameters": [
+          {
+            "in": "path",
+            "required": true,
+            "name": "appId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scopes": {
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": ["scopes"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "publicId": {
+                      "type": "string",
+                      "maxLength": 12
+                    },
+                    "projectId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "scope": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
+                    },
+                    "name": {
+                      "type": "string",
+                      "maxLength": 127
+                    },
+                    "description": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "currentDeploymentId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "x-native-type": "date"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "x-native-type": "date"
+                    },
+                    "currentDeployment": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "publicId": {
+                              "type": "string",
+                              "maxLength": 12
+                            },
+                            "appId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": ["uploading", "deploying", "verifying", "published"]
+                            },
+                            "clientEntryFileId": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "logoLightFileId": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "logoDarkFileId": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "logoLightPath": {
+                              "type": ["string", "null"]
+                            },
+                            "logoDarkPath": {
+                              "type": ["string", "null"]
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "x-native-type": "date"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "x-native-type": "date"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "publicId",
+                            "appId",
+                            "status",
+                            "clientEntryFileId",
+                            "logoLightFileId",
+                            "logoDarkFileId",
+                            "logoLightPath",
+                            "logoDarkPath",
+                            "createdAt",
+                            "updatedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "clientPath": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "logoPaths": {
+                      "type": "object",
+                      "properties": {
+                        "dark": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "light": {
+                          "type": "string",
+                          "format": "uri"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "publicId",
+                    "projectId",
+                    "scope",
+                    "name",
+                    "description",
+                    "currentDeploymentId",
+                    "createdAt",
+                    "updatedAt",
+                    "currentDeployment"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apps": {
       "post": {
         "operationId": "apps.create",
         "requestBody": {
@@ -303,12 +727,30 @@
                       }
                     ]
                   },
-                  "scopeId": {
-                    "type": "string",
-                    "maxLength": 255
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                      },
+                      "value": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "additionalProperties": {
+                          "$ref": "#/components/schemas/__schema0"
+                        }
+                      }
+                    },
+                    "required": ["name", "value"],
+                    "additionalProperties": false
                   }
                 },
-                "required": ["name", "description", "scopeId"]
+                "required": ["name", "description", "scope"]
               }
             }
           }
@@ -323,7 +765,8 @@
                   "properties": {
                     "id": {
                       "type": "string",
-                      "format": "uuid"
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
                     "publicId": {
                       "type": "string",
@@ -331,11 +774,30 @@
                     },
                     "projectId": {
                       "type": "string",
-                      "format": "uuid"
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
-                    "scopeId": {
-                      "type": "string",
-                      "maxLength": 255
+                    "scope": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
                     },
                     "name": {
                       "type": "string",
@@ -356,7 +818,8 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "format": "uuid"
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                         },
                         {
                           "type": "null"
@@ -380,7 +843,8 @@
                           "properties": {
                             "id": {
                               "type": "string",
-                              "format": "uuid"
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                             },
                             "publicId": {
                               "type": "string",
@@ -388,17 +852,19 @@
                             },
                             "appId": {
                               "type": "string",
-                              "format": "uuid"
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                             },
                             "status": {
-                              "enum": ["uploading", "deploying", "verifying", "published"],
-                              "type": "string"
+                              "type": "string",
+                              "enum": ["uploading", "deploying", "verifying", "published"]
                             },
                             "clientEntryFileId": {
                               "anyOf": [
                                 {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 {
                                   "type": "null"
@@ -409,7 +875,8 @@
                               "anyOf": [
                                 {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 {
                                   "type": "null"
@@ -420,7 +887,8 @@
                               "anyOf": [
                                 {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 {
                                   "type": "null"
@@ -428,24 +896,10 @@
                               ]
                             },
                             "logoLightPath": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
+                              "type": ["string", "null"]
                             },
                             "logoDarkPath": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
+                              "type": ["string", "null"]
                             },
                             "createdAt": {
                               "type": "string",
@@ -470,7 +924,8 @@
                             "logoDarkPath",
                             "createdAt",
                             "updatedAt"
-                          ]
+                          ],
+                          "additionalProperties": false
                         },
                         {
                           "type": "null"
@@ -492,21 +947,23 @@
                           "type": "string",
                           "format": "uri"
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     }
                   },
                   "required": [
                     "id",
                     "publicId",
                     "projectId",
-                    "scopeId",
+                    "scope",
                     "name",
                     "description",
                     "currentDeploymentId",
                     "createdAt",
                     "updatedAt",
                     "currentDeployment"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
@@ -515,250 +972,53 @@
       }
     },
     "/apps/{appId}": {
-      "get": {
-        "operationId": "apps.get",
-        "parameters": [
-          {
-            "name": "appId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "scopeId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "publicId": {
-                      "type": "string",
-                      "maxLength": 12
-                    },
-                    "projectId": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "scopeId": {
-                      "type": "string",
-                      "maxLength": 255
-                    },
-                    "name": {
-                      "type": "string",
-                      "maxLength": 127
-                    },
-                    "description": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "currentDeploymentId": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "createdAt": {
-                      "type": "string",
-                      "format": "date-time",
-                      "x-native-type": "date"
-                    },
-                    "updatedAt": {
-                      "type": "string",
-                      "format": "date-time",
-                      "x-native-type": "date"
-                    },
-                    "currentDeployment": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string",
-                              "format": "uuid"
-                            },
-                            "publicId": {
-                              "type": "string",
-                              "maxLength": 12
-                            },
-                            "appId": {
-                              "type": "string",
-                              "format": "uuid"
-                            },
-                            "status": {
-                              "enum": ["uploading", "deploying", "verifying", "published"],
-                              "type": "string"
-                            },
-                            "clientEntryFileId": {
-                              "anyOf": [
-                                {
-                                  "type": "string",
-                                  "format": "uuid"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "logoLightFileId": {
-                              "anyOf": [
-                                {
-                                  "type": "string",
-                                  "format": "uuid"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "logoDarkFileId": {
-                              "anyOf": [
-                                {
-                                  "type": "string",
-                                  "format": "uuid"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "logoLightPath": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "logoDarkPath": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "createdAt": {
-                              "type": "string",
-                              "format": "date-time",
-                              "x-native-type": "date"
-                            },
-                            "updatedAt": {
-                              "type": "string",
-                              "format": "date-time",
-                              "x-native-type": "date"
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "publicId",
-                            "appId",
-                            "status",
-                            "clientEntryFileId",
-                            "logoLightFileId",
-                            "logoDarkFileId",
-                            "logoLightPath",
-                            "logoDarkPath",
-                            "createdAt",
-                            "updatedAt"
-                          ]
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "clientPath": {
-                      "type": "string",
-                      "format": "uri"
-                    },
-                    "logoPaths": {
-                      "type": "object",
-                      "properties": {
-                        "dark": {
-                          "type": "string",
-                          "format": "uri"
-                        },
-                        "light": {
-                          "type": "string",
-                          "format": "uri"
-                        }
-                      }
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "publicId",
-                    "projectId",
-                    "scopeId",
-                    "name",
-                    "description",
-                    "currentDeploymentId",
-                    "createdAt",
-                    "updatedAt",
-                    "currentDeployment"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "operationId": "apps.delete",
         "parameters": [
           {
-            "name": "appId",
             "in": "path",
             "required": true,
+            "name": "appId",
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "scopeId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                      },
+                      "value": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "additionalProperties": {
+                          "$ref": "#/components/schemas/__schema0"
+                        }
+                      }
+                    },
+                    "required": ["name", "value"],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["scope"]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -769,10 +1029,12 @@
                   "properties": {
                     "id": {
                       "type": "string",
-                      "format": "uuid"
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
                     }
                   },
-                  "required": ["id"]
+                  "required": ["id"],
+                  "additionalProperties": false
                 }
               }
             }
@@ -783,22 +1045,12 @@
         "operationId": "apps.update",
         "parameters": [
           {
-            "name": "appId",
             "in": "path",
             "required": true,
+            "name": "appId",
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "scopeId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
           }
         ],
         "requestBody": {
@@ -822,9 +1074,31 @@
                         "type": "null"
                       }
                     ]
+                  },
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                      },
+                      "value": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "additionalProperties": {
+                          "$ref": "#/components/schemas/__schema0"
+                        }
+                      }
+                    },
+                    "required": ["name", "value"],
+                    "additionalProperties": false
                   }
                 },
-                "required": ["name", "description"]
+                "required": ["name", "description", "scope"]
               }
             }
           }
@@ -839,7 +1113,8 @@
                   "properties": {
                     "id": {
                       "type": "string",
-                      "format": "uuid"
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
                     "publicId": {
                       "type": "string",
@@ -847,11 +1122,30 @@
                     },
                     "projectId": {
                       "type": "string",
-                      "format": "uuid"
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
-                    "scopeId": {
-                      "type": "string",
-                      "maxLength": 255
+                    "scope": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
                     },
                     "name": {
                       "type": "string",
@@ -872,7 +1166,8 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "format": "uuid"
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                         },
                         {
                           "type": "null"
@@ -896,7 +1191,8 @@
                           "properties": {
                             "id": {
                               "type": "string",
-                              "format": "uuid"
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                             },
                             "publicId": {
                               "type": "string",
@@ -904,17 +1200,19 @@
                             },
                             "appId": {
                               "type": "string",
-                              "format": "uuid"
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                             },
                             "status": {
-                              "enum": ["uploading", "deploying", "verifying", "published"],
-                              "type": "string"
+                              "type": "string",
+                              "enum": ["uploading", "deploying", "verifying", "published"]
                             },
                             "clientEntryFileId": {
                               "anyOf": [
                                 {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 {
                                   "type": "null"
@@ -925,7 +1223,8 @@
                               "anyOf": [
                                 {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 {
                                   "type": "null"
@@ -936,7 +1235,8 @@
                               "anyOf": [
                                 {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 {
                                   "type": "null"
@@ -944,24 +1244,10 @@
                               ]
                             },
                             "logoLightPath": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
+                              "type": ["string", "null"]
                             },
                             "logoDarkPath": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
+                              "type": ["string", "null"]
                             },
                             "createdAt": {
                               "type": "string",
@@ -986,7 +1272,8 @@
                             "logoDarkPath",
                             "createdAt",
                             "updatedAt"
-                          ]
+                          ],
+                          "additionalProperties": false
                         },
                         {
                           "type": "null"
@@ -1008,21 +1295,23 @@
                           "type": "string",
                           "format": "uri"
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     }
                   },
                   "required": [
                     "id",
                     "publicId",
                     "projectId",
-                    "scopeId",
+                    "scope",
                     "name",
                     "description",
                     "currentDeploymentId",
                     "createdAt",
                     "updatedAt",
                     "currentDeployment"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
@@ -1035,22 +1324,12 @@
         "operationId": "apps.deploy",
         "parameters": [
           {
-            "name": "appId",
             "in": "path",
             "required": true,
+            "name": "appId",
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "scopeId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
           }
         ],
         "requestBody": {
@@ -1062,9 +1341,31 @@
                 "properties": {
                   "deploymentId": {
                     "type": "string"
+                  },
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                      },
+                      "value": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "additionalProperties": {
+                          "$ref": "#/components/schemas/__schema0"
+                        }
+                      }
+                    },
+                    "required": ["name", "value"],
+                    "additionalProperties": false
                   }
                 },
-                "required": ["deploymentId"]
+                "required": ["deploymentId", "scope"]
               }
             }
           }
@@ -1079,7 +1380,8 @@
                   "properties": {
                     "id": {
                       "type": "string",
-                      "format": "uuid"
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
                     "publicId": {
                       "type": "string",
@@ -1087,11 +1389,30 @@
                     },
                     "projectId": {
                       "type": "string",
-                      "format": "uuid"
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
-                    "scopeId": {
-                      "type": "string",
-                      "maxLength": 255
+                    "scope": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
                     },
                     "name": {
                       "type": "string",
@@ -1112,7 +1433,8 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "format": "uuid"
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                         },
                         {
                           "type": "null"
@@ -1136,7 +1458,8 @@
                           "properties": {
                             "id": {
                               "type": "string",
-                              "format": "uuid"
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                             },
                             "publicId": {
                               "type": "string",
@@ -1144,17 +1467,19 @@
                             },
                             "appId": {
                               "type": "string",
-                              "format": "uuid"
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                             },
                             "status": {
-                              "enum": ["uploading", "deploying", "verifying", "published"],
-                              "type": "string"
+                              "type": "string",
+                              "enum": ["uploading", "deploying", "verifying", "published"]
                             },
                             "clientEntryFileId": {
                               "anyOf": [
                                 {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 {
                                   "type": "null"
@@ -1165,7 +1490,8 @@
                               "anyOf": [
                                 {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 {
                                   "type": "null"
@@ -1176,7 +1502,8 @@
                               "anyOf": [
                                 {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 {
                                   "type": "null"
@@ -1184,24 +1511,10 @@
                               ]
                             },
                             "logoLightPath": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
+                              "type": ["string", "null"]
                             },
                             "logoDarkPath": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
+                              "type": ["string", "null"]
                             },
                             "createdAt": {
                               "type": "string",
@@ -1226,7 +1539,8 @@
                             "logoDarkPath",
                             "createdAt",
                             "updatedAt"
-                          ]
+                          ],
+                          "additionalProperties": false
                         },
                         {
                           "type": "null"
@@ -1248,21 +1562,23 @@
                           "type": "string",
                           "format": "uri"
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     }
                   },
                   "required": [
                     "id",
                     "publicId",
                     "projectId",
-                    "scopeId",
+                    "scope",
                     "name",
                     "description",
                     "currentDeploymentId",
                     "createdAt",
                     "updatedAt",
                     "currentDeployment"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
@@ -1280,16 +1596,34 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "scopeId": {
-                    "type": "string",
-                    "minLength": 1
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                      },
+                      "value": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "additionalProperties": {
+                          "$ref": "#/components/schemas/__schema0"
+                        }
+                      }
+                    },
+                    "required": ["name", "value"],
+                    "additionalProperties": false
                   },
                   "userCode": {
                     "type": "string",
                     "minLength": 1
                   }
                 },
-                "required": ["scopeId", "userCode"]
+                "required": ["scope", "userCode"]
               }
             }
           }
@@ -1306,7 +1640,8 @@
                       "type": "string"
                     }
                   },
-                  "required": ["id"]
+                  "required": ["id"],
+                  "additionalProperties": false
                 }
               }
             }
@@ -1346,7 +1681,8 @@
                       "type": "string"
                     }
                   },
-                  "required": ["id"]
+                  "required": ["id"],
+                  "additionalProperties": false
                 }
               }
             }
@@ -1380,24 +1716,28 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "anyOf": [
+                  "oneOf": [
                     {
                       "type": "object",
                       "properties": {
                         "status": {
+                          "type": "string",
                           "const": "pending"
                         }
                       },
-                      "required": ["status"]
+                      "required": ["status"],
+                      "additionalProperties": false
                     },
                     {
                       "type": "object",
                       "properties": {
                         "status": {
+                          "type": "string",
                           "const": "denied"
                         }
                       },
-                      "required": ["status"]
+                      "required": ["status"],
+                      "additionalProperties": false
                     },
                     {
                       "type": "object",
@@ -1405,23 +1745,46 @@
                         "deployToken": {
                           "type": "string"
                         },
-                        "scopeId": {
-                          "type": "string"
+                        "scope": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                            },
+                            "value": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              },
+                              "additionalProperties": {
+                                "$ref": "#/components/schemas/__schema0"
+                              }
+                            }
+                          },
+                          "required": ["name", "value"],
+                          "additionalProperties": false
                         },
                         "status": {
+                          "type": "string",
                           "const": "approved"
                         }
                       },
-                      "required": ["deployToken", "scopeId", "status"]
+                      "required": ["deployToken", "scope", "status"],
+                      "additionalProperties": false
                     },
                     {
                       "type": "object",
                       "properties": {
                         "status": {
+                          "type": "string",
                           "const": "expired"
                         }
                       },
-                      "required": ["status"]
+                      "required": ["status"],
+                      "additionalProperties": false
                     }
                   ]
                 }
@@ -1439,7 +1802,8 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "type": "object",
+                "properties": {}
               }
             }
           }
@@ -1464,7 +1828,8 @@
                       "type": "string"
                     }
                   },
-                  "required": ["deviceCode", "expiresAt", "userCode"]
+                  "required": ["deviceCode", "expiresAt", "userCode"],
+                  "additionalProperties": false
                 }
               }
             }
@@ -1500,11 +1865,31 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "scopeId": {
-                      "type": "string"
+                    "scope": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
                     }
                   },
-                  "required": ["scopeId"]
+                  "required": ["scope"],
+                  "additionalProperties": false
                 }
               }
             }
@@ -1512,57 +1897,64 @@
         }
       }
     },
-    "/deployments": {
-      "get": {
+    "/deployments/list": {
+      "post": {
         "operationId": "deployments.list",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 9007199254740991,
-              "default": 1
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
-          },
-          {
-            "name": "appId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
-          },
-          {
-            "name": "scopeId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "default": 1,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "pageSize": {
+                    "default": 20,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "appId": {
+                    "type": "string"
+                  },
+                  "scopes": {
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": ["appId", "scopes"]
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -1578,7 +1970,8 @@
                         "properties": {
                           "id": {
                             "type": "string",
-                            "format": "uuid"
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                           },
                           "publicId": {
                             "type": "string",
@@ -1586,17 +1979,19 @@
                           },
                           "appId": {
                             "type": "string",
-                            "format": "uuid"
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                           },
                           "status": {
-                            "enum": ["uploading", "deploying", "verifying", "published"],
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["uploading", "deploying", "verifying", "published"]
                           },
                           "clientEntryFileId": {
                             "anyOf": [
                               {
                                 "type": "string",
-                                "format": "uuid"
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                               },
                               {
                                 "type": "null"
@@ -1607,7 +2002,8 @@
                             "anyOf": [
                               {
                                 "type": "string",
-                                "format": "uuid"
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                               },
                               {
                                 "type": "null"
@@ -1618,7 +2014,8 @@
                             "anyOf": [
                               {
                                 "type": "string",
-                                "format": "uuid"
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                               },
                               {
                                 "type": "null"
@@ -1626,24 +2023,10 @@
                             ]
                           },
                           "logoLightPath": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
+                            "type": ["string", "null"]
                           },
                           "logoDarkPath": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
+                            "type": ["string", "null"]
                           },
                           "createdAt": {
                             "type": "string",
@@ -1668,7 +2051,8 @@
                           "logoDarkPath",
                           "createdAt",
                           "updatedAt"
-                        ]
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "pagination": {
@@ -1688,16 +2072,173 @@
                           "maximum": 100
                         }
                       },
-                      "required": ["hasMore", "page", "pageSize"]
+                      "required": ["hasMore", "page", "pageSize"],
+                      "additionalProperties": false
                     }
                   },
-                  "required": ["items", "pagination"]
+                  "required": ["items", "pagination"],
+                  "additionalProperties": false
                 }
               }
             }
           }
         }
-      },
+      }
+    },
+    "/deployments/{deploymentId}/lookup": {
+      "post": {
+        "operationId": "deployments.get",
+        "parameters": [
+          {
+            "in": "path",
+            "required": true,
+            "name": "deploymentId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scopes": {
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": ["scopes"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "publicId": {
+                      "type": "string",
+                      "maxLength": 12
+                    },
+                    "appId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["uploading", "deploying", "verifying", "published"]
+                    },
+                    "clientEntryFileId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "logoLightFileId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "logoDarkFileId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "logoLightPath": {
+                      "type": ["string", "null"]
+                    },
+                    "logoDarkPath": {
+                      "type": ["string", "null"]
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "x-native-type": "date"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "x-native-type": "date"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "publicId",
+                    "appId",
+                    "status",
+                    "clientEntryFileId",
+                    "logoLightFileId",
+                    "logoDarkFileId",
+                    "logoLightPath",
+                    "logoDarkPath",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/deployments": {
       "post": {
         "operationId": "deployments.create",
         "requestBody": {
@@ -1726,12 +2267,15 @@
                             "maximum": 9007199254740991
                           },
                           "contentType": {
+                            "type": "string",
                             "const": "application/javascript"
                           },
                           "encoding": {
+                            "type": "string",
                             "const": "utf-8"
                           },
                           "objectKey": {
+                            "type": "string",
                             "const": "client.js"
                           }
                         },
@@ -1743,6 +2287,42 @@
                           "objectKey"
                         ]
                       }
+                    ],
+                    "items": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  },
+                  "server": {
+                    "type": "object",
+                    "properties": {
+                      "checksum": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "contentLength": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1048576
+                      },
+                      "contentType": {
+                        "type": "string",
+                        "const": "application/javascript"
+                      },
+                      "encoding": {
+                        "type": "string",
+                        "const": "utf-8"
+                      },
+                      "objectKey": {
+                        "type": "string",
+                        "const": "server.js"
+                      }
+                    },
+                    "required": [
+                      "checksum",
+                      "contentLength",
+                      "contentType",
+                      "encoding",
+                      "objectKey"
                     ]
                   },
                   "logos": {
@@ -1761,8 +2341,8 @@
                             "maximum": 262144
                           },
                           "contentType": {
-                            "enum": ["image/svg+xml", "image/png", "image/webp"],
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["image/svg+xml", "image/png", "image/webp"]
                           }
                         },
                         "required": ["checksum", "contentLength", "contentType"]
@@ -1780,19 +2360,38 @@
                             "maximum": 262144
                           },
                           "contentType": {
-                            "enum": ["image/svg+xml", "image/png", "image/webp"],
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["image/svg+xml", "image/png", "image/webp"]
                           }
                         },
                         "required": ["checksum", "contentLength", "contentType"]
                       }
                     }
                   },
-                  "scopeId": {
-                    "type": "string"
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                      },
+                      "value": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "additionalProperties": {
+                          "$ref": "#/components/schemas/__schema0"
+                        }
+                      }
+                    },
+                    "required": ["name", "value"],
+                    "additionalProperties": false
                   }
                 },
-                "required": ["appId", "assets", "scopeId"]
+                "required": ["appId", "assets", "scope"]
               }
             }
           }
@@ -1815,11 +2414,13 @@
                             "properties": {
                               "id": {
                                 "type": "string",
-                                "format": "uuid"
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                               },
                               "appDeploymentId": {
                                 "type": "string",
-                                "format": "uuid"
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                               },
                               "objectKey": {
                                 "type": "string",
@@ -1827,19 +2428,19 @@
                                 "pattern": "^(?:[a-zA-Z0-9._-]+\\/)*[a-zA-Z0-9._-]+\\.[a-zA-Z0-9]+$"
                               },
                               "contentType": {
+                                "type": "string",
                                 "enum": [
                                   "application/javascript",
                                   "image/svg+xml",
                                   "image/png",
                                   "image/webp"
-                                ],
-                                "type": "string"
+                                ]
                               },
                               "encoding": {
                                 "anyOf": [
                                   {
-                                    "enum": ["utf-8"],
-                                    "type": "string"
+                                    "type": "string",
+                                    "enum": ["utf-8"]
                                   },
                                   {
                                     "type": "null"
@@ -1863,8 +2464,8 @@
                                 ]
                               },
                               "status": {
-                                "enum": ["uploading", "verifying", "verified", "failed"],
-                                "type": "string"
+                                "type": "string",
+                                "enum": ["uploading", "verifying", "verified", "failed"]
                               },
                               "createdAt": {
                                 "type": "string",
@@ -1888,7 +2489,8 @@
                               "status",
                               "createdAt",
                               "updatedAt"
-                            ]
+                            ],
+                            "additionalProperties": false
                           },
                           "headers": {
                             "type": "object",
@@ -1904,15 +2506,120 @@
                             "format": "uri"
                           }
                         },
-                        "required": ["file", "uploadUrl"]
+                        "required": ["file", "uploadUrl"],
+                        "additionalProperties": false
                       }
+                    },
+                    "server": {
+                      "type": "object",
+                      "properties": {
+                        "file": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "appDeploymentId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "objectKey": {
+                              "type": "string",
+                              "maxLength": 512,
+                              "pattern": "^(?:[a-zA-Z0-9._-]+\\/)*[a-zA-Z0-9._-]+\\.[a-zA-Z0-9]+$"
+                            },
+                            "contentType": {
+                              "type": "string",
+                              "enum": [
+                                "application/javascript",
+                                "image/svg+xml",
+                                "image/png",
+                                "image/webp"
+                              ]
+                            },
+                            "encoding": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "enum": ["utf-8"]
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "contentLength": {
+                              "type": "integer",
+                              "minimum": -2147483648,
+                              "maximum": 2147483647
+                            },
+                            "checksum": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "maxLength": 64
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": ["uploading", "verifying", "verified", "failed"]
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "x-native-type": "date"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "x-native-type": "date"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "appDeploymentId",
+                            "objectKey",
+                            "contentType",
+                            "encoding",
+                            "contentLength",
+                            "checksum",
+                            "status",
+                            "createdAt",
+                            "updatedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "headers": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "uploadUrl": {
+                          "type": "string",
+                          "format": "uri"
+                        }
+                      },
+                      "required": ["file", "uploadUrl"],
+                      "additionalProperties": false
                     },
                     "deployment": {
                       "type": "object",
                       "properties": {
                         "id": {
                           "type": "string",
-                          "format": "uuid"
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                         },
                         "publicId": {
                           "type": "string",
@@ -1920,17 +2627,19 @@
                         },
                         "appId": {
                           "type": "string",
-                          "format": "uuid"
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                         },
                         "status": {
-                          "enum": ["uploading", "deploying", "verifying", "published"],
-                          "type": "string"
+                          "type": "string",
+                          "enum": ["uploading", "deploying", "verifying", "published"]
                         },
                         "clientEntryFileId": {
                           "anyOf": [
                             {
                               "type": "string",
-                              "format": "uuid"
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                             },
                             {
                               "type": "null"
@@ -1941,7 +2650,8 @@
                           "anyOf": [
                             {
                               "type": "string",
-                              "format": "uuid"
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                             },
                             {
                               "type": "null"
@@ -1952,7 +2662,8 @@
                           "anyOf": [
                             {
                               "type": "string",
-                              "format": "uuid"
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                             },
                             {
                               "type": "null"
@@ -1960,24 +2671,10 @@
                           ]
                         },
                         "logoLightPath": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                          "type": ["string", "null"]
                         },
                         "logoDarkPath": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                          "type": ["string", "null"]
                         },
                         "createdAt": {
                           "type": "string",
@@ -2002,7 +2699,8 @@
                         "logoDarkPath",
                         "createdAt",
                         "updatedAt"
-                      ]
+                      ],
+                      "additionalProperties": false
                     },
                     "logos": {
                       "type": "object",
@@ -2015,11 +2713,13 @@
                               "properties": {
                                 "id": {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 "appDeploymentId": {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 "objectKey": {
                                   "type": "string",
@@ -2027,14 +2727,14 @@
                                   "pattern": "^(?:[a-zA-Z0-9._-]+\\/)*[a-zA-Z0-9._-]+\\.[a-zA-Z0-9]+$"
                                 },
                                 "contentType": {
-                                  "enum": ["image/svg+xml", "image/png", "image/webp"],
-                                  "type": "string"
+                                  "type": "string",
+                                  "enum": ["image/svg+xml", "image/png", "image/webp"]
                                 },
                                 "encoding": {
                                   "anyOf": [
                                     {
-                                      "enum": ["utf-8"],
-                                      "type": "string"
+                                      "type": "string",
+                                      "enum": ["utf-8"]
                                     },
                                     {
                                       "type": "null"
@@ -2058,8 +2758,8 @@
                                   ]
                                 },
                                 "status": {
-                                  "enum": ["uploading", "verifying", "verified", "failed"],
-                                  "type": "string"
+                                  "type": "string",
+                                  "enum": ["uploading", "verifying", "verified", "failed"]
                                 },
                                 "createdAt": {
                                   "type": "string",
@@ -2083,7 +2783,8 @@
                                 "status",
                                 "createdAt",
                                 "updatedAt"
-                              ]
+                              ],
+                              "additionalProperties": false
                             },
                             "headers": {
                               "type": "object",
@@ -2099,7 +2800,8 @@
                               "format": "uri"
                             }
                           },
-                          "required": ["file"]
+                          "required": ["file"],
+                          "additionalProperties": false
                         },
                         "light": {
                           "type": "object",
@@ -2109,11 +2811,13 @@
                               "properties": {
                                 "id": {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 "appDeploymentId": {
                                   "type": "string",
-                                  "format": "uuid"
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                                 },
                                 "objectKey": {
                                   "type": "string",
@@ -2121,14 +2825,14 @@
                                   "pattern": "^(?:[a-zA-Z0-9._-]+\\/)*[a-zA-Z0-9._-]+\\.[a-zA-Z0-9]+$"
                                 },
                                 "contentType": {
-                                  "enum": ["image/svg+xml", "image/png", "image/webp"],
-                                  "type": "string"
+                                  "type": "string",
+                                  "enum": ["image/svg+xml", "image/png", "image/webp"]
                                 },
                                 "encoding": {
                                   "anyOf": [
                                     {
-                                      "enum": ["utf-8"],
-                                      "type": "string"
+                                      "type": "string",
+                                      "enum": ["utf-8"]
                                     },
                                     {
                                       "type": "null"
@@ -2152,8 +2856,8 @@
                                   ]
                                 },
                                 "status": {
-                                  "enum": ["uploading", "verifying", "verified", "failed"],
-                                  "type": "string"
+                                  "type": "string",
+                                  "enum": ["uploading", "verifying", "verified", "failed"]
                                 },
                                 "createdAt": {
                                   "type": "string",
@@ -2177,7 +2881,8 @@
                                 "status",
                                 "createdAt",
                                 "updatedAt"
-                              ]
+                              ],
+                              "additionalProperties": false
                             },
                             "headers": {
                               "type": "object",
@@ -2193,12 +2898,15 @@
                               "format": "uri"
                             }
                           },
-                          "required": ["file"]
+                          "required": ["file"],
+                          "additionalProperties": false
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     }
                   },
-                  "required": ["assets", "deployment"]
+                  "required": ["assets", "deployment"],
+                  "additionalProperties": false
                 }
               }
             }
@@ -2207,142 +2915,13 @@
       }
     },
     "/deployments/{deploymentId}": {
-      "get": {
-        "operationId": "deployments.get",
-        "parameters": [
-          {
-            "name": "deploymentId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "scopeId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "allowEmptyValue": true,
-            "allowReserved": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "publicId": {
-                      "type": "string",
-                      "maxLength": 12
-                    },
-                    "appId": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "status": {
-                      "enum": ["uploading", "deploying", "verifying", "published"],
-                      "type": "string"
-                    },
-                    "clientEntryFileId": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "logoLightFileId": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "logoDarkFileId": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "logoLightPath": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "logoDarkPath": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "createdAt": {
-                      "type": "string",
-                      "format": "date-time",
-                      "x-native-type": "date"
-                    },
-                    "updatedAt": {
-                      "type": "string",
-                      "format": "date-time",
-                      "x-native-type": "date"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "publicId",
-                    "appId",
-                    "status",
-                    "clientEntryFileId",
-                    "logoLightFileId",
-                    "logoDarkFileId",
-                    "logoLightPath",
-                    "logoDarkPath",
-                    "createdAt",
-                    "updatedAt"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
       "post": {
         "operationId": "deployments.publish",
         "parameters": [
           {
-            "name": "deploymentId",
             "in": "path",
             "required": true,
+            "name": "deploymentId",
             "schema": {
               "type": "string"
             }
@@ -2355,15 +2934,34 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "scopeId": {
-                    "type": "string"
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                      },
+                      "value": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "additionalProperties": {
+                          "$ref": "#/components/schemas/__schema0"
+                        }
+                      }
+                    },
+                    "required": ["name", "value"],
+                    "additionalProperties": false
                   },
                   "rollout": {
-                    "type": "boolean",
-                    "default": true
+                    "default": true,
+                    "type": "boolean"
                   }
                 },
-                "required": ["scopeId"]
+                "required": ["scope"]
               }
             }
           }
@@ -2378,7 +2976,8 @@
                   "properties": {
                     "id": {
                       "type": "string",
-                      "format": "uuid"
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
                     "publicId": {
                       "type": "string",
@@ -2386,17 +2985,19 @@
                     },
                     "appId": {
                       "type": "string",
-                      "format": "uuid"
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
                     "status": {
-                      "enum": ["uploading", "deploying", "verifying", "published"],
-                      "type": "string"
+                      "type": "string",
+                      "enum": ["uploading", "deploying", "verifying", "published"]
                     },
                     "clientEntryFileId": {
                       "anyOf": [
                         {
                           "type": "string",
-                          "format": "uuid"
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                         },
                         {
                           "type": "null"
@@ -2407,7 +3008,8 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "format": "uuid"
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                         },
                         {
                           "type": "null"
@@ -2418,7 +3020,8 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "format": "uuid"
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                         },
                         {
                           "type": "null"
@@ -2426,24 +3029,10 @@
                       ]
                     },
                     "logoLightPath": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
+                      "type": ["string", "null"]
                     },
                     "logoDarkPath": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
+                      "type": ["string", "null"]
                     },
                     "createdAt": {
                       "type": "string",
@@ -2468,7 +3057,626 @@
                     "logoDarkPath",
                     "createdAt",
                     "updatedAt"
-                  ]
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apps/{appId}/runtime": {
+      "post": {
+        "operationId": "deployments.runtime",
+        "parameters": [
+          {
+            "in": "path",
+            "required": true,
+            "name": "appId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "appId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "deploymentId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "objectKey": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4096
+                    },
+                    "checksum": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "contentLength": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "projectId",
+                    "appId",
+                    "deploymentId",
+                    "objectKey",
+                    "checksum",
+                    "contentLength"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/preview/start": {
+      "post": {
+        "operationId": "preview.start",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "appId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "deployToken": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "replaceActive": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["appId", "deployToken"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "x-native-type": "date"
+                    },
+                    "sessionId": {
+                      "type": "string"
+                    },
+                    "tunnelToken": {
+                      "type": "string"
+                    },
+                    "tunnelUrl": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "shareId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["expiresAt", "sessionId", "tunnelToken", "tunnelUrl", "shareId"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/preview/{sessionId}/stop": {
+      "post": {
+        "operationId": "preview.stop",
+        "parameters": [
+          {
+            "in": "path",
+            "required": true,
+            "name": "sessionId",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "deployToken": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": ["deployToken"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/preview/shares/{shareId}": {
+      "get": {
+        "operationId": "preview.invitation",
+        "parameters": [
+          {
+            "in": "path",
+            "required": true,
+            "name": "shareId",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "appName": {
+                      "type": "string"
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "x-native-type": "date"
+                    },
+                    "sessionId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": ["appName", "expiresAt", "sessionId"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/preview/shares/{shareId}/accept": {
+      "post": {
+        "operationId": "preview.accept",
+        "parameters": [
+          {
+            "in": "path",
+            "required": true,
+            "name": "shareId",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                      },
+                      "value": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "additionalProperties": {
+                          "$ref": "#/components/schemas/__schema0"
+                        }
+                      }
+                    },
+                    "required": ["name", "value"],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["scope"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "grantId": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{43}$"
+                    },
+                    "sessionId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": ["grantId", "sessionId"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/preview/grants/resolve": {
+      "post": {
+        "operationId": "preview.accepted",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "grantIds": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{43}$"
+                    }
+                  },
+                  "scopes": {
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": ["grantIds", "scopes"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "app": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "publicId": {
+                                "type": "string",
+                                "maxLength": 12
+                              },
+                              "projectId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "scope": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": "string",
+                                    "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                                  },
+                                  "value": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 64
+                                    },
+                                    "additionalProperties": {
+                                      "$ref": "#/components/schemas/__schema0"
+                                    }
+                                  }
+                                },
+                                "required": ["name", "value"],
+                                "additionalProperties": false
+                              },
+                              "name": {
+                                "type": "string",
+                                "maxLength": 127
+                              },
+                              "description": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 255
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "currentDeploymentId": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "x-native-type": "date"
+                              },
+                              "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "x-native-type": "date"
+                              },
+                              "currentDeployment": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                      },
+                                      "publicId": {
+                                        "type": "string",
+                                        "maxLength": 12
+                                      },
+                                      "appId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                      },
+                                      "status": {
+                                        "type": "string",
+                                        "enum": ["uploading", "deploying", "verifying", "published"]
+                                      },
+                                      "clientEntryFileId": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "logoLightFileId": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "logoDarkFileId": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "logoLightPath": {
+                                        "type": ["string", "null"]
+                                      },
+                                      "logoDarkPath": {
+                                        "type": ["string", "null"]
+                                      },
+                                      "createdAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "x-native-type": "date"
+                                      },
+                                      "updatedAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "x-native-type": "date"
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "publicId",
+                                      "appId",
+                                      "status",
+                                      "clientEntryFileId",
+                                      "logoLightFileId",
+                                      "logoDarkFileId",
+                                      "logoLightPath",
+                                      "logoDarkPath",
+                                      "createdAt",
+                                      "updatedAt"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "clientPath": {
+                                "type": "string",
+                                "format": "uri"
+                              },
+                              "logoPaths": {
+                                "type": "object",
+                                "properties": {
+                                  "dark": {
+                                    "type": "string",
+                                    "format": "uri"
+                                  },
+                                  "light": {
+                                    "type": "string",
+                                    "format": "uri"
+                                  }
+                                },
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "publicId",
+                              "projectId",
+                              "scope",
+                              "name",
+                              "description",
+                              "currentDeploymentId",
+                              "createdAt",
+                              "updatedAt",
+                              "currentDeployment"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "preview": {
+                            "type": "object",
+                            "properties": {
+                              "sessionId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "expiresAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "x-native-type": "date"
+                              },
+                              "websocketUrl": {
+                                "type": "string",
+                                "format": "uri"
+                              },
+                              "token": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["sessionId", "expiresAt", "websocketUrl", "token"],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": ["app", "preview"],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": ["items"],
+                  "additionalProperties": false
                 }
               }
             }

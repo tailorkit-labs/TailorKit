@@ -109,21 +109,31 @@ events. See [Actions](/docs/integrate/actions) for the security boundary.
 
 ## Build and preview
 
-Run the TailorKit preview server while developing an app.
+Before starting a preview, authenticate the CLI and deploy the app once:
+
+```sh
+pnpm exec tailorkit login
+pnpm deploy
+```
+
+On the host's approval page, choose the named scope this CLI session should use.
+The resulting deploy token is bound to that scope.
+
+When prompted, create the TailorKit app. The first deployment records its
+`appId` in `tailorkit.config.ts`.
+
+Run a TailorKit preview session while developing an app.
 
 ```bash
-pnpm exec tailorkit experimental-preview
+pnpm exec tailorkit preview
 ```
 
-The preview server builds the app client and exposes an app registry:
-
-```txt
-GET /apps
-GET /client.js
-```
-
-The host React client can point its `createTailorKitClient({ baseUrl })`
-configuration at that preview server during local app development.
+The CLI builds the app in Vite watch mode and uploads complete successful
+builds to TailorKit in bounded chunks. Open the printed host link, sign in,
+and choose **Accept preview**. The accepted app runs in the host sandbox with
+your host context and action permissions. Each complete rebuild replaces the
+iframe; failed builds leave the last successful version running. Stop the CLI
+to end the preview. No local HTTP server is started.
 
 Build the production bundle without starting a server:
 
@@ -131,10 +141,9 @@ Build the production bundle without starting a server:
 pnpm build
 ```
 
-Deploy after authenticating the CLI with the host:
+Deploy a production bundle:
 
 ```sh
-pnpm exec tailorkit login
 pnpm deploy
 ```
 

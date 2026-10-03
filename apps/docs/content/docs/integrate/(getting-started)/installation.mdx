@@ -57,6 +57,8 @@ const action = createActions().context<{
 
 export const tailorKit = createTailorKit({
   projectKey: process.env.TAILORKIT_PROJECT_KEY,
+  // Give each app installation boundary a stable name and identity schema.
+  scopes: { user: z.object({ userId: z.string().min(1) }) },
 
   components: {
     // These provide basic layout and styling abilities.
@@ -74,11 +76,9 @@ export const tailorKit = createTailorKit({
   },
 
   slots: { panel: { views: ["/"] } },
-  views: {
+  contexts: {
     // Define the host context layers available to app views.
-    "/": {
-      context: z.object({}),
-    },
+    "/": z.object({}),
   },
 
   actions: {
@@ -113,6 +113,13 @@ Pass your app's auth check as `authenticate` instead of blocking requests before
 `tailorKit.handler`. TailorKit applies the appropriate authentication to each
 route, including its CLI deployment flow.
 
+Each entry in `scopes` names an app installation boundary, such as `user` or
+`organization`. Return the matching values from the authenticated session under
+the same names. Use stable opaque IDs for those values; TailorKit validates and
+sends them to the platform to match and display installations. When someone
+approves a CLI login, the approval page asks them to choose one named scope for
+that deploy token.
+
 ```ts title="app/api/tailorkit/[...tailorkit]/route.ts" tab="Next.js (App)"
 import { auth } from "#lib/auth";
 import { tailorKit } from "#lib/tailorkit";
@@ -129,8 +136,8 @@ async function handleRequest(request: Request) {
 
       return {
         actionContext: { user: session.user },
-        // Used to separate installed apps for each user, team, or project.
-        scopeId: session.user.id,
+        // This groups installed apps for the current user.
+        scopes: { user: { userId: session.user.id } },
       };
     },
   });
@@ -166,8 +173,8 @@ async function handleRequest({ request }: { request: Request }) {
 
       return {
         actionContext: { user: session.user },
-        // Used to separate installed apps for each user, team, or project.
-        scopeId: session.user.id,
+        // This groups installed apps for the current user.
+        scopes: { user: { userId: session.user.id } },
       };
     },
   });
@@ -191,8 +198,8 @@ async function handleRequest(request: Request) {
 
       return {
         actionContext: { user: session.user },
-        // Used to separate installed apps for each user, team, or project.
-        scopeId: session.user.id,
+        // This groups installed apps for the current user.
+        scopes: { user: { userId: session.user.id } },
       };
     },
   });
@@ -225,8 +232,8 @@ export default defineEventHandler(async (event) => {
 
       return {
         actionContext: { user: session.user },
-        // Used to separate installed apps for each user, team, or project.
-        scopeId: session.user.id,
+        // This groups installed apps for the current user.
+        scopes: { user: { userId: session.user.id } },
       };
     },
   });
@@ -252,8 +259,8 @@ app.on(["GET", "POST"], "/api/tailorkit/*", async (c) => {
 
       return {
         actionContext: { user: session.user },
-        // Used to separate installed apps for each user, team, or project.
-        scopeId: session.user.id,
+        // This groups installed apps for the current user.
+        scopes: { user: { userId: session.user.id } },
       };
     },
   });
@@ -270,9 +277,9 @@ export default app;
 The TailorKit client connects your frontend to the TailorKit API handler and
 maps the components from your TailorKit config to components in your app.
 
-Create `tailorkit-client.ts` in your frontend, wherever you keep client-side utilities.
+Create `tailorkit-client.tsx` in your frontend, wherever you keep client-side utilities.
 
-```tsx title="./src/lib/tailorkit-client.ts" tab="React"
+```tsx title="./src/lib/tailorkit-client.tsx" tab="React"
 import { Button } from "@/components/button";
 import type { tailorKit } from "./tailorkit";
 import { createTailorKitClient, primitives } from "tailorkit/react";
@@ -292,18 +299,16 @@ export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
   },
 });
 
-declare module "tailorkit/react" {
-  interface Register {
-    client: typeof tailorKitClient;
-  }
-}
+export const { AppView, useApps, useView } = tailorKitClient;
 
 export default tailorKitClient;
 ```
 
 Use an absolute URL, or construct a URL from `window.location.origin` in a
-browser-only integration. Wrap the host in `<Root client={tailorKitClient}>`
-and import `AppView`, `useApps`, and `useView` from `tailorkit/react`.
+browser-only integration. Export `AppView`, `useApps`, and `useView` from the
+configured client so their types come from `tailorKit` without module
+augmentation. Import `Root` from `tailorkit/react` and pass it the client; use
+the other helpers beneath it.
 See [Add views and slots](/docs/integrate/views) for the complete React setup.
 
 </Step>
@@ -321,7 +326,7 @@ GET /api/tailorkit/apps
 
 The schema and metadata endpoints describe your public app contract. The apps
 endpoint requires a valid host session and returns the apps installed for the
-authenticated `scopeId`.
+authenticated scopes. Each scope is named by the schema key, such as `user`.
 
 🎉 TailorKit is installed.
 

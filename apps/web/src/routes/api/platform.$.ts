@@ -1,7 +1,8 @@
+import { handlePublicRuntimeRequest } from "@tailorkit/api-platform/routes/runtime";
 import { onError } from "@orpc/server";
 import { createContext } from "@tailorkit/api-platform/context";
 import { platformRouter } from "@tailorkit/api-platform";
-import { RatelimitHandlerPlugin } from "@tailorkit/api-utils/rate-limiting";
+import { RateLimitHandlerPlugin } from "@tailorkit/api-utils/rate-limiting";
 import { createFileRoute } from "@tanstack/react-router";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import {
@@ -12,7 +13,7 @@ import {
 } from "@tailorkit/observability";
 
 const handler = new OpenAPIHandler(platformRouter, {
-  plugins: [new RatelimitHandlerPlugin()],
+  plugins: [new RateLimitHandlerPlugin()],
   interceptors: [
     onError((error) => {
       recordException(error, { "tailorkit.adapter": "orpc-openapi" });
@@ -27,6 +28,9 @@ async function handle({ request }: { request: Request }) {
     "tailorkit.adapter": "orpc-openapi",
     "tailorkit.package": "apps-web",
   });
+
+  const publicResponse = handlePublicRuntimeRequest(request);
+  if (publicResponse) return publicResponse;
 
   const context = await createContext({ request }).catch((error) => {
     recordException(error, { "tailorkit.adapter": "orpc-openapi" });

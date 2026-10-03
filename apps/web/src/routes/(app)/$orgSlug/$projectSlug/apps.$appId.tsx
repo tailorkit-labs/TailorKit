@@ -5,29 +5,16 @@ import { flexRender, useTable } from "@tanstack/react-table";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import { ArrowLeftIcon, RocketIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Badge } from "@tailorkit/ui/components/badge";
-import { Button } from "@tailorkit/ui/components/button";
+import { Badge } from "@tailorkit/ui/badge";
+import { Button } from "@tailorkit/ui/button";
 import {
   CardFrame,
   CardFrameDescription,
   CardFrameHeader,
   CardFrameTitle,
-} from "@tailorkit/ui/components/card";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@tailorkit/ui/components/empty";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@tailorkit/ui/components/table";
+} from "@tailorkit/ui/card";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@tailorkit/ui/empty";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tailorkit/ui/table";
 import { DateAgo } from "@tailorkit/ui/date";
 import { AppLogo } from "#components/apps/app-logo";
 import { renderSortableHeader } from "#components/members/member-table-utils";
@@ -37,7 +24,7 @@ import { dataTableFeatures } from "#lib/table";
 
 export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug/apps/$appId")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(
+    context.queryClient.query(
       context.orpc.apps.get.queryOptions({
         input: {
           appId: params.appId,
@@ -179,7 +166,7 @@ function AppPage() {
           Back to apps
         </Button>
       }
-      description={app.description || `Scope: ${app.scopeId}`}
+      description={app.description || "App and deployment details."}
       title={
         <span className="flex items-center gap-3">
           <AppLogo className="size-11" logoPaths={app.logoPaths} name={app.name} />
@@ -187,7 +174,26 @@ function AppPage() {
         </span>
       }
     >
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <CardFrame>
+          <CardFrameHeader>
+            <CardFrameTitle>Installation scope</CardFrameTitle>
+            <CardFrameDescription className="min-w-0 w-full">
+              <div className="grid min-w-0 w-full gap-2">
+                <Badge
+                  className="max-w-full min-w-0 break-all whitespace-normal"
+                  size="sm"
+                  variant="outline"
+                >
+                  {app.scope.name}
+                </Badge>
+                <pre className="max-h-64 max-w-full overflow-auto rounded-md border bg-muted/40 p-3 font-mono text-foreground text-xs">
+                  {JSON.stringify(app.scope.value, null, 2)}
+                </pre>
+              </div>
+            </CardFrameDescription>
+          </CardFrameHeader>
+        </CardFrame>
         <CardFrame>
           <CardFrameHeader>
             <CardFrameTitle>Current deployment</CardFrameTitle>

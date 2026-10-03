@@ -2,7 +2,7 @@
 
 import { CheckboxGroup as CheckboxGroupPrimitive } from "@base-ui/react/checkbox-group";
 import type React from "react";
-import { cn } from "@tailorkit/ui/lib/utils";
+import { cn } from "#ui";
 
 export function CheckboxGroup({
   className,

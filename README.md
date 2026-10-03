@@ -38,7 +38,7 @@ not a supported deployment model.
 1. A host defines a TailorKit schema: scopes, components, theme tokens, and
    server actions.
 2. Apps are built against that schema.
-3. Host routes call `useScope` to publish their typed context.
+3. Host routes authenticate requests and publish named scopes and action context.
 4. The host renders installed apps with `AppView`.
 5. TailorKit loads app code inside an opaque-origin iframe sandbox and proxies
    declarative UI/events across the host boundary.

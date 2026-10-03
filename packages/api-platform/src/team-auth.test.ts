@@ -1,5 +1,5 @@
 import { createHmac } from "node:crypto";
-import { afterAll, describe, expect, it, vi } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vite-plus/test";
 import { user } from "@tailorkit/db/schema/auth";
 import { createTestDb } from "./test/pglite";
 

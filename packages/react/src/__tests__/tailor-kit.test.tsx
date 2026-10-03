@@ -1,23 +1,33 @@
-import { Root, AppView, useApps, useView } from "../index";
+import { Root, AppView } from "../index";
 import { act, cleanup, render, screen as testingView, waitFor } from "@testing-library/react";
 import { createElement, StrictMode } from "react";
 import type { ReactNode } from "react";
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from "@standard-schema/spec";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { createTailorKitServer } from "@tailorkit/core/server";
 import type { IframeUiHost } from "@tailorkit/sandbox/host";
 import type { HostToIframePayload, RemoteNode } from "@tailorkit/sandbox/protocol";
-import { createTailorKitClient } from "../tailor-kit";
-import type { TailorKitApp } from "../tailor-kit";
+import { createTailorKitClient } from "../tailorkit";
+import { RemoteViewHost } from "../remote-view";
+import { createTailorKitStore } from "../store";
+import type { TailorKitApp } from "../tailorkit";
 
-const hostRecords: { appUrl: string; props: Record<string, unknown> | undefined }[] = [];
+const hostRecords: {
+  appUrl: string;
+  props: Record<string, unknown> | undefined;
+  sourceText?: string;
+}[] = [];
 
 vi.mock("@tailorkit/sandbox/host", () => ({
   createIframeUiHost: (
     appUrl: string | URL,
-    options: { props?: Record<string, unknown> } = {},
+    options: { props?: Record<string, unknown>; sourceText?: string } = {},
   ): IframeUiHost => {
-    const record = { appUrl: appUrl.toString(), props: options.props };
+    const record = {
+      appUrl: appUrl.toString(),
+      props: options.props,
+      sourceText: options.sourceText,
+    };
     hostRecords.push(record);
 
     const tree: RemoteNode = {
@@ -64,6 +74,11 @@ const emptySchema: StandardSchemaV1<unknown, Record<never, never>> &
 } as const;
 
 const server = createTailorKitServer({
+  scopes: {
+    organization: emptySchema,
+    test: emptySchema,
+    user: emptySchema,
+  },
   slots: {
     panel: { views: ["/", "/home", "/home/detail", "/user"] },
     navbar: { views: ["/"] },
@@ -71,11 +86,11 @@ const server = createTailorKitServer({
   components: {
     Button: { children: true },
   },
-  views: {
-    "/": { context: emptySchema },
-    "/home": { context: emptySchema },
-    "/home/detail": { context: emptySchema },
-    "/user": { context: emptySchema },
+  contexts: {
+    "/": emptySchema,
+    "/home": emptySchema,
+    "/home/detail": emptySchema,
+    "/user": emptySchema,
   },
 });
 
@@ -87,10 +102,12 @@ const schema = server.$internal.schema;
 
 function CurrentViewRoute({
   nested,
+  tailor,
 }: {
   nested: boolean;
   tailor: ReturnType<typeof createTailorKitClient<typeof server>>;
 }) {
+  const { useView } = tailor;
   useView(
     nested ? "/home/detail" : "/home",
     nested
@@ -121,15 +138,36 @@ function CurrentViewHost({
 
 function HomeAppView({
   app,
+  tailor,
 }: {
   app: TailorKitApp;
   tailor: ReturnType<typeof createTailorKitClient<typeof server>>;
 }) {
+  const { useView } = tailor;
   useView("/home", { context: { page: { title: "home" } } });
   return <AppView slot="panel" app={app} />;
 }
 
 describe("tailorKitClient React adapter", () => {
+  it("recreates the sandbox when a complete preview source revision changes", () => {
+    const { rerender } = render(
+      <RemoteViewHost
+        appUrl="https://host.test/client.js"
+        sourceText="one"
+        components={{ Button: () => null }}
+      />,
+    );
+    expect(hostRecords.at(-1)?.sourceText).toBe("one");
+    rerender(
+      <RemoteViewHost
+        appUrl="https://host.test/client.js"
+        sourceText="two"
+        components={{ Button: () => null }}
+      />,
+    );
+    expect(hostRecords.at(-1)?.sourceText).toBe("two");
+    expect(hostRecords).toHaveLength(2);
+  });
   beforeEach(() => {
     hostRecords.length = 0;
     vi.restoreAllMocks();
@@ -143,6 +181,73 @@ describe("tailorKitClient React adapter", () => {
 
   afterEach(() => {
     cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it("keeps a preview subscription when an inline app is rendered again", async () => {
+    vi.mocked(globalThis.fetch).mockImplementation((input) =>
+      Promise.resolve(
+        input instanceof URL && input.pathname.endsWith("/preview/metadata")
+          ? new Response(null, { status: 503 })
+          : Response.json({ assetsBaseUrl: "http://assets.test/", schema: schema.serialize() }),
+      ),
+    );
+    class PreviewSocket extends EventTarget {
+      static instances: PreviewSocket[] = [];
+      closed = false;
+      readonly protocol: string;
+
+      constructor(_url: string, protocol: string) {
+        super();
+        this.protocol = protocol;
+        PreviewSocket.instances.push(this);
+      }
+
+      close() {
+        this.closed = true;
+        this.dispatchEvent(new Event("close"));
+      }
+    }
+    vi.stubGlobal("WebSocket", PreviewSocket);
+    const tailor = createTailorKitClient<typeof server>({
+      baseUrl: "http://runtime.test/api/tailorkit",
+      components,
+    });
+    const suppliedApps: TailorKitApp[] = [];
+    const content = (token: string) => (
+      <Root client={tailor} apps={suppliedApps}>
+        <HomeAppView
+          tailor={tailor}
+          app={{
+            id: "preview",
+            clientPath: "/apps/preview.js",
+            preview: {
+              sessionId: "session",
+              expiresAt: "later",
+              websocketUrl: "wss://platform.test/preview",
+              token,
+            },
+          }}
+        />
+      </Root>
+    );
+    const view = render(content("initial-token"));
+    await waitFor(() => expect(PreviewSocket.instances).toHaveLength(1));
+    const metadataRequest = vi
+      .mocked(globalThis.fetch)
+      .mock.calls.map(([input]) => input)
+      .find((input) => input instanceof URL && input.pathname.endsWith("/preview/metadata"));
+    expect(metadataRequest).toBeInstanceOf(URL);
+    expect(new URL(metadataRequest as URL).searchParams.getAll("scopes")).toEqual([]);
+    const socket = PreviewSocket.instances[0];
+    view.rerender(content("updated-token"));
+    expect(PreviewSocket.instances).toHaveLength(1);
+    expect(socket?.closed).toBe(false);
+    socket?.close();
+    await waitFor(() => expect(PreviewSocket.instances).toHaveLength(2), { timeout: 2500 });
+    expect(PreviewSocket.instances[1]?.protocol).toBe("updated-token");
+    view.unmount();
+    expect(PreviewSocket.instances[1]?.closed).toBe(true);
   });
 
   it("fetches and caches apps", async () => {
@@ -153,7 +258,7 @@ describe("tailorKitClient React adapter", () => {
     });
 
     function AppList() {
-      const { data, status } = useApps();
+      const { data, status } = tailor.useApps({ scopes: ["organization", "user"] });
       return createElement("p", null, `${status}:${(data ?? []).map((app) => app.id).join(",")}`);
     }
 
@@ -168,6 +273,85 @@ describe("tailorKitClient React adapter", () => {
       expect(testingView.getAllByText("ready:todo")).toHaveLength(2);
     });
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      new URL("apps?scopes=organization&scopes=user", "http://runtime.test/api/tailorkit/"),
+    );
+  });
+
+  it("keeps app lists for different scope selections separate", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+      const url = new URL(input.toString());
+      const names = url.searchParams.getAll("scopes");
+      const id = names.length === 0 ? "all" : names.join("-");
+      return Promise.resolve(Response.json([{ id }]));
+    });
+    const tailor = createTailorKitClient<typeof server>({
+      baseUrl: "http://runtime.test/api/tailorkit",
+      components,
+    });
+
+    function AppList({
+      label,
+      scopes,
+    }: {
+      label: string;
+      scopes?: readonly ("organization" | "user")[];
+    }) {
+      const { data, status } = tailor.useApps({ scopes });
+      return createElement("p", null, `${label}:${status}:${data?.[0]?.id ?? ""}`);
+    }
+
+    render(
+      <Root client={tailor}>
+        <AppList label="org" scopes={["organization"]} />
+        <AppList label="user" scopes={["user"]} />
+        <AppList label="all" />
+      </Root>,
+    );
+
+    await waitFor(() => {
+      expect(testingView.getByText("org:ready:organization")).toBeTruthy();
+      expect(testingView.getByText("user:ready:user")).toBeTruthy();
+      expect(testingView.getByText("all:ready:all")).toBeTruthy();
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("keeps snapshots pure and discards inactive scope selections", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json([]));
+    const store = createTailorKitStore("http://runtime.test/api/tailorkit");
+    const idle = store.getAppsSnapshot(["organization"]);
+    expect(store.getAppsSnapshot(["user"])).toBe(idle);
+
+    const unsubscribe = store.subscribeApps(["organization"], () => {});
+    await store.fetchApps({ scopes: ["organization"] });
+    expect(store.getAppsSnapshot(["organization"]).status).toBe("ready");
+    unsubscribe();
+    expect(store.getAppsSnapshot(["organization"])).toBe(idle);
+
+    store.setProvidedApps([]);
+    store.setProvidedApps(undefined);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("defaults to all scopes when useApps omits a selection", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json([]));
+    const tailor = createTailorKitClient<typeof server>({
+      baseUrl: "http://runtime.test/api/tailorkit",
+    });
+
+    function AppList() {
+      const { status } = tailor.useApps();
+      return createElement("p", null, status);
+    }
+
+    render(
+      <Root client={tailor}>
+        <AppList />
+      </Root>,
+    );
+
+    await waitFor(() => expect(testingView.getByText("ready")).toBeTruthy());
     expect(globalThis.fetch).toHaveBeenCalledWith(
       new URL("apps", "http://runtime.test/api/tailorkit/"),
     );
@@ -217,6 +401,7 @@ describe("tailorKitClient React adapter", () => {
     });
 
     function Route({ status }: { status: "error" | "loading" }) {
+      const { useView } = tailor;
       useView("/home/detail", { status });
       return <AppView slot="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
     }
@@ -254,6 +439,7 @@ describe("tailorKitClient React adapter", () => {
     });
 
     function Route() {
+      const { useView } = tailor;
       useView("/home", { context: { page: { title: "home" } } });
       return (
         <>
@@ -291,7 +477,7 @@ describe("tailorKitClient React adapter", () => {
     });
     expect(hostRecords.map((record) => record.appUrl)).toEqual([
       "http://runtime.test/apps/b.js",
-      "http://assets.test/projects/project_1/apps/a/deployments/deployment_1/files/client.js",
+      "http://assets.test/projects/project_1/apps/a/deployments/deployment_1/client/client.js",
     ]);
     expect(hostRecords.map((record) => (record.props?.layers as unknown[])?.[0])).toEqual([
       { context: { page: { title: "home" } }, path: "/home", status: "ready" },
@@ -304,10 +490,11 @@ describe("tailorKitClient React adapter", () => {
       baseUrl: "http://runtime.test",
       components,
     });
+    const { AppView: ClientAppView } = tailor;
 
     render(
       <Root client={tailor}>
-        <AppView
+        <ClientAppView
           slot="panel"
           app={{ clientPath: "/apps/todo.js", id: "todo" }}
           context={{ userId: "user_1" }}
@@ -329,6 +516,27 @@ describe("tailorKitClient React adapter", () => {
     });
   });
 
+  it("rejects a client AppView rendered under a different Root client", () => {
+    const tailor = createTailorKitClient<typeof server>({
+      baseUrl: "http://runtime.test",
+      components,
+    });
+    const otherTailor = createTailorKitClient<typeof server>({
+      baseUrl: "http://other-runtime.test",
+      components,
+    });
+    const { AppView: ClientAppView } = tailor;
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    expect(() =>
+      render(
+        <Root client={otherTailor}>
+          <ClientAppView slot="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />
+        </Root>,
+      ),
+    ).toThrow("AppView was created for a different TailorKit client than the one passed to Root.");
+  });
+
   it("warns when multiple hooks register views at the same hierarchy depth", async () => {
     const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const tailor = createTailorKitClient<typeof server>({
@@ -337,11 +545,13 @@ describe("tailorKitClient React adapter", () => {
     });
 
     function HomeRoute() {
+      const { useView } = tailor;
       useView("/home", { context: { page: { title: "home" } } });
       return null;
     }
 
     function UserRoute() {
+      const { useView } = tailor;
       useView("/user", { context: { userId: "user_1" } });
       return <AppView slot="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
     }
@@ -451,18 +661,26 @@ describe("view registries", () => {
   });
   afterEach(cleanup);
 
-  function Layers({ detail = true }: { detail?: boolean }) {
+  function Layers({
+    client,
+    detail = true,
+  }: {
+    client: ReturnType<typeof createTailorKitClient<typeof server>>;
+    detail?: boolean;
+  }) {
+    const { useView } = client;
     useView("/", { context: { user: { id: "u1" } } });
     useView("/home", { context: { page: { title: "Home" } } });
     return (
       <>
-        {detail ? <Detail /> : null}
+        {detail ? <Detail client={client} /> : null}
         <AppView slot="navbar" app={{ id: "nav", clientPath: "/nav.js" }} />
         <AppView slot="panel" app={{ id: "panel", clientPath: "/panel.js" }} />
       </>
     );
   }
-  function Detail() {
+  function Detail({ client }: { client: ReturnType<typeof createTailorKitClient<typeof server>> }) {
+    const { useView } = client;
     useView("/home/detail", { status: "loading" });
     return null;
   }
@@ -474,7 +692,7 @@ describe("view registries", () => {
     });
     const view = render(
       <Root client={client}>
-        <Layers />
+        <Layers client={client} />
       </Root>,
     );
     await waitFor(() => expect(hostRecords).toHaveLength(2));
@@ -489,7 +707,7 @@ describe("view registries", () => {
     });
     view.rerender(
       <Root client={client}>
-        <Layers detail={false} />
+        <Layers client={client} detail={false} />
       </Root>,
     );
     await waitFor(() => expect(hostRecords.at(-1)?.props?.view).toBe("/home"));
@@ -503,13 +721,14 @@ describe("view registries", () => {
       components,
     });
     function OtherRoute() {
+      const { useView } = client;
       useView("/user", { context: { userId: "other" } });
       return <AppView slot="panel" app={{ id: "other", clientPath: "/other.js" }} />;
     }
     render(
       <StrictMode>
         <Root client={client}>
-          <Layers />
+          <Layers client={client} />
         </Root>
         <Root client={client}>
           <OtherRoute />
@@ -540,7 +759,12 @@ it("replaces the root store only when the normalized endpoint changes", async ()
       ),
     );
   });
-  function Contents() {
+  function Contents({
+    client,
+  }: {
+    client: ReturnType<typeof createTailorKitClient<typeof server>>;
+  }) {
+    const { useApps, useView } = client;
     const { data } = useApps();
     useView("/user", { context: { userId: "u1" } });
     return (
@@ -550,24 +774,27 @@ it("replaces the root store only when the normalized endpoint changes", async ()
       </>
     );
   }
-  const client = (baseUrl: string | URL) =>
+  const createClient = (baseUrl: string | URL) =>
     createTailorKitClient<typeof server>({ baseUrl, components });
+  const firstClient = createClient("http://first.test/api");
   const view = render(
-    <Root client={client("http://first.test/api")}>
-      <Contents />
+    <Root client={firstClient}>
+      <Contents client={firstClient} />
     </Root>,
   );
   await waitFor(() => expect(testingView.getByText("first.test")).toBeTruthy());
   const count = fetchMock.mock.calls.length;
+  const equivalentClient = createClient(new URL("http://first.test/api/"));
   view.rerender(
-    <Root client={client(new URL("http://first.test/api/"))}>
-      <Contents />
+    <Root client={equivalentClient}>
+      <Contents client={equivalentClient} />
     </Root>,
   );
   expect(fetchMock.mock.calls).toHaveLength(count);
+  const secondClient = createClient("http://second.test/api");
   view.rerender(
-    <Root client={client("http://second.test/api")}>
-      <Contents />
+    <Root client={secondClient}>
+      <Contents client={secondClient} />
     </Root>,
   );
   await waitFor(() => expect(testingView.getByText("second.test")).toBeTruthy());
@@ -615,7 +842,7 @@ describe("supplied app discovery", () => {
     vi.restoreAllMocks();
   });
   function Apps() {
-    const { data, status, refetch } = useApps();
+    const { data, status, refetch } = client.useApps();
     return (
       <button onClick={() => void refetch()}>
         {status}:{data?.map((app) => app.id).join(",")}

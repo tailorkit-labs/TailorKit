@@ -1,6 +1,6 @@
-import { Separator } from "@tailorkit/ui/components/separator";
-import { SidebarTrigger, useSidebar } from "@tailorkit/ui/components/sidebar";
-import { Spin } from "@tailorkit/ui/components/spin";
+import { Separator } from "@tailorkit/ui/separator";
+import { SidebarTrigger, useSidebar } from "@tailorkit/ui/sidebar";
+import { Spin } from "@tailorkit/ui/spin";
 
 import { NavBreadcrumb } from "#components/nav-breadcrumb";
 import { useHeaderActions } from "#components/header-actions";

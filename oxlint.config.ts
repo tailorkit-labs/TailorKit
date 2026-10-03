@@ -6,6 +6,14 @@ export default defineConfig({
   extends: [core, react],
   ignorePatterns: [".agents/skills", ".claude/skills", "routeTree.gen.ts"],
   rules: {
+    "no-restricted-properties": [
+      "error",
+      {
+        object: "process",
+        property: "env",
+        message: "Use this package's #env module and define local values in .env or .env.local.",
+      },
+    ],
     "ban-types": "warn",
     "button-has-type": "off",
     "callback-return": "off",
@@ -68,4 +76,12 @@ export default defineConfig({
     "unicorn/no-array-for-each": "off",
     "unicorn/consistent-function-scoping": "off",
   },
+  overrides: [
+    {
+      files: ["packages/env/src/index.ts"],
+      rules: {
+        "no-restricted-properties": "off",
+      },
+    },
+  ],
 });

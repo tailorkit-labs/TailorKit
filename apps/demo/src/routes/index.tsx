@@ -15,7 +15,7 @@ import {
   toCssVars,
 } from "#lib/demo-theme";
 import type { DemoAppId, DemoEmbedConfig, DemoHandoff } from "#lib/demo-theme";
-import { cn } from "@tailorkit/ui/lib/utils";
+import { cn } from "@tailorkit/ui";
 
 function RailTodoIcon() {
   return (

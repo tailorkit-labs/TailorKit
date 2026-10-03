@@ -2,7 +2,7 @@
 
 import { Progress as ProgressPrimitive } from "@base-ui/react/progress";
 import type React from "react";
-import { cn } from "@tailorkit/ui/lib/utils";
+import { cn } from "#ui";
 
 export function Progress({
   className,

@@ -1,3 +1,4 @@
+import type { Session } from "@tailorkit/app/client";
 /* oxlint-disable react(invariant) */
 
 import {
@@ -52,6 +53,8 @@ class RemoteErrorBoundary extends Component<RemoteErrorBoundaryProps, RemoteErro
 
 interface RemoteViewHostProps {
   appUrl: string | URL;
+  sourceText?: string;
+  getBackendSession?: (options: { refresh: boolean }) => Promise<Session>;
   components: Record<string, unknown>;
   createIframe?: () => HTMLIFrameElement;
   props?: Record<string, unknown>;
@@ -59,6 +62,8 @@ interface RemoteViewHostProps {
 
 export function RemoteViewHost({
   appUrl,
+  sourceText,
+  getBackendSession,
   components,
   createIframe,
   props,
@@ -112,6 +117,8 @@ export function RemoteViewHost({
   useEffect(() => {
     const host = createIframeUiHost(appUrl, {
       createIframe,
+      sourceText,
+      getBackendSession,
       onError: (error) => {
         console.error("TailorKit remote app failed", error);
         setError(error);
@@ -141,7 +148,7 @@ export function RemoteViewHost({
       hostRef.current = null;
       host.destroy();
     };
-  }, [appUrl, createIframe, store]);
+  }, [appUrl, createIframe, sourceText, getBackendSession, store]);
 
   if (status === "error" && error) {
     return createElement("div", null, formatError(error));

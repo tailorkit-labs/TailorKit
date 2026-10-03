@@ -5,6 +5,7 @@ export type {
   Actions,
   Component,
   Components,
+  ContextDefinitions,
   View,
   Views,
   TailorKit,

@@ -1,5 +1,5 @@
 import { createRemoteComponent } from "@tailorkit/app";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { renderGeneratedTypes } from "./types";
 
 describe("children-only components", () => {

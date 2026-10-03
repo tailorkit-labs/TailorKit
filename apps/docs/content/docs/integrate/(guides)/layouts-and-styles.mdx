@@ -17,8 +17,10 @@ Add primitives to your host schema, then import the generated bindings from
 ```ts tab="Zod"
 import { createTailorKit } from "tailorkit";
 import { primitives } from "tailorkit/zod";
+import { z } from "zod";
 
 export const tailorKit = createTailorKit({
+  scopes: { user: z.object({ userId: z.string().min(1) }) },
   components: {
     ...primitives(),
   },
@@ -28,8 +30,10 @@ export const tailorKit = createTailorKit({
 ```ts tab="Valibot"
 import { createTailorKit } from "tailorkit";
 import { primitives } from "tailorkit/valibot";
+import * as v from "valibot";
 
 export const tailorKit = createTailorKit({
+  scopes: { user: v.object({ userId: v.pipe(v.string(), v.minLength(1)) }) },
   components: {
     ...primitives(),
   },
@@ -39,8 +43,10 @@ export const tailorKit = createTailorKit({
 ```ts tab="ArkType"
 import { createTailorKit } from "tailorkit";
 import { primitives } from "tailorkit/arktype";
+import { type } from "arktype";
 
 export const tailorKit = createTailorKit({
+  scopes: { user: type({ userId: "string >= 1" }) },
   components: {
     ...primitives(),
   },
@@ -66,6 +72,8 @@ export const tailorClient = createTailorKitClient<typeof tailorKit>({
     ),
   },
 });
+
+export const { AppView, useApps, useView } = tailorClient;
 
 export default tailorClient;
 ```
@@ -140,6 +148,7 @@ token names, and the React renderer turns them into scoped CSS variables.
 ```ts tab="Zod"
 import { createTailorKit, type TailorKitTheme } from "tailorkit";
 import { primitives } from "tailorkit/zod";
+import { z } from "zod";
 
 const theme: TailorKitTheme = {
   tokens: {
@@ -157,6 +166,7 @@ const theme: TailorKitTheme = {
 };
 
 export const tailorKit = createTailorKit({
+  scopes: { user: z.object({ userId: z.string().min(1) }) },
   components: {
     ...primitives(theme),
   },
@@ -166,6 +176,7 @@ export const tailorKit = createTailorKit({
 ```ts tab="Valibot"
 import { createTailorKit, type TailorKitTheme } from "tailorkit";
 import { primitives } from "tailorkit/valibot";
+import * as v from "valibot";
 
 const theme: TailorKitTheme = {
   tokens: {
@@ -183,6 +194,7 @@ const theme: TailorKitTheme = {
 };
 
 export const tailorKit = createTailorKit({
+  scopes: { user: v.object({ userId: v.pipe(v.string(), v.minLength(1)) }) },
   components: {
     ...primitives(theme),
   },
@@ -192,6 +204,7 @@ export const tailorKit = createTailorKit({
 ```ts tab="ArkType"
 import { createTailorKit, type TailorKitTheme } from "tailorkit";
 import { primitives } from "tailorkit/arktype";
+import { type } from "arktype";
 
 const theme: TailorKitTheme = {
   tokens: {
@@ -209,6 +222,7 @@ const theme: TailorKitTheme = {
 };
 
 export const tailorKit = createTailorKit({
+  scopes: { user: type({ userId: "string >= 1" }) },
   components: {
     ...primitives(theme),
   },
@@ -224,6 +238,8 @@ export const tailorClient = createTailorKitClient<typeof tailorKit>({
   components: primitives,
   theme,
 });
+
+export const { AppView, useApps, useView } = tailorClient;
 ```
 
 Keep the shared `theme` object in a module that is safe to import from both the

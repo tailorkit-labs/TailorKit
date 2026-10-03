@@ -1,0 +1,60 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "56fe6270-e002-48ab-9e61-95a65f3cdff1",
+  "prevIds": ["ad8fd4bc-8fbe-408b-9f9c-d9952fe89857"],
+  "ddl": [
+    {
+      "name": "todos",
+      "entityType": "tables"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "todos"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "text",
+      "entityType": "columns",
+      "table": "todos"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "false",
+      "generated": null,
+      "name": "done",
+      "entityType": "columns",
+      "table": "todos"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "another",
+      "entityType": "columns",
+      "table": "todos"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "todos_pk",
+      "table": "todos",
+      "entityType": "pks"
+    }
+  ],
+  "renames": []
+}

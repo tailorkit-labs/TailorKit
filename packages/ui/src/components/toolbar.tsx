@@ -2,7 +2,7 @@
 
 import { Toolbar as ToolbarPrimitive } from "@base-ui/react/toolbar";
 import type React from "react";
-import { cn } from "@tailorkit/ui/lib/utils";
+import { cn } from "#ui";
 
 export function Toolbar({ className, ...props }: ToolbarPrimitive.Root.Props): React.ReactElement {
   return (

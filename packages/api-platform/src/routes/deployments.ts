@@ -1,3 +1,5 @@
+import { getRuntimeBundle, publishRuntimeMetadata } from "./runtime";
+import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { maxDeploymentBytes } from "@tailorkit/asset-delivery";
 import {
@@ -14,13 +16,21 @@ import {
   AppDeploymentFile,
   appDeploymentFile,
 } from "@tailorkit/db/schema/apps";
+import type { Scope } from "@tailorkit/db/schema/scope";
 import { and, eq } from "drizzle-orm";
 import z from "zod";
 import { paginatedOutput, paginationQuery } from "../pagination";
-import { o, protectedRouter, requireApp } from "../procedures";
+import { o, protectedRouter, requireApp, requireAppInScopes } from "../procedures";
 import { setSpanAttributes } from "@tailorkit/observability";
 import { createPublicId } from "../public-id";
 import type { Context } from "../context";
+import {
+  canonicalizeScope,
+  canonicalizeScopes,
+  scopeMatches,
+  scopeSchema,
+  scopesSchema,
+} from "../scope";
 
 const uploadUrlExpiresInSeconds = 15 * 60;
 const logoInspectionTimeoutMs = 10_000;
@@ -46,6 +56,11 @@ const createDeploymentAssetInput = z.object({
   objectKey: z.literal("client.js"),
 });
 
+const createDeploymentServerInput = createDeploymentAssetInput.extend({
+  objectKey: z.literal("server.js"),
+  contentLength: z.number().int().min(1).max(maxDeploymentBytes),
+});
+
 const createDeploymentLogoInput = z.object({
   ...deploymentFileMetadataShape,
   contentLength: z.number().int().min(1).max(maxLogoBytes),
@@ -56,13 +71,14 @@ const createDeploymentInput = z
   .object({
     appId: z.string(),
     assets: z.tuple([createDeploymentAssetInput]),
+    server: createDeploymentServerInput.optional(),
     logos: z
       .object({
         dark: createDeploymentLogoInput.optional(),
         light: createDeploymentLogoInput.optional(),
       })
       .optional(),
-    scopeId: z.string(),
+    scope: scopeSchema,
   })
   .refine(
     ({ assets }) =>
@@ -137,7 +153,7 @@ export function mapReturnedFilesByAssetPath<
 }
 
 const requireDeployment = o.middleware(
-  async ({ next, context }, input: { deploymentId: string; scopeId: string }) => {
+  async ({ next, context }, input: { deploymentId: string; scope?: Scope; scopes?: Scope[] }) => {
     setSpanAttributes({
       "tailorkit.middleware": "require_deployment",
       "tailorkit.package": "api-platform",
@@ -152,19 +168,50 @@ const requireDeployment = o.middleware(
         app: true,
       },
     });
+    const deploymentApp = deploymentWithApp?.app;
+
+    let requestedScopes: Scope[];
+    try {
+      requestedScopes = input.scope
+        ? [canonicalizeScope(input.scope).scope]
+        : canonicalizeScopes(input.scopes).map(({ scope }) => scope);
+    } catch {
+      throw new ORPCError("BAD_REQUEST", { message: "Invalid deployment scope." });
+    }
+
+    let storedScope: ReturnType<typeof canonicalizeScope> | null = null;
+    if (deploymentApp) {
+      try {
+        const canonicalScope = canonicalizeScope(deploymentApp.scope);
+        if (canonicalScope.scopeKey !== deploymentApp.scopeKey) {
+          throw new TypeError("Deployment app scope key does not match its stored scope.");
+        }
+        storedScope = canonicalScope;
+      } catch (error) {
+        console.warn("Deployment app has an invalid stored scope.", {
+          appId: deploymentApp.id,
+          deploymentId: input.deploymentId,
+          error,
+        });
+      }
+    }
+    const scopeMatchesApp =
+      storedScope !== null &&
+      requestedScopes.some((scope) => scopeMatches(storedScope.scope, scope));
 
     if (
       !deploymentWithApp ||
-      !deploymentWithApp.app ||
-      deploymentWithApp.app.projectId !== context.project.id ||
-      deploymentWithApp.app.scopeId !== input.scopeId
+      !deploymentApp ||
+      deploymentApp.projectId !== context.project.id ||
+      !scopeMatchesApp
     ) {
       throw new ORPCError("NOT_FOUND", { message: "Deployment not found." });
     }
 
-    const { app: scopedApp, ...deployment } = deploymentWithApp;
+    const { app: _app, ...deployment } = deploymentWithApp;
+    void _app;
 
-    return next({ context: { ...context, app: scopedApp, deployment } });
+    return next({ context: { ...context, app: deploymentApp, deployment } });
   },
 );
 
@@ -179,19 +226,21 @@ function hexToBase64(hex: string): string {
 }
 
 const listAppDeployments = protectedRouter
-  .route({
-    path: "/",
-    method: "GET",
-  })
+  .meta(
+    openapi({
+      path: "/deployments/list",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
-      query: paginationQuery.extend({ appId: z.string(), scopeId: z.string() }),
+      body: paginationQuery.extend({ appId: z.string(), scopes: scopesSchema }),
     }),
   )
   .output(paginatedOutput(AppDeployment))
-  .use(requireApp, ({ query: { appId, scopeId } }) => ({ appId, scopeId }))
+  .use(requireAppInScopes.adaptInput(({ body: { appId, scopes } }) => ({ appId, scopes })))
   .handler(async ({ context, input }) => {
-    const { page, pageSize } = input.query;
+    const { page, pageSize } = input.body;
     const deployments = await db.query.appDeployment.findMany({
       where: {
         appId: context.app.id,
@@ -216,28 +265,34 @@ const listAppDeployments = protectedRouter
   });
 
 const getAppDeployment = protectedRouter
-  .route({
-    path: "/:deploymentId",
-    method: "GET",
-  })
+  .meta(
+    openapi({
+      path: "/deployments/{deploymentId}/lookup",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
       params: z.object({ deploymentId: z.string() }),
-      query: z.object({ scopeId: z.string() }),
+      body: z.object({ scopes: scopesSchema }),
     }),
   )
   .output(z.object({ body: AppDeployment }))
-  .use(requireDeployment, ({ params: { deploymentId }, query: { scopeId } }) => ({
-    deploymentId,
-    scopeId,
-  }))
+  .use(
+    requireDeployment.adaptInput(({ params: { deploymentId }, body: { scopes } }) => ({
+      deploymentId,
+      scopes,
+    })),
+  )
   .handler(({ context }) => ({ body: context.deployment }));
 
 const createAppDeployment = protectedRouter
-  .route({
-    path: "/",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/deployments",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
       body: createDeploymentInput,
@@ -247,12 +302,13 @@ const createAppDeployment = protectedRouter
     z.object({
       body: z.object({
         assets: z.array(deploymentAssetUpload),
+        server: deploymentAssetUpload.optional(),
         deployment: AppDeployment,
         logos: deploymentLogoUploads.optional(),
       }),
     }),
   )
-  .use(requireApp, ({ body: { appId, scopeId } }) => ({ appId, scopeId }))
+  .use(requireApp.adaptInput(({ body: { appId, scope } }) => ({ appId, scope })))
   .handler(async ({ context, input }) => {
     const deploymentId = crypto.randomUUID();
     const deploymentPublicId = createPublicId();
@@ -268,7 +324,8 @@ const createAppDeployment = protectedRouter
       ...new Map(requestedLogos.map(({ asset }) => [asset.objectKey, asset])).values(),
     ];
     const requestedAssets = [
-      ...input.body.assets.map((asset) => ({ asset, kind: "deployment" as const })),
+      ...input.body.assets.map((asset) => ({ asset, kind: "client" as const })),
+      ...(input.body.server ? [{ asset: input.body.server, kind: "server" as const }] : []),
       ...uniqueLogoAssets.map((asset) => ({ asset, kind: "logo" as const })),
     ];
     const assets = await Promise.all(
@@ -278,7 +335,7 @@ const createAppDeployment = protectedRouter
         const objectKey =
           kind === "logo"
             ? `${appBaseKey}/${asset.objectKey}`
-            : `${appBaseKey}/deployments/${deploymentPublicId}/files/${asset.objectKey}`;
+            : `${appBaseKey}/deployments/${deploymentPublicId}/${kind}/${asset.objectKey}`;
         const shouldReuse =
           kind === "logo" && (await hasMatchingLogo(context.storage, asset, objectKey));
         const uploadUrl = shouldReuse
@@ -380,6 +437,10 @@ const createAppDeployment = protectedRouter
       }
       return { ...upload, uploadUrl: upload.uploadUrl };
     });
+    const serverUpload = input.body.server ? uploadedAssetByName.get("server.js") : undefined;
+    if (input.body.server && !serverUpload?.uploadUrl) {
+      throw new ORPCError("BAD_REQUEST", { message: "Failed to create server upload URL." });
+    }
     const uploadedLogos = Object.fromEntries(
       requestedLogos.map(({ asset, variant }) => {
         const upload = uploadedAssetByName.get(asset.objectKey);
@@ -393,6 +454,9 @@ const createAppDeployment = protectedRouter
     return {
       body: {
         assets: uploadedAssets,
+        ...(serverUpload?.uploadUrl
+          ? { server: { ...serverUpload, uploadUrl: serverUpload.uploadUrl } }
+          : {}),
         deployment: createdDeployment,
         ...(Object.keys(uploadedLogos).length > 0 ? { logos: uploadedLogos } : {}),
       },
@@ -400,24 +464,28 @@ const createAppDeployment = protectedRouter
   });
 
 const publishAppDeployment = protectedRouter
-  .route({
-    path: "/:deploymentId",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/deployments/{deploymentId}",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
       body: z.object({
-        scopeId: z.string(),
+        scope: scopeSchema,
         rollout: z.boolean().optional().default(true),
       }),
       params: z.object({ deploymentId: z.string() }),
     }),
   )
   .output(z.object({ body: AppDeployment }))
-  .use(requireDeployment, ({ body: { scopeId }, params: { deploymentId } }) => ({
-    deploymentId,
-    scopeId,
-  }))
+  .use(
+    requireDeployment.adaptInput(({ body: { scope }, params: { deploymentId } }) => ({
+      deploymentId,
+      scope,
+    })),
+  )
   .handler(async ({ context, input }) => {
     const { deployment } = context;
     const files = await db.query.appDeploymentFile.findMany({
@@ -520,14 +588,29 @@ const publishAppDeployment = protectedRouter
         .update(app)
         .set({ currentDeploymentId: publishedDeployment.id })
         .where(and(eq(app.id, context.app.id), eq(app.projectId, context.project.id)));
+      const server = files.find((file) => file.objectKey.endsWith("/server/server.js"));
+      if (server?.checksum) {
+        await publishRuntimeMetadata(
+          {
+            projectId: context.project.id,
+            appId: context.app.id,
+            deploymentId: publishedDeployment.id,
+            objectKey: server.objectKey,
+            checksum: server.checksum,
+            contentLength: server.contentLength,
+          },
+          context.app.publicId,
+        );
+      }
     }
 
     return { body: publishedDeployment };
   });
 
-export const deploymentRouter = o.prefix("/deployments").router({
+export const deploymentRouter = o.router({
   list: listAppDeployments,
   get: getAppDeployment,
   create: createAppDeployment,
   publish: publishAppDeployment,
+  runtime: getRuntimeBundle,
 });

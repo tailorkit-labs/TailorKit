@@ -1,0 +1,51 @@
+#!/bin/sh
+
+stash_created=0
+
+restore_unstaged() {
+  if [ "$stash_created" -eq 1 ]; then
+    stash_created=0
+    git stash pop >/dev/null 2>&1 ||
+      printf '%s\n' "pre-commit: could not restore the saved unstaged changes; see git stash list" >&2
+  fi
+}
+
+finish() {
+  restore_unstaged
+  exit 0
+}
+
+trap finish EXIT
+
+staged_manifests=$(git diff --cached --name-only --diff-filter=ACMR -- ':(glob)**/package.json' 'package.json' 2>/dev/null) || staged_manifests=
+
+vp staged --no-concurrent || printf '%s\n' "pre-commit: vp staged failed; continuing with the commit" >&2
+
+if [ -n "$staged_manifests" ]; then
+  # sherif edits package.json files in the worktree. Temporarily move unstaged
+  # tracked changes aside so staging its fixes cannot absorb unrelated edits.
+  can_run_sherif=1
+  if ! git diff --quiet 2>/dev/null; then
+    if git stash push --keep-index --message "pre-commit: preserve unstaged changes" >/dev/null 2>&1; then
+      stash_created=1
+    else
+      can_run_sherif=0
+      printf '%s\n' "pre-commit: could not preserve unstaged changes; skipping sherif:fix" >&2
+    fi
+  fi
+
+  if [ "$can_run_sherif" -eq 1 ]; then
+    if pnpm sherif:fix; then
+      while IFS= read -r file; do
+        [ -z "$file" ] || git add -- "$file" ||
+          printf 'pre-commit: could not stage %s; continuing with the commit\n' "$file" >&2
+      done <<EOF
+$staged_manifests
+EOF
+    else
+      printf '%s\n' "pre-commit: sherif:fix failed; continuing with the commit" >&2
+    fi
+  fi
+fi
+
+exit 0

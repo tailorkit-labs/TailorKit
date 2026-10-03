@@ -2,26 +2,19 @@ import { useMemo, useState } from "react";
 import { flexRender, useTable } from "@tanstack/react-table";
 import type { CellContext, ColumnDef, SortingState } from "@tanstack/react-table";
 import { MoreHorizontalIcon, SendIcon, TrashIcon } from "lucide-react";
-import { Avatar, AvatarFallback } from "@tailorkit/ui/components/avatar";
-import { Badge } from "@tailorkit/ui/components/badge";
-import { Button } from "@tailorkit/ui/components/button";
-import { CardFrame } from "@tailorkit/ui/components/card";
+import { Avatar, AvatarFallback } from "@tailorkit/ui/avatar";
+import { Badge } from "@tailorkit/ui/badge";
+import { Button } from "@tailorkit/ui/button";
+import { CardFrame } from "@tailorkit/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tailorkit/ui/components/dropdown-menu";
+} from "@tailorkit/ui/dropdown-menu";
 import { DateAgo } from "@tailorkit/ui/date";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@tailorkit/ui/components/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tailorkit/ui/table";
 import { getRoleBadgeVariant, renderSortableHeader } from "./member-table-utils";
 import { dataTableFeatures } from "#lib/table";
 

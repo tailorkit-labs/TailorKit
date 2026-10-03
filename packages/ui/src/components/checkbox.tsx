@@ -2,7 +2,7 @@
 
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox";
 import type React from "react";
-import { cn } from "@tailorkit/ui/lib/utils";
+import { cn } from "#ui";
 
 export function Checkbox({
   className,

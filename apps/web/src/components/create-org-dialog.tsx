@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { Button } from "@tailorkit/ui/components/button";
+import { Button } from "@tailorkit/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -11,8 +11,8 @@ import {
   DialogTitle,
   DialogPopup,
   DialogTrigger,
-} from "@tailorkit/ui/components/dialog";
-import { toastManager } from "@tailorkit/ui/components/toast";
+} from "@tailorkit/ui/dialog";
+import { toastManager } from "@tailorkit/ui/toast";
 import { useAppForm } from "@tailorkit/ui/form";
 import { validateOrgSlug } from "@tailorkit/db/validate-org-slug";
 import { useNavigate } from "@tanstack/react-router";

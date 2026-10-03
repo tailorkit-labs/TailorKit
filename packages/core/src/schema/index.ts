@@ -33,6 +33,7 @@ export {
   type ResolvedComponentMetadata,
 } from "./components";
 export {
+  type ContextDefinitions,
   type View,
   type ViewContextHierarchy,
   type ViewDefinitions,

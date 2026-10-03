@@ -17,10 +17,10 @@
   "scripts": {
     "build": "tailorkit build",
     "generate": "tailorkit generate",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
-    "format": "oxfmt --check",
-    "format:fix": "oxfmt --write",
+    "lint": "vp lint",
+    "lint:fix": "vp lint --fix",
+    "format": "vp fmt --check",
+    "format:fix": "vp fmt --write",
     "check": "pnpm run lint && pnpm run format",
     "fix": "pnpm run lint:fix && pnpm run format:fix"
   },
@@ -30,8 +30,6 @@
   },
   "devDependencies": {
     "@tailorkit/cli": "workspace:*",
-    "oxfmt": "0.67.0",
-    "oxlint": "1.82.0",
     "typescript": "catalog:"
   }
 }

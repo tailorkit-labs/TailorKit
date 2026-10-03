@@ -2,10 +2,10 @@
 
 import type { tailorKit } from "./tailorkit";
 import { primitiveTheme } from "@examples/shared";
-import { Button } from "@tailorkit/ui/components/button";
-import { Input } from "@tailorkit/ui/components/input";
-import { Tabs, TabsList, TabsPanel, TabsTab } from "@tailorkit/ui/components/tabs";
-import { Textarea } from "@tailorkit/ui/components/textarea";
+import { Button } from "@tailorkit/ui/button";
+import { Input } from "@tailorkit/ui/input";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@tailorkit/ui/tabs";
+import { Textarea } from "@tailorkit/ui/textarea";
 import { createTailorKitClient, primitives as reactPrimitives } from "tailorkit/react";
 
 export const tailor = createTailorKitClient<typeof tailorKit>({
@@ -34,10 +34,6 @@ export const tailor = createTailorKitClient<typeof tailorKit>({
   },
 });
 
-export default tailor;
+export const { AppView, useApps, useView } = tailor;
 
-declare module "tailorkit/react" {
-  interface Register {
-    client: typeof tailor;
-  }
-}
+export default tailor;

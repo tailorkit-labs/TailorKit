@@ -2,7 +2,7 @@
 
 import { Field as FieldPrimitive } from "@base-ui/react/field";
 import type React from "react";
-import { cn } from "@tailorkit/ui/lib/utils";
+import { cn } from "#ui";
 
 export function Field({ className, ...props }: FieldPrimitive.Root.Props): React.ReactElement {
   return (
@@ -52,12 +52,11 @@ export function FieldDescription({
 export function FieldError({
   className,
   ...props
-}: React.ComponentProps<"div">): React.ReactElement {
+}: FieldPrimitive.Error.Props): React.ReactElement {
   return (
-    <div
+    <FieldPrimitive.Error
       className={cn("text-destructive-foreground text-xs", className)}
       data-slot="field-error"
-      role="alert"
       {...props}
     />
   );

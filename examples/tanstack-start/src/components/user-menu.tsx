@@ -1,6 +1,6 @@
 import type { DemoUser } from "@examples/shared";
-import { Avatar, AvatarFallback, AvatarImage } from "@tailorkit/ui/components/avatar";
-import { Menu, MenuTrigger, MenuPopup, MenuItem } from "@tailorkit/ui/components/menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@tailorkit/ui/avatar";
+import { Menu, MenuTrigger, MenuPopup, MenuItem } from "@tailorkit/ui/menu";
 import { LogOutIcon } from "lucide-react";
 
 export function getInitials(label: string) {

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { Button } from "@tailorkit/ui/components/button";
+import { Button } from "@tailorkit/ui/button";
 import { Skeleton } from "@tailorkit/ui/skeleton";
 
 type DocsSession = {

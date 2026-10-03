@@ -1,4 +1,4 @@
-import { expect, it } from "vitest";
+import { expect, it } from "vite-plus/test";
 import { getViewDepth, getViewHierarchy, isViewAncestor } from "./views";
 
 it("uses whole path segments for ancestry and includes undeclared intermediate paths", () => {

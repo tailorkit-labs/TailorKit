@@ -21,7 +21,7 @@ env:
 jobs:
   select-mode:
     name: Select release mode
-    if: github.repository == 'AlfieJones/tailorkit' && github.ref == 'refs/heads/main'
+    if: github.repository == 'tailorkit-labs/tailorkit' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -39,7 +39,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1.19.0
+        uses: voidzero-dev/setup-vp@v1.21.1
         with:
           node-version: 24
           cache: false
@@ -72,7 +72,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1.19.0
+        uses: voidzero-dev/setup-vp@v1.21.1
         with:
           node-version: 24
           cache: false
@@ -113,7 +113,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1.19.0
+        uses: voidzero-dev/setup-vp@v1.21.1
         with:
           node-version: 24
           cache: false
@@ -121,6 +121,11 @@ jobs:
 
       - name: Install dependencies
         run: vp install --frozen-lockfile
+
+      - name: Set up Turborepo Remote Cache
+        uses: vercel/setup-turborepo-remote-cache-action@v1.1.0
+        with:
+          team: ${{ vars.TURBO_TEAM }}
 
       - name: Build and publish prerelease
         uses: changesets/action/publish@v2.1.2

@@ -8,8 +8,8 @@ import {
   CardHeader,
   CardPanel,
   CardTitle,
-} from "@tailorkit/ui/components/card";
-import { toastManager } from "@tailorkit/ui/components/toast";
+} from "@tailorkit/ui/card";
+import { toastManager } from "@tailorkit/ui/toast";
 import { useAppForm } from "@tailorkit/ui/form";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
@@ -80,7 +80,7 @@ function ProfilePage() {
           </form>
         </Card>
 
-        <CardFrameFooter className="flex justify-end">
+        <CardFrameFooter className="flex justify-end relative">
           <form.AppForm>
             <form.SubmitButton form="profile-form" size="sm">
               Save changes

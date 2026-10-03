@@ -1,10 +1,10 @@
 {
   "name": "@tailorkit/client-platform",
-  "version": "0.1.0-beta.9",
+  "version": "0.1.0-beta.17",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AlfieJones/tailorkit.git",
+    "url": "git+https://github.com/tailorkit-labs/TailorKit.git",
     "directory": "packages/client-platform"
   },
   "files": [
@@ -23,6 +23,10 @@
     "./client/*": {
       "types": "./dist/client/*.d.ts",
       "import": "./dist/client/*.js"
+    },
+    "./preview": {
+      "types": "./dist/preview.d.ts",
+      "import": "./dist/preview.js"
     }
   },
   "publishConfig": {
@@ -30,17 +34,20 @@
   },
   "scripts": {
     "build": "tsup 'src/**/*.ts' --format esm --target node20 --clean && tsc -p tsconfig.build.json",
-    "generate": "openapi-ts",
+    "generate": "openapi-ts && node ./scripts/restore-openapi-params.mjs && node ./scripts/normalize-esm-imports.mjs && vp fmt src/client",
     "check-types": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vp test run"
+  },
+  "dependencies": {
+    "@orpc/client": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "0.99.0",
+    "@hey-api/openapi-ts": "next",
     "@tailorkit/api-platform": "workspace:*",
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
     "tsup": "^8.5.1",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

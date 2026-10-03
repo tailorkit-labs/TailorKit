@@ -2,7 +2,7 @@ import { onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { createContext } from "@tailorkit/api/context";
 import { appRouter } from "@tailorkit/api/routers/index";
-import { RatelimitHandlerPlugin } from "@tailorkit/api-utils/rate-limiting";
+import { RateLimitHandlerPlugin } from "@tailorkit/api-utils/rate-limiting";
 import {
   initializeObservability,
   recordException,
@@ -18,7 +18,7 @@ const rpcHandler = new RPCHandler(appRouter, {
       console.error("oRPC request failed", sanitizeErrorForLog(error));
     }),
   ],
-  plugins: [new RatelimitHandlerPlugin()],
+  plugins: [new RateLimitHandlerPlugin()],
 });
 
 async function handle({ request }: { request: Request }) {

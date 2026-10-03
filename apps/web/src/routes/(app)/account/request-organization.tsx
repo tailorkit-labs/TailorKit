@@ -4,8 +4,8 @@ import { AccountLayout } from "#components/account-layout";
 import { CreateOrgDialog } from "#components/create-org-dialog";
 import { PageLayout } from "#components/page-layout";
 import { isOrgCreationManaged } from "#lib/org-creation";
-import { Button } from "@tailorkit/ui/components/button";
-import { Card, CardFrame, CardHeader, CardPanel, CardTitle } from "@tailorkit/ui/components/card";
+import { Button } from "@tailorkit/ui/button";
+import { Card, CardFrame, CardHeader, CardPanel, CardTitle } from "@tailorkit/ui/card";
 
 export const Route = createFileRoute("/(app)/account/request-organization")({
   component: RequestOrganizationPage,

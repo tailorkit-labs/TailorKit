@@ -1,21 +1,25 @@
-import type * as React from "react";
-import { cn } from "@tailorkit/ui/lib/utils";
+"use client";
+
+import { mergeProps } from "@base-ui/react/merge-props";
+import { useRender } from "@base-ui/react/use-render";
+import type React from "react";
+import { cn } from "#ui";
 
 export type TableVariant = "default" | "card";
+
+export type TableProps = React.ComponentProps<"table"> & {
+  variant?: TableVariant;
+  render?: useRender.ComponentProps<"div">["render"];
+};
 
 export function Table({
   className,
   variant = "default",
+  render,
   ...props
-}: React.ComponentProps<"table"> & {
-  variant?: TableVariant;
-}): React.ReactElement {
-  return (
-    <div
-      className="relative w-full overflow-x-auto"
-      data-slot="table-container"
-      data-variant={variant}
-    >
+}: TableProps): React.ReactElement {
+  const defaultProps = {
+    children: (
       <table
         className={cn(
           "w-full caption-bottom in-data-[variant=card]:border-separate in-data-[variant=card]:border-spacing-0 text-sm",
@@ -24,8 +28,17 @@ export function Table({
         data-slot="table"
         {...props}
       />
-    </div>
-  );
+    ),
+    className: "relative w-full overflow-x-auto",
+    "data-slot": "table-container",
+    "data-variant": variant,
+  };
+
+  return useRender({
+    defaultTagName: "div",
+    props: mergeProps<"div">(defaultProps, {}),
+    render,
+  });
 }
 
 export function TableHeader({

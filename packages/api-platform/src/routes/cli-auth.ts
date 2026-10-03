@@ -1,12 +1,14 @@
+import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { hashSecret } from "@tailorkit/api-utils/hashing";
 import { db } from "@tailorkit/db";
 import { cliAuthSession, cliToken } from "@tailorkit/db/schema/cli-auth";
-import { env } from "@tailorkit/env/server";
+import { env } from "#env";
 import { and, eq, gt } from "drizzle-orm";
 import { randomBytes, randomInt } from "node:crypto";
 import z from "zod";
 import { o, protectedRouter } from "../procedures";
+import { canonicalizeScope, scopeSchema } from "../scope";
 
 const deviceCodeBytes = 32;
 const deployTokenBytes = 32;
@@ -52,10 +54,12 @@ function normalizeUserCode(userCode: string): string {
 }
 
 const startCliAuth = protectedRouter
-  .route({
-    path: "/start",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/start",
+      method: "POST",
+    }),
+  )
   .input(z.object({ body: z.object({}) }))
   .output(
     z.object({
@@ -88,24 +92,28 @@ const startCliAuth = protectedRouter
   });
 
 const approveCliAuth = protectedRouter
-  .route({
-    path: "/approve",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/approve",
+      method: "POST",
+    }),
+  )
   .input(
     z.object({
       body: z.object({
-        scopeId: z.string().min(1),
+        scope: scopeSchema,
         userCode: z.string().min(1),
       }),
     }),
   )
   .output(z.object({ body: z.object({ id: z.string() }) }))
   .handler(async ({ context, input }) => {
+    const scope = canonicalizeScope(input.body.scope);
     const [session] = await db
       .update(cliAuthSession)
       .set({
-        scopeId: input.body.scopeId,
+        scopeKey: scope.scopeKey,
+        scope: scope.scope,
         status: "approved",
       })
       .where(
@@ -126,10 +134,12 @@ const approveCliAuth = protectedRouter
   });
 
 const denyCliAuth = protectedRouter
-  .route({
-    path: "/deny",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/deny",
+      method: "POST",
+    }),
+  )
   .input(z.object({ body: z.object({ userCode: z.string().min(1) }) }))
   .output(z.object({ body: z.object({ id: z.string() }) }))
   .handler(async ({ context, input }) => {
@@ -154,10 +164,12 @@ const denyCliAuth = protectedRouter
   });
 
 const pollCliAuth = protectedRouter
-  .route({
-    path: "/poll",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/poll",
+      method: "POST",
+    }),
+  )
   .input(z.object({ body: z.object({ deviceCode: z.string().min(1) }) }))
   .output(
     z.object({
@@ -166,7 +178,7 @@ const pollCliAuth = protectedRouter
         z.object({ status: z.literal("denied") }),
         z.object({
           deployToken: z.string(),
-          scopeId: z.string(),
+          scope: scopeSchema,
           status: z.literal("approved"),
         }),
         z.object({ status: z.literal("expired") }),
@@ -204,9 +216,22 @@ const pollCliAuth = protectedRouter
       return { body: { status: "pending" as const } };
     }
 
-    if (!session.scopeId) {
+    if (!session.scope || !session.scopeKey) {
       throw new ORPCError("BAD_REQUEST", {
-        message: "Approved CLI auth session is missing scopeId.",
+        message: "Approved CLI auth session is missing scope.",
+      });
+    }
+    let sessionScope: ReturnType<typeof canonicalizeScope>;
+    try {
+      sessionScope = canonicalizeScope(session.scope);
+    } catch {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "Approved CLI auth session has an invalid scope.",
+      });
+    }
+    if (sessionScope.scopeKey !== session.scopeKey) {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "Approved CLI auth session has an invalid scope.",
       });
     }
 
@@ -228,21 +253,34 @@ const pollCliAuth = protectedRouter
         return null;
       }
 
-      if (!consumedSession.scopeId) {
+      if (!consumedSession.scope || !consumedSession.scopeKey) {
         throw new ORPCError("BAD_REQUEST", {
-          message: "Approved CLI auth session is missing scopeId.",
+          message: "Approved CLI auth session is missing scope.",
         });
       }
-      const scopeId = consumedSession.scopeId;
+      let consumedScope: ReturnType<typeof canonicalizeScope>;
+      try {
+        consumedScope = canonicalizeScope(consumedSession.scope);
+      } catch {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Approved CLI auth session has an invalid scope.",
+        });
+      }
+      if (consumedScope.scopeKey !== consumedSession.scopeKey) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Approved CLI auth session has an invalid scope.",
+        });
+      }
 
       await tx.insert(cliToken).values({
         expiresAt: new Date(now.getTime() + tokenExpiresInMilliseconds),
         projectId: context.project.id,
-        scopeId,
+        scope: consumedScope.scope,
+        scopeKey: consumedScope.scopeKey,
         tokenHash: hashCliSecret(deployToken),
       });
 
-      return { ...consumedSession, scopeId };
+      return { ...consumedSession, scope: consumedScope.scope };
     });
 
     if (!deletedSession) {
@@ -252,19 +290,21 @@ const pollCliAuth = protectedRouter
     return {
       body: {
         deployToken,
-        scopeId: deletedSession.scopeId,
+        scope: deletedSession.scope,
         status: "approved" as const,
       },
     };
   });
 
 const verifyCliAuthToken = protectedRouter
-  .route({
-    path: "/verify-token",
-    method: "POST",
-  })
+  .meta(
+    openapi({
+      path: "/verify-token",
+      method: "POST",
+    }),
+  )
   .input(z.object({ body: z.object({ deployToken: z.string().min(1) }) }))
-  .output(z.object({ body: z.object({ scopeId: z.string() }) }))
+  .output(z.object({ body: z.object({ scope: scopeSchema }) }))
   .handler(async ({ context, input }) => {
     const token = await db.query.cliToken.findFirst({
       where: {
@@ -277,12 +317,22 @@ const verifyCliAuthToken = protectedRouter
       throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
     }
 
+    let scope: ReturnType<typeof canonicalizeScope>;
+    try {
+      scope = canonicalizeScope(token.scope);
+    } catch {
+      throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
+    }
+    if (scope.scopeKey !== token.scopeKey) {
+      throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
+    }
+
     await db.update(cliToken).set({ lastUsedAt: new Date() }).where(eq(cliToken.id, token.id));
 
-    return { body: { scopeId: token.scopeId } };
+    return { body: { scope: scope.scope } };
   });
 
-export const cliAuthRouter = o.prefix("/cli-auth").router({
+export const cliAuthRouter = o.meta(openapi({ prefix: "/cli-auth" })).router({
   approve: approveCliAuth,
   deny: denyCliAuth,
   poll: pollCliAuth,

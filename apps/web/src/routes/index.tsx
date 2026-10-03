@@ -3,9 +3,7 @@ import { clearActiveOrg, getActiveOrg } from "#lib/active-org";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
-    const session = await context.queryClient.ensureQueryData(
-      context.orpc.user.getSession.queryOptions(),
-    );
+    const session = await context.queryClient.query(context.orpc.user.getSession.queryOptions());
 
     if (!session.session) {
       throw redirect({
@@ -18,9 +16,7 @@ export const Route = createFileRoute("/")({
     const activeOrg = await getActiveOrg();
     // This query does not use the saved selection, so a failure is not evidence
     // that the selection is invalid. Only clear it after a successful lookup.
-    const orgs = await context.queryClient.ensureQueryData(
-      context.orpc.user.getOrgs.queryOptions(),
-    );
+    const orgs = await context.queryClient.query(context.orpc.user.getOrgs.queryOptions());
 
     // The cookie stores a slug; accept IDs saved by older clients as well.
     const selectedOrg = orgs.find((org) => org.slug === activeOrg || org.id === activeOrg);

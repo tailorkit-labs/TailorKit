@@ -72,17 +72,34 @@ styles. The generated `src/client.ts` already registers this view.
 </Step>
 <Step>
 
-### Preview the app
+### Link and deploy the app
 
-Start the local app server:
+Authenticate the CLI with the host, then make the first deployment:
 
 ```sh
-pnpm exec tailorkit experimental-preview
+pnpm exec tailorkit login
+pnpm deploy
 ```
 
-While developing, point the host client's `baseUrl` at
-`http://127.0.0.1:4175`. The host discovers the local app and renders it in an
-`AppView` on the `/` view.
+When prompted, create the TailorKit app. The deployment records its `appId` in
+`tailorkit.config.ts`, which the preview command uses to start a session.
+
+</Step>
+<Step>
+
+### Preview the app
+
+Start a remote preview session:
+
+```sh
+pnpm exec tailorkit preview
+```
+
+The CLI keeps Vite in watch mode and prints a host preview link. Open the link
+while signed in to the host and choose **Accept preview**. The app then appears
+in the host's normal app list and renders in `AppView`. Successful builds are
+uploaded in bounded chunks; a failed build leaves the last successful preview
+running. Stop the CLI to end the session immediately.
 
 </Step>
 </Steps>

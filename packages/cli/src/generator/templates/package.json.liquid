@@ -7,6 +7,7 @@
   },
   "scripts": {
     "build": "tailorkit build",
+    "db:generate": "tailorkit db generate",
     "deploy": "tailorkit deploy",
     "generate": "tailorkit generate"{% if linting %},
     "lint": "oxlint",
@@ -18,9 +19,12 @@
   },
   "dependencies": {
     "tailorkit": "{{ tailorkitVersion }}",
-    "preact": "{{ preactVersion }}"
+    "preact": "{{ preactVersion }}",
+    "zod": "{{ zodVersion }}"
   },
   "devDependencies": {
+    "drizzle-kit": "{{ drizzleKitVersion }}",
+    "drizzle-orm": "{{ drizzleOrmVersion }}",
     "typescript": "{{ typescriptVersion }}"{% if linting %},
     "oxlint": "{{ oxlintVersion }}"{% endif %}{% if formatting %},
     "oxfmt": "{{ oxfmtVersion }}"{% endif %}

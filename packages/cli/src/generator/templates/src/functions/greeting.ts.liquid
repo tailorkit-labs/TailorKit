@@ -1,0 +1,6 @@
+import { tk } from "tailorkit/server";
+import { z } from "zod";
+
+export const greeting = tk.query
+  .input(z.object({ name: z.string() }))
+  .handler(({ input }) => `Hello, ${input.name}!`);

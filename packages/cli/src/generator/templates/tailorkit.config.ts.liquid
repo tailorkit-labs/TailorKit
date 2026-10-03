@@ -2,8 +2,9 @@ import type { TailorKitConfig } from "tailorkit/app/config";
 
 const config = {
   host: "{{ hostUrl }}",
-  client: {
-    entry: "./src/client.ts",
+  logos: {
+    dark: "logo-dark.svg",
+    light: "logo-light.svg",
   },
 } satisfies TailorKitConfig;
 

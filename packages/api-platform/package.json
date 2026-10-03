@@ -5,6 +5,7 @@
   "license": "BUSL-1.1",
   "type": "module",
   "imports": {
+    "#env": "./src/env.ts",
     "#*": [
       "./src/*",
       "./src/*.ts",
@@ -27,6 +28,11 @@
       "types": "./dist/context.d.mts",
       "default": "./dist/context.mjs"
     },
+    "./preview-token": {
+      "development": "./src/preview-token.ts",
+      "types": "./dist/preview-token.d.mts",
+      "default": "./dist/preview-token.mjs"
+    },
     "./*": {
       "development": "./src/*.ts",
       "types": "./dist/*.d.mts",
@@ -34,32 +40,33 @@
     }
   },
   "scripts": {
-    "build": "tsdown src/index.ts src/context.ts src/pagination.ts src/procedures.ts src/public-id.ts src/asset-url.ts src/assets.ts src/routes/apps.ts src/routes/cli-auth.ts src/routes/deployments.ts --format esm --dts --clean",
+    "build": "vp pack src/index.ts src/runtime/auth.ts src/context.ts src/pagination.ts src/preview-token.ts src/preview-ws.ts src/preview-ws-auth.ts src/preview-build-store.ts src/preview-lifecycle.ts src/procedures.ts src/public-id.ts src/asset-url.ts src/assets.ts src/scope.ts src/routes/apps.ts src/routes/runtime.ts src/routes/cli-auth.ts src/routes/deployments.ts src/routes/preview.ts src/routes/preview-grants.ts --format esm --dts --clean",
     "check-types": "tsc --noEmit",
-    "generate:openapi": "tsx scripts/generate-openapi.ts",
-    "test": "vitest run"
+    "generate:openapi": "node --conditions=development --import tsx scripts/generate-openapi.ts && vp fmt openapi.json",
+    "test": "vp test run"
   },
   "dependencies": {
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/zod": "catalog:",
     "@tailorkit/api-utils": "workspace:*",
+    "@tailorkit/app": "workspace:*",
     "@tailorkit/asset-delivery": "workspace:*",
     "@tailorkit/auth": "workspace:*",
     "@tailorkit/db": "workspace:*",
     "@tailorkit/env": "workspace:*",
+    "@tailorkit/kv": "workspace:*",
     "@tailorkit/observability": "workspace:*",
     "@tailorkit/storage": "workspace:*",
     "drizzle-orm": "catalog:",
+    "effect": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
-    "tsdown": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

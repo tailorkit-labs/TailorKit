@@ -1,4 +1,4 @@
-import { Logo } from "@tailorkit/ui/components/logo";
+import { Logo } from "@tailorkit/ui/logo";
 import { Link } from "@tanstack/react-router";
 
 export function SidebarBrand() {

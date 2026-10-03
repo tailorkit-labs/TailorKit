@@ -1,4 +1,4 @@
-import { env } from "@tailorkit/env/server";
+import { env } from "#env";
 import { createRedisKV } from "./redis.js";
 import { createUpstashKV } from "./upstash.js";
 import type { KV } from "./types.js";

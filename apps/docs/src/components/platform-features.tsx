@@ -1,4 +1,4 @@
-import { clsx } from "clsx";
+import { cn } from "@tailorkit/ui";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
@@ -106,7 +106,7 @@ export function PlatformFeatures() {
                 key={f.id}
                 type="button"
                 onClick={() => scrollTo(f.id)}
-                className={clsx(
+                className={cn(
                   "relative flex items-center py-3 text-left transition-all duration-200",
                   activeId === f.id
                     ? "text-foreground font-semibold text-base"
@@ -130,7 +130,7 @@ export function PlatformFeatures() {
               ref={(el) => {
                 sectionRefs.current[feature.id] = el;
               }}
-              className={clsx(
+              className={cn(
                 "relative z-10 flex flex-col gap-5 px-8 py-14 lg:px-16 lg:py-20 items-center text-center lg:items-start lg:text-left bg-background/65 backdrop-blur-[1px]",
                 i < FEATURES.length - 1 && "border-b border-border",
               )}

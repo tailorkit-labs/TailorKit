@@ -2,8 +2,8 @@
 
 import { ChevronLeftIcon } from "lucide-react";
 import { Fragment, useRef, useState } from "react";
-import { clsx } from "clsx";
-import { Button } from "@tailorkit/ui/components/button";
+import { cn } from "@tailorkit/ui";
+import { Button } from "@tailorkit/ui/button";
 import {
   Card,
   CardFooter,
@@ -12,11 +12,11 @@ import {
   CardHeader,
   CardPanel,
   CardTitle,
-} from "@tailorkit/ui/components/card";
-import { Field, FieldDescription, FieldError } from "@tailorkit/ui/components/field";
-import { Logo } from "@tailorkit/ui/components/logo";
-import { OTPField, OTPFieldInput, OTPFieldSeparator } from "@tailorkit/ui/components/otp-field";
-import { toastManager } from "@tailorkit/ui/components/toast";
+} from "@tailorkit/ui/card";
+import { Field, FieldDescription, FieldError } from "@tailorkit/ui/field";
+import { Logo } from "@tailorkit/ui/logo";
+import { OTPField, OTPFieldInput, OTPFieldSeparator } from "@tailorkit/ui/otp-field";
+import { toastManager } from "@tailorkit/ui/toast";
 import { useAppForm } from "@tailorkit/ui/form";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { z } from "zod";
@@ -192,7 +192,7 @@ function RouteComponent() {
     return "Choose a new password for your account";
   };
 
-  const contentClass = clsx(
+  const contentClass = cn(
     "transition-all duration-150",
     visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1",
   );
@@ -344,7 +344,7 @@ function RouteComponent() {
             </div>
           </Card>
 
-          <CardFrameFooter>
+          <CardFrameFooter className="relative">
             {step === "email" ? (
               <Button variant={"link"} render={<Link search={{ email, return_to }} to="/login" />}>
                 <ChevronLeftIcon />

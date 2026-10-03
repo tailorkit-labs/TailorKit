@@ -2,7 +2,7 @@
 
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@tailorkit/ui/components/button";
+import { Button } from "@tailorkit/ui/button";
 import {
   Card,
   CardFooter,
@@ -11,11 +11,11 @@ import {
   CardHeader,
   CardPanel,
   CardTitle,
-} from "@tailorkit/ui/components/card";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@tailorkit/ui/components/field";
-import { Logo } from "@tailorkit/ui/components/logo";
-import { OTPField, OTPFieldInput, OTPFieldSeparator } from "@tailorkit/ui/components/otp-field";
-import { toastManager } from "@tailorkit/ui/components/toast";
+} from "@tailorkit/ui/card";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@tailorkit/ui/field";
+import { Logo } from "@tailorkit/ui/logo";
+import { OTPField, OTPFieldInput, OTPFieldSeparator } from "@tailorkit/ui/otp-field";
+import { toastManager } from "@tailorkit/ui/toast";
 
 import { authClient } from "#lib/auth-client";
 import { getSameOriginPath } from "#lib/safe-return-url";
@@ -194,7 +194,7 @@ function RouteComponent() {
               </Button>
             </CardFooter>
           </Card>
-          <CardFrameFooter>
+          <CardFrameFooter className="relative">
             <Button variant={"link"} render={<Link search={{ email, return_to }} to="/login" />}>
               <ChevronLeftIcon />
               Back to sign in

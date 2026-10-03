@@ -30,8 +30,6 @@ import { createView } from "@tailorkit/app";
 
 const detail = createView("/users/detail", {
   component: UserTools,
-  loading: LoadingTools,
-  error: ContextError,
 });
 
 function UserTools() {
@@ -41,8 +39,10 @@ function UserTools() {
 ```
 
 The hook returns the composed, typed context from the selected view and its
-ancestors. It is available only while the ready component renders. `loading`
-and `error` are optional; omitted handlers render nothing.
+ancestors. It is available only while the ready component renders. Views render
+nothing while host context is loading or in an error state. `createView` accepts
+only a `component`; apps cannot provide loading or error components for host
+context.
 
 Each slot selects exactly one view, searching the active view followed
 by ancestors. A detail view replaces the general view in the same slot.

@@ -2,8 +2,8 @@
 
 import { OTPField as OTPFieldPrimitive } from "@base-ui/react/otp-field";
 import type * as React from "react";
-import { cn } from "@tailorkit/ui/lib/utils";
-import { Separator } from "@tailorkit/ui/components/separator";
+import { cn } from "#ui";
+import { Separator } from "#ui/separator";
 
 export function OTPField({
   className,
@@ -47,13 +47,17 @@ export function OTPFieldSeparator({
   ...props
 }: React.ComponentProps<typeof Separator>): React.ReactElement {
   return (
-    <Separator
-      className={cn(
-        "rounded-full bg-input data-[orientation=horizontal]:h-0.5 data-[orientation=horizontal]:w-3",
-        className,
-      )}
-      orientation="horizontal"
-      {...props}
+    <OTPFieldPrimitive.Separator
+      render={
+        <Separator
+          className={cn(
+            "rounded-full bg-input data-[orientation=horizontal]:h-0.5 data-[orientation=horizontal]:w-3",
+            className,
+          )}
+          orientation="horizontal"
+          {...props}
+        />
+      }
     />
   );
 }

@@ -1,5 +1,5 @@
 import { Outlet, createFileRoute } from "@tanstack/react-router";
-import { SidebarInset, SidebarProvider } from "@tailorkit/ui/components/sidebar";
+import { SidebarInset, SidebarProvider } from "@tailorkit/ui/sidebar";
 
 import { HeaderActionsProvider } from "#components/header-actions";
 import { ProjectSidebar } from "#components/sidebar/project-sidebar";
@@ -7,7 +7,7 @@ import { SidebarLayoutHeader } from "#components/sidebar-layout-header";
 
 export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(
+    context.queryClient.query(
       context.orpc.project.get.queryOptions({
         input: { orgSlug: params.orgSlug, projectSlug: params.projectSlug },
       }),

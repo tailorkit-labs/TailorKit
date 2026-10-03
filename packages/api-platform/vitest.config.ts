@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   test: {
@@ -11,6 +11,7 @@ export default defineConfig({
       EMAIL_SMTP_URL: "smtp://localhost:1025",
       NODE_ENV: "test",
     },
+    fileParallelism: false,
     pool: "forks",
   },
 });

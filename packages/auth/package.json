@@ -5,6 +5,7 @@
   "license": "BUSL-1.1",
   "type": "module",
   "imports": {
+    "#env": "./src/env.ts",
     "#*": [
       "./src/*",
       "./src/*.ts",
@@ -26,22 +27,26 @@
     }
   },
   "scripts": {
-    "build": "tsdown src/index.ts src/lib/email.ts src/lib/permissions.ts src/lib/public-team-id.ts --format esm --dts --clean",
+    "build": "vp pack src/index.ts src/lib/captcha-endpoints.ts src/lib/email.ts src/lib/permissions.ts src/lib/public-team-id.ts --format esm --dts --clean",
     "check-types": "tsc --noEmit",
-    "generate": "pnpm dlx auth@1.7.1 generate --config src/index.ts --output ../db/src/schema/auth.ts",
-    "test": "vitest run"
+    "generate": "auth generate --config src/index.ts --output ../db/src/schema/auth.generated.ts --yes",
+    "test": "vp test run"
   },
   "dependencies": {
-    "@better-auth/api-key": "1.7.1",
-    "@better-auth/drizzle-adapter": "1.7.1",
-    "@better-auth/infra": "^0.4.9",
+    "@better-auth/api-key": "1.7.6",
+    "@better-auth/core": "1.7.6",
+    "@better-auth/drizzle-adapter": "1.7.6",
+    "@better-auth/infra": "^0.4.12",
+    "@better-auth/passkey": "1.7.6",
+    "@simplewebauthn/server": "^13.3.1",
     "@tailorkit/db": "workspace:*",
     "@tailorkit/email": "workspace:*",
     "@tailorkit/env": "workspace:*",
     "@tailorkit/kv": "workspace:*",
     "@tailorkit/observability": "workspace:*",
-    "@vercel/functions": "^3.9.7",
+    "@vercel/functions": "^3.9.9",
     "better-auth": "catalog:",
+    "botid": "1.5.11",
     "jose": "6.2.12",
     "nanoid": "^6.0.1",
     "uuid": "^14.0.2",
@@ -50,8 +55,7 @@
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
-    "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "auth": "1.7.6",
+    "typescript": "catalog:"
   }
 }

@@ -1,10 +1,10 @@
 {
   "name": "@tailorkit/cli",
-  "version": "0.1.0-beta.9",
+  "version": "0.1.0-beta.17",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AlfieJones/tailorkit.git",
+    "url": "git+https://github.com/tailorkit-labs/TailorKit.git",
     "directory": "packages/cli"
   },
   "bin": {
@@ -22,24 +22,26 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vite build",
+    "build": "vp build",
     "check-types": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vp test run"
   },
   "dependencies": {
-    "@clack/prompts": "^1.8.0",
+    "@clack/prompts": "^1.8.1",
     "@tailorkit/app": "workspace:*",
+    "@tailorkit/client-platform": "workspace:*",
     "@tailorkit/core": "workspace:*",
     "cac": "^7.0.0",
+    "jose": "6.2.12",
     "liquidjs": "^10.29.0",
     "picocolors": "^1.1.1",
+    "vite": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
-    "vitest": "catalog:"
+    "vite-plus": "catalog:"
   }
 }

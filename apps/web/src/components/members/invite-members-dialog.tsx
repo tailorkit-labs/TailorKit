@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { PlusIcon, TrashIcon, UserPlusIcon } from "lucide-react";
-import { Button } from "@tailorkit/ui/components/button";
+import { Button } from "@tailorkit/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -12,16 +12,10 @@ import {
   DialogPopup,
   DialogTitle,
   DialogTrigger,
-} from "@tailorkit/ui/components/dialog";
-import { Input } from "@tailorkit/ui/components/input";
-import {
-  Select,
-  SelectItem,
-  SelectPopup,
-  SelectTrigger,
-  SelectValue,
-} from "@tailorkit/ui/components/select";
-import { toastManager } from "@tailorkit/ui/components/toast";
+} from "@tailorkit/ui/dialog";
+import { Input } from "@tailorkit/ui/input";
+import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "@tailorkit/ui/select";
+import { toastManager } from "@tailorkit/ui/toast";
 import { roles } from "@tailorkit/auth/lib/permissions";
 import { client } from "#lib/orpc";
 

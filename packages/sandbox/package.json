@@ -1,10 +1,10 @@
 {
   "name": "@tailorkit/sandbox",
-  "version": "0.1.0-beta.9",
+  "version": "0.1.0-beta.17",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AlfieJones/tailorkit.git",
+    "url": "git+https://github.com/tailorkit-labs/TailorKit.git",
     "directory": "packages/sandbox"
   },
   "files": [
@@ -26,19 +26,20 @@
   },
   "scripts": {
     "check-types": "tsc --noEmit",
-    "test": "vitest run",
-    "build": "vite build && tsc -p tsconfig.build.json"
+    "test": "vp test run",
+    "build": "vp build && tsc -p tsconfig.build.json"
   },
   "dependencies": {
+    "@tailorkit/app": "workspace:*",
     "@tailorkit/core": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
-    "happy-dom": "^20.14.3",
+    "happy-dom": "^20.14.5",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vitest": "catalog:"
+    "vite-plus": "catalog:"
   }
 }

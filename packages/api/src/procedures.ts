@@ -1,13 +1,13 @@
 import { ORPCError, os } from "@orpc/server";
 import { auth } from "@tailorkit/auth";
 import { db } from "@tailorkit/db";
-import { createRatelimiter, ratelimitMiddleware } from "@tailorkit/api-utils/rate-limiting";
+import { createRateLimiter, ratelimitMiddleware } from "@tailorkit/api-utils/rate-limiting";
 import { devDelayMiddleware } from "@tailorkit/api-utils/dev-delay";
 import { setSpanAttributes } from "@tailorkit/observability";
 import type { Context } from "./context";
 import type { ac } from "@tailorkit/auth/lib/permissions";
 
-const rateLimiter = createRatelimiter({ maxRequests: 100, window: 1000 });
+const rateLimiter = createRateLimiter({ maxRequests: 100, window: 1000 });
 
 export const o = os.$context<Context>().errors({
   UNAUTHORIZED: {},
@@ -61,7 +61,7 @@ type OrgPermissions = Partial<{
  * // with permission check + input mapping
  * protectedProcedure
  *   .input(z.object({ slug: z.string() }))
- *   .use(requireOrg({ member: ["invite"] }), input => ({ orgSlug: input.slug }))
+ *   .use(requireOrg({ member: ["invite"] }).adaptInput(input => ({ orgSlug: input.slug })))
  *   .handler(async ({ context }) => context.org)
  */
 export function requireOrg(permissions?: OrgPermissions) {

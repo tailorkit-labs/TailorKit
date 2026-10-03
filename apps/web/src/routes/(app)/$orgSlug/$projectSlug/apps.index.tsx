@@ -6,24 +6,12 @@ import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import { AppWindowIcon, SearchIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { RefObject } from "react";
-import { Badge } from "@tailorkit/ui/components/badge";
-import { CardFrame } from "@tailorkit/ui/components/card";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@tailorkit/ui/components/empty";
-import { Input } from "@tailorkit/ui/components/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@tailorkit/ui/components/table";
+import type { Scope } from "@tailorkit/db/schema/scope";
+import { Badge } from "@tailorkit/ui/badge";
+import { CardFrame } from "@tailorkit/ui/card";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@tailorkit/ui/empty";
+import { Input } from "@tailorkit/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tailorkit/ui/table";
 import { DateAgo } from "@tailorkit/ui/date";
 import { AppLogo } from "#components/apps/app-logo";
 import { renderSortableHeader } from "#components/members/member-table-utils";
@@ -60,7 +48,7 @@ function appsListQueryOptions({
 
 export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug/apps/")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureInfiniteQueryData(
+    context.queryClient.infiniteQuery(
       appsListQueryOptions({
         appsList: context.orpc.apps.list,
         orgSlug: params.orgSlug,
@@ -75,7 +63,7 @@ interface AppRow {
   id: string;
   publicId: string;
   name: string;
-  scopeId: string;
+  scope: Scope;
   createdAt: Date | string;
   currentDeployment: { status: string } | null;
   deploymentCount: number;
@@ -136,10 +124,19 @@ function AppsTable({
         ),
       },
       {
-        accessorKey: "scopeId",
+        accessorFn: (row) => `${row.scope.name} ${JSON.stringify(row.scope.value)}`,
+        id: "scope",
         header: "Scope",
-        size: 160,
-        cell: ({ row }) => <span className="text-sm">{row.original.scopeId}</span>,
+        size: 220,
+        cell: ({ row }) => (
+          <span
+            className="block truncate text-sm"
+            title={`${row.original.scope.name}: ${JSON.stringify(row.original.scope.value, null, 2)}`}
+          >
+            <span className="font-medium">{row.original.scope.name}:</span>{" "}
+            {JSON.stringify(row.original.scope.value)}
+          </span>
+        ),
       },
       {
         accessorKey: "deploymentCount",
@@ -228,9 +225,11 @@ function AppsTable({
           ))}
         </TableBody>
       </Table>
-      <div ref={loadMoreRef} className="h-1" />
       {(isFetchingNextPage || hasNextPage) && (
-        <div className="border-t px-4 py-3 text-center text-muted-foreground text-sm">
+        <div
+          ref={loadMoreRef}
+          className="border-t px-4 py-3 text-center text-muted-foreground text-sm"
+        >
           {isFetchingNextPage ? "Loading more apps..." : "Scroll for more apps"}
         </div>
       )}

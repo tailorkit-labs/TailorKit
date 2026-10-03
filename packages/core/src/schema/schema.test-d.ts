@@ -1,6 +1,6 @@
 import { createActions, createTailorKitSchema } from "./schema";
 import type { ComponentProps, InferActionInput, InferActionOutput } from "./schema";
-import { expectTypeOf } from "vitest";
+import { expectTypeOf } from "vite-plus/test";
 import { z } from "zod";
 
 interface User {
@@ -25,13 +25,9 @@ createTailorKitSchema({
 
 createTailorKitSchema({
   components: {},
-  views: {
-    "/pages": {
-      context: z.object({ userId: z.string() }),
-    },
-    "/pages/detail": {
-      context: z.object({ pageId: z.string() }),
-    },
+  contexts: {
+    "/pages": z.object({ userId: z.string() }),
+    "/pages/detail": z.object({ pageId: z.string() }),
   },
 });
 
@@ -44,11 +40,9 @@ const tailor = createTailorKitSchema({
       children: true,
     },
   },
-  views: {
-    "/": {},
-    "/customers/:customerId": {
-      context: z.object({ customerId: z.string() }),
-    },
+  contexts: {
+    "/": z.object({}),
+    "/customers/:customerId": z.object({ customerId: z.string() }),
   },
   actions: {
     noSchemas: untypedAction.handler(() => ({ ok: true })),
@@ -64,10 +58,10 @@ const tailor = createTailorKitSchema({
 });
 
 const component = tailor.components.Button;
-const view = tailor.views["/customers/:customerId"];
+const context = tailor.contexts["/customers/:customerId"];
 const noSchemaAction = tailor.actions.noSchemas;
 void component;
-void view;
+void context;
 void noSchemaAction;
 
 const buttonProps: ComponentProps<typeof tailor.components.Button> = { variant: "default" };
@@ -77,7 +71,7 @@ expectTypeOf<ComponentProps<typeof tailor.components.Button>>().toMatchTypeOf<{
   variant: "default" | "secondary";
 }>();
 expectTypeOf<typeof tailor.components.Button.children>().toEqualTypeOf<true>();
-expectTypeOf<typeof view.context>().toEqualTypeOf<z.ZodObject<{ customerId: z.ZodString }>>();
+expectTypeOf<typeof context>().toEqualTypeOf<z.ZodObject<{ customerId: z.ZodString }>>();
 expectTypeOf<InferActionInput<typeof tailor.actions.withInput>>().toEqualTypeOf<{ id: string }>();
 expectTypeOf<InferActionOutput<typeof tailor.actions.withOutput>>().toEqualTypeOf<{ ok: true }>();
 expectTypeOf<InferActionOutput<typeof noSchemaAction>>().toEqualTypeOf<{ ok: boolean }>();
@@ -170,39 +164,39 @@ createTailorKitSchema({
 
 createTailorKitSchema({
   components: {},
-  views: {
-    "/": { context: z.object({ workspaceId: z.string() }) },
+  contexts: {
+    "/": z.object({ workspaceId: z.string() }),
     // @ts-expect-error Each field has one owning view.
-    "/users/detail": { context: z.object({ workspaceId: z.string() }) },
+    "/users/detail": z.object({ workspaceId: z.string() }),
   },
 });
 
 createTailorKitSchema({
   components: {},
-  views: { "/": {}, "/users": {} },
+  contexts: { "/": z.object({}), "/users": z.object({}) },
   slots: { navbar: { views: ["/"] }, panel: { views: ["/users"] } },
 });
 createTailorKitSchema({
   components: {},
-  views: { "/": {} },
+  contexts: { "/": z.object({}) },
   // @ts-expect-error Slot lists can only reference declared views.
   slots: { panel: { views: ["/missing"] } },
 });
 
 createTailorKitSchema({
   components: {},
-  views: {
+  contexts: {
     // @ts-expect-error Context composition requires named fields.
-    "/number": { context: z.number() },
+    "/number": z.number(),
     // @ts-expect-error Strings must be wrapped in an object field.
-    "/string": { context: z.string() },
+    "/string": z.string(),
     // @ts-expect-error Arrays must be wrapped in an object field.
-    "/array": { context: z.array(z.string()) },
+    "/array": z.array(z.string()),
     // @ts-expect-error Every member of a context union must be an object.
-    "/union": { context: z.union([z.object({ id: z.string() }), z.number()]) },
+    "/union": z.union([z.object({ id: z.string() }), z.number()]),
     // @ts-expect-error Null is not an object context.
-    "/null": { context: z.object({ id: z.string() }).nullable() },
-    "/optional": { context: z.object({ id: z.string() }).optional() },
-    "/empty": {},
+    "/null": z.object({ id: z.string() }).nullable(),
+    "/optional": z.object({ id: z.string() }).optional(),
+    "/empty": z.object({}),
   },
 });

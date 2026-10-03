@@ -1,5 +1,5 @@
 import { validateProjectSlug } from "@tailorkit/db/validate-project-slug";
-import { Button } from "@tailorkit/ui/components/button";
+import { Button } from "@tailorkit/ui/button";
 import {
   Card,
   CardDescription,
@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardPanel,
   CardTitle,
-} from "@tailorkit/ui/components/card";
+} from "@tailorkit/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -18,10 +18,10 @@ import {
   DialogPanel,
   DialogPopup,
   DialogTitle,
-} from "@tailorkit/ui/components/dialog";
-import { Field, FieldDescription, FieldLabel } from "@tailorkit/ui/components/field";
-import { Input } from "@tailorkit/ui/components/input";
-import { toastManager } from "@tailorkit/ui/components/toast";
+} from "@tailorkit/ui/dialog";
+import { Field, FieldDescription, FieldLabel } from "@tailorkit/ui/field";
+import { Input } from "@tailorkit/ui/input";
+import { toastManager } from "@tailorkit/ui/toast";
 import { useAppForm } from "@tailorkit/ui/form";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -167,7 +167,7 @@ function ProjectSettingsPage() {
           </form>
         </Card>
 
-        <CardFrameFooter className="flex justify-end">
+        <CardFrameFooter className="flex justify-end relative">
           <form.AppForm>
             <form.SubmitButton form="project-settings-form" size="sm">
               Save changes

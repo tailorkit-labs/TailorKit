@@ -22,7 +22,7 @@ import {
   SidebarPanelTrigger,
   SidebarPanels,
   SidebarSeparator,
-} from "@tailorkit/ui/components/sidebar";
+} from "@tailorkit/ui/sidebar";
 
 import { OrgSwitcher } from "#components/sidebar/org-switcher";
 import { SidebarBrand } from "#components/sidebar/sidebar-brand";

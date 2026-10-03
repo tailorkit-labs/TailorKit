@@ -1,4 +1,5 @@
-import { useEffect, useId, useMemo, useSyncExternalStore } from "react";
+import { createSessionProvider } from "@tailorkit/app/client";
+import { useCallback, useEffect, useId, useMemo, useRef, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import { isViewAncestor } from "@tailorkit/core/views";
 import { toBaseUrl } from "../store";
@@ -6,7 +7,7 @@ import { useStableContext } from "../hooks/use-stable-context";
 import { useTailorRootContext } from "./context";
 import { buildThemeCss, PrimitiveThemeContext } from "../primitives";
 import { RemoteViewHost } from "../remote-view";
-import type { AppViewProps, TailorKitApp } from "../tailor-kit";
+import type { AppViewProps, TailorKitApp } from "../tailorkit";
 
 export const AppView = ({
   app,
@@ -18,6 +19,10 @@ export const AppView = ({
   const { store, client } = useTailorRootContext("AppView");
   const { theme, components: wrappedComponents } = client;
   const reactId = useId();
+  const getBackendSession = useMemo(
+    () => createSessionProvider({ baseUrl: store.baseUrl, appId: app.id }),
+    [store.baseUrl, app.id],
+  );
   const currentView = useSyncExternalStore(
     store.views.subscribe,
     store.views.getSnapshot,
@@ -43,6 +48,30 @@ export const AppView = ({
     return currentView === null ? undefined : { slot, ...currentView };
   }, [context, currentView, view, status, slot]);
   const meta = useSyncExternalStore(store.subscribe, store.getMetaSnapshot, store.getMetaSnapshot);
+  const previewSessionId = app.preview?.sessionId ?? "";
+  const appRef = useRef(app);
+  appRef.current = app;
+  const subscribePreview = useCallback(
+    (listener: () => void) => {
+      const currentApp = appRef.current;
+      return currentApp.preview?.sessionId === previewSessionId
+        ? store.previews.subscribe(currentApp, listener)
+        : () => {};
+    },
+    [store, previewSessionId],
+  );
+  const getPreviewSnapshot = useCallback(
+    () => store.previews.getSnapshot(previewSessionId),
+    [store, previewSessionId],
+  );
+  const previewSnapshot = useSyncExternalStore(
+    subscribePreview,
+    getPreviewSnapshot,
+    getPreviewSnapshot,
+  );
+  useEffect(() => {
+    store.previews.updateApp(app);
+  }, [store, app]);
   const runtimeProps = useMemo(
     () =>
       props === undefined
@@ -64,7 +93,11 @@ export const AppView = ({
     void store.fetchMeta();
   }, [store]);
 
-  if (props === undefined || appUrl === null || meta.schema === null) {
+  if (
+    props === undefined ||
+    (appUrl === null && previewSnapshot.source === null) ||
+    meta.schema === null
+  ) {
     return fallback;
   }
 
@@ -75,7 +108,12 @@ export const AppView = ({
       <div data-tailorkit-view={viewId}>
         <style data-tailorkit-theme-style={viewId}>{buildThemeCss(viewId, theme)}</style>
         <RemoteViewHost
-          appUrl={appUrl.toString()}
+          key={previewSnapshot.revision || appUrl?.toString()}
+          appUrl={(
+            appUrl ?? new URL(`preview/${previewSessionId}/client.js`, store.baseUrl)
+          ).toString()}
+          sourceText={previewSnapshot.source ?? undefined}
+          getBackendSession={getBackendSession}
           components={wrappedComponents}
           createIframe={createIframe}
           props={runtimeProps}
@@ -95,7 +133,7 @@ function resolveAppUrl(app: TailorKitApp, baseUrl: URL, assetsBaseUrl: string | 
   }
 
   return new URL(
-    `projects/${app.projectId}/apps/${app.id}/deployments/${app.currentDeployment.id}/files/client.js`,
+    `projects/${app.projectId}/apps/${app.id}/deployments/${app.currentDeployment.id}/client/client.js`,
     toBaseUrl(assetsBaseUrl),
   );
 }

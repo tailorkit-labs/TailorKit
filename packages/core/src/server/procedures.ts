@@ -1,6 +1,8 @@
 import { ORPCError, os } from "@orpc/server";
 import { cliAuthVerifyToken } from "@tailorkit/client-platform/client";
 import type { Context } from "./context";
+import { normalizeTailorKitNamedScope, selectTailorKitScopes } from "./scope";
+import type { TailorKitNamedScope, TailorKitScopes } from "./types";
 
 export const o = os.$context<Context>();
 
@@ -12,11 +14,34 @@ export function getTailorKitContext(context: Context) {
   return context.tailorkit;
 }
 
-export function getTailorKitScopeId(context: Context): string {
-  return getTailorKitContext(context).scopeId;
+export function getTailorKitScope(context: Context, name?: string): TailorKitNamedScope {
+  const scopes = getTailorKitContext(context).scopes;
+  const names = name !== undefined ? [name] : Object.keys(scopes);
+  if (names.length !== 1) {
+    throw new ORPCError("BAD_REQUEST", {
+      message: "Choose one TailorKit scope for this operation.",
+    });
+  }
+  try {
+    return selectTailorKitScopes(scopes, names)[0]!;
+  } catch (error) {
+    throw new ORPCError("BAD_REQUEST", {
+      message: error instanceof Error ? error.message : "Invalid TailorKit scope selection.",
+    });
+  }
 }
 
-function getBearerToken(request: Request): string {
+export function getTailorKitScopes(context: Context, names?: string[]): TailorKitNamedScope[] {
+  try {
+    return selectTailorKitScopes(getTailorKitContext(context).scopes, names);
+  } catch (error) {
+    throw new ORPCError("BAD_REQUEST", {
+      message: error instanceof Error ? error.message : "Invalid TailorKit scope selection.",
+    });
+  }
+}
+
+export function getCliDeployToken(request: Request): string {
   const [scheme, token] = request.headers.get("authorization")?.split(" ") ?? [];
 
   if (scheme !== "Bearer" || !token) {
@@ -29,7 +54,7 @@ function getBearerToken(request: Request): string {
 export const requireCliDeployToken = o.middleware(async ({ context, next }) => {
   const result = await cliAuthVerifyToken({
     body: {
-      deployToken: getBearerToken(context.request),
+      deployToken: getCliDeployToken(context.request),
     },
     client: context.platform,
     headers: context.platformHeaders,
@@ -37,11 +62,21 @@ export const requireCliDeployToken = o.middleware(async ({ context, next }) => {
 
   const token = "data" in result ? result.data : result;
 
-  if (!token?.scopeId) {
+  if (!token?.scope) {
     throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
   }
 
-  return next({ context: { tailorkit: { scopeId: token.scopeId } } });
+  let scopes: TailorKitScopes;
+  try {
+    const scope = normalizeTailorKitNamedScope(token.scope);
+    if (!Object.hasOwn(context.scopeSchemas, scope.name)) {
+      throw new TypeError("CLI token uses an undeclared scope.");
+    }
+    scopes = Object.freeze({ [scope.name]: scope.value });
+  } catch {
+    throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
+  }
+  return next({ context: { tailorkit: { scopes } } });
 });
 
 export const requireHostAuth = o.middleware(async ({ context, next }) => {

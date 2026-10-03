@@ -2,9 +2,10 @@ import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
-import { cancel, confirm, isCancel, select, spinner, text } from "@clack/prompts";
+import { CANCEL_SYMBOL, cancel, confirm, isCancel, select, spinner, text } from "@clack/prompts";
 import pc from "picocolors";
 import { generateApp, resolveTemplatePackageVersions } from "./generator";
+import { fetchSchemaFromHost } from "./generator/types";
 import { normalizeHostUrl } from "./utils/url";
 
 export interface InitOptions {
@@ -32,7 +33,7 @@ const normalizePackageName = (value: string): string =>
     .replaceAll(/[^a-z0-9._/-]+/gu, "-")
     .replaceAll(/^-+|-+$/gu, "");
 
-const abortIfCancelled = <T>(value: T | symbol): T => {
+const abortIfCancelled = <T>(value: T | typeof CANCEL_SYMBOL): T => {
   if (isCancel(value)) {
     cancel("Init cancelled.");
     process.exit(0);
@@ -188,6 +189,15 @@ export const runInit = async (options: InitOptions): Promise<string> => {
   const install = await promptInstall(options.install);
 
   const s = spinner();
+  s.start("Fetching host schema");
+  let schema;
+  try {
+    schema = await fetchSchemaFromHost(hostUrl);
+    s.stop("Fetched host schema.");
+  } catch (error) {
+    s.stop("Unable to fetch host schema.");
+    throw error;
+  }
   s.start("Resolving package versions");
   const packageVersions = await resolveTemplatePackageVersions();
   s.stop("Resolved package versions.");
@@ -201,6 +211,7 @@ export const runInit = async (options: InitOptions): Promise<string> => {
     linting,
     packageName,
     packageVersions,
+    schema,
     targetDirectory,
   });
 

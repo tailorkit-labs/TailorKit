@@ -2,9 +2,12 @@ import { call } from "@orpc/server";
 import { app as appTable, appDeployment, appDeploymentFile } from "@tailorkit/db/schema/apps";
 import { organization } from "@tailorkit/db/schema/auth";
 import { project as projectTable } from "@tailorkit/db/schema/project";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Context } from "../context";
 import { createTestDb } from "../test/pglite";
+
+vi.mock("@tailorkit/kv", () => ({ getKV: () => null }));
 
 const testState = vi.hoisted(() => ({ db: undefined as unknown }));
 
@@ -16,11 +19,13 @@ vi.mock("@tailorkit/db", () => ({
 }));
 
 const { deploymentRouter, mapReturnedFilesByAssetPath } = await import("./deployments");
+const { canonicalizeScope } = await import("../scope");
 
 const organizationId = "11111111-1111-4111-8111-111111111111";
 const projectId = "22222222-2222-4222-8222-222222222222";
 const logoChecksum = "b".repeat(64);
 const logoChecksumBase64 = Buffer.from(logoChecksum, "hex").toString("base64");
+const productionScope = { name: "environment", value: { environment: "production" } };
 
 describe("platform deployment uploads", () => {
   let client: Awaited<ReturnType<typeof createTestDb>>["client"];
@@ -51,7 +56,7 @@ describe("platform deployment uploads", () => {
       name: "Inbox",
       projectId,
       publicId: "app000000001",
-      scopeId: "production",
+      ...canonicalizeScope(productionScope),
     });
   });
 
@@ -59,7 +64,7 @@ describe("platform deployment uploads", () => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
     await client.close();
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   const createLogoDeployment = async () => {
@@ -114,6 +119,135 @@ describe("platform deployment uploads", () => {
         contentType: "image/svg+xml",
       }),
     },
+  });
+
+  it("hides a deployment when its app has a malformed stored scope", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const deployment = await createLogoDeployment();
+    await db
+      .update(appTable)
+      .set({ scope: { name: "environment", value: {} } })
+      .where(eq(appTable.id, deployment.appId));
+    await expect(
+      call(
+        deploymentRouter.get,
+        { params: { deploymentId: deployment.id }, body: { scopes: [productionScope] } },
+        { context: publishContext("https://uploads.example/logo-dark.svg") },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(warn).toHaveBeenCalledWith(
+      "Deployment app has an invalid stored scope.",
+      expect.objectContaining({ appId: deployment.appId, deploymentId: deployment.id }),
+    );
+  });
+
+  it("hides a deployment when its stored scope key does not match its scope", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const deployment = await createLogoDeployment();
+    await db
+      .update(appTable)
+      .set({ scopeKey: "0".repeat(32) })
+      .where(eq(appTable.id, deployment.appId));
+
+    await expect(
+      call(
+        deploymentRouter.get,
+        { params: { deploymentId: deployment.id }, body: { scopes: [productionScope] } },
+        { context: publishContext("https://uploads.example/logo-dark.svg") },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(warn).toHaveBeenCalledWith(
+      "Deployment app has an invalid stored scope.",
+      expect.objectContaining({ appId: deployment.appId, deploymentId: deployment.id }),
+    );
+  });
+
+  it("uploads client and private server code separately, verifies both, and resolves only published scoped code", async () => {
+    const context = publishContext("https://private.example/server");
+    const uploads = vi.fn(({ key }: { key: string }) =>
+      Promise.resolve({ key, uploadUrl: `https://uploads.example/${key}` }),
+    );
+    context.storage.createUploadUrl = uploads;
+    const currentApp = await db.query.app.findFirst();
+    if (!currentApp) throw new Error("Missing app");
+    const metadata = {
+      checksum: logoChecksum,
+      contentLength: 11,
+      contentType: "application/javascript" as const,
+      encoding: "utf-8" as const,
+    };
+    const created = await call(
+      deploymentRouter.create,
+      {
+        body: {
+          appId: currentApp.id,
+          scope: productionScope,
+          assets: [{ ...metadata, objectKey: "client.js" }],
+          server: { ...metadata, objectKey: "server.js" },
+        },
+      },
+      { context },
+    );
+    expect(created.body.assets[0]?.file.objectKey).toMatch(/\/client\/client\.js$/u);
+    expect(created.body.server?.file.objectKey).toMatch(/\/server\/server\.js$/u);
+    expect(uploads).toHaveBeenCalledTimes(2);
+    const lookup = { params: { appId: currentApp.id }, body: { scope: productionScope } };
+    await expect(
+      call(
+        deploymentRouter.runtime,
+        { params: lookup.params, body: {} },
+        { context: { ...context, runtimeService: true } },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(context.storage.createDownloadUrl).not.toHaveBeenCalled();
+    context.storage.head = vi.fn().mockResolvedValue({
+      checksumSha256: logoChecksumBase64,
+      contentLength: 11,
+      contentType: "application/javascript",
+    });
+    await call(
+      deploymentRouter.publish,
+      {
+        params: { deploymentId: created.body.deployment.id },
+        body: { scope: productionScope, rollout: true },
+      },
+      { context },
+    );
+    await expect(
+      call(deploymentRouter.runtime, { params: lookup.params, body: {} }, { context }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    const runtime = await call(
+      deploymentRouter.runtime,
+      { params: lookup.params, body: {} },
+      { context: { ...context, runtimeService: true } },
+    );
+    await expect(
+      call(
+        deploymentRouter.runtime,
+        { params: lookup.params, body: {} },
+        {
+          context: {
+            ...context,
+            runtimeService: true,
+            project: { ...context.project, id: "33333333-3333-4333-8333-333333333333" },
+          },
+        },
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(runtime.body).toEqual({
+      projectId: context.project.id,
+      appId: currentApp.id,
+      deploymentId: created.body.deployment.id,
+      objectKey: created.body.server?.file.objectKey,
+      checksum: logoChecksum,
+      contentLength: 11,
+    });
+    expect(context.storage.createDownloadUrl).not.toHaveBeenCalled();
+    const files = await db.query.appDeploymentFile.findMany({
+      where: { appDeploymentId: created.body.deployment.id },
+    });
+    expect(files).toHaveLength(2);
+    expect(files.every((file) => file.status === "verified")).toBe(true);
   });
 
   it("maps reordered returned files using their generated file IDs", () => {
@@ -197,7 +331,7 @@ describe("platform deployment uploads", () => {
               contentType: "image/svg+xml",
             },
           },
-          scopeId: "production",
+          scope: productionScope,
         },
       },
       { context },
@@ -280,7 +414,7 @@ describe("platform deployment uploads", () => {
               contentType: "image/svg+xml",
             },
           },
-          scopeId: "production",
+          scope: productionScope,
         },
       },
       { context },
@@ -342,7 +476,7 @@ describe("platform deployment uploads", () => {
                 objectKey: "client.js",
               },
             ],
-            scopeId: "production",
+            scope: productionScope,
           },
         },
         { context },
@@ -360,7 +494,7 @@ describe("platform deployment uploads", () => {
       call(
         deploymentRouter.publish,
         {
-          body: { rollout: true, scopeId: "production" },
+          body: { rollout: true, scope: productionScope },
           params: { deploymentId: deployment.id },
         },
         { context: publishContext("http://uploads.example/logo-dark.svg") },
@@ -390,13 +524,13 @@ describe("platform deployment uploads", () => {
     const publish = call(
       deploymentRouter.publish,
       {
-        body: { rollout: true, scopeId: "production" },
+        body: { rollout: true, scope: productionScope },
         params: { deploymentId: deployment.id },
       },
       { context: publishContext("https://uploads.example/logo-dark.svg") },
     );
-    const rejection = expect(publish).rejects.toThrow("Aborted");
-    await vi.advanceTimersByTimeAsync(10_000);
-    await rejection;
+    const advanceTimers = vi.advanceTimersByTimeAsync(10_000);
+    await expect(publish).rejects.toThrow("Aborted");
+    await advanceTimers;
   });
 });

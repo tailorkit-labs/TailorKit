@@ -6,7 +6,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@tailorkit/ui/components/breadcrumb";
+} from "@tailorkit/ui/breadcrumb";
 import { Link, useMatches } from "@tanstack/react-router";
 
 interface BreadcrumbSegment {
@@ -18,7 +18,7 @@ const accountRouteLabels: Record<string, string> = {
   "/(app)/account/invites": "Invites",
   "/(app)/account/organizations": "Organisations",
   "/(app)/account/profile/": "Profile",
-  "/(app)/account/security": "Security",
+  "/(app)/account/security/": "Security",
 };
 
 const settingsRouteLabels: Record<string, string> = {

@@ -1,20 +1,18 @@
-import type { InferSchema, Schema } from "./shared";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
+import type { Schema } from "./shared";
 
-export interface ViewDefinition<TContext extends Schema | undefined = Schema | undefined> {
-  context?: TContext;
-}
-export type ViewDefinitions = Record<`/${string}`, ViewDefinition>;
-export type View = ViewDefinition;
-export type Views = ViewDefinitions;
+export type ContextDefinitions = Record<`/${string}`, Schema>;
+export type ViewDefinition<TContext extends Schema = Schema> = TContext;
+export type ViewDefinitions = ContextDefinitions;
+export type View = Schema;
+export type Views = ContextDefinitions;
 export interface ResolvedViewMetadata {
   context?: Schema;
 }
 
-type OwnContext<T> = T extends { context?: infer S }
-  ? S extends Schema
-    ? InferSchema<S>
-    : Record<never, never>
-  : Record<never, never>;
+type OwnContext<T> =
+  T extends StandardSchemaV1<unknown, infer TOutput> ? TOutput : Record<never, never>;
+type ContextKeys<T> = T extends Record<string, never> ? never : keyof T;
 type Ancestors<T, P extends string> = {
   [K in keyof T & string]: K extends P
     ? never
@@ -25,18 +23,18 @@ type Ancestors<T, P extends string> = {
         : never;
 }[keyof T & string];
 type AncestorKeys<T, P extends string> = {
-  [K in Ancestors<T, P>]: keyof OwnContext<T[K]>;
+  [K in Ancestors<T, P>]: ContextKeys<OwnContext<T[K]>>;
 }[Ancestors<T, P>];
 export type ViewContextHierarchy<T> = {
   [P in keyof T]: P extends string
     ? Exclude<OwnContext<T[P]>, undefined> extends Record<string, unknown>
-      ? Extract<keyof OwnContext<T[P]>, AncestorKeys<T, P>> extends never
+      ? Extract<ContextKeys<OwnContext<T[P]>>, AncestorKeys<T, P>> extends never
         ? unknown
         : {
             readonly __tailorkit_error__: `View "${P}" redeclares an ancestor context field.`;
           }
       : {
-          readonly __tailorkit_error__: `View "${P}" context must be an object with named fields.`;
+          readonly __tailorkit_error__: `Context for "${P}" must be an object with named fields.`;
         }
     : unknown;
 };

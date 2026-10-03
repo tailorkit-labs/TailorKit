@@ -22,7 +22,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarSeparator,
-} from "@tailorkit/ui/components/sidebar";
+} from "@tailorkit/ui/sidebar";
 import { orpc } from "#lib/orpc";
 
 export function AccountSidebar() {

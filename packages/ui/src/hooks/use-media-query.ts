@@ -26,13 +26,13 @@ function resolveMax(value: Breakpoint | number): string {
   return `(max-width: ${px - 1}px)`;
 }
 
-function parseQuery(query: MediaQueryInput | string): string {
+function parseQuery(query: BreakpointQuery | MediaQueryInput | string): string {
   if (typeof query !== "string") {
     const parts: string[] = [];
-    if (query.min !== undefined && query.min !== null) {
+    if (query.min !== undefined) {
       parts.push(resolveMin(query.min));
     }
-    if (query.max !== undefined && query.max !== null) {
+    if (query.max !== undefined) {
       parts.push(resolveMax(query.max));
     }
     if (query.pointer === "coarse") {

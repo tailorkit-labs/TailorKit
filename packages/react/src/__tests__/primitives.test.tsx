@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { createElement } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { buildThemeCss, PrimitiveThemeContext, primitives } from "../primitives";
 
 const theme = {

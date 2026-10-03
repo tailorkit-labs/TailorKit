@@ -3,7 +3,7 @@
 import { Dialog as CommandDialogPrimitive } from "@base-ui/react/dialog";
 import { SearchIcon } from "lucide-react";
 import type * as React from "react";
-import { cn } from "@tailorkit/ui/lib/utils";
+import { cn } from "#ui";
 import {
   Autocomplete,
   AutocompleteCollection,
@@ -14,7 +14,7 @@ import {
   AutocompleteItem,
   AutocompleteList,
   AutocompleteSeparator,
-} from "@tailorkit/ui/components/autocomplete";
+} from "#ui/autocomplete";
 
 export const CommandDialog: typeof CommandDialogPrimitive.Root = CommandDialogPrimitive.Root;
 
@@ -184,11 +184,7 @@ export function CommandGroupLabel({
   );
 }
 
-export function CommandCollection({
-  ...props
-}: React.ComponentProps<typeof AutocompleteCollection>): React.ReactElement {
-  return <AutocompleteCollection data-slot="command-collection" {...props} />;
-}
+export const CommandCollection = AutocompleteCollection;
 
 export function CommandItem({
   className,

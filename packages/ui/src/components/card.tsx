@@ -3,7 +3,7 @@
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import type React from "react";
-import { cn } from "@tailorkit/ui/lib/utils";
+import { cn } from "#ui";
 
 export function Card({
   className,
@@ -125,7 +125,7 @@ export function CardFrameFooter({
   ...props
 }: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
-    className: cn("px-6 py-4 z-10", className),
+    className: cn("px-6 py-4", className),
     "data-slot": "card-frame-footer",
   };
 
@@ -162,7 +162,7 @@ export function CardTitle({
   ...props
 }: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
-    className: cn("font-semibold text-lg leading-none", className),
+    className: cn("font-heading font-semibold text-lg leading-none", className),
     "data-slot": "card-title",
   };
 
@@ -237,7 +237,7 @@ export function CardFooter({
 }: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn(
-      "flex items-center z-10 p-6 in-[[data-slot=card]:has(>[data-slot=card-panel])]:pt-4",
+      "flex items-center p-6 in-[[data-slot=card]:has(>[data-slot=card-panel])]:pt-4",
       className,
     ),
     "data-slot": "card-footer",

@@ -1,9 +1,11 @@
 import type { ORPCError } from "@orpc/server";
 import { call } from "@orpc/server";
 import { user, organization, member, invitation } from "@tailorkit/db/schema/index";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { createTestDb } from "../test/pglite";
 import type { Context } from "../context";
+
+vi.mock("@tailorkit/kv", () => ({ getKV: () => null }));
 
 const testState = vi.hoisted(() => ({
   db: undefined as unknown,
@@ -31,7 +33,7 @@ vi.mock("@tailorkit/auth", () => ({
   },
 }));
 
-vi.mock("@tailorkit/env/server", () => ({
+vi.mock("#env", () => ({
   env: testState.env,
 }));
 
@@ -67,6 +69,7 @@ function createContext(overrides: Partial<Context> = {}): Context {
       image: null,
       name: "Ada Lovelace",
       theme: "system",
+      twoFactorEnabled: false,
       updatedAt: new Date("2026-01-01T00:00:00.000Z"),
     },
     ...overrides,

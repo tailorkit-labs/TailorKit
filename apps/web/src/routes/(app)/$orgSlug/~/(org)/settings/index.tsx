@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Button } from "@tailorkit/ui/components/button";
+import { Button } from "@tailorkit/ui/button";
 import {
   Card,
   CardDescription,
@@ -8,9 +8,9 @@ import {
   CardHeader,
   CardPanel,
   CardTitle,
-} from "@tailorkit/ui/components/card";
-import { Field, FieldLabel } from "@tailorkit/ui/components/field";
-import { Input } from "@tailorkit/ui/components/input";
+} from "@tailorkit/ui/card";
+import { Field, FieldLabel } from "@tailorkit/ui/field";
+import { Input } from "@tailorkit/ui/input";
 
 import { PageLayout } from "#components/page-layout";
 
@@ -42,7 +42,7 @@ function OrgSettingsGeneral() {
             </Field>
           </CardPanel>
         </Card>
-        <CardFrameFooter className="flex justify-end">
+        <CardFrameFooter className="flex justify-end relative">
           <Button size="sm">Save changes</Button>
         </CardFrameFooter>
       </CardFrame>

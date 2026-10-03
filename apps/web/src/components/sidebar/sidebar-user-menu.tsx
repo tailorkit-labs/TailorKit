@@ -9,8 +9,8 @@ import {
   SunIcon,
   UserIcon,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@tailorkit/ui/components/avatar";
-import { Button } from "@tailorkit/ui/components/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@tailorkit/ui/avatar";
+import { Button } from "@tailorkit/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +19,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tailorkit/ui/components/dropdown-menu";
-import { ToggleGroup, ToggleGroupItem } from "@tailorkit/ui/components/toggle-group";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { toastManager } from "@tailorkit/ui/components/toast";
+} from "@tailorkit/ui/dropdown-menu";
+import { ToggleGroup, ToggleGroupItem } from "@tailorkit/ui/toggle-group";
+import { Link } from "@tanstack/react-router";
+import { toastManager } from "@tailorkit/ui/toast";
 
 import { authClient } from "#lib/auth-client";
 import { fallbackTheme, getUserTheme, isAppTheme, useTheme } from "#lib/theme";
@@ -30,7 +30,6 @@ import { useQuery } from "@tanstack/react-query";
 import { orpc } from "#lib/orpc.ts";
 
 export function SidebarUserMenu() {
-  const navigate = useNavigate();
   const { data: session } = useQuery(orpc.user.getSession.queryOptions());
   const { setTheme, theme } = useTheme();
 
@@ -148,7 +147,7 @@ export function SidebarUserMenu() {
           </div>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => navigate({ to: "/logout" })} variant="destructive">
+        <DropdownMenuItem render={<Link preload={false} to="/logout" />} variant="destructive">
           <LogOutIcon />
           Sign out
         </DropdownMenuItem>

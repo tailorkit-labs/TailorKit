@@ -20,8 +20,11 @@ expects.
 
 The runtime uses a hidden iframe with an opaque origin and executes the client
 directly in that sandboxed document. The iframe allows scripts but not
-same-origin access, and its content security policy blocks direct network
-connections. The host still fetches app code,
+same-origin access. Its content security policy allows direct HTTPS requests
+and secure WebSocket (`wss:`) connections without a host bridge. Services must
+accept the opaque origin (`Origin: null`), including CORS and preflight for
+HTTPS requests. Insecure HTTP and WebSocket connections are blocked. The host
+still fetches app code,
 passes context into the runtime, renders the returned UI, and executes approved
 actions. Those host-controlled edges require the same care as any public API.
 
@@ -105,9 +108,11 @@ authenticated tenant, and avoid returning secrets or internal metadata.
 
 ## View app installation
 
-Choose a stable `scopeId` that matches where apps are installed: a user, team,
-workspace, or customer. Derive it from the authenticated session rather than a
-request parameter supplied by the app.
+Define a stable schema for each named installation boundary in `scopes`, such
+as `user` and `organization`. Return their identity values under the same names
+in `authenticate` rather than accepting them from an app request. Use stable
+opaque IDs; these values are sent to TailorKit to match and display app
+installations.
 
 Keep project keys and CLI credentials on the server or developer machine. Never
 include them in browser bundles or app-generated context.
@@ -167,7 +172,7 @@ Before deploying:
   <label className="flex items-start gap-3 rounded-md border bg-card p-3 text-sm leading-6">
     <input className="mt-1" type="checkbox" />
     <span>
-      Derive <code>scopeId</code> from the authenticated session.
+      Derive every <code>scopes</code> value from the authenticated session.
     </span>
   </label>
   <label className="flex items-start gap-3 rounded-md border bg-card p-3 text-sm leading-6">

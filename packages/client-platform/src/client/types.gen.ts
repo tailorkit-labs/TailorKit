@@ -4,15 +4,60 @@ export type ClientOptions = {
   baseUrl: "https://tailorkit.dev/api/platform" | (string & {});
 };
 
+export type Schema0 =
+  | string
+  | number
+  | boolean
+  | null
+  | Array<Schema0>
+  | {
+      [key: string]: Schema0;
+    };
+
+export type AppsRuntimeSessionData = {
+  body: {
+    scopes: Array<{
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    }>;
+  };
+  path: {
+    appId: string;
+  };
+  query?: never;
+  url: "/apps/{appId}/runtime/session";
+};
+
+export type AppsRuntimeSessionResponses = {
+  /**
+   * OK
+   */
+  200: {
+    token: string;
+    expiresAt: number;
+    url: string;
+  };
+};
+
+export type AppsRuntimeSessionResponse =
+  AppsRuntimeSessionResponses[keyof AppsRuntimeSessionResponses];
+
 export type AppsListData = {
-  body?: never;
-  path?: never;
-  query: {
+  body: {
     page?: number;
     pageSize?: number;
-    scopeId: string;
+    scopes: Array<{
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    }>;
   };
-  url: "/apps";
+  path?: never;
+  query?: never;
+  url: "/apps/list";
 };
 
 export type AppsListResponses = {
@@ -24,7 +69,12 @@ export type AppsListResponses = {
       id: string;
       publicId: string;
       projectId: string;
-      scopeId: string;
+      scope: {
+        name: string;
+        value: {
+          [key: string]: Schema0;
+        };
+      };
       name: string;
       description: string | null;
       currentDeploymentId: string | null;
@@ -59,11 +109,74 @@ export type AppsListResponses = {
 
 export type AppsListResponse = AppsListResponses[keyof AppsListResponses];
 
+export type AppsGetData = {
+  body: {
+    scopes: Array<{
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    }>;
+  };
+  path: {
+    appId: string;
+  };
+  query?: never;
+  url: "/apps/{appId}/lookup";
+};
+
+export type AppsGetResponses = {
+  /**
+   * OK
+   */
+  200: {
+    id: string;
+    publicId: string;
+    projectId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
+    name: string;
+    description: string | null;
+    currentDeploymentId: string | null;
+    createdAt: string;
+    updatedAt: string;
+    currentDeployment: {
+      id: string;
+      publicId: string;
+      appId: string;
+      status: "uploading" | "deploying" | "verifying" | "published";
+      clientEntryFileId: string | null;
+      logoLightFileId: string | null;
+      logoDarkFileId: string | null;
+      logoLightPath: string | null;
+      logoDarkPath: string | null;
+      createdAt: string;
+      updatedAt: string;
+    } | null;
+    clientPath?: string;
+    logoPaths?: {
+      dark?: string;
+      light?: string;
+    };
+  };
+};
+
+export type AppsGetResponse = AppsGetResponses[keyof AppsGetResponses];
+
 export type AppsCreateData = {
   body: {
     name: string;
     description: string | null;
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
   };
   path?: never;
   query?: never;
@@ -78,7 +191,12 @@ export type AppsCreateResponses = {
     id: string;
     publicId: string;
     projectId: string;
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
     name: string;
     description: string | null;
     currentDeploymentId: string | null;
@@ -108,13 +226,18 @@ export type AppsCreateResponses = {
 export type AppsCreateResponse = AppsCreateResponses[keyof AppsCreateResponses];
 
 export type AppsDeleteData = {
-  body?: never;
+  body: {
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
+  };
   path: {
     appId: string;
   };
-  query: {
-    scopeId: string;
-  };
+  query?: never;
   url: "/apps/{appId}";
 };
 
@@ -129,65 +252,21 @@ export type AppsDeleteResponses = {
 
 export type AppsDeleteResponse = AppsDeleteResponses[keyof AppsDeleteResponses];
 
-export type AppsGetData = {
-  body?: never;
-  path: {
-    appId: string;
-  };
-  query: {
-    scopeId: string;
-  };
-  url: "/apps/{appId}";
-};
-
-export type AppsGetResponses = {
-  /**
-   * OK
-   */
-  200: {
-    id: string;
-    publicId: string;
-    projectId: string;
-    scopeId: string;
-    name: string;
-    description: string | null;
-    currentDeploymentId: string | null;
-    createdAt: string;
-    updatedAt: string;
-    currentDeployment: {
-      id: string;
-      publicId: string;
-      appId: string;
-      status: "uploading" | "deploying" | "verifying" | "published";
-      clientEntryFileId: string | null;
-      logoLightFileId: string | null;
-      logoDarkFileId: string | null;
-      logoLightPath: string | null;
-      logoDarkPath: string | null;
-      createdAt: string;
-      updatedAt: string;
-    } | null;
-    clientPath?: string;
-    logoPaths?: {
-      dark?: string;
-      light?: string;
-    };
-  };
-};
-
-export type AppsGetResponse = AppsGetResponses[keyof AppsGetResponses];
-
 export type AppsUpdateData = {
   body: {
     name: string;
     description: string | null;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
   };
   path: {
     appId: string;
   };
-  query: {
-    scopeId: string;
-  };
+  query?: never;
   url: "/apps/{appId}";
 };
 
@@ -199,7 +278,12 @@ export type AppsUpdateResponses = {
     id: string;
     publicId: string;
     projectId: string;
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
     name: string;
     description: string | null;
     currentDeploymentId: string | null;
@@ -231,13 +315,17 @@ export type AppsUpdateResponse = AppsUpdateResponses[keyof AppsUpdateResponses];
 export type AppsDeployData = {
   body: {
     deploymentId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
   };
   path: {
     appId: string;
   };
-  query: {
-    scopeId: string;
-  };
+  query?: never;
   url: "/apps/{appId}/deploy";
 };
 
@@ -249,7 +337,12 @@ export type AppsDeployResponses = {
     id: string;
     publicId: string;
     projectId: string;
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
     name: string;
     description: string | null;
     currentDeploymentId: string | null;
@@ -280,7 +373,12 @@ export type AppsDeployResponse = AppsDeployResponses[keyof AppsDeployResponses];
 
 export type CliAuthApproveData = {
   body: {
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
     userCode: string;
   };
   path?: never;
@@ -341,7 +439,12 @@ export type CliAuthPollResponses = {
       }
     | {
         deployToken: string;
-        scopeId: string;
+        scope: {
+          name: string;
+          value: {
+            [key: string]: Schema0;
+          };
+        };
         status: "approved";
       }
     | {
@@ -387,7 +490,12 @@ export type CliAuthVerifyTokenResponses = {
    * OK
    */
   200: {
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
   };
 };
 
@@ -395,15 +503,20 @@ export type CliAuthVerifyTokenResponse =
   CliAuthVerifyTokenResponses[keyof CliAuthVerifyTokenResponses];
 
 export type DeploymentsListData = {
-  body?: never;
-  path?: never;
-  query: {
+  body: {
     page?: number;
     pageSize?: number;
     appId: string;
-    scopeId: string;
+    scopes: Array<{
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    }>;
   };
-  url: "/deployments";
+  path?: never;
+  query?: never;
+  url: "/deployments/list";
 };
 
 export type DeploymentsListResponses = {
@@ -434,6 +547,43 @@ export type DeploymentsListResponses = {
 
 export type DeploymentsListResponse = DeploymentsListResponses[keyof DeploymentsListResponses];
 
+export type DeploymentsGetData = {
+  body: {
+    scopes: Array<{
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    }>;
+  };
+  path: {
+    deploymentId: string;
+  };
+  query?: never;
+  url: "/deployments/{deploymentId}/lookup";
+};
+
+export type DeploymentsGetResponses = {
+  /**
+   * OK
+   */
+  200: {
+    id: string;
+    publicId: string;
+    appId: string;
+    status: "uploading" | "deploying" | "verifying" | "published";
+    clientEntryFileId: string | null;
+    logoLightFileId: string | null;
+    logoDarkFileId: string | null;
+    logoLightPath: string | null;
+    logoDarkPath: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+export type DeploymentsGetResponse = DeploymentsGetResponses[keyof DeploymentsGetResponses];
+
 export type DeploymentsCreateData = {
   body: {
     appId: string;
@@ -446,6 +596,13 @@ export type DeploymentsCreateData = {
         objectKey: "client.js";
       },
     ];
+    server?: {
+      checksum: string;
+      contentLength: number;
+      contentType: "application/javascript";
+      encoding: "utf-8";
+      objectKey: "server.js";
+    };
     logos?: {
       dark?: {
         checksum: string;
@@ -458,7 +615,12 @@ export type DeploymentsCreateData = {
         contentType: "image/svg+xml" | "image/png" | "image/webp";
       };
     };
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
   };
   path?: never;
   query?: never;
@@ -488,6 +650,24 @@ export type DeploymentsCreateResponses = {
       };
       uploadUrl: string;
     }>;
+    server?: {
+      file: {
+        id: string;
+        appDeploymentId: string;
+        objectKey: string;
+        contentType: "application/javascript" | "image/svg+xml" | "image/png" | "image/webp";
+        encoding: "utf-8" | null;
+        contentLength: number;
+        checksum: string | null;
+        status: "uploading" | "verifying" | "verified" | "failed";
+        createdAt: string;
+        updatedAt: string;
+      };
+      headers?: {
+        [key: string]: string;
+      };
+      uploadUrl: string;
+    };
     deployment: {
       id: string;
       publicId: string;
@@ -545,41 +725,14 @@ export type DeploymentsCreateResponses = {
 export type DeploymentsCreateResponse =
   DeploymentsCreateResponses[keyof DeploymentsCreateResponses];
 
-export type DeploymentsGetData = {
-  body?: never;
-  path: {
-    deploymentId: string;
-  };
-  query: {
-    scopeId: string;
-  };
-  url: "/deployments/{deploymentId}";
-};
-
-export type DeploymentsGetResponses = {
-  /**
-   * OK
-   */
-  200: {
-    id: string;
-    publicId: string;
-    appId: string;
-    status: "uploading" | "deploying" | "verifying" | "published";
-    clientEntryFileId: string | null;
-    logoLightFileId: string | null;
-    logoDarkFileId: string | null;
-    logoLightPath: string | null;
-    logoDarkPath: string | null;
-    createdAt: string;
-    updatedAt: string;
-  };
-};
-
-export type DeploymentsGetResponse = DeploymentsGetResponses[keyof DeploymentsGetResponses];
-
 export type DeploymentsPublishData = {
   body: {
-    scopeId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
     rollout?: boolean;
   };
   path: {
@@ -610,3 +763,197 @@ export type DeploymentsPublishResponses = {
 
 export type DeploymentsPublishResponse =
   DeploymentsPublishResponses[keyof DeploymentsPublishResponses];
+
+export type DeploymentsRuntimeData = {
+  body: {
+    [key: string]: unknown;
+  };
+  path: {
+    appId: string;
+  };
+  query?: never;
+  url: "/apps/{appId}/runtime";
+};
+
+export type DeploymentsRuntimeResponses = {
+  /**
+   * OK
+   */
+  200: {
+    projectId: string;
+    appId: string;
+    deploymentId: string;
+    objectKey: string;
+    checksum: string;
+    contentLength: number;
+  };
+};
+
+export type DeploymentsRuntimeResponse =
+  DeploymentsRuntimeResponses[keyof DeploymentsRuntimeResponses];
+
+export type PreviewStartData = {
+  body: {
+    appId: string;
+    deployToken: string;
+    replaceActive?: boolean;
+  };
+  path?: never;
+  query?: never;
+  url: "/preview/start";
+};
+
+export type PreviewStartResponses = {
+  /**
+   * OK
+   */
+  200: {
+    expiresAt: string;
+    sessionId: string;
+    tunnelToken: string;
+    tunnelUrl: string;
+    shareId: string;
+  };
+};
+
+export type PreviewStartResponse = PreviewStartResponses[keyof PreviewStartResponses];
+
+export type PreviewStopData = {
+  body: {
+    deployToken: string;
+  };
+  path: {
+    sessionId: string;
+  };
+  query?: never;
+  url: "/preview/{sessionId}/stop";
+};
+
+export type PreviewStopResponses = {
+  /**
+   * OK
+   */
+  200: {
+    [key: string]: never;
+  };
+};
+
+export type PreviewStopResponse = PreviewStopResponses[keyof PreviewStopResponses];
+
+export type PreviewInvitationData = {
+  body?: never;
+  path: {
+    shareId: string;
+  };
+  query?: never;
+  url: "/preview/shares/{shareId}";
+};
+
+export type PreviewInvitationResponses = {
+  /**
+   * OK
+   */
+  200: {
+    appName: string;
+    expiresAt: string;
+    sessionId: string;
+  };
+};
+
+export type PreviewInvitationResponse =
+  PreviewInvitationResponses[keyof PreviewInvitationResponses];
+
+export type PreviewAcceptData = {
+  body: {
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
+  };
+  path: {
+    shareId: string;
+  };
+  query?: never;
+  url: "/preview/shares/{shareId}/accept";
+};
+
+export type PreviewAcceptResponses = {
+  /**
+   * OK
+   */
+  200: {
+    grantId: string;
+    sessionId: string;
+  };
+};
+
+export type PreviewAcceptResponse = PreviewAcceptResponses[keyof PreviewAcceptResponses];
+
+export type PreviewAcceptedData = {
+  body: {
+    grantIds: Array<string>;
+    scopes: Array<{
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    }>;
+  };
+  path?: never;
+  query?: never;
+  url: "/preview/grants/resolve";
+};
+
+export type PreviewAcceptedResponses = {
+  /**
+   * OK
+   */
+  200: {
+    items: Array<{
+      app: {
+        id: string;
+        publicId: string;
+        projectId: string;
+        scope: {
+          name: string;
+          value: {
+            [key: string]: Schema0;
+          };
+        };
+        name: string;
+        description: string | null;
+        currentDeploymentId: string | null;
+        createdAt: string;
+        updatedAt: string;
+        currentDeployment: {
+          id: string;
+          publicId: string;
+          appId: string;
+          status: "uploading" | "deploying" | "verifying" | "published";
+          clientEntryFileId: string | null;
+          logoLightFileId: string | null;
+          logoDarkFileId: string | null;
+          logoLightPath: string | null;
+          logoDarkPath: string | null;
+          createdAt: string;
+          updatedAt: string;
+        } | null;
+        clientPath?: string;
+        logoPaths?: {
+          dark?: string;
+          light?: string;
+        };
+      };
+      preview: {
+        sessionId: string;
+        expiresAt: string;
+        websocketUrl: string;
+        token: string;
+      };
+    }>;
+  };
+};
+
+export type PreviewAcceptedResponse = PreviewAcceptedResponses[keyof PreviewAcceptedResponses];

@@ -1,5 +1,5 @@
 import { os } from "@orpc/server";
-import { env } from "@tailorkit/env/server";
+import { env } from "#env";
 import { setSpanAttributes } from "@tailorkit/observability";
 
 export const devDelayMiddleware = os.middleware(async ({ path, next }) => {

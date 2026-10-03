@@ -8,7 +8,6 @@
 
 import { createRemoteComponent } from "@tailorkit/app";
 
-
 export interface ViewPropsByPath {
   "/": {
     context: Record<string, never>;
@@ -17,7 +16,10 @@ export interface ViewPropsByPath {
 
 declare module "@tailorkit/app" {
   interface TailorKitViews extends ViewPropsByPath {}
-  interface TailorKitSlots { panel: "/"; navbar: "/" }
+  interface TailorKitSlots {
+    panel: "/";
+    navbar: "/";
+  }
 }
 
 export type ViewPath = keyof ViewPropsByPath & string;
@@ -40,14 +42,142 @@ export const actions = {
 export type Breakpoint = "base" | "sm" | "md" | "lg" | "xl" | "2xl";
 export type Responsive<TValue> = TValue | Partial<Record<Breakpoint, TValue>>;
 export type Background = never;
-export type Basis = Responsive<"0" | "1/2" | "1/3" | "2/3" | "1/4" | "2/4" | "3/4" | "1/5" | "2/5" | "3/5" | "4/5" | "1/6" | "2/6" | "3/6" | "4/6" | "5/6" | "1/12" | "2/12" | "3/12" | "4/12" | "5/12" | "6/12" | "7/12" | "8/12" | "9/12" | "10/12" | "11/12" | "full" | "min" | "max" | "fit">;
+export type Basis = Responsive<
+  | "0"
+  | "1/2"
+  | "1/3"
+  | "2/3"
+  | "1/4"
+  | "2/4"
+  | "3/4"
+  | "1/5"
+  | "2/5"
+  | "3/5"
+  | "4/5"
+  | "1/6"
+  | "2/6"
+  | "3/6"
+  | "4/6"
+  | "5/6"
+  | "1/12"
+  | "2/12"
+  | "3/12"
+  | "4/12"
+  | "5/12"
+  | "6/12"
+  | "7/12"
+  | "8/12"
+  | "9/12"
+  | "10/12"
+  | "11/12"
+  | "full"
+  | "min"
+  | "max"
+  | "fit"
+>;
 export type Border = Responsive<"solid" | "dashed" | "dotted" | "double">;
 export type BorderColor = Responsive<"default">;
 export type Grow = Responsive<string>;
-export type Height = Responsive<"0" | "1/2" | "1/3" | "2/3" | "1/4" | "2/4" | "3/4" | "1/5" | "2/5" | "3/5" | "4/5" | "1/6" | "2/6" | "3/6" | "4/6" | "5/6" | "1/12" | "2/12" | "3/12" | "4/12" | "5/12" | "6/12" | "7/12" | "8/12" | "9/12" | "10/12" | "11/12" | "full" | "min" | "max" | "fit">;
+export type Height = Responsive<
+  | "0"
+  | "1/2"
+  | "1/3"
+  | "2/3"
+  | "1/4"
+  | "2/4"
+  | "3/4"
+  | "1/5"
+  | "2/5"
+  | "3/5"
+  | "4/5"
+  | "1/6"
+  | "2/6"
+  | "3/6"
+  | "4/6"
+  | "5/6"
+  | "1/12"
+  | "2/12"
+  | "3/12"
+  | "4/12"
+  | "5/12"
+  | "6/12"
+  | "7/12"
+  | "8/12"
+  | "9/12"
+  | "10/12"
+  | "11/12"
+  | "full"
+  | "min"
+  | "max"
+  | "fit"
+>;
 export type Margin = Responsive<"none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl">;
-export type MinHeight = Responsive<"0" | "1/2" | "1/3" | "2/3" | "1/4" | "2/4" | "3/4" | "1/5" | "2/5" | "3/5" | "4/5" | "1/6" | "2/6" | "3/6" | "4/6" | "5/6" | "1/12" | "2/12" | "3/12" | "4/12" | "5/12" | "6/12" | "7/12" | "8/12" | "9/12" | "10/12" | "11/12" | "full" | "min" | "max" | "fit">;
-export type MinWidth = Responsive<"0" | "1/2" | "1/3" | "2/3" | "1/4" | "2/4" | "3/4" | "1/5" | "2/5" | "3/5" | "4/5" | "1/6" | "2/6" | "3/6" | "4/6" | "5/6" | "1/12" | "2/12" | "3/12" | "4/12" | "5/12" | "6/12" | "7/12" | "8/12" | "9/12" | "10/12" | "11/12" | "full" | "min" | "max" | "fit">;
+export type MinHeight = Responsive<
+  | "0"
+  | "1/2"
+  | "1/3"
+  | "2/3"
+  | "1/4"
+  | "2/4"
+  | "3/4"
+  | "1/5"
+  | "2/5"
+  | "3/5"
+  | "4/5"
+  | "1/6"
+  | "2/6"
+  | "3/6"
+  | "4/6"
+  | "5/6"
+  | "1/12"
+  | "2/12"
+  | "3/12"
+  | "4/12"
+  | "5/12"
+  | "6/12"
+  | "7/12"
+  | "8/12"
+  | "9/12"
+  | "10/12"
+  | "11/12"
+  | "full"
+  | "min"
+  | "max"
+  | "fit"
+>;
+export type MinWidth = Responsive<
+  | "0"
+  | "1/2"
+  | "1/3"
+  | "2/3"
+  | "1/4"
+  | "2/4"
+  | "3/4"
+  | "1/5"
+  | "2/5"
+  | "3/5"
+  | "4/5"
+  | "1/6"
+  | "2/6"
+  | "3/6"
+  | "4/6"
+  | "5/6"
+  | "1/12"
+  | "2/12"
+  | "3/12"
+  | "4/12"
+  | "5/12"
+  | "6/12"
+  | "7/12"
+  | "8/12"
+  | "9/12"
+  | "10/12"
+  | "11/12"
+  | "full"
+  | "min"
+  | "max"
+  | "fit"
+>;
 export type Overflow = Responsive<"visible" | "hidden" | "clip" | "scroll" | "auto">;
 export type OverflowWrap = Responsive<"normal" | "breakWord" | "anywhere">;
 export type Padding = Responsive<"none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl">;
@@ -57,7 +187,39 @@ export type TextAlign = Responsive<"left" | "right" | "start" | "end" | "center"
 export type TextColor = Responsive<"default">;
 export type TextOverflow = Responsive<"clip" | "ellipsis">;
 export type TextTransform = Responsive<"capitalize" | "uppercase" | "lowercase" | "none">;
-export type Width = Responsive<"0" | "1/2" | "1/3" | "2/3" | "1/4" | "2/4" | "3/4" | "1/5" | "2/5" | "3/5" | "4/5" | "1/6" | "2/6" | "3/6" | "4/6" | "5/6" | "1/12" | "2/12" | "3/12" | "4/12" | "5/12" | "6/12" | "7/12" | "8/12" | "9/12" | "10/12" | "11/12" | "full" | "min" | "max" | "fit">;
+export type Width = Responsive<
+  | "0"
+  | "1/2"
+  | "1/3"
+  | "2/3"
+  | "1/4"
+  | "2/4"
+  | "3/4"
+  | "1/5"
+  | "2/5"
+  | "3/5"
+  | "4/5"
+  | "1/6"
+  | "2/6"
+  | "3/6"
+  | "4/6"
+  | "5/6"
+  | "1/12"
+  | "2/12"
+  | "3/12"
+  | "4/12"
+  | "5/12"
+  | "6/12"
+  | "7/12"
+  | "8/12"
+  | "9/12"
+  | "10/12"
+  | "11/12"
+  | "full"
+  | "min"
+  | "max"
+  | "fit"
+>;
 export type Align = Responsive<string>;
 export type Direction = Responsive<string>;
 export type Gap = Responsive<"none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl">;
@@ -174,23 +336,20 @@ export interface ButtonProps {
 
 export const Button = /* @__PURE__ */ createRemoteComponent<ButtonProps, true>("Button", {
   children: true,
-  callbacks: { "onClick": 0 },
+  callbacks: { onClick: 0 },
 });
 
 export interface TabsProps {
   value?: string;
-  onValueChange?: (input: {
-    value: string;
-  }) => void;
+  onValueChange?: (input: { value: string }) => void;
 }
 
 export const Tabs = /* @__PURE__ */ createRemoteComponent<TabsProps, true>("Tabs", {
   children: true,
-  callbacks: { "onValueChange": 1 },
+  callbacks: { onValueChange: 1 },
 });
 
-export interface TabsListProps {
-}
+export interface TabsListProps {}
 
 export const TabsList = /* @__PURE__ */ createRemoteComponent<TabsListProps, true>("TabsList", {
   children: true,
@@ -214,12 +373,10 @@ export const TabsPanel = /* @__PURE__ */ createRemoteComponent<TabsPanelProps, t
 
 export interface InputProps {
   value?: string;
-  onValueChange?: (input: {
-    value: string;
-  }) => void;
+  onValueChange?: (input: { value: string }) => void;
 }
 
 export const Input = /* @__PURE__ */ createRemoteComponent<InputProps, true>("Input", {
   children: true,
-  callbacks: { "onValueChange": 1 },
+  callbacks: { onValueChange: 1 },
 });

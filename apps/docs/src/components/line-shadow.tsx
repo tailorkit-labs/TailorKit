@@ -1,7 +1,7 @@
 import type { CSSProperties, HTMLAttributes } from "react";
 import { motion } from "motion/react";
 import type { DOMMotionComponents, MotionProps } from "motion/react";
-import { cn } from "@tailorkit/ui/lib/utils";
+import { cn } from "@tailorkit/ui";
 
 const motionElements = {
   article: motion.article,

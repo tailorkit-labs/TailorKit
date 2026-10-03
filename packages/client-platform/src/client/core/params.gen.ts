@@ -120,6 +120,7 @@ export function buildClientParams(args: ReadonlyArray<unknown>, fields: FieldsCo
       }
       bodyMode = "mapped";
     }
+
     let record = params[slot] as Record<string, unknown> | undefined;
     if (record === undefined) {
       record = Object.create(null) as Record<string, unknown>;

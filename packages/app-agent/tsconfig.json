@@ -1,0 +1,10 @@
+{
+  "extends": "@tailorkit/config/tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "noEmit": true
+  },
+  "include": ["agent/**/*.ts"],
+  "exclude": ["node_modules", ".eve"]
+}

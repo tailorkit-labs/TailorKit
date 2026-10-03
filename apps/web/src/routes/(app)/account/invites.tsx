@@ -5,8 +5,8 @@ import { MailIcon } from "lucide-react";
 import { AccountLayout } from "#components/account-layout";
 import { PageLayout } from "#components/page-layout";
 import { client, orpc } from "#lib/orpc";
-import { Badge } from "@tailorkit/ui/components/badge";
-import { Button } from "@tailorkit/ui/components/button";
+import { Badge } from "@tailorkit/ui/badge";
+import { Button } from "@tailorkit/ui/button";
 import {
   Card,
   CardAction,
@@ -15,22 +15,14 @@ import {
   CardHeader,
   CardPanel,
   CardTitle,
-} from "@tailorkit/ui/components/card";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@tailorkit/ui/components/empty";
-import { toastManager } from "@tailorkit/ui/components/toast";
+} from "@tailorkit/ui/card";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@tailorkit/ui/empty";
+import { toastManager } from "@tailorkit/ui/toast";
 
 export const Route = createFileRoute("/(app)/account/invites")({
   component: InvitesPage,
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(
-      context.orpc.user.getPendingInvitations.queryOptions(),
-    );
+    await context.queryClient.query(context.orpc.user.getPendingInvitations.queryOptions());
   },
 });
 

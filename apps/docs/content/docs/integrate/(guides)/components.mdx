@@ -156,14 +156,16 @@ Pass the component map to `createTailorKit`. This makes the component contract
 available from the TailorKit API route.
 
 ```ts title="examples/tanstack-start/src/lib/tailorkit.ts"
-import { actions, components, views } from "@examples/shared";
+import { actions, components, contexts } from "@examples/shared";
 import { createTailorKit } from "tailorkit";
+import { z } from "zod";
 
 export const tailorKit = createTailorKit({
   assetsBaseUrl: process.env.TAILORKIT_ASSETS_BASE_URL ?? "http://localhost:8333/tailorkit",
   projectKey: process.env.TAILORKIT_PROJECT_KEY,
+  scopes: { user: z.object({ userId: z.string().min(1) }) },
   components,
-  views,
+  contexts,
   actions,
 });
 ```
@@ -188,7 +190,7 @@ const handle = ({ request }: { request: Request }) =>
 
       return {
         actionContext: { user },
-        scopeId: user.id,
+        scopes: { user: { userId: user.id } },
       };
     },
   });
@@ -213,8 +215,8 @@ renderer props and children are typed from your component definitions.
 import type { tailorKit } from "./tailorkit";
 import { primitiveTheme } from "@examples/shared";
 import { primitives as reactPrimitives, createTailorKitClient } from "tailorkit/react";
-import { Button } from "@tailorkit/ui/components/button";
-import { Input } from "@tailorkit/ui/components/input";
+import { Button } from "@tailorkit/ui/button";
+import { Input } from "@tailorkit/ui/input";
 
 export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
   baseUrl:
@@ -232,6 +234,8 @@ export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
     ),
   },
 });
+
+export const { AppView, useApps, useView } = tailorKitClient;
 ```
 
 When a remote app renders `Button`, TailorKit looks up the registered host
@@ -259,7 +263,7 @@ TailorKit serializes components into a stable runtime shape:
     },
   },
   slots: { panel: { views: ["/"] } },
-  views: { "/": {} },
+  contexts: { "/": z.object({}) },
   actions: {},
 }
 ```

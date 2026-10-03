@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
-} from "@tailorkit/ui/components/sidebar";
+} from "@tailorkit/ui/sidebar";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { orpc } from "#lib/orpc";

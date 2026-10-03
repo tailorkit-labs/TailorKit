@@ -1,4 +1,5 @@
-import { env, getBaseUrl } from "@tailorkit/env/server";
+import { getBaseUrl } from "@tailorkit/env";
+import { env } from "#env";
 
 interface AppDeploymentAssets {
   clientEntryFileId: string | null;
@@ -17,7 +18,7 @@ export function withAppAssetUrl<
   const deployment = app.currentDeployment;
   const nodeBaseUrl =
     env.ASSET_BASE_URL ??
-    (env.NODE_ENV === "development" ? `${getBaseUrl()}/api/assets` : undefined);
+    (env.NODE_ENV === "development" ? `${getBaseUrl(env)}/api/assets` : undefined);
   const assetBaseUrl = nodeBaseUrl
     ? `${nodeBaseUrl.replace(/\/$/u, "")}/t/${publicTeamId}`
     : `https://${publicTeamId}.${env.ASSET_DOMAIN}`;
@@ -27,9 +28,8 @@ export function withAppAssetUrl<
   if (deployment?.status === "published" && deployment.clientEntryFileId) {
     const appBase = `${assetBaseUrl}/p/${projectId}/a/${app.publicId}`;
     const deploymentBase = `${appBase}/d/${deployment.publicId}`;
-    clientPath = `${deploymentBase}/client.js`;
-    const getLogoUrl = (path: string) =>
-      path.startsWith("logos/") ? `${appBase}/${path}` : `${deploymentBase}/${path}`;
+    clientPath = `${deploymentBase}/client/client.js`;
+    const getLogoUrl = (path: string) => `${deploymentBase}/${path}`;
     const logos = {
       ...(deployment.logoDarkPath ? { dark: getLogoUrl(deployment.logoDarkPath) } : {}),
       ...(deployment.logoLightPath ? { light: getLogoUrl(deployment.logoLightPath) } : {}),

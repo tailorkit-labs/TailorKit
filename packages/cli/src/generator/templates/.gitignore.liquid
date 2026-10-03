@@ -1,33 +1,29 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
 # TailorKit
 .tailorkit
 
-# Logs
-logs
-*.log
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# testing
+/coverage
 
-# Env
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# misc
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
 .env
-.env.*
-!.env.example
 
-# Claude Code (local settings and session files)
-.claude/settings.local.json
-.claude/plans/
-.claude/todos.json
-.claude/worktrees
-CLAUDE.local.md
-
-# Editors
-**/.idea
-**/.#*
-.nvmrc
+# typescript
+*.tsbuildinfo

@@ -3,6 +3,7 @@
   "license": "BUSL-1.1",
   "type": "module",
   "scripts": {
+    "prepare": "vp config --no-agent",
     "dev": "turbo run dev --filter=web",
     "dev:docs": "turbo run dev --filter=docs",
     "build": "turbo run build",
@@ -19,10 +20,10 @@
     "fix": "turbo run quality:fix",
     "sherif": "sherif -r packages-without-package-json",
     "sherif:fix": "sherif -r packages-without-package-json --fix --select highest --no-install",
-    "lint": "oxlint .",
-    "lint:fix": "oxlint --fix .",
-    "format": "oxfmt --check",
-    "format:fix": "oxfmt .",
+    "lint": "vp lint .",
+    "lint:fix": "vp lint --fix .",
+    "format": "vp fmt --check",
+    "format:fix": "vp fmt .",
     "licenses:sync": "node ./scripts/sync-licenses.mjs",
     "licenses:check": "node ./scripts/sync-licenses.mjs --check",
     "changeset": "vp exec changeset",
@@ -33,14 +34,13 @@
     "tailorkit": "vp -C packages/cli build && node ./packages/cli/dist/index.js"
   },
   "devDependencies": {
-    "@changesets/cli": "3.0.2",
-    "lefthook": "2.1.12",
-    "oxfmt": "0.67.0",
-    "oxlint": "1.82.0",
+    "@changesets/cli": "3.0.3",
+    "oxfmt": "0.71.0",
+    "oxlint": "1.86.0",
     "sherif": "^1.13.0",
-    "turbo": "2.10.12",
-    "ultracite": "7.11.1",
-    "vite-plus": "0.3.1"
+    "turbo": "2.11.5",
+    "ultracite": "7.12.2",
+    "vite-plus": "catalog:"
   },
-  "packageManager": "pnpm@12.4.1"
+  "packageManager": "pnpm@12.6.0"
 }

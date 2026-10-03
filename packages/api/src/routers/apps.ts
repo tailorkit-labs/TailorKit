@@ -61,7 +61,7 @@ export const appsRouter = {
             or(
               ilike(app.name, searchPattern),
               ilike(app.publicId, searchPattern),
-              ilike(app.scopeId, searchPattern),
+              sql`${app.scope}::text ILIKE ${searchPattern}`,
               ilike(app.description, searchPattern),
               sql`${app.id}::text ILIKE ${searchPattern}`,
             ),
@@ -120,10 +120,12 @@ export const appsRouter = {
       );
 
       return {
-        items: items.map((item) =>
-          withAppAssetUrl(
+        items: items.map((item) => {
+          const { scopeKey, ...publicApp } = item;
+          void scopeKey;
+          return withAppAssetUrl(
             {
-              ...item,
+              ...publicApp,
               currentDeployment: item.currentDeploymentId
                 ? (currentDeploymentById.get(item.currentDeploymentId) ?? null)
                 : null,
@@ -132,8 +134,8 @@ export const appsRouter = {
             },
             context.org.publicId,
             context.project.id,
-          ),
-        ),
+          );
+        }),
         pagination: {
           hasMore: pageItems.length > pageSize,
           page,
@@ -168,9 +170,11 @@ export const appsRouter = {
         throw new ORPCError("NOT_FOUND", { message: "App not found." });
       }
 
+      const { scopeKey, ...publicApp } = appWithDeployments;
+      void scopeKey;
       return withAppAssetUrl(
         {
-          ...appWithDeployments,
+          ...publicApp,
           currentDeployment:
             appWithDeployments.deployments.find(
               (deployment) => deployment.id === appWithDeployments.currentDeploymentId,

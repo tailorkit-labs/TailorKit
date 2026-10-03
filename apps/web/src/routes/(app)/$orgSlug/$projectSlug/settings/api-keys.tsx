@@ -3,7 +3,7 @@ import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-q
 import { CopyIcon, EyeIcon, EyeOffIcon, RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
 import { DateAgo } from "@tailorkit/ui/date";
-import { Button } from "@tailorkit/ui/components/button";
+import { Button } from "@tailorkit/ui/button";
 import {
   Card,
   CardAction,
@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardPanel,
   CardTitle,
-} from "@tailorkit/ui/components/card";
+} from "@tailorkit/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -21,25 +21,19 @@ import {
   DialogPanel,
   DialogPopup,
   DialogTitle,
-} from "@tailorkit/ui/components/dialog";
-import { Field, FieldLabel } from "@tailorkit/ui/components/field";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@tailorkit/ui/components/input-group";
-import {
-  Select,
-  SelectItem,
-  SelectPopup,
-  SelectTrigger,
-  SelectValue,
-} from "@tailorkit/ui/components/select";
-import { Tooltip, TooltipPopup, TooltipTrigger } from "@tailorkit/ui/components/tooltip";
-import { toastManager } from "@tailorkit/ui/components/toast";
+} from "@tailorkit/ui/dialog";
+import { Field, FieldLabel } from "@tailorkit/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@tailorkit/ui/input-group";
+import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "@tailorkit/ui/select";
+import { Tooltip, TooltipPopup, TooltipTrigger } from "@tailorkit/ui/tooltip";
+import { toastManager } from "@tailorkit/ui/toast";
 import { PageLayout } from "#components/page-layout";
 import { client, orpc } from "#lib/orpc";
 import { getProjectApiKey, setProjectApiKey } from "#utils/project-api-key-memory";
 
 export const Route = createFileRoute("/(app)/$orgSlug/$projectSlug/settings/api-keys")({
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(
+    context.queryClient.query(
       context.orpc.project.apiKeys.queryOptions({
         input: { orgSlug: params.orgSlug, projectSlug: params.projectSlug },
       }),

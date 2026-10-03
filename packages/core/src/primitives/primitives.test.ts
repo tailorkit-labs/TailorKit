@@ -1,6 +1,6 @@
 import { ArkErrors } from "arktype";
 import * as v from "valibot";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createTailorKitSchema } from "../schema/schema";
 import { primitives as arktypePrimitives } from "./arktype";
 import { primitives as valibotPrimitives } from "./valibot";

@@ -1,5 +1,5 @@
 import type React from "react";
-import { cn } from "@tailorkit/ui/lib/utils";
+import { cn } from "#ui";
 
 export function Skeleton({ className, ...props }: React.ComponentProps<"div">): React.ReactElement {
   return (
