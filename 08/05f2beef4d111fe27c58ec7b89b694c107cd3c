@@ -1,0 +1,21 @@
+docs/custom.css
+  s_2930b01f4080d1::t_1934da63040a16 22-23,25-29,31,35-36
+  s_2930b01f4080d1::t_cda98b066304ba 24,30,32-33
+  s_2930b01f4080d1::t_154bf85fa8a368 34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0805f2beef4d111fe27c58ec7b89b694c107cd3c",
+  "prompts": {},
+  "sessions": {
+    "s_2930b01f4080d1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a101c7-2650-71a1-b5b1-828a371b6763",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
