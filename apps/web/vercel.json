@@ -15,7 +15,7 @@
     },
     {
       "source": "/",
-      "destination": "https://tailorkit-docs.vercel.app",
+      "destination": "https://tailorkit-landing.vercel.app",
       "missing": [
         {
           "type": "cookie",
@@ -29,23 +29,31 @@
     },
     {
       "source": "/home",
-      "destination": "https://tailorkit-docs.vercel.app/home"
+      "destination": "https://tailorkit-landing.vercel.app/home"
+    },
+    {
+      "source": "/pricing",
+      "destination": "https://tailorkit-landing.vercel.app/pricing"
+    },
+    {
+      "source": "/_mintlify/:path*",
+      "destination": "https://tailorkit.mintlify.site/_mintlify/:path*"
+    },
+    {
+      "source": "/api/request",
+      "destination": "https://tailorkit.mintlify.site/_mintlify/api/request"
     },
     {
       "source": "/docs",
-      "destination": "https://tailorkit-docs.vercel.app/docs"
+      "destination": "https://tailorkit.mintlify.site/docs"
     },
     {
-      "source": "/docs/:path*",
-      "destination": "https://tailorkit-docs.vercel.app/docs/:path*"
+      "source": "/docs/:match*",
+      "destination": "https://tailorkit.mintlify.site/docs/:match*"
     },
     {
-      "source": "/_serverFn/docs_:path",
-      "destination": "https://tailorkit-docs.vercel.app/_serverFn/docs_:path"
-    },
-    {
-      "source": "/docs-assets/:path*",
-      "destination": "https://tailorkit-docs.vercel.app/docs-assets/:path*"
+      "source": "/mintlify-assets/:path+",
+      "destination": "https://tailorkit.mintlify.site/mintlify-assets/:path+"
     }
   ],
   "headers": [
