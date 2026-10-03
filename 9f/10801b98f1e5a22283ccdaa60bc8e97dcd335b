@@ -1,0 +1,16 @@
+apps/web/vercel.json
+  h_18044dd1b61a81 18,32,35-40,43-48,51-52,55-56
+packages/db/src/validate-org-slug.ts
+  h_18044dd1b61a81 73-83,268,339,343,345-347,350-352,401,423-424,440,484-488,551-554,565
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9f10801b98f1e5a22283ccdaa60bc8e97dcd335b",
+  "prompts": {},
+  "humans": {
+    "h_18044dd1b61a81": {
+      "author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
