@@ -27,9 +27,7 @@ it.each([
   ["appId", "other", "FORBIDDEN"],
 ] as const)("rejects mismatched %s before downloading code", async (field, value, code) => {
   const load = vi.fn();
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    Response.json({ body: { ...deployment, [field]: value } }),
-  );
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ ...deployment, [field]: value }));
   const source = deploymentSource({
     PLATFORM_URL: "https://platform.test",
     RUNTIME_SERVICE_TOKEN: "private",
@@ -47,7 +45,7 @@ it.each([
 });
 
 it("rejects a token that expires while resolving deployment", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ body: deployment }));
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json(deployment));
   const source = deploymentSource({
     PLATFORM_URL: "https://platform.test",
     RUNTIME_SERVICE_TOKEN: "private",

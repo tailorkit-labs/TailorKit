@@ -1,6 +1,10 @@
 import { beforeEach, expect, it, vi } from "vite-plus/test";
+import { OpenAPIHandler } from "@orpc/openapi/fetch";
+import type { Context } from "../context";
 
 const state = vi.hoisted(() => ({
+  findApp: vi.fn(),
+  findFile: vi.fn(),
   env: {
     APP_RUNTIME_INTERNAL_URL: "https://internal.tailorkit.app",
     APP_RUNTIME_SERVICE_TOKEN: "x".repeat(32),
@@ -11,14 +15,21 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("../env", () => ({ env: state.env }));
-vi.mock("@tailorkit/db", () => ({ db: {} }));
+vi.mock("@tailorkit/db", () => ({
+  db: {
+    query: {
+      app: { findFirst: state.findApp },
+      appDeploymentFile: { findFirst: state.findFile },
+    },
+  },
+}));
 vi.mock("@tailorkit/kv", () => ({ getKV: () => undefined }));
 vi.mock("../runtime/auth", () => ({
   appRuntimePublicKeys: state.publicKeys,
   issueAppRuntimeToken: vi.fn(),
 }));
 
-import { handlePublicRuntimeRequest, publishRuntimeMetadata } from "./runtime";
+import { getRuntimeBundle, handlePublicRuntimeRequest, publishRuntimeMetadata } from "./runtime";
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -86,4 +97,41 @@ it("publishes deployment metadata to the worker with the service credential", as
   } finally {
     fetch.mockRestore();
   }
+});
+
+it("returns deployment metadata directly as the HTTP response body", async () => {
+  const metadata = {
+    projectId: "project",
+    appId: "app",
+    deploymentId: "deployment",
+    objectKey:
+      "teams/team/projects/project/apps/app-public/deployments/deployment-public/server/server.js",
+    checksum: "a".repeat(64),
+    contentLength: 123,
+  };
+  state.findApp.mockResolvedValueOnce({
+    id: metadata.appId,
+    publicId: "app-public",
+    currentDeployment: { id: metadata.deploymentId, publicId: "deployment-public" },
+  });
+  state.findFile.mockResolvedValueOnce(metadata);
+  const handler = new OpenAPIHandler({ runtime: getRuntimeBundle });
+  const { matched, response } = await handler.handle(
+    new Request("https://platform.test/api/platform/apps/app/runtime", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({}),
+    }),
+    {
+      prefix: "/api/platform",
+      context: {
+        runtimeService: true,
+        project: { id: metadata.projectId },
+        organization: { id: "organization", publicId: "team" },
+      } as Context,
+    },
+  );
+  expect(matched).toBe(true);
+  expect(response?.status).toBe(200);
+  await expect(response?.json()).resolves.toEqual(metadata);
 });

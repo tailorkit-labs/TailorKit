@@ -89,7 +89,7 @@ it("runs isolated app backends with persistent SQLite and two-client realtime up
       assert.equal(request.url, "https://platform.test/api/platform/apps/app/runtime");
       assert.equal(request.headers.get("authorization"), `Bearer ${"x".repeat(32)}`);
       metadataReads++;
-      return Response.json({ body: published });
+      return Response.json(published);
     },
   };
 
