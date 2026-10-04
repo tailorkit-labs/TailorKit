@@ -1,0 +1,23 @@
+packages/agent-tui/src/tui.ts
+  s_b46af463421d79::t_fd705f019639b9 10,34,43,46
+packages/agent-tui/README.md
+  s_b46af463421d79::t_fd705f019639b9 17-18
+.changeset/warm-agents-speak.md
+  s_b46af463421d79::t_892d5efb1d6476 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "63b1abb2bd365b93bc816e4f6c28af0bce33d59a",
+  "prompts": {},
+  "sessions": {
+    "s_b46af463421d79": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1089a-3b8c-7e80-b2a8-7d04efec5477",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
