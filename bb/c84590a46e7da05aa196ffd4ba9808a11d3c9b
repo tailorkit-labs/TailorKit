@@ -1,0 +1,24 @@
+packages/agent-tui/LICENSE.md
+  s_b46af463421d79::t_ef20f687c3c9ba 1-201
+apps/web/vercel.ts
+  s_b46af463421d79::t_7315cb94b19071 10-19,21-69,71-72
+  s_b46af463421d79::t_a8c44154923d70 1-2,7-9
+packages/agent-tui/package.json
+  s_b46af463421d79::t_74ceac00e3b0e0 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bbc84590a46e7da05aa196ffd4ba9808a11d3c9b",
+  "prompts": {},
+  "sessions": {
+    "s_b46af463421d79": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1089a-3b8c-7e80-b2a8-7d04efec5477",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
