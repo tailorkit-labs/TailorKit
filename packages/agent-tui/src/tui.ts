@@ -7,7 +7,7 @@ import {
   TextRenderable,
 } from "@opentui/core";
 import { Client, resolveTextToResponses } from "eve/client";
-import type { ClientSession, InputRequest, MessageStreamEvent } from "eve/client";
+import type { InputRequest, MessageStreamEvent } from "eve/client";
 
 const colors = {
   text: "#E8E8E8",
@@ -21,44 +21,17 @@ const colors = {
 
 function parseOptions(args: string[]) {
   let url = process.env.TAILORKIT_AGENT_URL ?? "http://127.0.0.1:2000";
-  let resume = false;
-  let thread: string | undefined;
   for (let i = 0; i < args.length; i += 1) {
     switch (args[i]) {
       case "--url":
         url = args[++i] ?? "";
-        break;
-      case "--resume":
-        resume = true;
-        break;
-      case "--thread":
-        thread = args[++i];
         break;
       default:
         throw new Error(`Unknown agent option: ${args[i]}`);
     }
   }
   if (!url) throw new Error("--url needs an agent URL.");
-  if (resume && thread) throw new Error("Use either --resume or --thread, not both.");
-  return { url, resume, thread };
-}
-
-async function openSession(
-  client: Client,
-  resume: boolean,
-  thread?: string,
-): Promise<ClientSession> {
-  if (thread) return client.sessions.attach(thread);
-  if (!resume) return (await client.sessions.create()).session;
-
-  const response = await client.fetch("/tailorkit-agent/sessions");
-  if (!response.ok) {
-    throw new Error("This Eve agent does not support listing local sessions. Use --thread <id>.");
-  }
-  const listing = (await response.json()) as { sessions?: { id?: string }[] };
-  const id = listing.sessions?.[0]?.id;
-  if (!id) throw new Error("There is no active Eve session to resume.");
-  return client.sessions.attach(id);
+  return { url };
 }
 
 function short(value: unknown, max = 500): string {
@@ -67,10 +40,10 @@ function short(value: unknown, max = 500): string {
 }
 
 async function main(): Promise<void> {
-  const { url, resume, thread } = parseOptions(process.argv.slice(2));
+  const { url } = parseOptions(process.argv.slice(2));
   const client = new Client({ host: url });
   await client.health();
-  const session = await openSession(client, resume, thread);
+  const { session } = await client.sessions.create();
   const renderer = await createCliRenderer({ exitOnCtrlC: true });
 
   const layout = new BoxRenderable(renderer, {
@@ -270,18 +243,6 @@ async function main(): Promise<void> {
         break;
     }
   };
-
-  if (resume || thread) {
-    status.content = "Loading session…";
-    try {
-      for await (const event of session.stream({ startIndex: 0, follow: false }))
-        renderEvent(event);
-      if (pendingInput.length === 0) status.content = "Ready";
-    } catch (error) {
-      renderer.destroy();
-      throw error;
-    }
-  }
 
   input.on(InputRenderableEvents.ENTER, (submitted: string) => {
     const message = submitted.trim();
