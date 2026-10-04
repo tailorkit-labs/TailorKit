@@ -1,0 +1,85 @@
+packages/api-platform/package.json
+  s_b46af463421d79::t_ae0c8293d48bce 43
+packages/core/src/server/agent.ts
+  s_b46af463421d79::t_9255d7e5e02187 1-16,18-42,44-56
+  s_b46af463421d79::t_e156a3f9e8903a 17,43
+apps/web/src/lib/auth-client.test.ts
+  s_b46af463421d79::t_41760c4c6b3b5d 5
+packages/db/src/relations.ts
+  s_b46af463421d79::t_b17d80f310db0c 23-26,51-55
+  s_b46af463421d79::t_fccbd1f937742e 56-57
+packages/agent-tui/README.md
+  s_b46af463421d79::t_650f5ad23b5d09 3-6,10,13-15
+  s_b46af463421d79::t_66d097b6658548 18-19
+packages/db/package.json
+  s_b46af463421d79::t_b17d80f310db0c 30
+apps/web/.gitignore
+  s_b46af463421d79::t_f1f8fb7795de6c 62
+apps/web/src/env.ts
+  s_b46af463421d79::t_761d65760cbf52 10
+packages/agent-tui/src/index.ts
+  s_b46af463421d79::t_650f5ad23b5d09 5-6,10,17-24
+apps/web/src/routes/api/platform.agent.$.ts
+  s_b46af463421d79::t_761d65760cbf52 1-19
+packages/cli/src/index.ts
+  s_b46af463421d79::t_650f5ad23b5d09 8-15,76,79-88,90-91
+packages/db/src/schema/index.ts
+  s_b46af463421d79::t_b17d80f310db0c 6
+apps/web/package.json
+  s_b46af463421d79::t_2dcddec9c58bc1 59
+  s_b46af463421d79::t_09fbfc66f93864 54
+packages/db/src/schema/agent-session.ts
+  s_b46af463421d79::t_b17d80f310db0c 1-17
+packages/db/src/migrations/20261004213915_heavy_jack_power/migration.sql
+  s_b46af463421d79::t_486dbd16cceab0 1-9
+packages/api-platform/src/agent.ts
+  s_b46af463421d79::t_ae0c8293d48bce 1-92
+packages/app-agent/README.md
+  s_b46af463421d79::t_6a91f7ffa587de 11-20
+packages/core/src/server/handler.ts
+  s_b46af463421d79::t_9255d7e5e02187 2,118,125
+  s_b46af463421d79::t_e156a3f9e8903a 119-124
+packages/api-platform/src/routes/cli-auth.ts
+  s_b46af463421d79::t_b0ed4d6e000e48 299-324
+  s_b46af463421d79::t_a7852355bc52fc 335-337
+packages/core/src/server/handler.test.ts
+  s_b46af463421d79::t_8dca65d7d1c859 62-65,67-114
+  s_b46af463421d79::t_8f4f20247fc144 66
+apps/web/src/routeTree.gen.ts
+  s_b46af463421d79::t_17719076f8a09d 40,195-199,284,318,359,400,434,474,500,702-708,954
+packages/api-platform/src/agent.test.ts
+  s_b46af463421d79::t_9fbd3137540c6d 1-41,43-46,49-77,81-98,100-135
+  s_b46af463421d79::t_c16e92a45331a2 47-48,78-80,99
+  s_b46af463421d79::t_460691fda68fd7 42
+apps/web/vercel.ts
+  s_b46af463421d79::t_eddd742035c8de 12
+  s_b46af463421d79::t_a87abf39afbc3f 1-11,14,16,20,23-24,27-32,34-35,48-49,51-52,54-55,57-61,64
+  s_b46af463421d79::t_a7852355bc52fc 15,18-19,37-38,41-42,45-46
+.changeset/warm-agents-speak.md
+  s_b46af463421d79::t_f1f8fb7795de6c 4,7
+packages/db/src/migrations/20261004213915_heavy_jack_power/snapshot.json
+  s_b46af463421d79::t_486dbd16cceab0 1-3683
+packages/agent-tui/src/tui.ts
+  s_b46af463421d79::t_66d097b6658548 95,257-262
+  s_b46af463421d79::t_650f5ad23b5d09 28-35
+apps/web/agent
+  s_b46af463421d79::t_db428b81e952b1 1
+pnpm-lock.yaml
+  s_b46af463421d79::t_c5bc44b30c3522 665-667,680-682
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8d66bf6e40c63f2c7100b1e36a98451e9a24afa1",
+  "prompts": {},
+  "sessions": {
+    "s_b46af463421d79": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1089a-3b8c-7e80-b2a8-7d04efec5477",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
