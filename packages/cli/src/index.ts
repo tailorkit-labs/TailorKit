@@ -3,6 +3,8 @@ import { confirm, intro, isCancel, log, outro, spinner } from "@clack/prompts";
 import { cac } from "cac";
 import pc from "picocolors";
 
+import { runAgentTui } from "@tailorkit/agent-tui";
+
 import { createCliAuthApprovalUrl, runLogin, runLogout, runWhoami } from "./auth";
 import { runDeploy } from "./deploy";
 import { generateTypes } from "./generator/types";
@@ -61,6 +63,24 @@ const loginWithApproval = async (options: Parameters<typeof runLogin>[0], open =
 };
 
 cli.option("--cwd <path>", "Working directory", { default: "." });
+
+cli
+  .command("agent", "Talk to the TailorKit agent")
+  .option("--resume", "Resume the most recent Eve session")
+  .option("--thread <id>", "Open a specific Eve session")
+  .option("--url <url>", "Agent URL (default: TAILORKIT_AGENT_URL or http://127.0.0.1:2000)")
+  .action(async (options: Record<string, unknown>) => {
+    try {
+      await runAgentTui({
+        resume: options.resume === true,
+        thread: options.thread as string | undefined,
+        url: options.url as string | undefined,
+      });
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
 
 cli
   .command("preview", "Preview the app inside a host app")

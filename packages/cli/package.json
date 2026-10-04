@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.8.1",
+    "@tailorkit/agent-tui": "workspace:*",
     "@tailorkit/app": "workspace:*",
     "@tailorkit/client-platform": "workspace:*",
     "@tailorkit/core": "workspace:*",

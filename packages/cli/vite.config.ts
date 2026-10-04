@@ -21,6 +21,7 @@ export default defineConfig({
     rollupOptions: {
       external: [
         /^node:/u,
+        "@tailorkit/agent-tui",
         /^@tailorkit\/app(?:\/|$)/u,
         "@clack/prompts",
         "@standard-schema/spec",
