@@ -18,7 +18,7 @@
   "scripts": {
     "build": "vp pack src/index.ts src/tui.ts --format esm --dts --clean --deps.never-bundle @opentui/core --deps.never-bundle eve",
     "check-types": "tsc --noEmit",
-    "test": "vp test run"
+    "test": "vp test run --passWithNoTests"
   },
   "dependencies": {
     "@opentui/core": "0.5.14",
