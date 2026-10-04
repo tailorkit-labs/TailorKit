@@ -59,6 +59,59 @@ optionalSchemaTailor.handler(new Request("https://example.com/api/tailorkit/sche
 });
 
 describe("createTailorKitServer", () => {
+  it("relays only the Eve session protocol with the host project key and CLI token", async () => {
+    const requests: Request[] = [];
+    const server = createTailorKitServer({
+      projectKey: "host-project-key",
+      scopes: { org: testScopeSchema },
+      components: {},
+      $internal: {
+        platformBaseUrl: "https://platform.test/api/platform",
+        platformFetch: async (input, init) => {
+          requests.push(input instanceof Request ? input : new Request(input, init));
+          return new Response("event: message\ndata: hello\n\n", {
+            headers: { "content-type": "text/event-stream", "set-cookie": "secret=1" },
+          });
+        },
+      },
+    });
+    const authenticate = () => {
+      throw new Error("Host session authentication must not run for CLI token requests.");
+    };
+
+    const missingToken = await server.handler(
+      new Request("https://host.test/api/tailorkit/agent/eve/v1/session", { method: "POST" }),
+      { authenticate },
+    );
+    expect(missingToken.status).toBe(401);
+    expect(requests).toHaveLength(0);
+
+    const result = await server.handler(
+      new Request("https://host.test/api/tailorkit/agent/eve/v1/session/wrun_123/stream?cursor=1", {
+        headers: { authorization: "Bearer cli-token" },
+      }),
+      { authenticate },
+    );
+    expect(result.status).toBe(200);
+    expect(result.headers.get("content-type")).toBe("text/event-stream");
+    expect(result.headers.get("set-cookie")).toBeNull();
+    expect(await result.text()).toContain("data: hello");
+    expect(requests[0]?.url).toBe(
+      "https://platform.test/api/platform/agent/eve/v1/session/wrun_123/stream?cursor=1",
+    );
+    expect(requests[0]?.headers.get("authorization")).toBe("Bearer host-project-key");
+    expect(requests[0]?.headers.get("x-tailorkit-cli-token")).toBe("cli-token");
+
+    const otherRoute = await server.handler(
+      new Request("https://host.test/api/tailorkit/agent/eve/v1/health", {
+        headers: { authorization: "Bearer cli-token" },
+      }),
+      { authenticate },
+    );
+    expect(otherRoute.status).toBe(404);
+    expect(requests).toHaveLength(1);
+  });
+
   it("requests app backend tokens from the platform with host credentials and verified scopes", async () => {
     const requests: Request[] = [];
     const server = createTailorKitServer({

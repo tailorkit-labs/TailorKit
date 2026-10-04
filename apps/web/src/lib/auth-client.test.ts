@@ -2,7 +2,7 @@ import { initBotId } from "botid/client/core";
 import { withBotId } from "botid/next/config";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { captchaEndpoints } from "@tailorkit/auth/lib/captcha-endpoints";
-import vercelConfig from "../../vercel.json";
+import vercelConfig from "../../vercel";
 
 vi.mock("botid/client/core", () => ({ initBotId: vi.fn() }));
 

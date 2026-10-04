@@ -20,6 +20,10 @@ const applicationRelations = defineRelations(schema, (r) => ({
       from: r.project.id,
       to: r.cliToken.projectId,
     }),
+    agentSessions: r.many.agentSession({
+      from: r.project.id,
+      to: r.agentSession.projectId,
+    }),
     previewSessions: r.many.previewSession({
       from: r.project.id,
       to: r.previewSession.projectId,
@@ -41,6 +45,13 @@ const applicationRelations = defineRelations(schema, (r) => ({
     previewSessions: r.many.previewSession({
       from: r.cliToken.id,
       to: r.previewSession.cliTokenId,
+    }),
+  },
+
+  agentSession: {
+    project: r.one.project({
+      from: r.agentSession.projectId,
+      to: r.project.id,
     }),
   },
 

@@ -7,5 +7,6 @@ export const env = createEnv({
     VERCEL_DEPLOYMENT_ID: z.string().optional(),
     VERCEL_ENV: z.string().optional(),
     VERCEL_SKEW_PROTECTION_ENABLED: z.string().optional(),
+    TAILORKIT_EVE_URL: z.url().optional(),
   },
 });

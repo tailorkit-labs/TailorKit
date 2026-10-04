@@ -19,30 +19,20 @@ const colors = {
   error: "#FF8A8A",
 };
 
-function parseOptions(args: string[]) {
-  let url = process.env.TAILORKIT_AGENT_URL ?? "http://127.0.0.1:2000";
-  for (let i = 0; i < args.length; i += 1) {
-    switch (args[i]) {
-      case "--url":
-        url = args[++i] ?? "";
-        break;
-      default:
-        throw new Error(`Unknown agent option: ${args[i]}`);
-    }
-  }
-  if (!url) throw new Error("--url needs an agent URL.");
-  return { url };
-}
-
 function short(value: unknown, max = 500): string {
   const text = typeof value === "string" ? value : (JSON.stringify(value) ?? "");
   return text.length > max ? `${text.slice(0, max)}…` : text;
 }
 
 async function main(): Promise<void> {
-  const { url } = parseOptions(process.argv.slice(2));
-  const client = new Client({ host: url });
-  await client.health();
+  const hostUrl = process.env.TAILORKIT_AGENT_HOST_URL;
+  const token = process.env.TAILORKIT_AGENT_DEPLOY_TOKEN;
+  if (!hostUrl || !token) throw new Error("TailorKit agent needs host authentication.");
+  const client = new Client({
+    host: `${hostUrl.replace(/\/+$/u, "")}/agent`,
+    auth: { bearer: token },
+    redirect: "error",
+  });
   const { session } = await client.sessions.create();
   const renderer = await createCliRenderer({ exitOnCtrlC: true });
 
@@ -102,6 +92,7 @@ async function main(): Promise<void> {
   input.focus();
 
   let busy = false;
+  let firstMessage = true;
   let pendingInput: readonly InputRequest[] = [];
   let lastFailure = "";
   const blocks = new Map<string, { element: TextRenderable; text: string }>();
@@ -263,7 +254,12 @@ async function main(): Promise<void> {
       try {
         const response = pendingInput.length
           ? await session.respond(responses)
-          : await session.send(message);
+          : await session.send(
+              firstMessage
+                ? `TailorKit host API URL: ${hostUrl.replace(/\/+$/u, "")}/api/tailorkit\n\n${message}`
+                : message,
+            );
+        firstMessage = false;
         for await (const event of response) renderEvent(event);
         if (pendingInput.length === 0) status.content = "Ready";
       } catch (error) {

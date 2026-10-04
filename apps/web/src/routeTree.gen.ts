@@ -37,6 +37,7 @@ import { Route as appOrgSlugProjectSlugSettingsRouteImport } from './routes/(app
 import { Route as appOrgSlugChar126orgRouteRouteImport } from './routes/(app)/$orgSlug/~/(org)/route'
 import { Route as appAccountProfileIndexRouteImport } from './routes/(app)/account/profile/index'
 import { Route as appAccountSecurityIndexRouteImport } from './routes/(app)/account/security/index'
+import { Route as ApiPlatformAgentSplatRouteImport } from './routes/api/platform.agent.$'
 import { Route as ApiPlatformPreviewWsRouteImport } from './routes/api/platform.preview.ws'
 import { Route as appOrgSlugProjectSlugAppsIndexRouteImport } from './routes/(app)/$orgSlug/$projectSlug/apps.index'
 import { Route as appOrgSlugProjectSlugAppsAppIdRouteImport } from './routes/(app)/$orgSlug/$projectSlug/apps.$appId'
@@ -191,6 +192,11 @@ const appAccountSecurityIndexRoute = appAccountSecurityIndexRouteImport.update({
   path: '/security/',
   getParentRoute: () => appAccountRouteRoute,
 } as any)
+const ApiPlatformAgentSplatRoute = ApiPlatformAgentSplatRouteImport.update({
+  id: '/api/platform/agent/$',
+  path: '/api/platform/agent/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPlatformPreviewWsRoute = ApiPlatformPreviewWsRouteImport.update({
   id: '/api/platform/preview/ws',
   path: '/api/platform/preview/ws',
@@ -275,6 +281,7 @@ export interface FileRoutesByFullPath {
   '/$orgSlug/': typeof appOrgSlugIndexRoute
   '/$orgSlug/~': typeof appOrgSlugChar126orgRouteRouteWithChildren
   '/$orgSlug/$projectSlug/settings': typeof appOrgSlugProjectSlugSettingsRouteWithChildren
+  '/api/platform/agent/$': typeof ApiPlatformAgentSplatRoute
   '/api/platform/preview/ws': typeof ApiPlatformPreviewWsRoute
   '/$orgSlug/$projectSlug/': typeof appOrgSlugProjectSlugIndexRoute
   '/account/profile/': typeof appAccountProfileIndexRoute
@@ -308,6 +315,7 @@ export interface FileRoutesByTo {
   '/api/platform/$': typeof ApiPlatformSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/$orgSlug': typeof appOrgSlugIndexRoute
+  '/api/platform/agent/$': typeof ApiPlatformAgentSplatRoute
   '/api/platform/preview/ws': typeof ApiPlatformPreviewWsRoute
   '/$orgSlug/$projectSlug': typeof appOrgSlugProjectSlugIndexRoute
   '/account/profile': typeof appAccountProfileIndexRoute
@@ -348,6 +356,7 @@ export interface FileRoutesById {
   '/(app)/$orgSlug/': typeof appOrgSlugIndexRoute
   '/(app)/$orgSlug/~/(org)': typeof appOrgSlugChar126orgRouteRouteWithChildren
   '/(app)/$orgSlug/$projectSlug/settings': typeof appOrgSlugProjectSlugSettingsRouteWithChildren
+  '/api/platform/agent/$': typeof ApiPlatformAgentSplatRoute
   '/api/platform/preview/ws': typeof ApiPlatformPreviewWsRoute
   '/(app)/$orgSlug/$projectSlug/': typeof appOrgSlugProjectSlugIndexRoute
   '/(app)/account/profile/': typeof appAccountProfileIndexRoute
@@ -388,6 +397,7 @@ export interface FileRouteTypes {
     | '/$orgSlug/'
     | '/$orgSlug/~'
     | '/$orgSlug/$projectSlug/settings'
+    | '/api/platform/agent/$'
     | '/api/platform/preview/ws'
     | '/$orgSlug/$projectSlug/'
     | '/account/profile/'
@@ -421,6 +431,7 @@ export interface FileRouteTypes {
     | '/api/platform/$'
     | '/api/rpc/$'
     | '/$orgSlug'
+    | '/api/platform/agent/$'
     | '/api/platform/preview/ws'
     | '/$orgSlug/$projectSlug'
     | '/account/profile'
@@ -460,6 +471,7 @@ export interface FileRouteTypes {
     | '/(app)/$orgSlug/'
     | '/(app)/$orgSlug/~/(org)'
     | '/(app)/$orgSlug/$projectSlug/settings'
+    | '/api/platform/agent/$'
     | '/api/platform/preview/ws'
     | '/(app)/$orgSlug/$projectSlug/'
     | '/(app)/account/profile/'
@@ -485,6 +497,7 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiPlatformSplatRoute: typeof ApiPlatformSplatRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
+  ApiPlatformAgentSplatRoute: typeof ApiPlatformAgentSplatRoute
   ApiPlatformPreviewWsRoute: typeof ApiPlatformPreviewWsRoute
 }
 
@@ -685,6 +698,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/account/security/'
       preLoaderRoute: typeof appAccountSecurityIndexRouteImport
       parentRoute: typeof appAccountRouteRoute
+    }
+    '/api/platform/agent/$': {
+      id: '/api/platform/agent/$'
+      path: '/api/platform/agent/$'
+      fullPath: '/api/platform/agent/$'
+      preLoaderRoute: typeof ApiPlatformAgentSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/platform/preview/ws': {
       id: '/api/platform/preview/ws'
@@ -931,6 +951,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiPlatformSplatRoute: ApiPlatformSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
+  ApiPlatformAgentSplatRoute: ApiPlatformAgentSplatRoute,
   ApiPlatformPreviewWsRoute: ApiPlatformPreviewWsRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,4 +1,5 @@
 import { handleBackendSession } from "./backend";
+import { handleAgentRelay } from "./agent";
 import { RPCHandler } from "@orpc/server/fetch";
 import { appsList, appsRuntimeSession, previewAccepted } from "@tailorkit/client-platform/client";
 import { createClient } from "@tailorkit/client-platform/client/client/index";
@@ -114,6 +115,14 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
     };
     const url = new URL(request.url);
     const previewPrefix = `${basePath}/preview/`;
+    if (url.pathname.startsWith(`${basePath}/agent/`)) {
+      return handleAgentRelay(request, {
+        basePath,
+        platformBaseUrl,
+        platformFetch: options.$internal?.platformFetch,
+        platformHeaders,
+      });
+    }
     if (url.pathname === `${basePath}/backend/session`) {
       return handleBackendSession(request, authenticate, async (appId, scopes) => {
         const headers = await (typeof platformHeaders === "function"

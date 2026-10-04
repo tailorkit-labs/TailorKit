@@ -8,6 +8,16 @@ prompt, and runs local checks. Follow-up prompts edit the same app.
 ## Run
 
 Requires Node.js 24+, pnpm, and a supported sandbox with native process execution.
+
+The `apps/web` Vercel project also deploys this agent as an Eve service. Its
+`agent/` link points to the same source, and `apps/web/vercel.ts` adds Eve's
+`/eve/v1/*` routes. The Eve channel requires Vercel OIDC in production. CLI
+requests go through the configured host's `/api/tailorkit/agent/*` route, then
+the platform's `/api/platform/agent/*` route. The platform records only the Eve
+session ID, project ID, and canonical CLI scope key so follow-up messages and
+streams stay within the approved host scope. Apply the generated database
+migration before using this path. For local development with Eve on a separate
+server, set `TAILORKIT_EVE_URL` for `apps/web` to that server's origin.
 The agent uses Eve's `DefaultSandbox`: Vercel Sandbox on Vercel; elsewhere Eve
 tries Docker, microsandbox, then just-bash according to host support. For local
 app generation, use a running Docker daemon or a supported microsandbox setup;

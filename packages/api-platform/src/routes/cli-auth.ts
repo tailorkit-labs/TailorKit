@@ -296,6 +296,32 @@ const pollCliAuth = protectedRouter
     };
   });
 
+export async function getCliTokenScope(projectId: string, deployToken: string) {
+  const token = await db.query.cliToken.findFirst({
+    where: {
+      tokenHash: hashCliSecret(deployToken),
+      projectId,
+    },
+  });
+
+  if (!token || token.expiresAt.getTime() <= Date.now() || token.revokedAt) {
+    throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
+  }
+
+  let scope: ReturnType<typeof canonicalizeScope>;
+  try {
+    scope = canonicalizeScope(token.scope);
+  } catch {
+    throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
+  }
+  if (scope.scopeKey !== token.scopeKey) {
+    throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
+  }
+
+  await db.update(cliToken).set({ lastUsedAt: new Date() }).where(eq(cliToken.id, token.id));
+  return scope;
+}
+
 const verifyCliAuthToken = protectedRouter
   .meta(
     openapi({
@@ -306,30 +332,9 @@ const verifyCliAuthToken = protectedRouter
   .input(z.object({ body: z.object({ deployToken: z.string().min(1) }) }))
   .output(z.object({ body: z.object({ scope: scopeSchema }) }))
   .handler(async ({ context, input }) => {
-    const token = await db.query.cliToken.findFirst({
-      where: {
-        tokenHash: hashCliSecret(input.body.deployToken),
-        projectId: context.project.id,
-      },
-    });
-
-    if (!token || token.expiresAt.getTime() <= Date.now() || token.revokedAt) {
-      throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
-    }
-
-    let scope: ReturnType<typeof canonicalizeScope>;
-    try {
-      scope = canonicalizeScope(token.scope);
-    } catch {
-      throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
-    }
-    if (scope.scopeKey !== token.scopeKey) {
-      throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
-    }
-
-    await db.update(cliToken).set({ lastUsedAt: new Date() }).where(eq(cliToken.id, token.id));
-
-    return { body: { scope: scope.scope } };
+    return {
+      body: { scope: (await getCliTokenScope(context.project.id, input.body.deployToken)).scope },
+    };
   });
 
 export const cliAuthRouter = o.meta(openapi({ prefix: "/cli-auth" })).router({

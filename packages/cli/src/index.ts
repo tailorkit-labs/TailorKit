@@ -5,7 +5,14 @@ import pc from "picocolors";
 
 import { runAgentTui } from "@tailorkit/agent-tui";
 
-import { createCliAuthApprovalUrl, runLogin, runLogout, runWhoami } from "./auth";
+import {
+  createCliAuthApprovalUrl,
+  getDeployToken,
+  NotLoggedInError,
+  runLogin,
+  runLogout,
+  runWhoami,
+} from "./auth";
 import { runDeploy } from "./deploy";
 import { generateTypes } from "./generator/types";
 import { runInit } from "./init";
@@ -66,11 +73,22 @@ cli.option("--cwd <path>", "Working directory", { default: "." });
 
 cli
   .command("agent", "Talk to the TailorKit agent")
-  .option("--url <url>", "Agent URL (default: TAILORKIT_AGENT_URL or http://127.0.0.1:2000)")
+  .option("--config <path>", "Path to tailorkit config")
   .action(async (options: Record<string, unknown>) => {
     try {
+      const authOptions = {
+        configPath: options.config as string | undefined,
+        cwd: String(options.cwd ?? "."),
+      };
+      const auth = await runWhoami(authOptions).catch((error: unknown) => {
+        if (error instanceof NotLoggedInError) return loginWithApproval(authOptions);
+        throw error;
+      });
+      const stored = await getDeployToken(auth.hostUrl);
+      if (!stored?.deployToken) throw new NotLoggedInError(auth.hostUrl);
       await runAgentTui({
-        url: options.url as string | undefined,
+        hostUrl: auth.hostUrl,
+        token: stored.deployToken,
       });
     } catch (error) {
       log.error(error instanceof Error ? error.message : String(error));

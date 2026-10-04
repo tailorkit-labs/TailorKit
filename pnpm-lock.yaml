@@ -662,6 +662,9 @@ importers:
       '@vercel/functions':
         specifier: ^3.9.9
         version: 3.9.9(@aws-sdk/credential-provider-web-identity@3.972.77)(ws@8.21.3)
+      '@vercel/oidc':
+        specifier: 3.8.9
+        version: 3.8.9
       better-auth:
         specifier: 'catalog:'
         version: 1.7.6(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.168.60(@voidzero-dev/vite-plus-core@1.0.0(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(typescript@7.0.2)(yaml@2.9.1))(crossws@0.4.12(srvx@0.11.22))(esbuild@0.28.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rolldown@1.2.8)(rollup@4.63.2)(supports-color@10.2.2))(drizzle-kit@1.0.0-rc.4-5d5b77c)(drizzle-orm@1.0.0-rc.4-5d5b77c(@electric-sql/pglite@0.5.8)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(@upstash/redis@1.38.4)(arktype@2.2.3)(effect@4.0.0-rc.117)(pg@8.23.0)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.5))(next@16.3.5(@babel/core@7.29.7(supports-color@10.2.2))(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(pg@8.23.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)(vitest@5.0.1)
@@ -674,6 +677,9 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 1.0.0-rc.4-5d5b77c(@electric-sql/pglite@0.5.8)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(@upstash/redis@1.38.4)(arktype@2.2.3)(effect@4.0.0-rc.117)(pg@8.23.0)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.5)
+      eve:
+        specifier: 0.68.0
+        version: 0.68.0(@opentelemetry/api@1.9.1)(ai@7.0.122(zod@4.6.5))
       lucide-react:
         specifier: 'catalog:'
         version: 1.48.0(react@19.3.0)
