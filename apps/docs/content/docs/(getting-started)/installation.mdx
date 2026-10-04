@@ -288,11 +288,6 @@ export const { AppView, useApps, useView } = tailorKitClient;
 export default tailorKitClient;
 ```
 
-Use an absolute URL, or construct a URL from `window.location.origin` in a
-browser-only integration. Export `AppView`, `useApps`, and `useView` from the
-configured client so their types come from `tailorKit` without module
-augmentation. Import `Root` from `tailorkit/react` and pass it the client; use
-the other helpers beneath it.
 See [Views, views, and slots](/docs/views) for the complete React setup.
 
 </Step>
