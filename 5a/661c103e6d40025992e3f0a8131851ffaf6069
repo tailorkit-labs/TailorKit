@@ -1,0 +1,79 @@
+docs/custom.css
+  s_ce0af5bc134acd::t_70b2c7415532eb 47-48
+  s_ce0af5bc134acd::t_f72716c51232a7 51,87-94
+  s_ce0af5bc134acd::t_c62257ab8efeac 23-34,37-38,43-46,49-50,54-58,60-86
+docs/index.mdx
+  s_3773128239b3f0::t_2bc908967e2942 38
+  s_3773128239b3f0::t_d42a2a9f114b44 48,58
+  s_3773128239b3f0::t_5427c10769299d 3
+  s_3773128239b3f0::t_cad91038e8c97a 6
+  s_3773128239b3f0::t_301d6699dcbbc1 54-56
+  s_3773128239b3f0::t_cba45759f9a55a 20
+  s_b410f4792fa5cc::t_acb56bcf6e6520 40-41,43,51,53,57,68
+  s_3773128239b3f0::t_17201bbe3234f0 33-35,37
+  s_3773128239b3f0::t_6ed91fa443468b 14,23-24,31,52
+  s_3773128239b3f0::t_094308fac0c170 42,47,49-50
+  s_3773128239b3f0::t_9531050a784b2d 60-61
+  s_3773128239b3f0::t_d8ccfdecac6c57 44
+  s_3773128239b3f0::t_8ccd5c01f8842c 59,64-65
+  s_fdfb52dc89f7af::t_1ce9b454ddd0d5 70
+  s_b410f4792fa5cc::t_73e37ff0bac03c 27,36,66
+  s_b410f4792fa5cc::t_3ce316acae3d7c 32,39,67
+  s_3773128239b3f0::t_b8b6655a469bae 45-46
+  s_3773128239b3f0::t_1f4343a5fbfc45 62-63
+  s_3773128239b3f0::t_ff6a31edb91bc1 69
+  s_3773128239b3f0::t_378961b8caba57 25-26
+  s_3773128239b3f0::t_f94dee6469a041 22
+  s_fdfb52dc89f7af::t_400687c8812e65 2,9,15,19
+  s_3773128239b3f0::t_a1da5d59ff94b7 7-8
+  s_3773128239b3f0::t_4322d4962aa66a 10,12
+  s_3773128239b3f0::t_98bf152c2ba6c9 28-29
+  s_3773128239b3f0::t_4e3c6b10d84cec 30
+  s_b410f4792fa5cc::t_934f50d6010520 11,13
+  s_3773128239b3f0::t_728426317375c3 16-18,21
+docs/toc.js
+  s_ce0af5bc134acd::t_70b2c7415532eb 25-27,43-45,69-72
+  s_ce0af5bc134acd::t_f72716c51232a7 53-54,60-61,75-76,79-93
+  s_ce0af5bc134acd::t_86b1dfe7efb35a 47,97-108
+  s_ce0af5bc134acd::t_c62257ab8efeac 1-24,28-42,46,48-52,55-59,62-68,73-74,77-78,94-96,109-118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5a661c103e6d40025992e3f0a8131851ffaf6069",
+  "prompts": {},
+  "sessions": {
+    "s_3773128239b3f0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1051a-5b18-7901-9af8-713dc2e126a5",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_b410f4792fa5cc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1041e-2a7a-73d3-9bf0-d743552bf13f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_ce0af5bc134acd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10450-69e9-7c30-8042-53e333e55746",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_fdfb52dc89f7af": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1040b-df9c-7af0-a6ac-5a598870215f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
