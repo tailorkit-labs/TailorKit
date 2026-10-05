@@ -1,0 +1,4 @@
+{
+  "extends": "@tailorkit/config/tsconfig.base.json",
+  "include": ["src/**/*.ts"]
+}

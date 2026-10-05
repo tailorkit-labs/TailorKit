@@ -33,7 +33,7 @@
     "@tailorkit/core": "workspace:*",
     "cac": "^7.0.0",
     "jose": "6.2.12",
-    "liquidjs": "^10.29.0",
+    "liquidjs": "^10.30.0",
     "picocolors": "^1.1.1",
     "vite": "catalog:",
     "zod": "catalog:"
