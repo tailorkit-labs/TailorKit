@@ -27,7 +27,7 @@ export async function appAgent({
 
   const nativeSandbox = await Sandbox.getOrCreate({
     name: `${workflowName}:${workflowRunId}`,
-    image: "vercel/sandbox/node:24",
+    image: "vercel/sandbox/universal",
   });
   const sandbox = createVercelNetworkSandboxSessionFromNativeSandbox(nativeSandbox);
 
