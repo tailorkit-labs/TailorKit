@@ -1,0 +1,121 @@
+packages/builder-agent/src/tools/bash.test.ts
+  s_b2672c4e33a3e0::t_c15e1a53903db2 23-28
+packages/builder-agent/src/tools/read.ts
+  s_b2672c4e33a3e0::t_c15e1a53903db2 9
+packages/builder-agent/src/tools/write.ts
+  s_b2672c4e33a3e0::t_c15e1a53903db2 8
+packages/app-agent/package.json
+  s_b2672c4e33a3e0::t_1ce0bc2867c6cb 17
+packages/builder-agent/src/tools/ls.test.ts
+  s_b2672c4e33a3e0::t_97441a7406d02c 1,12-23,32-37
+packages/builder-agent/src/tools/write.test.ts
+  s_b2672c4e33a3e0::t_c15e1a53903db2 3,19,23-24
+  s_b2672c4e33a3e0::t_23c000570e7113 20-22
+apps/apps-worker/package.json
+  s_b2672c4e33a3e0::t_1ce0bc2867c6cb 32
+  s_b2672c4e33a3e0::t_90c6bca1bf16d6 19
+packages/builder-agent/tsconfig.json
+  s_b2672c4e33a3e0::t_97441a7406d02c 3-5
+packages/builder-agent/src/skills.ts
+  s_b2672c4e33a3e0::t_1487f780e2b5b7 84-86
+  s_b2672c4e33a3e0::t_7d5e676ad94796 16-17,36,60,78,81
+packages/builder-agent/src/tools/grep.ts
+  s_59e8bfe3c0e4c9::t_48e8514879b260 145-148,151-155
+  s_b2672c4e33a3e0::t_d85e4dafe003e2 105
+  s_b2672c4e33a3e0::t_23c000570e7113 76,115-117,124-125
+  s_b2672c4e33a3e0::t_ac16813d44796e 120-123
+  s_b2672c4e33a3e0::t_d630bbcd136af8 2,25-33,37-75,77-100,102-104,106-114,126-131,215,218,255,260
+  s_b2672c4e33a3e0::t_84be9462b13cf0 34-36,101,118-119
+packages/builder-agent/src/instructions.md
+  s_b2672c4e33a3e0::t_1487f780e2b5b7 19-28,43-45
+  s_b2672c4e33a3e0::t_16aaedab845fb5 40-42
+packages/builder-agent/src/tools/edit.ts
+  s_b2672c4e33a3e0::t_93872aa33ecc21 78
+  s_b2672c4e33a3e0::t_0269b501c0daec 4,6-12,17,19,27,31,38-66,68-71,107
+  s_b2672c4e33a3e0::t_fdf610b3af9e13 67,74-77,79,83-106
+  s_b2672c4e33a3e0::t_a887cb57fb62dc 80-82
+packages/builder-agent/src/tools/glob.ts
+  s_59e8bfe3c0e4c9::t_48e8514879b260 31-33,36-40
+  s_59e8bfe3c0e4c9::t_fd0d47bf550b8a 34
+  s_59e8bfe3c0e4c9::t_adf9312a9ddf9b 35
+packages/builder-agent/src/agent.ts
+  s_b2672c4e33a3e0::t_1487f780e2b5b7 29-33,156,172-184
+  s_59e8bfe3c0e4c9::t_d67e3d340f6256 9,21,142,147,153
+  s_59e8bfe3c0e4c9::t_d2d2cd0613244b 66-68,77-79,88-90,99-101,110-112,121-123,132-134
+  s_b2672c4e33a3e0::t_16aaedab845fb5 12,17,19-20,22-28,34-36,50-65,69-76,80-87,91-98,102-109,113-120,124-131,135-137,143,148-149,154
+  s_b2672c4e33a3e0::t_6443e93d7fa308 39-49
+  s_b2672c4e33a3e0::t_6d24d820b9c34e 2-8
+  s_b2672c4e33a3e0::t_5f0a04c8415655 157-170
+  s_b2672c4e33a3e0::t_f72740156a19c6 138
+packages/builder-agent/src/tools/read.test.ts
+  s_b2672c4e33a3e0::t_c15e1a53903db2 24-27,71,84,107,114
+  s_b2672c4e33a3e0::t_23c000570e7113 66-68,102-104
+packages/builder-agent/src/skills.test.ts
+  s_b2672c4e33a3e0::t_da791bef7730d8 20,25-26,30,38-39,48-49,51-55,62-63,221,231,234-235,239
+  s_b2672c4e33a3e0::t_16aaedab845fb5 7-10,147,149-151,157-158,162,230
+  s_b2672c4e33a3e0::t_bba1047c3c789c 27-28,40-47,59-61,64-67,236-238
+  s_b2672c4e33a3e0::t_6d24d820b9c34e 152-156,159-161
+  s_b2672c4e33a3e0::t_5ddbf8831a4015 163
+packages/builder-agent/src/tools/grep.test.ts
+  s_b2672c4e33a3e0::t_84be9462b13cf0 1,5,30-78,94-95,104-108,144-147,156-157,159,165,192-201,204-210,212-224,226-235,237-311,313-355,357-371,373-375,377-382,384-385,387-448,450,452-463,465-477,479-497,499-508,510-533
+  s_b2672c4e33a3e0::t_d85e4dafe003e2 169-178
+  s_59e8bfe3c0e4c9::t_fd0d47bf550b8a 153-155,158,160-164,167
+  s_b2672c4e33a3e0::t_ac16813d44796e 180-188
+  s_b2672c4e33a3e0::t_23c000570e7113 87-93,96-103,109-112
+  s_b2672c4e33a3e0::t_2344ab9f018b90 86,118,123,138,143,148-150,166
+packages/builder-agent/src/tools/glob.test.ts
+  s_59e8bfe3c0e4c9::t_fd0d47bf550b8a 138-157
+packages/builder-agent/package.json
+  s_b2672c4e33a3e0::t_1ce0bc2867c6cb 22
+apps/apps-worker/src/worker-env.d.ts
+  s_b2672c4e33a3e0::t_350ca39745993c 1418-1419,1466,11891-11938,11940,11942-11944,11946,11963-12018,12046,12099,14379-14397
+  s_b2672c4e33a3e0::t_3ab261212b88d8 3,14398
+pnpm-workspace.yaml
+  s_b2672c4e33a3e0::t_1ce0bc2867c6cb 43
+packages/builder-agent/src/tools/edit.test.ts
+  s_b2672c4e33a3e0::t_027140dbb0e57b 2-13,16,20-23,25-42,44-54,56-58,62-65,71,73-75,77-78,81,101-104,109-111,115-124,134,138,140-141,150-155,170-179,181-187,189-193,196-206,208,235-241,244-245,248-251,253-262,281-282
+  s_b2672c4e33a3e0::t_a887cb57fb62dc 1,14,43,55,79-80,82-98,209,214-225,246
+  s_b2672c4e33a3e0::t_e353eae58cb24d 61,66-69,72,76,105,252,263-280
+  s_b2672c4e33a3e0::t_93872aa33ecc21 70,210,243
+  s_b2672c4e33a3e0::t_a8609d7b726a86 106-108
+  s_b2672c4e33a3e0::t_97441a7406d02c 143-149
+  s_b2672c4e33a3e0::t_7c1a4caaeed718 211-213,226-234
+  s_b2672c4e33a3e0::t_ad29af20591218 59-60
+packages/builder-agent/src/tools/bash.ts
+  s_b2672c4e33a3e0::t_c15e1a53903db2 13
+packages/builder-agent/src/agent.test.ts
+  s_59e8bfe3c0e4c9::t_1335c3ebed2b9e 96-101,103,105-106
+  s_59e8bfe3c0e4c9::t_4de9c89b24a7ef 40-44,64,84,94,111,122,136,148,150-154,161-166,173,175,179,190
+  s_b2672c4e33a3e0::t_bba1047c3c789c 209-219,222-229,233-235,261-263,269-290
+  s_b2672c4e33a3e0::t_da791bef7730d8 1,47,50,72-74,88,169,206-208,220-221,230-232,236-242,256-260,264-268
+  s_b2672c4e33a3e0::t_6d24d820b9c34e 102,128-135,137-146,160,167,178,180,195-201,203-205
+  s_b2672c4e33a3e0::t_5f0a04c8415655 243-255
+  s_b2672c4e33a3e0::t_f5383dcf530376 14,45-46,114-117,126-127,147,149,155-159,168,171-172,174,176-177,181-189,191-194,202
+  s_59e8bfe3c0e4c9::t_fd0d47bf550b8a 9-11,26-28,93,95,104,107-110,112-113,118-121,123-125,170
+pnpm-lock.yaml
+  s_b2672c4e33a3e0::t_dda57d86058602 233-235,336-337,370-371,1185,1302
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5cb6834aa80fd667c838e39ddb95966d645a8d2e",
+  "prompts": {},
+  "sessions": {
+    "s_59e8bfe3c0e4c9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10bce-78e0-7032-9722-10ed7656d92d",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_b2672c4e33a3e0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10bce-e49c-7a40-980a-424aaf04921f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
