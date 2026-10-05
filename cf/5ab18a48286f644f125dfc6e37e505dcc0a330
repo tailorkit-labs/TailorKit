@@ -1,0 +1,19 @@
+docs/index.mdx
+  s_3773128239b3f0::t_57ea900fb5d50d 35-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cf5ab18a48286f644f125dfc6e37e505dcc0a330",
+  "prompts": {},
+  "sessions": {
+    "s_3773128239b3f0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1051a-5b18-7901-9af8-713dc2e126a5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
