@@ -1,0 +1,45 @@
+packages/builder-agent/tsconfig.build.json
+  s_175026e5255db9::t_5d184a9e87a17e 1-4,6-7,10-12
+  s_916304bd076d3f::t_dc909b64b7318f 5,8-9
+packages/builder-agent/vite.config.ts
+  s_916304bd076d3f::t_dc909b64b7318f 2,7-13
+  s_175026e5255db9::t_5d184a9e87a17e 1,3-6,14-16
+packages/builder-agent/package.json
+  s_916304bd076d3f::t_dc909b64b7318f 9
+packages/api-platform/vitest.config.ts
+  s_916304bd076d3f::t_4f6f8bf9f3e28e 12
+packages/builder-agent/src/index.ts
+  s_916304bd076d3f::t_dc909b64b7318f 1
+packages/api/vitest.config.ts
+  s_916304bd076d3f::t_4f6f8bf9f3e28e 12
+scripts/sync-licenses.mjs
+  s_916304bd076d3f::t_f4e7468ce46e94 16-17
+apps/apps-worker/src/supervisor/subscriptions.test.ts
+  s_916304bd076d3f::t_dc909b64b7318f 7
+packages/builder-agent/LICENSE.md
+  s_916304bd076d3f::t_a5da6e610aeec8 1-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e6b48bf5eb05106cbd0dc92253baf6c32706de84",
+  "prompts": {},
+  "sessions": {
+    "s_175026e5255db9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a109cb-64d2-7720-9d43-e2e2b5d487fb",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_916304bd076d3f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10b9d-33b8-7301-9239-e7add17c8e20",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
