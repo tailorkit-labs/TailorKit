@@ -135,6 +135,26 @@ describe("glob tool", () => {
     expect(result).toEqual({ paths: [], truncated: false, exitCode: 1, stderr: "" });
   });
 
+  it("caps sandbox stdout at 201 NUL-delimited paths even when ripgrep gets SIGPIPE", async () => {
+    for (let index = 0; index < 5000; index++) {
+      write(String(index).padStart(5, "0") + "-" + "x".repeat(100) + ".txt");
+    }
+    const { result, run } = await glob("*.txt");
+    const output = await run.mock.results[0]!.value;
+
+    expect(output.stdout.split("\0").filter(Boolean)).toHaveLength(201);
+    expect(result.paths).toHaveLength(200);
+    expect(result.truncated).toBe(true);
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toBe("");
+  });
+
+  it("preserves ripgrep failures through the output cap", async () => {
+    const { result } = await glob("[z-a]");
+    expect(result.exitCode).toBe(2);
+    expect(result.stderr).toContain("error");
+  });
+
   it("preserves search errors", async () => {
     const run = vi.fn().mockResolvedValue({ exitCode: 2, stdout: "", stderr: "Permission denied" });
     const result = await globTool.execute!(

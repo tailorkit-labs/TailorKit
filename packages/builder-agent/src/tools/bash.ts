@@ -10,7 +10,7 @@ export const bashTool = tool({
       .string()
       .optional()
       .describe("Relative to /workspace/app, or an absolute path. Defaults to /workspace/app."),
-    timeoutMs: z.number().positive().optional().default(30_000),
+    timeoutMs: z.number().positive().max(2_147_483_647).optional().default(30_000),
   }),
   outputSchema: commandResultSchema,
   execute: async ({ command, cwd, timeoutMs }, { experimental_sandbox, abortSignal }) => {

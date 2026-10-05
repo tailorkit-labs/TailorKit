@@ -6,7 +6,7 @@ export const readTool = tool({
   description: "Read a text file, optionally by line range. Returns null for a missing file.",
   inputSchema: z
     .object({
-      path: z.string().describe("Relative to /workspace/app, or an absolute path."),
+      path: z.string().min(1).describe("Relative to /workspace/app, or an absolute path."),
       startLine: z
         .number()
         .int()

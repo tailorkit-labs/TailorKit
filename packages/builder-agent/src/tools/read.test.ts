@@ -21,6 +21,10 @@ function options(sandbox?: SandboxSession, abortSignal?: AbortSignal) {
 }
 
 describe("read tool", () => {
+  it("rejects an empty file path", () => {
+    expect(schema.safeParse({ path: "" }).success).toBe(false);
+  });
+
   it.each([
     { startLine: 0 },
     { startLine: -1 },
@@ -59,10 +63,12 @@ describe("read tool", () => {
       const readTextFile = vi.fn().mockResolvedValue("text");
       const sandbox = { readTextFile } as unknown as SandboxSession;
 
-      await expect(readTool.execute!({ path }, options(sandbox))).resolves.toBe("text");
+      await expect(readTool.execute!(schema.parse({ path }), options(sandbox))).resolves.toBe(
+        "text",
+      );
       expect(readTextFile).toHaveBeenCalledWith({
         path: "/workspace/app/app.txt",
-        startLine: undefined,
+        startLine: 1,
         endLine: undefined,
         abortSignal: undefined,
       });
@@ -75,7 +81,7 @@ describe("read tool", () => {
     const abortSignal = new AbortController().signal;
 
     const result = await readTool.execute!(
-      { path: filePath, startLine: 2, endLine: 3 },
+      schema.parse({ path: filePath, startLine: 2, endLine: 3 }),
       options(sandbox, abortSignal),
     );
 
@@ -93,17 +99,19 @@ describe("read tool", () => {
     const readTextFile = vi.fn().mockResolvedValue(null);
     const sandbox = { readTextFile } as unknown as SandboxSession;
 
-    await expect(readTool.execute!({ path: filePath }, options(sandbox))).resolves.toBeNull();
+    await expect(
+      readTool.execute!(schema.parse({ path: filePath }), options(sandbox)),
+    ).resolves.toBeNull();
     expect(readTextFile).toHaveBeenCalledWith({
       path: filePath,
-      startLine: undefined,
+      startLine: 1,
       endLine: undefined,
       abortSignal: undefined,
     });
   });
 
   it("rejects when the sandbox is unavailable", async () => {
-    await expect(readTool.execute!({ path: filePath }, options())).rejects.toThrow(
+    await expect(readTool.execute!(schema.parse({ path: filePath }), options())).rejects.toThrow(
       "Sandbox not available",
     );
   });

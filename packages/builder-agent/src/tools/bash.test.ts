@@ -20,6 +20,12 @@ function execute(run: unknown, input = defaultInput, abortSignal?: AbortSignal) 
 }
 
 describe("bash tool", () => {
+  it("rejects timeouts beyond Node's timer limit", () => {
+    const schema = bashTool.inputSchema as ZodType;
+    expect(schema.safeParse({ command: "pwd", timeoutMs: 2_147_483_647 }).success).toBe(true);
+    expect(schema.safeParse({ command: "pwd", timeoutMs: 2_147_483_648 }).success).toBe(false);
+  });
+
   it("defaults to /workspace/app with a 30-second timeout", async () => {
     expect((bashTool.inputSchema as ZodType).parse({ command: "pwd" })).toEqual(defaultInput);
     const run = vi.fn().mockResolvedValue(result);

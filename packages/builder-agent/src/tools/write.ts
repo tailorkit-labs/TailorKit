@@ -5,7 +5,7 @@ import { ensureSandbox, fileChangeResultSchema, resolvePath } from "./utils";
 export const writeTool = tool({
   description: "Create or overwrite a text file, creating parent directories.",
   inputSchema: z.object({
-    path: z.string().describe("Relative to /workspace/app, or an absolute path."),
+    path: z.string().min(1).describe("Relative to /workspace/app, or an absolute path."),
     content: z.string(),
   }),
   outputSchema: fileChangeResultSchema,

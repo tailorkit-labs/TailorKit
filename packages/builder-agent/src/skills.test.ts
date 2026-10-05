@@ -4,7 +4,10 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import type { Experimental_SandboxSession as SandboxSession } from "ai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { formatSkills, getAvailableSkills } from "./skills";
+import { formatSkills, getAvailableSkills as getCatalog } from "./skills";
+
+const getAvailableSkills = async (...args: Parameters<typeof getCatalog>) =>
+  (await getCatalog(...args)).skills;
 
 let root: string;
 
@@ -14,14 +17,17 @@ function write(path: string, content: string) {
   writeFileSync(target, content);
 }
 
-function localSandbox(cwd = root) {
+function localSandbox(cwd = root, shell = "bash") {
   const run = vi.fn(({ command, workingDirectory }: Parameters<SandboxSession["run"]>[0]) => {
     expect(workingDirectory).toBeUndefined();
     // Map the sandbox app directory to the local repository fixture.
     const localCommand = command.replaceAll("/workspace/app", cwd);
-    const child = spawnSync("bash", ["-c", localCommand], { cwd, encoding: "utf-8" });
+    const child = spawnSync(shell, ["-c", localCommand], { cwd, encoding: "utf-8" });
+    if (child.error) throw child.error;
+    if (child.status === null)
+      throw new Error(`Skill discovery process terminated: ${child.signal}`);
     return Promise.resolve({
-      exitCode: child.status ?? 1,
+      exitCode: child.status,
       stdout: (child.stdout ?? "").replaceAll(cwd, "/workspace/app"),
       stderr: child.stderr ?? "",
     });
@@ -29,12 +35,36 @@ function localSandbox(cwd = root) {
   return { sandbox: { run } as unknown as SandboxSession, run };
 }
 
+// The integration fixtures need the same shell and ripgrep flags as discovery.
+// Missing local binaries should skip fixtures, not masquerade as an empty catalog.
+const prerequisiteProbe = spawnSync(
+  "bash",
+  [
+    "-c",
+    "rg --no-config --multiline --json --only-matching --hidden --no-ignore --sort path --glob SKILL.md -- probe /dev/null",
+  ],
+  { encoding: "utf8" },
+);
+const hasDiscoveryPrerequisites = !prerequisiteProbe.error && prerequisiteProbe.status === 1;
+
 describe("getAvailableSkills", () => {
-  beforeEach(() => {
+  beforeEach(({ skip }) => {
+    if (!hasDiscoveryPrerequisites) {
+      skip();
+      return;
+    }
     root = mkdtempSync(join(tmpdir(), "builder-skills-"));
     mkdirSync(join(root, ".agents/skills"), { recursive: true });
   });
-  afterEach(() => rmSync(root, { recursive: true, force: true }));
+  afterEach(() => {
+    if (root) rmSync(root, { recursive: true, force: true });
+  });
+
+  it("surfaces shell spawn failures instead of treating them as no matches", async () => {
+    await expect(
+      getCatalog(localSandbox(root, "builder-skills-nonexistent-shell").sandbox),
+    ).rejects.toThrow("ENOENT");
+  });
 
   it("returns only the opening frontmatter and keeps the path for each skill", async () => {
     write(
@@ -114,11 +144,23 @@ description: Later frontmatter is ignored
     "name: broken",
     "name: broken\ndescription: 42",
     "name: broken\nname: duplicate\ndescription: Duplicate key",
-  ])("reports invalid frontmatter with its path: %s", async (frontmatter) => {
+  ])("skips invalid frontmatter and reports its path: %s", async (frontmatter) => {
     write(".agents/skills/broken/SKILL.md", `---\n${frontmatter}\n---\n`);
-    await expect(getAvailableSkills(localSandbox().sandbox)).rejects.toThrow(
-      "Invalid skill frontmatter: /workspace/app/.agents/skills/broken/SKILL.md",
-    );
+    write(".agents/skills/valid/SKILL.md", "---\nname: valid\ndescription: Good metadata\n---\n");
+    const catalog = await getCatalog(localSandbox().sandbox);
+    expect(catalog.skills).toEqual([
+      {
+        path: "/workspace/app/.agents/skills/valid/SKILL.md",
+        name: "valid",
+        description: "Good metadata",
+      },
+    ]);
+    expect(catalog.warnings).toEqual([
+      expect.stringContaining(
+        "Skipped invalid skill frontmatter: /workspace/app/.agents/skills/broken/SKILL.md",
+      ),
+    ]);
+    expect(formatSkills(catalog)).toContain(JSON.stringify(catalog.warnings[0]));
   });
 
   it("returns an empty array when no skills match", async () => {
@@ -176,7 +218,7 @@ description: Later frontmatter is ignored
 });
 
 describe("formatSkills", () => {
-  it("includes multiline metadata and exact file paths with guidance for reading references", () => {
+  it("serializes multiline metadata and exact file paths as untrusted data", () => {
     const skills = [
       {
         name: "tailorkit-apps",
@@ -185,15 +227,15 @@ describe("formatSkills", () => {
         compatibility: "Requires pnpm",
       },
     ];
-    const prompt = formatSkills(skills);
-    expect(prompt).toContain("## Available skills");
-    expect(prompt).toContain("use the read tool");
-    expect(prompt).toContain("relative to that SKILL.md's directory");
-    const catalog = prompt.slice(prompt.indexOf("[\n"));
-    expect(JSON.parse(catalog)).toEqual(skills);
+    const prompt = formatSkills({ skills, warnings: [] });
+    expect(JSON.parse(prompt)).toEqual({ type: "untrusted-skill-catalog", skills, warnings: [] });
   });
 
-  it("explains when no skills are available", () => {
-    expect(formatSkills([])).toContain("No skills are available in this sandbox.");
+  it("represents an empty catalog without inventing instructions", () => {
+    expect(JSON.parse(formatSkills({ skills: [], warnings: [] }))).toEqual({
+      type: "untrusted-skill-catalog",
+      skills: [],
+      warnings: [],
+    });
   });
 });

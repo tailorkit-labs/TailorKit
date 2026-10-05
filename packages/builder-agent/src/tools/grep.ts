@@ -1,4 +1,5 @@
 import { tool } from "ai";
+import type { Experimental_SandboxProcess as SandboxProcess } from "ai";
 import { z } from "zod";
 import { appDirectory, ensureSandbox, quote, searchResultSchema } from "./utils";
 
@@ -21,6 +22,113 @@ const matchSchema = lineSchema.extend({
 });
 const outputSchema = searchResultSchema.extend({ matches: z.array(matchSchema) });
 
+const maxOutputBytes = 1_048_576;
+const maxStderrBytes = 65_536;
+
+// `rg --max-count` is per file. Stop the process after the first extra match,
+// allowing just enough trailing output to complete the selected matches' context.
+async function collectResults(process: SandboxProcess, limit: number, context: number) {
+  const lines: string[] = [];
+  let truncated = false;
+  let stopped = false;
+  let stoppedExitCode = 0;
+  const stop = async (exitCode = 0) => {
+    stoppedExitCode = Math.max(stoppedExitCode, exitCode);
+    truncated = true;
+    if (stopped) return;
+    stopped = true;
+    await process.kill();
+  };
+
+  const stdout = async () => {
+    const reader = process.stdout.getReader();
+    const decoder = new TextDecoder();
+    let pending = "";
+    let bytes = 0;
+    let count = 0;
+    let lastMatch: { path: string; line: number } | undefined;
+    try {
+      while (!stopped) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const remaining = maxOutputBytes - bytes;
+        bytes += value.byteLength;
+        pending += decoder.decode(value.subarray(0, remaining), { stream: true });
+        let newline: number;
+        while (!stopped && (newline = pending.indexOf("\n")) >= 0) {
+          const line = pending.slice(0, newline);
+          pending = pending.slice(newline + 1);
+          if (!line) continue;
+          const event = JSON.parse(line) as RipgrepEvent;
+          if (event.type === "end" && count > limit) {
+            await stop();
+            break;
+          }
+          if (event.type !== "match" && event.type !== "context") continue;
+          const path = decodeText(event.data.path);
+          const number = event.data.line_number;
+          if (event.type === "match" && ++count <= limit) {
+            lastMatch = { path, line: number };
+          }
+          if (count <= limit || (path === lastMatch?.path && number <= lastMatch.line + context)) {
+            lines.push(line);
+          }
+          if (count > limit && (path !== lastMatch?.path || number >= lastMatch.line + context)) {
+            await stop();
+          }
+        }
+        // Bound even a single huge JSON event, before buffering/parsing it.
+        if (bytes > maxOutputBytes) await stop();
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  };
+
+  const stderr = async () => {
+    const reader = process.stderr.getReader();
+    const decoder = new TextDecoder();
+    let text = "";
+    let bytes = 0;
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const remaining = Math.max(0, maxStderrBytes - bytes);
+        bytes += value.byteLength;
+        text += decoder.decode(value.subarray(0, remaining), { stream: true });
+        if (bytes > maxStderrBytes) {
+          await stop(2);
+          break;
+        }
+      }
+      return text + (bytes > maxStderrBytes ? "" : decoder.decode());
+    } finally {
+      reader.releaseLock();
+    }
+  };
+
+  try {
+    const [, error] = await Promise.all([stdout(), stderr()]);
+    const { exitCode } = await process.wait();
+    const parsed = parseResults(lines.join("\n"), limit, context);
+    return {
+      ...parsed,
+      truncated: truncated || parsed.truncated,
+      // Suppress only normal rg statuses and signals caused by our own kill.
+      // Genuine command failures must still survive match/output truncation.
+      exitCode:
+        stopped && [0, 1, 137, 141, 143].includes(exitCode)
+          ? Math.max(stoppedExitCode, error ? 2 : 0)
+          : exitCode,
+      stderr: error,
+    };
+  } catch (error) {
+    await process.kill();
+    throw error;
+  }
+}
+
 function parseResults(stdout: string, limit: number, context: number) {
   const matches: z.infer<typeof matchSchema>[] = [];
   const files = new Map<
@@ -34,8 +142,17 @@ function parseResults(stdout: string, limit: number, context: number) {
     const event = JSON.parse(json) as RipgrepEvent;
     if (event.type !== "match" && event.type !== "context") continue;
 
+    if (event.type === "match" && matches.length === limit) {
+      truncated = true;
+      if (context === 0) break;
+    }
     const path = decodeText(event.data.path).replace(/^\.\//, "");
     const line = event.data.line_number;
+    // After the extra match, only consume trailing context for selected results.
+    if (truncated) {
+      const lastMatch = matches[matches.length - 1]!;
+      if (path !== lastMatch.path || line > lastMatch.line + context) break;
+    }
     const text = decodeText(event.data.lines).replace(/\r?\n$/, "");
     if (context > 0) {
       let file = files.get(path);
@@ -49,7 +166,6 @@ function parseResults(stdout: string, limit: number, context: number) {
     }
     if (event.type === "match") {
       if (matches.length < limit) matches.push({ path, line, text });
-      else truncated = true;
     }
   }
 
@@ -96,9 +212,10 @@ export const grepTool = tool({
       .number()
       .int()
       .nonnegative()
+      .max(20)
       .optional()
       .default(0)
-      .describe("Lines before and after each match."),
+      .describe("Lines before and after each match, at most 20."),
     limit: z
       .number()
       .int()
@@ -135,16 +252,11 @@ export const grepTool = tool({
     // A bare '-' is ripgrep's stdin operand, even after '--'.
     args.push("--", input.pattern, input.path === "-" ? "./-" : input.path);
 
-    const result = await experimental_sandbox.run({
+    const process = await experimental_sandbox.spawn({
       command: args.map(quote).join(" "),
       workingDirectory: appDirectory,
       abortSignal,
     });
-    const parsed = parseResults(result.stdout, input.limit, input.context);
-    return {
-      ...parsed,
-      exitCode: result.exitCode,
-      stderr: result.stderr,
-    };
+    return collectResults(process, input.limit, input.context);
   },
 });

@@ -1,4 +1,4 @@
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -9,6 +9,18 @@ import { lsTool } from "./ls";
 
 const schema = lsTool.inputSchema as ZodType<{ path: string; limit: number }>;
 
+function findCompatibleLs() {
+  const candidates = process.platform === "darwin" ? ["gls", "ls"] : ["ls", "gls"];
+  for (const candidate of candidates) {
+    const lookup = spawnSync("which", [candidate], { encoding: "utf8" });
+    if (lookup.status !== 0) continue;
+    const path = lookup.stdout.trim();
+    const probe = spawnSync(path, ["-Ad", "--zero", "--", "."], { encoding: "utf8" });
+    if (probe.status === 0 && probe.stdout === ".\0") return path;
+  }
+  return undefined;
+}
+
 describe("ls tool", () => {
   it("defaults to the app directory and requires a positive integer limit", () => {
     expect(schema.parse({})).toEqual({ path: ".", limit: 500 });
@@ -17,14 +29,16 @@ describe("ls tool", () => {
     expect(schema.safeParse({ limit: 501 }).success).toBe(true);
   });
 
-  it("returns structured entries, accurate truncation, and errors", async () => {
+  it("returns structured entries, accurate truncation, and errors", async ({ skip }) => {
+    const nativeLs = findCompatibleLs();
+    if (!nativeLs) {
+      skip();
+      return;
+    }
     const root = mkdtempSync(join(tmpdir(), "builder-ls-"));
     const commands = mkdtempSync(join(tmpdir(), "builder-ls-commands-"));
     try {
       // Use the sandbox's GNU ls behavior on macOS too, with no Node on PATH.
-      const nativeLs = execFileSync("which", [process.platform === "darwin" ? "gls" : "ls"], {
-        encoding: "utf8",
-      }).trim();
       symlinkSync(nativeLs, join(commands, "ls"));
       mkdirSync(join(root, "nested"));
       writeFileSync(join(root, ".hidden"), "");

@@ -28,7 +28,16 @@ export const globTool = tool({
       args.push("--glob", (exclude ? "!/" : "/") + relative);
     }
     const result = await experimental_sandbox.run({
-      command: args.map(quote).join(" "),
+      command: [
+        "set -o pipefail",
+        // Cap NUL-delimited paths before the sandbox buffers stdout.
+        `${args.map(quote).join(" ")} | (count=0; while IFS= read -r -d '' path; do printf '%s\\0' "$path" || exit $?; count=$((count + 1)); if [ "$count" -ge ${limit + 1} ]; then break; fi; done; exit 0)`,
+        'statuses=("${PIPESTATUS[@]}")',
+        // The cap can close the pipe while ripgrep is still writing (SIGPIPE).
+        'if [ "${statuses[1]}" -ne 0 ]; then exit "${statuses[1]}"; fi',
+        'if [ "${statuses[0]}" -eq 141 ]; then exit 0; fi',
+        'exit "${statuses[0]}"',
+      ].join("\n"),
       workingDirectory: resolvePath(path),
       abortSignal,
     });

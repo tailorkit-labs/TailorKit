@@ -13,6 +13,8 @@ const skillMetadataSchema = z.object({
 
 export type AvailableSkill = z.infer<typeof skillMetadataSchema> & { path: string };
 
+export type SkillCatalog = { skills: AvailableSkill[]; warnings: string[] };
+
 // Anchor to the start of the file and stop at the first closing delimiter.
 const skillFrontmatterPattern = String.raw`\A(?:\x{FEFF})?---[ \t]*\r?\n(?:[^\r\n]*\r?\n)*?---[ \t]*(?:\r?\n|\z)`;
 const ripgrepTextSchema = z.union([
@@ -31,8 +33,7 @@ const skillsDirectory = `${appDirectory}/.agents/skills`;
 export async function getAvailableSkills(
   sandbox: SandboxSession,
   abortSignal?: AbortSignal,
-): Promise<AvailableSkill[]> {
-  "use step";
+): Promise<SkillCatalog> {
   const args = [
     "rg",
     "--no-config",
@@ -56,6 +57,7 @@ export async function getAvailableSkills(
   }
 
   const skills: AvailableSkill[] = [];
+  const warnings: string[] = [];
   for (const line of result.stdout.split("\n")) {
     if (!line) {
       continue;
@@ -73,24 +75,13 @@ export async function getAvailableSkills(
       skills.push({ path: data.path, ...metadata });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new FatalError(`Invalid skill frontmatter: ${data.path}: ${message}`);
+      warnings.push(`Skipped invalid skill frontmatter: ${data.path}: ${message}`);
     }
   }
-  return skills;
+  return { skills, warnings };
 }
 
-/** Describe the available skills without loading their full instructions. */
-export function formatSkills(skills: AvailableSkill[]): string {
-  if (skills.length === 0) {
-    return "## Available skills\n\nNo skills are available in this sandbox.";
-  }
-
-  return [
-    "## Available skills",
-    "Use the names and descriptions in this catalog to select skills relevant to the task. " +
-      "Before applying a skill, use the read tool to read its SKILL.md at the listed absolute path. " +
-      "Resolve its referenced files relative to that SKILL.md's directory. " +
-      "The catalog contains metadata; the skill's full instructions are in its file.",
-    JSON.stringify(skills, null, 2),
-  ].join("\n\n");
+/** Serialize workspace-authored metadata as data, without adding instructions. */
+export function formatSkills(catalog: SkillCatalog): string {
+  return JSON.stringify({ type: "untrusted-skill-catalog", ...catalog }, null, 2);
 }

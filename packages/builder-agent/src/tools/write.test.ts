@@ -1,5 +1,6 @@
 import type { Experimental_SandboxSession as SandboxSession } from "ai";
 import { describe, expect, it, vi } from "vite-plus/test";
+import type { ZodType } from "zod";
 import { writeTool } from "./write";
 
 const filePath = "/workspace/nested/app.txt";
@@ -15,6 +16,12 @@ function options(sandbox?: SandboxSession, abortSignal?: AbortSignal) {
 }
 
 describe("write tool", () => {
+  it("rejects an empty file path", () => {
+    expect(
+      (writeTool.inputSchema as ZodType).safeParse({ path: "", content: "text" }).success,
+    ).toBe(false);
+  });
+
   it.each(["src/new.txt", "./src/new.txt"])("resolves %s from /workspace/app", async (path) => {
     const writeTextFile = vi.fn().mockResolvedValue(undefined);
     const sandbox = { writeTextFile } as unknown as SandboxSession;

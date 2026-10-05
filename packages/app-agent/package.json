@@ -14,7 +14,7 @@
     "test": "vp test run"
   },
   "dependencies": {
-    "ai": "^7.0.127",
+    "ai": "catalog:",
     "eve": "^0.70.0",
     "zod": "catalog:"
   },
