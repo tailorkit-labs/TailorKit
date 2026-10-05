@@ -13,6 +13,8 @@ function findPackageManifests(directory) {
       entry.name === ".git" ||
       entry.name === "node_modules" ||
       entry.name === ".turbo" ||
+      entry.name === ".next" ||
+      entry.name === ".output" ||
       entry.name === "dist" ||
       entry.name === "build"
     ) {
