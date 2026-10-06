@@ -1,5 +1,12 @@
 # @tailorkit/app
 
+## 0.1.0-beta.18
+
+### Patch Changes
+
+- fc9538d: Allow the agent command to search existing apps or create a new app when appId is
+  omitted, then save the chosen app ID in the TailorKit config for future launches.
+
 ## 0.1.0-beta.17
 
 ### Patch Changes

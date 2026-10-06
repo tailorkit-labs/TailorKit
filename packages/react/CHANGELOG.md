@@ -1,5 +1,21 @@
 # @tailorkit/react
 
+## 0.1.0-beta.18
+
+### Minor Changes
+
+- 731e066: Rename host `contexts` declarations to `views` to match slot view references. Replace the `contexts` configuration key and schema property with `views`; each path still maps directly to its data schema. View selection, context composition, and the serialized schema format are unchanged.
+
+### Patch Changes
+
+- Updated dependencies [fc9538d]
+- Updated dependencies [6f969e3]
+- Updated dependencies [731e066]
+  - @tailorkit/app@0.1.0-beta.18
+  - @tailorkit/core@0.1.0-beta.18
+  - @tailorkit/client-platform@0.1.0-beta.18
+  - @tailorkit/sandbox@0.1.0-beta.18
+
 ## 0.1.0-beta.17
 
 ### Patch Changes
