@@ -12,6 +12,7 @@ import { loadTailorKitConfig } from "@tailorkit/app/config/loader";
 import { createTailorKitClient } from "@tailorkit/core/server";
 import type { z } from "zod";
 import { getDeployToken, NotLoggedInError, runWhoami } from "./auth";
+import { readAppName, writeAppIdToConfig } from "./app-link";
 
 export interface TypecheckFailure {
   command: string;
@@ -124,84 +125,6 @@ const readUploadManifest = async (
 };
 
 const sha256Hex = (content: Buffer): string => createHash("sha256").update(content).digest("hex");
-
-const readAppName = async (root: string): Promise<string> => {
-  try {
-    const packageJson = JSON.parse(await readFile(path.join(root, "package.json"), "utf-8")) as {
-      name?: unknown;
-    };
-
-    if (typeof packageJson.name === "string" && packageJson.name.trim()) {
-      return packageJson.name.trim();
-    }
-  } catch {
-    // Fall back to the directory name when package metadata is unavailable.
-  }
-
-  return path.basename(root);
-};
-
-const writeAppIdToConfig = async (configPath: string, appId: string): Promise<void> => {
-  const source = await readFile(configPath, "utf-8");
-  const appIdLine = `  appId: ${JSON.stringify(appId)},`;
-
-  if (/^\s*appId\s*:/mu.test(source)) {
-    await writeFile(
-      configPath,
-      source.replace(/^(\s*)appId\s*:\s*(['"]).*?\2\s*,?/mu, `$1appId: ${JSON.stringify(appId)},`),
-      "utf-8",
-    );
-    return;
-  }
-
-  const exportDefaultObject = /(export\s+default\s+\{)(\r?\n)/u;
-  if (exportDefaultObject.test(source)) {
-    await writeFile(configPath, source.replace(exportDefaultObject, `$1$2${appIdLine}$2`), "utf-8");
-    return;
-  }
-
-  const defineConfigObject =
-    /(export\s+default\s+(?:defineTailorKitConfig|defineConfig)\(\s*\{)(\r?\n)/u;
-  if (defineConfigObject.test(source)) {
-    await writeFile(configPath, source.replace(defineConfigObject, `$1$2${appIdLine}$2`), "utf-8");
-    return;
-  }
-
-  const { parseSync } = await import("vite");
-  const { program } = parseSync(configPath, source);
-  const defaultExport = program.body.find((node) => node.type === "ExportDefaultDeclaration");
-  if (defaultExport?.declaration.type === "Identifier") {
-    const exportedVariable = defaultExport.declaration.name;
-    const declaration = program.body
-      .filter((node) => node.type === "VariableDeclaration")
-      .flatMap((node) => node.declarations)
-      .find((node) => node.id.type === "Identifier" && node.id.name === exportedVariable);
-    let initializer = declaration?.init;
-    while (
-      initializer?.type === "TSSatisfiesExpression" ||
-      initializer?.type === "TSAsExpression"
-    ) {
-      initializer = initializer.expression;
-    }
-    if (initializer?.type === "ObjectExpression") {
-      const objectSource = source.slice(initializer.start);
-      const objectOpening = /^(\{)(\r?\n)/u;
-      if (objectOpening.test(objectSource)) {
-        await writeFile(
-          configPath,
-          source.slice(0, initializer.start) +
-            objectSource.replace(objectOpening, `$1$2${appIdLine}$2`),
-          "utf-8",
-        );
-        return;
-      }
-    }
-  }
-
-  throw new Error(
-    `Could not write appId to ${configPath}. Add appId: ${JSON.stringify(appId)} manually.`,
-  );
-};
 
 const uploadAsset = async (
   asset: DeploymentAssetUpload | DeploymentLogoUpload,

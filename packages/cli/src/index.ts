@@ -342,7 +342,7 @@ cli
 
 cli
   .command("agent", "Chat with the TailorKit app agent")
-  .option("--app <id>", "App ID (defaults to appId in tailorkit.config.ts)")
+  .option("--app <id>", "App ID (uses config appId, or prompts to select or create an app)")
   .option("--config <path>", "Path to tailorkit config")
   .action(async (options: Record<string, unknown>) => {
     try {

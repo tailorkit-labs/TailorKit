@@ -1,5 +1,7 @@
 import { loadTailorKitConfig } from "@tailorkit/app/config/loader";
-import { createTailorKitClient } from "@tailorkit/core/server";
+import { createTailorKitClient, type TailorKitRouterClient } from "@tailorkit/core/server";
+import { autocomplete, cancel, isCancel, log, spinner, text } from "@clack/prompts";
+import { readAppName, writeAppIdToConfig } from "./app-link";
 import { getDeployToken, NotLoggedInError, resolveHostUrl, runWhoami } from "./auth";
 
 interface AgentOptions {
@@ -9,17 +11,72 @@ interface AgentOptions {
   onLoginRequired?: () => Promise<unknown>;
 }
 
+async function chooseApp(client: TailorKitRouterClient, root: string): Promise<string | undefined> {
+  const loading = spinner();
+  const apps: Awaited<ReturnType<TailorKitRouterClient["apps"]["list"]>>["items"] = [];
+  loading.start("Finding apps");
+  try {
+    let page = 1;
+    let hasMore = true;
+    while (hasMore) {
+      const result = await client.apps.list({ page, pageSize: 100 });
+      apps.push(...result.items);
+      hasMore = result.pagination.hasMore;
+      page += 1;
+    }
+    loading.stop(apps.length ? "Found apps." : "No apps found.");
+  } catch (error) {
+    loading.stop("Unable to list apps.");
+    throw error;
+  }
+
+  const selection = await autocomplete<string | null>({
+    message: "Select an app or create a new one",
+    placeholder: "Search by name or app ID",
+    options: [
+      ...apps.map((app) => ({ value: app.id, label: app.name, hint: app.publicId })),
+      { value: null, label: "Create a new app" },
+    ],
+    filter: (search, option) =>
+      option.value === null ||
+      [option.label, option.hint, option.value].some((value) =>
+        value?.toLowerCase().includes(search.toLowerCase()),
+      ),
+  });
+  if (isCancel(selection)) {
+    cancel("Agent cancelled.");
+    return;
+  }
+  if (selection !== null) return selection;
+
+  const defaultName = await readAppName(root);
+  const name = await text({
+    message: "App name",
+    defaultValue: defaultName,
+    placeholder: defaultName,
+    validate: (value) => (value?.trim() ? undefined : "Enter an app name."),
+  });
+  if (isCancel(name)) {
+    cancel("Agent cancelled.");
+    return;
+  }
+  loading.start("Creating app");
+  try {
+    const app = await client.apps.create({ name: name.trim(), description: null });
+    loading.stop("Created app.");
+    return app.id;
+  } catch (error) {
+    loading.stop("Unable to create app.");
+    throw error;
+  }
+}
+
 export async function runAgentCommand(options: AgentOptions) {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
     throw new Error("tailorkit agent requires an interactive terminal.");
   }
   const loaded = await loadTailorKitConfig(options.configPath, options.cwd);
-  const appId = options.appId ?? loaded.config.appId;
-  if (!appId) {
-    throw new Error(
-      "Missing appId. Set it in tailorkit.config.ts or pass --app <id> for an existing app.",
-    );
-  }
+  let appId = options.appId ?? loaded.config.appId;
   const hostUrl = await resolveHostUrl(options);
   try {
     await runWhoami(options);
@@ -34,6 +91,12 @@ export async function runAgentCommand(options: AgentOptions) {
     url: hostUrl,
     headers: { authorization: `Bearer ${auth.deployToken}` },
   });
+  if (!appId) {
+    appId = await chooseApp(client, loaded.root);
+    if (!appId) return;
+    await writeAppIdToConfig(loaded.filepath, appId);
+    log.info(`Saved appId ${appId} to ${loaded.filepath}.`);
+  }
   const { openAgentTui } = await import("./agent-tui");
   await openAgentTui({ client, hostUrl, appId });
 }
