@@ -60,7 +60,6 @@
     "@tailorkit/kv": "workspace:*",
     "@tailorkit/observability": "workspace:*",
     "@tailorkit/storage": "workspace:*",
-    "@vercel/sandbox": "3.5.1",
     "ai": "catalog:",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",

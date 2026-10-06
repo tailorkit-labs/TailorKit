@@ -53,6 +53,20 @@ async function stopSandbox(sandboxId: string) {
   }
 }
 
+async function closeAgentStream(failed: boolean) {
+  "use step";
+  const writable = getWritable<ModelCallStreamPart>();
+  if (failed) {
+    const writer = writable.getWriter();
+    try {
+      await writer.write({ type: "error", error: "The builder agent failed." });
+    } finally {
+      writer.releaseLock();
+    }
+  }
+  await writable.close();
+}
+
 const sandboxContextSchema = z.object({ sandboxId: z.string().min(1) });
 
 async function toolSandbox(options: ToolExecutionOptions<{ sandboxId: string }>) {
@@ -153,10 +167,12 @@ export async function appAgent({
 }) {
   "use workflow";
 
-  const { sandboxId, catalog } = await prepareSandbox(`app-${appId}`);
-  const context = { sandboxId };
-
+  let sandboxId: string | undefined;
+  let failed = true;
   try {
+    const prepared = await prepareSandbox(`app-${appId}`);
+    sandboxId = prepared.sandboxId;
+    const context = { sandboxId };
     const agent = new WorkflowAgent({
       model,
       instructions: instructions.trim(),
@@ -176,16 +192,19 @@ export async function appAgent({
       // Workspace-authored metadata belongs in a lower-priority data message,
       // never in the authoritative instructions.
       messages: [
-        { role: "user", content: formatSkills(catalog) },
+        { role: "user", content: formatSkills(prepared.catalog) },
         ...(await convertToModelMessages(messages)),
       ],
       writable: getWritable<ModelCallStreamPart>(),
+      preventClose: true,
     });
+    failed = false;
     // WorkflowAgent returns the input history too; omit the temporary catalog
     // so follow-ups receive current discovery data without accumulating copies.
     return { messages: result.messages.slice(1), sandboxId };
   } finally {
-    // Also release compute on stream errors and cooperative aborts.
-    await stopSandbox(sandboxId);
+    if (sandboxId) await stopSandbox(sandboxId);
+    // End the response after cleanup, including failures before the model starts.
+    await closeAgentStream(failed);
   }
 }

@@ -7,9 +7,6 @@ import { canonicalizeScope } from "../scope";
 const mocks = vi.hoisted(() => ({
   token: vi.fn(),
   start: vi.fn(),
-  cancel: vi.fn(),
-  sandbox: vi.fn(),
-  deleteSandbox: vi.fn(),
 }));
 vi.mock("@tailorkit/db", () => ({ db: { query: { cliToken: { findFirst: mocks.token } } } }));
 vi.mock("@tailorkit/api-utils/dev-delay", () => ({
@@ -24,7 +21,6 @@ vi.mock("@tailorkit/api-utils/rate-limiting", () => ({
 }));
 vi.mock("@tailorkit/builder-agent", () => ({ appAgent: vi.fn() }));
 vi.mock("workflow/api", () => ({ start: mocks.start }));
-vi.mock("@vercel/sandbox", () => ({ Sandbox: { get: mocks.sandbox } }));
 
 const { agentRouter } = await import("./agent");
 const context = { project: { id: "project" }, organization: { id: "org" } } as Context;
@@ -40,8 +36,6 @@ const input = {
 function run(parts: unknown[]) {
   return {
     runId: "run-1",
-    cancel: mocks.cancel,
-    returnValue: Promise.resolve({}),
     readable: new ReadableStream({
       start(controller) {
         for (const part of parts) controller.enqueue(part);
@@ -64,7 +58,6 @@ beforeEach(() => {
     scopeKey: scope.scopeKey,
     expiresAt: new Date(Date.now() + 3_600_000),
   });
-  mocks.sandbox.mockResolvedValue({ delete: mocks.deleteSandbox });
   mocks.start.mockImplementation(async () =>
     run([
       { type: "model-call-start" },
@@ -79,7 +72,7 @@ beforeEach(() => {
 describe("platform builder chat", () => {
   it("streams SDK chunks and starts each turn with the client's full UI history", async () => {
     const events = await consume();
-    expect(events).toContainEqual({ type: "start", messageId: "run-1" });
+    expect(events).toContainEqual({ type: "start", messageId: expect.any(String) });
     expect(events).toContainEqual({ type: "text-delta", id: "text-1", delta: "Hello" });
     expect(events.at(-1)).toEqual({ type: "finish" });
     const first = mocks.start.mock.lastCall![1][0];
@@ -114,8 +107,6 @@ describe("platform builder chat", () => {
       appId: first.appId,
       messages: followup,
     });
-    expect(mocks.cancel).not.toHaveBeenCalled();
-    expect(mocks.deleteSandbox).not.toHaveBeenCalled();
   });
 
   it("uses SDK resets without losing completed tool parts", async () => {
@@ -213,37 +204,34 @@ describe("platform builder chat", () => {
     expect(mocks.start).not.toHaveBeenCalled();
   });
 
-  it("ends setup failures even when the stream never opens", async () => {
-    mocks.start.mockResolvedValueOnce({
-      ...run([]),
-      get returnValue() {
-        return Promise.reject(new Error("Private setup details"));
-      },
-      readable: new ReadableStream(),
-    });
-    expect((await consume()).at(-1)).toEqual({
+  it("passes workflow error parts through the standard SDK adapter", async () => {
+    mocks.start.mockResolvedValueOnce(run([{ type: "error", error: "The builder agent failed." }]));
+    expect(await consume()).toContainEqual({
       type: "error",
-      errorText: "The builder agent failed. Start a new session.",
+      errorText: "The builder agent failed.",
     });
-    expect(mocks.cancel).toHaveBeenCalledOnce();
-    expect(mocks.deleteSandbox).toHaveBeenCalledOnce();
   });
 
-  it("cancels workflow and sandbox when the stream disconnects", async () => {
+  it("disconnects the response without cancelling its durable workflow", async () => {
+    const cancelRun = vi.fn();
+    const cancelStream = vi.fn();
     mocks.start.mockResolvedValueOnce({
       ...run([]),
+      cancel: cancelRun,
       readable: new ReadableStream({
         start(controller) {
           controller.enqueue({ type: "model-call-start" });
         },
+        cancel: cancelStream,
       }),
     });
     const controller = new AbortController();
     const stream = await call(agentRouter.chat, input, { context, signal: controller.signal });
     expect(await stream.next()).toMatchObject({ value: { type: "start" } });
     controller.abort();
-    await stream.next().catch(() => {});
-    expect(mocks.cancel).toHaveBeenCalledOnce();
-    expect(mocks.deleteSandbox).toHaveBeenCalledOnce();
+    await expect(stream.next()).rejects.toMatchObject({ name: "AbortError" });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(cancelStream).toHaveBeenCalledOnce();
+    expect(cancelRun).not.toHaveBeenCalled();
   });
 });

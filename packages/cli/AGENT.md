@@ -41,8 +41,10 @@ messages to model messages before running the builder.
 A named sandbox resumes the same workspace on follow-up turns. Compute stops
 after each completed turn, with a ten-minute timeout bounding active work.
 Only the latest snapshot is kept, and snapshots expire after one day (Vercel's
-minimum). An interrupted stream cancels its workflow and deletes its sandbox. Idle exit
-simply discards the CLI conversation; its stopped workspace snapshot expires.
+minimum). Exiting the CLI disconnects its response and discards local history.
+The durable workflow continues independently and owns sandbox cleanup, including
+stopping compute after errors. Its output stream closes after cleanup; setup
+failures emit a brief error before closing. Stopped workspace snapshots expire.
 Workflow execution logs follow the configured backend's retention policy.
 
 Verification:

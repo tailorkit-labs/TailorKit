@@ -13,6 +13,9 @@ const mocks = vi.hoisted(() => ({
   run: vi.fn(),
   readTextFile: vi.fn(),
   stream: vi.fn(),
+  writeChunk: vi.fn(),
+  releaseWriter: vi.fn(),
+  closeStream: vi.fn(),
 }));
 
 vi.mock("@ai-sdk/workflow", () => ({
@@ -31,7 +34,10 @@ vi.mock("@ai-sdk/sandbox-vercel", () => ({
 }));
 vi.mock("workflow", () => ({
   FatalError: class extends Error {},
-  getWritable: () => ({}),
+  getWritable: () => ({
+    getWriter: () => ({ write: mocks.writeChunk, releaseLock: mocks.releaseWriter }),
+    close: mocks.closeStream,
+  }),
 }));
 
 describe("agent skill instructions", () => {
@@ -128,6 +134,12 @@ describe("agent skill instructions", () => {
     expect(mocks.get).toHaveBeenCalledWith({ name: "test-sandbox" });
     expect(mocks.stop).toHaveBeenCalledOnce();
     expect(mocks.delete).not.toHaveBeenCalled();
+    expect(mocks.stream.mock.lastCall?.[0].preventClose).toBe(true);
+    expect(mocks.closeStream).toHaveBeenCalledOnce();
+    expect(mocks.closeStream.mock.invocationCallOrder[0]).toBeGreaterThan(
+      mocks.stop.mock.invocationCallOrder[0]!,
+    );
+    expect(mocks.writeChunk).not.toHaveBeenCalled();
   });
   it.each(["get", "stop"] as const)(
     "preserves completed results when sandbox %s fails",
@@ -156,6 +168,25 @@ describe("agent skill instructions", () => {
     ).rejects.toThrow("Skill discovery failed");
     expect(mocks.stop).toHaveBeenCalledOnce();
     expect(mocks.delete).not.toHaveBeenCalled();
+    expect(mocks.stream).not.toHaveBeenCalled();
+    expect(mocks.writeChunk).toHaveBeenCalledWith({
+      type: "error",
+      error: "The builder agent failed.",
+    });
+    expect(mocks.closeStream).toHaveBeenCalledOnce();
+  });
+
+  it("closes the response even when sandbox provisioning fails", async () => {
+    mocks.getOrCreate.mockRejectedValueOnce(new Error("Private sandbox setup failure"));
+    await expect(
+      appAgent({ appId: "test-app", messages: [], model: "test-model" }),
+    ).rejects.toThrow("Private sandbox setup failure");
+    expect(mocks.writeChunk).toHaveBeenCalledWith({
+      type: "error",
+      error: "The builder agent failed.",
+    });
+    expect(mocks.releaseWriter).toHaveBeenCalledOnce();
+    expect(mocks.closeStream).toHaveBeenCalledOnce();
     expect(mocks.stream).not.toHaveBeenCalled();
   });
 

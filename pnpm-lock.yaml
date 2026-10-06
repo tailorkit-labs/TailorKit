@@ -1064,9 +1064,6 @@ importers:
       '@tailorkit/storage':
         specifier: workspace:*
         version: link:../storage
-      '@vercel/sandbox':
-        specifier: 3.5.1
-        version: 3.5.1
       ai:
         specifier: 'catalog:'
         version: 7.0.127(zod@4.6.5)
