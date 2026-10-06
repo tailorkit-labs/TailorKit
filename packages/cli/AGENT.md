@@ -18,6 +18,13 @@ verifies the same token, binds the session to that project and token, and runs
 the BUSL-licensed `@tailorkit/builder-agent` in a session-specific sandbox.
 Only public transport types and the generated API client ship with the CLI.
 
+Streaming uses the [oRPC AI SDK integration](https://orpc.dev/docs/integrations/ai-sdk):
+Workflow converts model parts to standard `UIMessageChunk` values, and oRPC carries
+the chunks through the platform and host. The TUI uses
+`asyncIteratorToUnproxiedDataStream` and `readUIMessageStream` to assemble message
+parts, then displays just their text and tool names. SDK validation checks the
+chunks; the OpenAPI stream describes their extensible SDK format.
+
 The platform needs its existing database, `AUTH_SECRET`, and KV configuration,
 plus AI Gateway credentials (`AI_GATEWAY_API_KEY` or Vercel OIDC) and Vercel
 Sandbox credentials. `BUILDER_AGENT_MODEL` optionally overrides the default

@@ -70,6 +70,7 @@
     "@orpc/openapi": "catalog:",
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
+    "ai": "catalog:",
     "arktype": "^2.2.7",
     "tsup": "^8.5.1",
     "tsx": "catalog:",

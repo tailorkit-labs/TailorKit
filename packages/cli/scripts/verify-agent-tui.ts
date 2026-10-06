@@ -15,16 +15,24 @@ const client = {
   agent: {
     chat: async function* () {
       calls += 1;
-      yield { type: "step" };
-      yield { type: "text", delta: "Building " };
-      yield { type: "tool", name: "write", callId: "one" };
+      yield { type: "start", messageId: "answer" };
+      yield { type: "start-step" };
+      yield { type: "text-start", id: "intro" };
+      yield { type: "text-delta", id: "intro", delta: "Building " };
+      yield { type: "text-end", id: "intro" };
+      yield { type: "tool-input-available", toolName: "write", toolCallId: "one", input: {} };
       await pending;
-      // Workflow commits tool results before resetting the next model attempt.
-      yield { type: "step" };
-      yield { type: "reset" };
-      yield { type: "step" };
-      yield { type: "text", delta: "your app." };
-      yield { type: "done" };
+      yield { type: "tool-output-available", toolCallId: "one", output: { success: true } };
+      yield { type: "finish-step" };
+      yield { type: "start-step" };
+      yield { type: "text-start", id: "retry" };
+      yield { type: "text-delta", id: "retry", delta: "discard me" };
+      yield { type: "reset-step" };
+      yield { type: "text-start", id: "answer" };
+      yield { type: "text-delta", id: "answer", delta: "your app." };
+      yield { type: "text-end", id: "answer" };
+      yield { type: "finish-step" };
+      yield { type: "finish" };
     },
   },
 } as unknown as Pick<TailorKitRouterClient, "agent">;
@@ -49,6 +57,7 @@ try {
   const frame = ui.captureCharFrame();
   assert.match(frame, /You: Create a notes app/u);
   assert.match(frame, /Enter to send/u);
+  assert.doesNotMatch(frame, /discard me/u);
   ui.resize(60, 18);
   await ui.flush();
   assert.match(ui.captureCharFrame(), /Building your app\./u);

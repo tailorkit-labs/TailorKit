@@ -8,7 +8,8 @@ import {
   type CliRenderer,
 } from "@opentui/core";
 import type { TailorKitRouterClient } from "@tailorkit/core/server";
-import type { AgentEvent } from "@tailorkit/client-platform/agent";
+import { asyncIteratorToUnproxiedDataStream } from "@orpc/client";
+import { getToolName, isToolUIPart, readUIMessageStream } from "ai";
 
 interface AgentTuiOptions {
   client: Pick<TailorKitRouterClient, "agent">;
@@ -101,62 +102,33 @@ export function mountAgentTui(renderer: CliRenderer, options: AgentTuiOptions, o
       flexShrink: 0,
     });
     transcript.add(response);
-    let text = "";
-    let stepText = "";
-    let stepTools: string[] = [];
-    const tools: string[] = [];
-    const calls = new Set<string>();
-    let finished = false;
+    let usedTools: string[] = [];
     status.content = "Agent is thinking… · Ctrl+C to close";
 
-    const display = (event: AgentEvent) => {
-      switch (event.type) {
-        case "text":
-          stepText += event.delta;
-          response.content = `Agent: ${text}${stepText}`;
-          break;
-        case "tool":
-          if (!calls.has(event.callId)) {
-            calls.add(event.callId);
-            stepTools.push(event.name);
-          }
-          status.content = `Tools: ${[...tools, ...stepTools].join(", ")} · Ctrl+C to close`;
-          break;
-        case "step":
-          text += stepText;
-          tools.push(...stepTools);
-          stepText = "";
-          stepTools = [];
-          calls.clear();
-          break;
-        case "reset":
-          stepText = "";
-          stepTools = [];
-          calls.clear();
-          response.content = `Agent: ${text}`;
-          status.content = "Agent is thinking… · Ctrl+C to close";
-          break;
-        case "done":
-          finished = true;
-          break;
-        case "error":
-          throw new Error(event.message);
-      }
-    };
-
     try {
-      const stream = await options.client.agent.chat(
+      const chunks = await options.client.agent.chat(
         { sessionId: options.sessionId, message },
         { signal: controller.signal },
       );
-      for await (const event of stream) {
+      // oRPC attaches event metadata via proxies. The SDK clones message parts,
+      // so unwrap transport data using the documented AI SDK integration.
+      const messages = readUIMessageStream({
+        stream: asyncIteratorToUnproxiedDataStream(chunks),
+        terminateOnError: true,
+      });
+      for await (const message of messages) {
         if (closed) break;
-        display(event);
+        const text = message.parts
+          .filter((part) => part.type === "text")
+          .map((part) => part.text)
+          .join("");
+        response.content = `Agent: ${text}`;
+        usedTools = message.parts.filter(isToolUIPart).map(getToolName);
+        status.content = usedTools.length
+          ? `Tools: ${usedTools.join(", ")} · Ctrl+C to close`
+          : "Agent is thinking… · Ctrl+C to close";
       }
-      if (!closed && !finished)
-        throw new Error("The agent disconnected. Close this session and start a new one.");
       if (!closed) {
-        const usedTools = [...tools, ...stepTools];
         if (usedTools.length)
           transcript.add(
             new TextRenderable(renderer, {

@@ -1350,6 +1350,9 @@ importers:
       '@opentui/core':
         specifier: 0.5.14
         version: 0.5.14(typescript@7.0.2)(web-tree-sitter@0.25.10)
+      '@orpc/client':
+        specifier: 'catalog:'
+        version: 2.0.0-beta.40
       '@tailorkit/app':
         specifier: workspace:*
         version: link:../app
@@ -1359,6 +1362,9 @@ importers:
       '@tailorkit/core':
         specifier: workspace:*
         version: link:../core
+      ai:
+        specifier: 'catalog:'
+        version: 7.0.127(zod@4.6.5)
       cac:
         specifier: ^7.0.0
         version: 7.0.0
@@ -1396,6 +1402,9 @@ importers:
       '@orpc/client':
         specifier: 'catalog:'
         version: 2.0.0-beta.40
+      ai:
+        specifier: 'catalog:'
+        version: 7.0.127(zod@4.6.5)
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -1455,6 +1464,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.4
+      ai:
+        specifier: 'catalog:'
+        version: 7.0.127(zod@4.6.5)
       arktype:
         specifier: ^2.2.7
         version: 2.2.7

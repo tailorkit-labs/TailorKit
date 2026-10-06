@@ -1,15 +1,12 @@
 import { z } from "zod";
-import type { AgentChatResponse } from "./client/types.gen.js";
+import { asSchema, uiMessageChunkSchema, type UIMessageChunk } from "ai";
 
-/** Public transport only; builder implementation stays in the licensed platform. */
-export const agentEventSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("text"), delta: z.string() }),
-  z.object({ type: z.literal("tool"), name: z.string(), callId: z.string() }),
-  z.object({ type: z.literal("step") }),
-  z.object({ type: z.literal("reset") }),
-  z.object({ type: z.literal("done") }),
-  z.object({ type: z.literal("error"), message: z.string() }),
-]) satisfies z.ZodType<AgentEvent>;
+const chunkSchema = asSchema(uiMessageChunkSchema);
 
-export type AgentEvent = Extract<AgentChatResponse, { event: "message" }>["data"];
+/** Use the SDK's validator so transport parts stay aligned with its protocol. */
+export const agentChunkSchema = z
+  .custom<UIMessageChunk>(async (value) => (await chunkSchema.validate?.(value))?.success === true)
+  .describe("An AI SDK UIMessageChunk. Fields depend on the chunk type.");
+
+export type AgentChunk = UIMessageChunk;
 export const agentMessageSchema = z.string().trim().min(1).max(32_000);

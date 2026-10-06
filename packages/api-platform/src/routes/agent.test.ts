@@ -1,4 +1,5 @@
-import { call } from "@orpc/server";
+import { call, asyncIteratorToUnproxiedDataStream } from "@orpc/server";
+import { readUIMessageStream } from "ai";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Context } from "../context";
 import { canonicalizeScope } from "../scope";
@@ -43,7 +44,7 @@ vi.mock("@tailorkit/kv", () => ({
   }),
 }));
 
-const { agentRouter, toAgentEvent } = await import("./agent");
+const { agentRouter } = await import("./agent");
 const context = { project: { id: "project" }, organization: { id: "org" } } as Context;
 const credentials = { deployToken: "token" };
 const scope = canonicalizeScope({ name: "org", value: { tenant: "one" } });
@@ -81,8 +82,10 @@ beforeEach(() => {
     run(
       [
         { type: "model-call-start" },
-        { type: "text-delta", text: "Hello" },
-        { type: "tool-call", toolName: "write", toolCallId: "call-1" },
+        { type: "text-start", id: "text-1" },
+        { type: "text-delta", id: "text-1", text: "Hello" },
+        { type: "text-end", id: "text-1" },
+        { type: "tool-call", toolName: "write", toolCallId: "call-1", input: {} },
       ],
       { messages: [], sandboxId: "workspace" },
     ),
@@ -90,8 +93,49 @@ beforeEach(() => {
 });
 
 describe("platform builder sessions", () => {
-  it("commits tool summaries before the next model attempt resets", () => {
-    expect(toAgentEvent({ type: "finish-step" })).toEqual({ type: "step" });
+  it("uses SDK step boundaries and resets without losing completed tool parts", async () => {
+    mocks.start.mockResolvedValueOnce(
+      run(
+        [
+          { type: "tool-call", toolName: "write", toolCallId: "call-1", input: {} },
+          {
+            type: "tool-result",
+            toolName: "write",
+            toolCallId: "call-1",
+            input: {},
+            output: { success: true },
+          },
+          { type: "finish-step" },
+          { type: "start-step" },
+          { type: "text-start", id: "old" },
+          { type: "text-delta", id: "old", text: "discard me" },
+          { type: "reset-step" },
+          { type: "text-start", id: "new" },
+          { type: "text-delta", id: "new", text: "Built" },
+          { type: "text-end", id: "new" },
+        ],
+        {},
+      ),
+    );
+    const {
+      body: { sessionId },
+    } = await call(agentRouter.start, { body: credentials }, { context });
+    const chunks = await call(
+      agentRouter.chat,
+      { params: { sessionId }, body: { ...credentials, message: "Build" } },
+      { context },
+    );
+    let latest;
+    for await (const message of readUIMessageStream({
+      stream: asyncIteratorToUnproxiedDataStream(chunks),
+      terminateOnError: true,
+    }))
+      latest = message;
+    expect(latest?.parts).toContainEqual(
+      expect.objectContaining({ type: "tool-write", state: "output-available" }),
+    );
+    expect(latest?.parts).toContainEqual(expect.objectContaining({ type: "text", text: "Built" }));
+    expect(latest?.parts).not.toContainEqual(expect.objectContaining({ text: "discard me" }));
   });
   it("streams text and tool summaries, then continues with authoritative history and workspace", async () => {
     const {
@@ -105,10 +149,14 @@ describe("platform builder sessions", () => {
     const events = [];
     for await (const event of stream) events.push(event);
     expect(events).toEqual([
-      { type: "step" },
-      { type: "text", delta: "Hello" },
-      { type: "tool", name: "write", callId: "call-1" },
-      { type: "done" },
+      { type: "start" },
+      { type: "start-step" },
+      { type: "text-start", id: "text-1" },
+      { type: "text-delta", id: "text-1", delta: "Hello" },
+      { type: "text-end", id: "text-1" },
+      { type: "tool-input-available", toolName: "write", toolCallId: "call-1", input: {} },
+      { type: "finish-step" },
+      { type: "finish" },
     ]);
     const next = await call(
       agentRouter.chat,
@@ -212,9 +260,10 @@ describe("platform builder sessions", () => {
     );
     const events = [];
     for await (const event of stream) events.push(event);
-    expect(events).toEqual([
-      { type: "error", message: "The builder agent failed. Start a new session." },
-    ]);
+    expect(events.at(-1)).toEqual({
+      type: "error",
+      errorText: "The builder agent failed. Start a new session.",
+    });
     expect(mocks.deleteSandbox).toHaveBeenCalled();
   });
 
@@ -236,9 +285,10 @@ describe("platform builder sessions", () => {
     );
     const events = [];
     for await (const event of stream) events.push(event);
-    expect(events).toEqual([
-      { type: "error", message: "The builder agent failed. Start a new session." },
-    ]);
+    expect(events.at(-1)).toEqual({
+      type: "error",
+      errorText: "The builder agent failed. Start a new session.",
+    });
     expect(mocks.deleteSandbox).toHaveBeenCalledOnce();
     expect(mocks.values.has(`agent:session:${sessionId}`)).toBe(false);
   });
@@ -268,7 +318,7 @@ describe("platform builder sessions", () => {
       { context, signal: controller.signal },
     );
     const iterator = stream[Symbol.asyncIterator]();
-    expect(await iterator.next()).toMatchObject({ value: { type: "step" } });
+    expect(await iterator.next()).toMatchObject({ value: { type: "start" } });
     controller.abort();
     await iterator.next().catch(() => {});
     expect(mocks.cancel).toHaveBeenCalledOnce();

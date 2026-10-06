@@ -1,29 +1,41 @@
+import { asyncIteratorToUnproxiedDataStream } from "@orpc/client";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { openapi } from "@orpc/openapi";
 import { eventIterator, os } from "@orpc/server";
-import { agentEventSchema, type AgentEvent } from "@tailorkit/client-platform/agent";
+import { agentChunkSchema, type AgentChunk } from "@tailorkit/client-platform/agent";
+import { readUIMessageStream } from "ai";
 import { describe, expect, it } from "vite-plus/test";
 import { z } from "zod";
 import { createTailorKitClient } from "./client";
 import { createTailorKitServer } from "./handler";
 
 const sessionId = "a3e7568a-c4f7-4ac0-8c35-71ff0f4cd002";
-const events: AgentEvent[] = [
-  { type: "step" },
-  { type: "text", delta: "Building 🛠 " },
-  { type: "tool", name: "write", callId: "tool-1" },
-  { type: "text", delta: "your app." },
-  { type: "done" },
+const events: AgentChunk[] = [
+  { type: "start", messageId: "answer" },
+  { type: "start-step" },
+  { type: "text-start", id: "text-1" },
+  { type: "text-delta", id: "text-1", delta: "Building 🛠 " },
+  {
+    type: "tool-input-available",
+    toolName: "write",
+    toolCallId: "tool-1",
+    input: { path: "app.ts" },
+  },
+  { type: "tool-output-available", toolCallId: "tool-1", output: { success: true } },
+  { type: "text-delta", id: "text-1", delta: "your app." },
+  { type: "text-end", id: "text-1" },
+  { type: "finish-step" },
+  { type: "finish" },
 ];
 
 function setup(
-  options: { events?: AgentEvent[]; status?: number; scopeName?: string; closed?: boolean } = {},
+  options: { events?: AgentChunk[]; status?: number; scopeName?: string; closed?: boolean } = {},
 ) {
   const requests: Request[] = [];
   const platform = new OpenAPIHandler({
     chat: os
       .meta(openapi({ path: "/agent/{sessionId}/chat", method: "POST" }))
-      .output(eventIterator(agentEventSchema))
+      .output(eventIterator(agentChunkSchema))
       .handler(async function* () {
         yield* options.events ?? events;
       }),
@@ -80,6 +92,27 @@ describe("host agent relay", () => {
     const chat = requests.find((request) => request.url.endsWith("/chat"))!;
     expect(await chat.json()).toEqual({ deployToken: "cli-token", message: "Build an app" });
     expect(requests.filter((request) => request.url.endsWith("/verify-token"))).toHaveLength(3);
+  });
+
+  it("assembles AI SDK messages across the real oRPC and OpenAPI transports", async () => {
+    const { client } = setup();
+    const chunks = await client.agent.chat({ sessionId, message: "Build an app" });
+    let latest;
+    for await (const message of readUIMessageStream({
+      stream: asyncIteratorToUnproxiedDataStream(chunks),
+      terminateOnError: true,
+    }))
+      latest = message;
+    expect(latest?.parts).toContainEqual(
+      expect.objectContaining({ type: "text", text: "Building 🛠 your app." }),
+    );
+    expect(latest?.parts).toContainEqual(
+      expect.objectContaining({
+        type: "tool-write",
+        toolCallId: "tool-1",
+        state: "output-available",
+      }),
+    );
   });
 
   it("requires a CLI credential before contacting the platform", async () => {

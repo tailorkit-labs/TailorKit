@@ -54,29 +54,10 @@ export type AgentChatResponses = {
   200:
     | {
         event: "message";
-        data:
-          | {
-              type: "text";
-              delta: string;
-            }
-          | {
-              type: "tool";
-              name: string;
-              callId: string;
-            }
-          | {
-              type: "step";
-            }
-          | {
-              type: "reset";
-            }
-          | {
-              type: "done";
-            }
-          | {
-              type: "error";
-              message: string;
-            };
+        /**
+         * An AI SDK UIMessageChunk. Fields depend on the chunk type.
+         */
+        data: unknown;
         id?: string;
         retry?: number;
       }

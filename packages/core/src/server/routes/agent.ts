@@ -1,6 +1,6 @@
 import { eventIterator, ORPCError } from "@orpc/server";
 import { createORPCErrorFromJson, isORPCErrorJson } from "@orpc/client";
-import { agentEventSchema, agentMessageSchema } from "@tailorkit/client-platform/agent";
+import { agentChunkSchema, agentMessageSchema } from "@tailorkit/client-platform/agent";
 import { agentChat, agentClose, agentStart } from "@tailorkit/client-platform/client";
 import { z } from "zod";
 import { getCliDeployToken, o, requireCliDeployToken } from "../procedures";
@@ -34,7 +34,7 @@ export const agentRouter = {
   chat: o
     .use(requireCliDeployToken)
     .input(sessionInput.extend({ message: agentMessageSchema }))
-    .output(eventIterator(agentEventSchema))
+    .output(eventIterator(agentChunkSchema))
     .handler(async function* ({ context, input, signal: clientSignal }) {
       const controller = new AbortController();
       const signal = clientSignal
@@ -56,8 +56,8 @@ export const agentRouter = {
           },
         });
         for await (const value of stream) {
-          const event = agentEventSchema.parse(value);
-          if (event.type === "done" || event.type === "error") done = true;
+          const event = await agentChunkSchema.parseAsync(value);
+          if (event.type === "finish" || event.type === "error") done = true;
           yield event;
         }
         signal?.throwIfAborted();

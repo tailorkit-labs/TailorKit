@@ -1,12 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { openapi } from "@orpc/openapi";
-import { eventIterator, ORPCError } from "@orpc/server";
+import { eventIterator, ORPCError, streamToAsyncIteratorObject } from "@orpc/server";
 import { hashSecret } from "@tailorkit/api-utils/hashing";
 import { appAgent } from "@tailorkit/builder-agent";
-import { agentEventSchema, agentMessageSchema, type AgentEvent } from "../agent-events";
+import { agentChunkSchema, agentMessageSchema } from "../agent-events";
 import { db } from "@tailorkit/db";
 import { Sandbox } from "@vercel/sandbox";
-import type { ModelCallStreamPart } from "@ai-sdk/workflow";
+import { createModelCallToUIChunkTransform, type ModelCallStreamPart } from "@ai-sdk/workflow";
+import type { UIMessageChunk } from "ai";
 import { getRun, start, type Run } from "workflow/api";
 import { z } from "zod";
 import { env } from "#env";
@@ -55,27 +56,6 @@ async function disposeSession(sessionId: string, session: AgentSession) {
   }
 }
 
-// WorkflowAgent also writes lifecycle chunks that its model-part type omits.
-type AgentStreamPart = ModelCallStreamPart | { type: "start-step" | "finish-step" | "finish" };
-
-export function toAgentEvent(part: AgentStreamPart): AgentEvent | undefined {
-  switch (part.type) {
-    case "text-delta":
-      return { type: "text", delta: part.text };
-    case "tool-call":
-      return { type: "tool", name: part.toolName, callId: part.toolCallId };
-    case "model-call-start":
-    case "finish-step":
-      return { type: "step" };
-    case "reset-step":
-      return { type: "reset" };
-    case "error":
-      return { type: "error", message: "The builder agent failed. Start a new session." };
-    default:
-      return undefined;
-  }
-}
-
 const credentials = z.object({ deployToken: z.string().min(1) });
 const sessionParams = z.object({ sessionId: z.uuid() });
 
@@ -97,7 +77,7 @@ const chat = protectedRouter
   .input(
     z.object({ params: sessionParams, body: credentials.extend({ message: agentMessageSchema }) }),
   )
-  .output(eventIterator(agentEventSchema))
+  .output(eventIterator(agentChunkSchema))
   .handler(async ({ context, input, signal: requestSignal }) => {
     const token = await authenticateCli(
       context.project.id,
@@ -140,9 +120,12 @@ const chat = protectedRouter
       throw error;
     }
 
-    return (async function* (): AsyncGenerator<AgentEvent> {
+    return (async function* (): AsyncGenerator<UIMessageChunk> {
       let completed = false;
-      const reader = run.getReadable<AgentStreamPart>().getReader();
+      const chunks = streamToAsyncIteratorObject(
+        run.getReadable<ModelCallStreamPart>().pipeThrough(createModelCallToUIChunkTransform()),
+        { signal },
+      );
       // A failed setup step never opens/closes the model stream. Observe the
       // workflow result too so that a failure cannot leave the chat hanging.
       const result = run.returnValue;
@@ -150,30 +133,23 @@ const chat = protectedRouter
         () => new Promise<never>(() => {}),
         (error: unknown) => Promise.reject(error),
       );
-      const abort = () => {
-        void reader.cancel().catch(() => {});
-      };
-      signal?.addEventListener("abort", abort, { once: true });
-      if (signal?.aborted) abort();
       try {
         for (;;) {
-          const { done, value } = await Promise.race([reader.read(), failure]);
+          const { done, value } = await Promise.race([chunks.next(), failure]);
           if (done) break;
-          const event = toAgentEvent(value);
-          if (event?.type === "error") throw new Error(event.message);
-          if (event) yield event;
+          if (value.type === "error") throw new Error("Builder failed");
+          // Finish only after the workflow has saved its history and workspace.
+          if (value.type !== "finish") yield value;
         }
         signal?.throwIfAborted();
         await result;
         completed = true;
-        yield { type: "done" };
+        yield { type: "finish" };
       } catch {
         if (!signal?.aborted)
-          yield { type: "error", message: "The builder agent failed. Start a new session." };
+          yield { type: "error", errorText: "The builder agent failed. Start a new session." };
       } finally {
-        signal?.removeEventListener("abort", abort);
-        await reader.cancel().catch(() => {});
-        reader.releaseLock();
+        await chunks.return?.().catch(() => {});
         if (!completed) await disposeSession(sessionId, session);
         await store.release(sessionId);
       }

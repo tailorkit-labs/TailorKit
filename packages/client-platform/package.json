@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@orpc/client": "catalog:",
+    "ai": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
