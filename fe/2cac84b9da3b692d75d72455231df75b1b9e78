@@ -1,0 +1,29 @@
+packages/builder-agent/src/agent.ts
+  s_2a177a38ffd23e::t_4ae5c2a91efb99 195
+  s_2a177a38ffd23e::t_afd422ac8695b4 56-69,170-171,173-175,199,201,206-208
+packages/cli/AGENT.md
+  s_2a177a38ffd23e::t_afd422ac8695b4 44-47
+packages/api-platform/src/routes/agent.ts
+  s_2a177a38ffd23e::t_afd422ac8695b4 6,18,42-47
+packages/builder-agent/src/agent.test.ts
+  s_2a177a38ffd23e::t_afd422ac8695b4 16-18,37-40,137-142,172-189
+  s_2a177a38ffd23e::t_63ac134be21506 190
+packages/api-platform/src/routes/agent.test.ts
+  s_2a177a38ffd23e::t_afd422ac8695b4 75,207-209,211,215-217,220,225,232-235
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fe2cac84b9da3b692d75d72455231df75b1b9e78",
+  "prompts": {},
+  "sessions": {
+    "s_2a177a38ffd23e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10e8d-47e4-7e10-a544-aaadaaa77e0f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
