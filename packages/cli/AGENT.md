@@ -38,10 +38,13 @@ There are no agent start/close endpoints,
 KV session records, or previous-run lookups. Each workflow converts the UI
 messages to model messages before running the builder.
 
-A named sandbox resumes the same workspace on follow-up turns. Compute stops
-after each completed turn, with a ten-minute timeout bounding active work.
-Only the latest snapshot is kept, and snapshots expire after one day (Vercel's
-minimum). Exiting the CLI disconnects its response and discards local history.
+A named sandbox resumes the same workspace on follow-up turns. The builder also
+accepts the previous run's `sandboxId` so persisted threads can reuse their
+workspace.
+Compute stops after each completed turn. Workspace snapshots expire one day after
+last use, including when an older workspace is resumed. Vercel's VM timeout is
+separate from this retention policy. Exiting the CLI disconnects its response and
+discards local history.
 The durable workflow continues independently and owns sandbox cleanup, including
 stopping compute after errors. Its output stream closes after cleanup; setup
 failures emit a brief error before closing. Stopped workspace snapshots expire.

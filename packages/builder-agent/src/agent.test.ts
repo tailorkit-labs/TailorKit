@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   configureAgent: vi.fn(),
   getOrCreate: vi.fn(),
   get: vi.fn(),
+  update: vi.fn(),
   stop: vi.fn(),
   delete: vi.fn(),
   createSession: vi.fn(),
@@ -45,10 +46,18 @@ describe("agent skill instructions", () => {
     vi.clearAllMocks();
     mocks.getOrCreate.mockResolvedValue({
       name: "test-sandbox",
+      snapshotExpiration: 86_400_000,
+      update: mocks.update,
       stop: mocks.stop,
       delete: mocks.delete,
     });
-    mocks.get.mockResolvedValue({ name: "test-sandbox", stop: mocks.stop, delete: mocks.delete });
+    mocks.get.mockResolvedValue({
+      name: "test-sandbox",
+      snapshotExpiration: 86_400_000,
+      update: mocks.update,
+      stop: mocks.stop,
+      delete: mocks.delete,
+    });
     mocks.createSession.mockReturnValue({ run: mocks.run, readTextFile: mocks.readTextFile });
     mocks.stream.mockImplementation(async ({ messages }) => ({ messages }));
   });
@@ -108,9 +117,7 @@ describe("agent skill instructions", () => {
       image: "vercel/sandbox/universal",
       persistent: true,
       resume: true,
-      timeout: 600_000,
       snapshotExpiration: 86_400_000,
-      keepLastSnapshots: { count: 1 },
     });
     expect(mocks.getOrCreate.mock.calls[1]).toEqual(mocks.getOrCreate.mock.calls[0]);
     expect(mocks.getOrCreate.mock.calls[2]?.[0].name).toBe("app-other-app");
@@ -125,6 +132,36 @@ describe("agent skill instructions", () => {
     await appAgent(input);
     expect(mocks.getOrCreate).toHaveBeenCalledTimes(2);
     expect(mocks.getOrCreate.mock.calls[1]).toEqual(mocks.getOrCreate.mock.calls[0]);
+  });
+
+  it("continues a thread using the sandbox reference from its previous run", async () => {
+    mocks.run.mockResolvedValue({ exitCode: 0, stdout: "", stderr: "" });
+    const input = { appId: "test-app", messages: [], model: "test-model" };
+    const first = await appAgent(input);
+    await appAgent({ ...input, sandboxId: first.sandboxId });
+    expect(mocks.getOrCreate).toHaveBeenCalledOnce();
+    expect(mocks.get).toHaveBeenCalledWith({ name: "test-sandbox", resume: true });
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("applies one-day retention when resuming an older thread workspace", async () => {
+    mocks.run.mockResolvedValue({ exitCode: 0, stdout: "", stderr: "" });
+    mocks.get.mockResolvedValueOnce({
+      name: "previous-thread",
+      snapshotExpiration: 30 * 86_400_000,
+      update: mocks.update,
+      stop: mocks.stop,
+    });
+    const result = await appAgent({
+      appId: "test-app",
+      messages: [],
+      model: "test-model",
+      sandboxId: "previous-thread",
+    });
+    expect(mocks.getOrCreate).not.toHaveBeenCalled();
+    expect(mocks.get).toHaveBeenCalledWith({ name: "previous-thread", resume: true });
+    expect(mocks.update).toHaveBeenCalledWith({ snapshotExpiration: 86_400_000 });
+    expect(result.sandboxId).toBe("previous-thread");
   });
 
   it("stops the completed sandbox without deleting its files", async () => {
@@ -195,13 +232,13 @@ describe("agent skill instructions", () => {
     await expect(
       appAgent({
         appId: "test-app",
+        sandboxId: "previous-thread",
         messages: [],
         model: "test-model",
       }),
     ).rejects.toThrow("Skill discovery failed");
-    expect(mocks.getOrCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ name: "app-test-app", resume: true }),
-    );
+    expect(mocks.get).toHaveBeenCalledWith({ name: "previous-thread", resume: true });
+    expect(mocks.getOrCreate).not.toHaveBeenCalled();
     expect(mocks.stop).toHaveBeenCalledOnce();
     expect(mocks.delete).not.toHaveBeenCalled();
   });

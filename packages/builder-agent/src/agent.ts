@@ -3,6 +3,7 @@ import {
   tool,
   convertToModelMessages,
   type UIMessage,
+  type LanguageModel,
   type InferToolOutput,
   type ToolExecutionOptions,
 } from "ai";
@@ -14,19 +15,24 @@ import { readTool, writeTool, editTool, bashTool, grepTool, globTool, lsTool } f
 import { formatSkills, getAvailableSkills } from "./skills";
 import instructions from "./instructions.md?raw";
 
-async function prepareSandbox(name: string) {
+const sandboxRetentionMs = 24 * 60 * 60 * 1000;
+
+async function prepareSandbox(name: string, previousSandboxId?: string) {
   "use step";
-  const nativeSandbox = await Sandbox.getOrCreate({
-    name,
-    image: "vercel/sandbox/universal",
-    persistent: true,
-    resume: true,
-    timeout: 10 * 60 * 1000,
-    snapshotExpiration: 24 * 60 * 60 * 1000,
-    keepLastSnapshots: { count: 1 },
-  });
+  const nativeSandbox = previousSandboxId
+    ? await Sandbox.get({ name: previousSandboxId, resume: true })
+    : await Sandbox.getOrCreate({
+        name,
+        image: "vercel/sandbox/universal",
+        persistent: true,
+        resume: true,
+        snapshotExpiration: sandboxRetentionMs,
+      });
 
   try {
+    if (nativeSandbox.snapshotExpiration !== sandboxRetentionMs) {
+      await nativeSandbox.update({ snapshotExpiration: sandboxRetentionMs });
+    }
     const sandbox = createVercelNetworkSandboxSessionFromNativeSandbox(nativeSandbox);
     const catalog = await getAvailableSkills(sandbox);
     // Native sandbox/session instances cannot cross workflow step boundaries.
@@ -160,17 +166,20 @@ export async function appAgent({
   messages,
   model,
   appId,
+  sandboxId: previousSandboxId,
 }: {
   messages: UIMessage[];
-  model: string;
+  model: LanguageModel;
   appId: string;
+  /** Pass the sandboxId returned by the previous run to continue its workspace. */
+  sandboxId?: string;
 }) {
   "use workflow";
 
   let sandboxId: string | undefined;
   let failed = true;
   try {
-    const prepared = await prepareSandbox(`app-${appId}`);
+    const prepared = await prepareSandbox(`app-${appId}`, previousSandboxId);
     sandboxId = prepared.sandboxId;
     const context = { sandboxId };
     const agent = new WorkflowAgent({
