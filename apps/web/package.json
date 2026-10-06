@@ -22,8 +22,8 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
-    "@better-auth/infra": "^0.4.12",
-    "@better-auth/passkey": "1.7.6",
+    "@better-auth/infra": "^0.4.13",
+    "@better-auth/passkey": "1.7.7",
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
