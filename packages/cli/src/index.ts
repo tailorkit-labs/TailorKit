@@ -340,6 +340,29 @@ cli
     }
   });
 
+cli
+  .command("agent", "Chat with the TailorKit app agent")
+  .option("--app <id>", "App ID (defaults to appId in tailorkit.config.ts)")
+  .option("--config <path>", "Path to tailorkit config")
+  .action(async (options: Record<string, unknown>) => {
+    try {
+      const { runAgentCommand } = await import("./agent");
+      await runAgentCommand({
+        appId: options.app as string | undefined,
+        configPath: options.config as string | undefined,
+        cwd: String(options.cwd ?? "."),
+        onLoginRequired: () =>
+          loginWithApproval({
+            configPath: options.config as string | undefined,
+            cwd: String(options.cwd ?? "."),
+          }),
+      });
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
+
 cli.help();
 cli.version(__TAILORKIT_VERSION__);
 cli.parse();

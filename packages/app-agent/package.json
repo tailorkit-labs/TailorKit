@@ -2,26 +2,35 @@
   "name": "@tailorkit/app-agent",
   "version": "0.0.0",
   "private": true,
-  "description": "Eve coding agent for building TailorKit apps.",
   "license": "BUSL-1.1",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./workflows": {
+      "types": "./dist/workflows.d.mts",
+      "import": "./dist/workflows.mjs"
+    }
+  },
   "scripts": {
-    "dev": "eve dev --no-default-extensions",
-    "build": "eve build",
-    "start": "eve start",
-    "info": "eve info",
+    "build": "vp pack",
     "check-types": "tsc --noEmit",
     "test": "vp test run"
   },
   "dependencies": {
+    "@ai-sdk/workflow": "2.0.58",
+    "@vercel/sandbox": "3.5.1",
     "ai": "catalog:",
-    "eve": "^0.70.0",
+    "workflow": "5.0.1",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
   },
   "engines": {
     "node": ">=24"

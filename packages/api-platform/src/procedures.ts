@@ -12,7 +12,7 @@ const rateLimiter = createRateLimiter({ maxRequests: 100, window: 1000 });
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 type CanonicalScope = ReturnType<typeof canonicalizeScope>;
 
-async function findAppInScopes(projectId: string, appId: string, scopes: CanonicalScope[]) {
+export async function findAppInScopes(projectId: string, appId: string, scopes: CanonicalScope[]) {
   const find = (identifier: "id" | "publicId") =>
     db.query.app.findFirst({
       where: {

@@ -5,10 +5,14 @@ import type {
   ClientMeta,
   Options as Options2,
   RequestResult,
+  ServerSentEventsResult,
   TDataShape,
 } from "./client/index.js";
 import { client } from "./client.gen.js";
 import type {
+  AppAgentChatData,
+  AppAgentChatResponse,
+  AppAgentChatResponses,
   AppsCreateData,
   AppsCreateResponses,
   AppsDeleteData,
@@ -72,6 +76,18 @@ export type Options<
    */
   meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
+
+export const appAgentChat = <ThrowOnError extends boolean = false>(
+  options: Options<AppAgentChatData, ThrowOnError, AppAgentChatResponse>,
+): Promise<ServerSentEventsResult<AppAgentChatResponses>> =>
+  (options.client ?? client).sse.post<AppAgentChatResponses, unknown, ThrowOnError>({
+    url: "/app-agent/chat",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
 
 export const appsRuntimeSession = <ThrowOnError extends boolean = false>(
   options: Options<AppsRuntimeSessionData, ThrowOnError>,

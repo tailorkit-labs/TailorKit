@@ -40,17 +40,19 @@
     }
   },
   "scripts": {
-    "build": "vp pack src/index.ts src/runtime/auth.ts src/context.ts src/pagination.ts src/preview-token.ts src/preview-ws.ts src/preview-ws-auth.ts src/preview-build-store.ts src/preview-lifecycle.ts src/procedures.ts src/public-id.ts src/asset-url.ts src/assets.ts src/scope.ts src/routes/apps.ts src/routes/runtime.ts src/routes/cli-auth.ts src/routes/deployments.ts src/routes/preview.ts src/routes/preview-grants.ts --format esm --dts --clean",
+    "build": "vp pack src/index.ts src/runtime/auth.ts src/context.ts src/pagination.ts src/preview-token.ts src/preview-ws.ts src/preview-ws-auth.ts src/preview-build-store.ts src/preview-lifecycle.ts src/procedures.ts src/cli-token.ts src/public-id.ts src/asset-url.ts src/assets.ts src/scope.ts src/routes/apps.ts src/routes/runtime.ts src/routes/cli-auth.ts src/routes/deployments.ts src/routes/preview.ts src/routes/preview-grants.ts src/routes/app-agent.ts --format esm --dts --clean",
     "check-types": "tsc --noEmit",
     "generate:openapi": "node --conditions=development --import tsx scripts/generate-openapi.ts && vp fmt openapi.json",
     "test": "vp test run"
   },
   "dependencies": {
+    "@ai-sdk/workflow": "2.0.58",
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/zod": "catalog:",
     "@tailorkit/api-utils": "workspace:*",
     "@tailorkit/app": "workspace:*",
+    "@tailorkit/app-agent": "workspace:*",
     "@tailorkit/asset-delivery": "workspace:*",
     "@tailorkit/auth": "workspace:*",
     "@tailorkit/db": "workspace:*",
@@ -58,8 +60,10 @@
     "@tailorkit/kv": "workspace:*",
     "@tailorkit/observability": "workspace:*",
     "@tailorkit/storage": "workspace:*",
+    "ai": "catalog:",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
+    "workflow": "5.0.1",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -14,6 +14,55 @@ export type Schema0 =
       [key: string]: Schema0;
     };
 
+export type AppAgentChatData = {
+  body: {
+    appId: string;
+    messages: Array<{
+      id: string;
+      role: "user" | "assistant";
+      parts: Array<{
+        type: string;
+        [key: string]: unknown;
+      }>;
+      metadata?: unknown;
+    }>;
+    deployToken: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/app-agent/chat";
+};
+
+export type AppAgentChatResponses = {
+  /**
+   * OK
+   */
+  200:
+    | {
+        event: "message";
+        /**
+         * An AI SDK UIMessageChunk. Fields depend on the chunk type.
+         */
+        data: unknown;
+        id?: string;
+        retry?: number;
+      }
+    | {
+        event: "close";
+        data?: unknown;
+        id?: string;
+        retry?: number;
+      }
+    | {
+        event: "error";
+        data?: unknown;
+        id?: string;
+        retry?: number;
+      };
+};
+
+export type AppAgentChatResponse = AppAgentChatResponses[keyof AppAgentChatResponses];
+
 export type AppsRuntimeSessionData = {
   body: {
     scopes: Array<{

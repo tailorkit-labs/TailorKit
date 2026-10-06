@@ -8,6 +8,7 @@
     "directory": "packages/tailorkit"
   },
   "bin": {
+    "tailor": "./bin/tailorkit.js",
     "tailorkit": "./bin/tailorkit.js"
   },
   "files": [

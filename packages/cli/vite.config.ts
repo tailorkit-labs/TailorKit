@@ -23,6 +23,7 @@ export default defineConfig({
         /^node:/u,
         /^@tailorkit\/app(?:\/|$)/u,
         "@clack/prompts",
+        "@ai-sdk/tui",
         "@standard-schema/spec",
         "arktype",
         "cac",

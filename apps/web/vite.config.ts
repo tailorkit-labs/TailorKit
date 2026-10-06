@@ -1,3 +1,5 @@
+import { resolve } from "node:path";
+import { workflow } from "workflow/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -8,7 +10,6 @@ import { env } from "#env";
 
 const serverPackages = [
   "@tailorkit/api",
-  "@tailorkit/api-platform",
   "@tailorkit/api-utils",
   "@tailorkit/auth",
   "@tailorkit/db",
@@ -32,6 +33,10 @@ export default defineConfig(({ mode }) => {
     plugins: isTest
       ? [reactPlugin]
       : [
+          workflow({
+            dirs: [resolve(import.meta.dirname, "workflows")],
+            runtime: "nodejs24.x",
+          }),
           devtools(),
           tailwindcss(),
           tanstackStart(),
@@ -75,6 +80,9 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
     },
-    ssr: isDev ? undefined : { external: serverPackages },
+    ssr: {
+      external: isDev ? undefined : serverPackages,
+      noExternal: ["@tailorkit/api-platform", "@tailorkit/app-agent"],
+    },
   };
 });
