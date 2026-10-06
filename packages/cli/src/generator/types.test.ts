@@ -106,7 +106,7 @@ describe("renderGeneratedTypes", () => {
   it("preserves nullable view context fields through schema serialization and generation", () => {
     const schema = createTailorKitSchema({
       components: {},
-      contexts: {
+      views: {
         "/": z.object({
           customer: z.object({ id: z.string(), name: z.string() }).nullable(),
           label: z.string().nullable(),
@@ -486,7 +486,7 @@ it("composes independent ancestor contexts and generates slot names", () => {
 it("preserves optional ancestor fields through schema serialization and generation", () => {
   const schema = createTailorKitSchema({
     components: {},
-    contexts: {
+    views: {
       "/": z.object({ workspaceId: z.string() }).optional(),
       "/detail": z.object({ id: z.string() }),
     },

@@ -1,0 +1,95 @@
+/* Match the navbar divider in both themes. */
+@media (min-width: 1024px) {
+  #sidebar {
+    border-right: 1px solid rgb(var(--gray-500) / 0.05);
+  }
+
+  .dark #sidebar {
+    border-right-color: rgb(var(--gray-300) / 0.06);
+  }
+}
+
+/* Keep the selected navigation item neutral in both themes. */
+#sidebar a[aria-current="page"] {
+  color: rgb(var(--gray-950));
+  background-color: rgb(var(--gray-950) / 0.05);
+}
+
+.dark #sidebar a[aria-current="page"] {
+  color: #fafafa;
+  background-color: rgb(255 255 255 / 0.08);
+}
+
+/* Heading-depth rail, drawn by toc.js. Keep a straight rail before it loads. */
+#table-of-contents .toc {
+  --toc-rail-color: #d4d4d8;
+  --toc-active-color: #18181b;
+  position: relative;
+}
+
+.dark #table-of-contents .toc {
+  --toc-rail-color: #303036;
+  --toc-active-color: #fafafa;
+}
+
+#table-of-contents .toc-item {
+  display: block;
+  position: relative;
+  border-left: 1px solid var(--toc-rail-color);
+  padding-left: 1rem;
+}
+
+#table-of-contents .toc-item[data-active-deepest] {
+  border-left-color: var(--toc-active-color);
+}
+
+#table-of-contents .toc-item > a {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  color: #71717a;
+  text-shadow: none;
+  transition: color 150ms ease;
+}
+
+.dark #table-of-contents .toc-item > a {
+  color: #92929e;
+}
+
+#table-of-contents .toc-item > a:hover,
+#table-of-contents .toc-item[data-active-deepest] > a {
+  color: var(--toc-active-color);
+}
+
+#table-of-contents .toc[data-tailorkit-rail] .toc-item {
+  border-left: 0;
+  padding-left: 0;
+}
+
+#table-of-contents .toc[data-tailorkit-rail] .toc-item > a {
+  padding-left: calc(1.25rem + var(--tailorkit-toc-indent, 0px));
+}
+
+#table-of-contents .tailorkit-toc-rail {
+  position: absolute;
+  inset: 0 auto auto 0;
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+  stroke-width: 1;
+}
+
+#table-of-contents .tailorkit-toc-rail-track {
+  stroke: var(--toc-rail-color);
+}
+
+#table-of-contents .tailorkit-toc-rail-active {
+  stroke: var(--toc-active-color);
+  transition: clip-path 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #table-of-contents .tailorkit-toc-rail-active,
+  #table-of-contents .toc-item > a {
+    transition: none;
+  }
+}

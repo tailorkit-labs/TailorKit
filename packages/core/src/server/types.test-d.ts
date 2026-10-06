@@ -46,13 +46,13 @@ void invalidContextlessHandlerContext;
 createTailorKitServer({
   scopes: { account: z.object({ accountId: z.string() }) },
   components: {},
-  contexts: { "/": z.object({}), "/users": z.object({}) },
+  views: { "/": z.object({}), "/users": z.object({}) },
   slots: { navbar: { views: ["/"] }, panel: { views: ["/users"] } },
 });
 createTailorKitServer({
   scopes: { account: z.object({ accountId: z.string() }) },
   components: {},
-  contexts: { "/": z.object({}) },
+  views: { "/": z.object({}) },
   // @ts-expect-error A slot cannot reference an undeclared global view.
   slots: { panel: { views: ["/missing"] } },
 });

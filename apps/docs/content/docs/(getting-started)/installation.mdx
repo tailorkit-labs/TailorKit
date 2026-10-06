@@ -76,7 +76,7 @@ export const tailorKit = createTailorKit({
   },
 
   slots: { panel: { views: ["/"] } },
-  contexts: {
+  views: {
     // Define the host context layers available to app views.
     "/": z.object({}),
   },
@@ -109,17 +109,6 @@ Mount the handler at your TailorKit base path. The default is `/api/tailorkit`.
   examples for popular frameworks below.
 </Callout>
 
-Pass your app's auth check as `authenticate` instead of blocking requests before
-`tailorKit.handler`. TailorKit applies the appropriate authentication to each
-route, including its CLI deployment flow.
-
-Each entry in `scopes` names an app installation boundary, such as `user` or
-`organization`. Return the matching values from the authenticated session under
-the same names. Use stable opaque IDs for those values; TailorKit validates and
-sends them to the platform to match and display installations. When someone
-approves a CLI login, the approval page asks them to choose one named scope for
-that deploy token.
-
 ```ts title="app/api/tailorkit/[...tailorkit]/route.ts" tab="Next.js (App)"
 import { auth } from "#lib/auth";
 import { tailorKit } from "#lib/tailorkit";
@@ -136,7 +125,6 @@ async function handleRequest(request: Request) {
 
       return {
         actionContext: { user: session.user },
-        // This groups installed apps for the current user.
         scopes: { user: { userId: session.user.id } },
       };
     },
@@ -173,7 +161,6 @@ async function handleRequest({ request }: { request: Request }) {
 
       return {
         actionContext: { user: session.user },
-        // This groups installed apps for the current user.
         scopes: { user: { userId: session.user.id } },
       };
     },
@@ -198,7 +185,6 @@ async function handleRequest(request: Request) {
 
       return {
         actionContext: { user: session.user },
-        // This groups installed apps for the current user.
         scopes: { user: { userId: session.user.id } },
       };
     },
@@ -232,7 +218,6 @@ export default defineEventHandler(async (event) => {
 
       return {
         actionContext: { user: session.user },
-        // This groups installed apps for the current user.
         scopes: { user: { userId: session.user.id } },
       };
     },
@@ -259,7 +244,6 @@ app.on(["GET", "POST"], "/api/tailorkit/*", async (c) => {
 
       return {
         actionContext: { user: session.user },
-        // This groups installed apps for the current user.
         scopes: { user: { userId: session.user.id } },
       };
     },
@@ -304,11 +288,6 @@ export const { AppView, useApps, useView } = tailorKitClient;
 export default tailorKitClient;
 ```
 
-Use an absolute URL, or construct a URL from `window.location.origin` in a
-browser-only integration. Export `AppView`, `useApps`, and `useView` from the
-configured client so their types come from `tailorKit` without module
-augmentation. Import `Root` from `tailorkit/react` and pass it the client; use
-the other helpers beneath it.
 See [Views, views, and slots](/docs/views) for the complete React setup.
 
 </Step>

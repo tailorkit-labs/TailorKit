@@ -25,7 +25,7 @@ createTailorKitSchema({
 
 createTailorKitSchema({
   components: {},
-  contexts: {
+  views: {
     "/pages": z.object({ userId: z.string() }),
     "/pages/detail": z.object({ pageId: z.string() }),
   },
@@ -40,7 +40,7 @@ const tailor = createTailorKitSchema({
       children: true,
     },
   },
-  contexts: {
+  views: {
     "/": z.object({}),
     "/customers/:customerId": z.object({ customerId: z.string() }),
   },
@@ -58,7 +58,7 @@ const tailor = createTailorKitSchema({
 });
 
 const component = tailor.components.Button;
-const context = tailor.contexts["/customers/:customerId"];
+const context = tailor.views["/customers/:customerId"];
 const noSchemaAction = tailor.actions.noSchemas;
 void component;
 void context;
@@ -164,7 +164,7 @@ createTailorKitSchema({
 
 createTailorKitSchema({
   components: {},
-  contexts: {
+  views: {
     "/": z.object({ workspaceId: z.string() }),
     // @ts-expect-error Each field has one owning view.
     "/users/detail": z.object({ workspaceId: z.string() }),
@@ -173,19 +173,19 @@ createTailorKitSchema({
 
 createTailorKitSchema({
   components: {},
-  contexts: { "/": z.object({}), "/users": z.object({}) },
+  views: { "/": z.object({}), "/users": z.object({}) },
   slots: { navbar: { views: ["/"] }, panel: { views: ["/users"] } },
 });
 createTailorKitSchema({
   components: {},
-  contexts: { "/": z.object({}) },
+  views: { "/": z.object({}) },
   // @ts-expect-error Slot lists can only reference declared views.
   slots: { panel: { views: ["/missing"] } },
 });
 
 createTailorKitSchema({
   components: {},
-  contexts: {
+  views: {
     // @ts-expect-error Context composition requires named fields.
     "/number": z.number(),
     // @ts-expect-error Strings must be wrapped in an object field.

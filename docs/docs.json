@@ -3,7 +3,7 @@
   "theme": "mint",
   "name": "TailorKit",
   "colors": {
-    "primary": "#FAFAFA",
+    "primary": "#18181B",
     "light": "#FAFAFA",
     "dark": "#00a6f4"
   },
@@ -15,20 +15,20 @@
     "pages": [
       {
         "group": "Getting Started",
-        "pages": ["index", "installation", "quickstart"]
+        "pages": ["index", "installation"]
       }
     ],
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Pricing",
+          "href": "https://tailorkit.dev/pricing",
+          "icon": "money-bills-simple"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Talk to a founder",
+          "href": "https://cal.com/alfiejones",
+          "icon": "phone"
         }
       ]
     }

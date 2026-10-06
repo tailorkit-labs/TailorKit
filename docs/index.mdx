@@ -1,21 +1,70 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "What is TailorKit?"
+description: "A framework for extending your product with apps built by users, partners, and AI."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+Think browser extensions, but for your product. TailorKit lets users and partners **build apps
+with AI or code**. Apps are small, lightweight TypeScript programs that use your UI components
+and the capabilities you expose, whether it's a single button, a full-page view, or even Doom.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize
-  your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<Info>See TailorKit in action. [Try the demo](https://demo.tailorkit.dev).</Info>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## Users build features with AI
+
+Users describe what they need, and **TailorKit's agent codes the app** using the capabilities
+your product exposes. We manage its development container and deployment, and the agent can
+update existing apps when users ask for changes.
+
+Connect it as a **subagent for your product's existing agent**, or offer it as a
+dedicated app-building agent.
+
+## Third-party marketplace
+
+Optionally let developers and partners publish apps for your customers to install. TailorKit
+handles developer tooling, deployments, versioning, approvals, and distribution.
+
+Each app can have its own Git repository and release cycle, with deployments managed through
+the TailorKit CLI.
+
+## Your UI, your boundaries
+
+Apps use a **schema you define**: a contract specifying which UI components, data, and actions
+they can access. Their UI renders with your actual components, rather than injected
+JavaScript targeting page selectors.
+
+This gives you explicit boundaries to maintain as your product evolves. Keep the contract
+stable, and you can change your layout and internals **without breaking apps**.
+
+## Secure by design
+
+TailorKit isolates app code while keeping your product in control of rendering and data access.
+
+- **Sandboxed frontend.** App code runs in an isolated, off-screen iframe. We proxy its UI into
+  your product using your design system's components. Apps are isolated from your product's
+  browser environment, including its DOM, cookies, and local storage.
+- **Isolated backends.** Backend execution and storage are isolated by installation. Each
+  install with a database gets its own data, separate from other customers.
+- **Controlled access.** Apps can call the actions you expose through your schema or connect
+  to your existing API using credentials you supply.
+
+## Managed reactive backends
+
+Apps can store data, run backend logic, and update live. **TailorKit handles all the
+infrastructure**, so you don't need to provision databases, run servers, or manage realtime
+connections for each app.
+
+- **Per-install databases.** Each install gets its own SQLite database, keeping customer
+  data separate and preserving it across app code deployments.
+- **Backend functions.** Run backend logic isolated per install to read and write database
+  data or interact with external services.
+- **Realtime queries.** Database changes automatically update all connected app clients
+  subscribed to the affected data.
+- **Deployment.** Publish app assets through TailorKit's CDN and backend code to the managed
+  runtime. Versioned deployments let you update apps without rebuilding your host product.
+
+## Get started
+
+Follow our [installation guide](/installation) to get started in 5 minutes.
+
+Want to talk through your use case? [Book a call](https://cal.com/alfiejones) or email
+[hello@tailorkit.dev](mailto:hello@tailorkit.dev).

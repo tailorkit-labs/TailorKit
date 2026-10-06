@@ -1,4 +1,4 @@
-import { actions, components, contexts } from "@examples/shared";
+import { actions, components, views } from "@examples/shared";
 import { createTailorKit } from "tailorkit";
 import { env } from "#env";
 import { z } from "zod";
@@ -12,7 +12,7 @@ export const tailorKit = createTailorKit({
   },
   actions,
   components,
-  contexts,
+  views,
   slots: {
     panel: { views: ["/", "/customers", "/customers/detail"] },
     navbar: { views: ["/"] },
