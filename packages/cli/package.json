@@ -24,12 +24,11 @@
   "scripts": {
     "build": "vp build",
     "check-types": "tsc --noEmit",
-    "test": "vp test run",
-    "test:tui": "bun run scripts/verify-agent-tui.ts"
+    "test": "vp test run"
   },
   "dependencies": {
+    "@ai-sdk/tui": "1.0.128",
     "@clack/prompts": "^1.8.1",
-    "@opentui/core": "0.5.14",
     "@orpc/client": "catalog:",
     "@tailorkit/app": "workspace:*",
     "@tailorkit/client-platform": "workspace:*",

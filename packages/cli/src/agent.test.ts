@@ -14,17 +14,15 @@ vi.mock("./auth", () => ({
 }));
 vi.mock("@tailorkit/core/server", () => ({ createTailorKitClient: mocks.client }));
 vi.mock("./agent-tui", () => ({ openAgentTui: mocks.tui }));
-const { runAgentCommand, supportsOpenTui } = await import("./agent");
+const { runAgentCommand } = await import("./agent");
 const { NotLoggedInError } = await import("./auth");
 const stdinTty = Object.getOwnPropertyDescriptor(process.stdin, "isTTY");
 const stdoutTty = Object.getOwnPropertyDescriptor(process.stdout, "isTTY");
-const bunVersion = Object.getOwnPropertyDescriptor(process.versions, "bun");
 
 beforeEach(() => {
   vi.clearAllMocks();
   Object.defineProperty(process.stdin, "isTTY", { configurable: true, value: true });
   Object.defineProperty(process.stdout, "isTTY", { configurable: true, value: true });
-  Object.defineProperty(process.versions, "bun", { configurable: true, value: "1.4.2" });
   mocks.whoami.mockResolvedValue({});
   mocks.token.mockResolvedValue({ deployToken: "cli-token" });
   mocks.client.mockReturnValue({ agent: { chat: vi.fn() } });
@@ -34,7 +32,6 @@ afterEach(() => {
   for (const [object, key, descriptor] of [
     [process.stdin, "isTTY", stdinTty],
     [process.stdout, "isTTY", stdoutTty],
-    [process.versions, "bun", bunVersion],
   ] as const) {
     if (descriptor) Object.defineProperty(object, key, descriptor);
     else Reflect.deleteProperty(object, key);
@@ -75,13 +72,5 @@ describe("agent command", () => {
     Object.defineProperty(process.stdin, "isTTY", { configurable: true, value: false });
     await expect(runAgentCommand({ cwd: "." })).rejects.toThrow("interactive terminal");
     expect(mocks.whoami).not.toHaveBeenCalled();
-  });
-  it("detects OpenTUI supported runtimes", () => {
-    expect(supportsOpenTui({ node: "24.21.0" })).toBe(false);
-    expect(supportsOpenTui({ node: "26.3.0" })).toBe(false);
-    expect(supportsOpenTui({ node: "26.4.0" })).toBe(true);
-    expect(supportsOpenTui({ node: "27.0.0" })).toBe(true);
-    expect(supportsOpenTui({ node: "24.21.0", bun: "1.4.2" })).toBe(true);
-    expect(supportsOpenTui({ node: "24.21.0", bun: "1.2.0" })).toBe(false);
   });
 });

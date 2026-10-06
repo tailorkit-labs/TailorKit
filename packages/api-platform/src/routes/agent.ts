@@ -80,7 +80,8 @@ const chat = protectedRouter
           const { done, value } = await Promise.race([chunks.next(), failure]);
           if (done) break;
           if (value.type === "error") throw new Error("Builder failed");
-          if (value.type !== "finish") yield value;
+          if (value.type !== "finish")
+            yield value.type === "start" ? { ...value, messageId: run.runId } : value;
         }
         // Let sandbox stop finish before the CLI starts its next turn.
         await result;

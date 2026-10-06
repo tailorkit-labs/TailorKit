@@ -39,6 +39,7 @@ const input = {
 
 function run(parts: unknown[]) {
   return {
+    runId: "run-1",
     cancel: mocks.cancel,
     returnValue: Promise.resolve({}),
     readable: new ReadableStream({
@@ -78,6 +79,7 @@ beforeEach(() => {
 describe("platform builder chat", () => {
   it("streams SDK chunks and starts each turn with the client's full UI history", async () => {
     const events = await consume();
+    expect(events).toContainEqual({ type: "start", messageId: "run-1" });
     expect(events).toContainEqual({ type: "text-delta", id: "text-1", delta: "Hello" });
     expect(events.at(-1)).toEqual({ type: "finish" });
     const first = mocks.start.mock.lastCall![1][0];
