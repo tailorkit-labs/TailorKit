@@ -1,0 +1,39 @@
+packages/builder-agent/src/agent.ts
+  s_2a177a38ffd23e::t_69379d9432a872 2,91-99
+packages/builder-agent/src/tools/grep.ts
+  s_2a177a38ffd23e::t_69379d9432a872 3-10,13,27,29-30,44
+packages/builder-agent/src/tools/ls.ts
+  s_2a177a38ffd23e::t_69379d9432a872 3-10,13,19,21-23
+packages/builder-agent/src/tools/read.ts
+  s_2a177a38ffd23e::t_69379d9432a872 3,6,30,32-34
+packages/builder-agent/src/tools/glob.ts
+  s_2a177a38ffd23e::t_69379d9432a872 3-9,12,22,24-26
+packages/builder-agent/src/tools/write.ts
+  s_2a177a38ffd23e::t_69379d9432a872 3,6,13,15-16,18
+packages/builder-agent/src/tools/bash.ts
+  s_2a177a38ffd23e::t_69379d9432a872 3,6,17,19-20,24
+packages/builder-agent/src/tools/utils.ts
+  s_2a177a38ffd23e::t_98d2110bf026f7 32
+  s_2a177a38ffd23e::t_69379d9432a872 3-5,29-31,33-44
+  s_2a177a38ffd23e::t_ff82e88ff9003d 45
+packages/builder-agent/src/tools/bash.test.ts
+  s_2a177a38ffd23e::t_865158c598f6c3 72
+packages/builder-agent/src/tools/edit.ts
+  s_2a177a38ffd23e::t_69379d9432a872 4,7,22,24-25,29,57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4fd541e97af80bb1c5fe377c2abdf6a6692de885",
+  "prompts": {},
+  "sessions": {
+    "s_2a177a38ffd23e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10e8d-47e4-7e10-a544-aaadaaa77e0f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
