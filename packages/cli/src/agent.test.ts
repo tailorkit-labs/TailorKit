@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
+  load: vi.fn(),
   whoami: vi.fn(),
   token: vi.fn(),
   client: vi.fn(),
   tui: vi.fn(),
 }));
+vi.mock("@tailorkit/app/config/loader", () => ({ loadTailorKitConfig: mocks.load }));
 vi.mock("./auth", () => ({
   runWhoami: mocks.whoami,
   resolveHostUrl: async () => "https://host.test/api/tailorkit",
@@ -23,9 +25,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   Object.defineProperty(process.stdin, "isTTY", { configurable: true, value: true });
   Object.defineProperty(process.stdout, "isTTY", { configurable: true, value: true });
+  mocks.load.mockResolvedValue({ config: { appId: "app-one" } });
   mocks.whoami.mockResolvedValue({});
   mocks.token.mockResolvedValue({ deployToken: "cli-token" });
-  mocks.client.mockReturnValue({ agent: { chat: vi.fn() } });
+  mocks.client.mockReturnValue({ appAgent: { chat: vi.fn() } });
   mocks.tui.mockResolvedValue(undefined);
 });
 afterEach(() => {
@@ -39,17 +42,24 @@ afterEach(() => {
 });
 
 describe("agent command", () => {
-  it("uses host credentials and a fresh local session each launch", async () => {
+  it("uses host credentials and the stable app ID across launches", async () => {
     await runAgentCommand({ cwd: "." });
     await runAgentCommand({ cwd: "." });
     expect(mocks.client).toHaveBeenCalledWith({
       url: "https://host.test/api/tailorkit",
       headers: { authorization: "Bearer cli-token" },
     });
-    const first = mocks.tui.mock.calls[0]![0].sessionId;
-    const second = mocks.tui.mock.calls[1]![0].sessionId;
-    expect(first).toMatch(/^[0-9a-f-]{36}$/u);
-    expect(second).not.toBe(first);
+    expect(mocks.tui.mock.calls.map(([options]) => options.appId)).toEqual(["app-one", "app-one"]);
+  });
+  it("allows an explicit app override", async () => {
+    await runAgentCommand({ cwd: ".", appId: "app-two" });
+    expect(mocks.tui.mock.lastCall![0].appId).toBe("app-two");
+  });
+  it("requires an app before authenticating or opening the terminal", async () => {
+    mocks.load.mockResolvedValueOnce({ config: {} });
+    await expect(runAgentCommand({ cwd: "." })).rejects.toThrow("Missing appId");
+    expect(mocks.whoami).not.toHaveBeenCalled();
+    expect(mocks.tui).not.toHaveBeenCalled();
   });
   it("propagates renderer failure", async () => {
     mocks.tui.mockRejectedValueOnce(new Error("Renderer failed"));

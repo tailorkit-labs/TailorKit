@@ -1,59 +1,48 @@
-# Builder agent
+# App agent terminal
 
-Run `tailorkit agent` from an app directory with `host` configured in
-`tailorkit.config.ts`. The usual `--config` and `--cwd` options also work. If you
-are not logged in, the command starts the existing host approval flow.
+Run `tailor agent` (or `tailorkit agent`) from an app directory with `host` and
+`appId` in `tailorkit.config.ts`. Use `--app <id>` to select another existing app;
+`--config` and `--cwd` also work. Missing credentials start the usual host login
+approval flow. An app must already exist in the platform and belong to the
+approved token's scope.
 
-The terminal interface uses `@ai-sdk/tui` and runs directly on Node 24.
-Type a message and press Enter. Responses render as streamed markdown; tool
-cards stay collapsed and reasoning is hidden. Use Esc or Ctrl+C to leave.
-Up/Down and PageUp/PageDown scroll; Ctrl+L repaints the screen.
-Each launch creates a fresh session, with no list, save, or resume command.
+The terminal uses `@ai-sdk/tui` on Node 24. It owns input, streamed responses,
+tool cards, message history and cancellation. Each launch starts fresh chat
+history; every turn sends that history and the same app ID. The app's code
+persists independently on its Drive. Edits happen remotely at `/workspace/app`;
+local source files are not uploaded or synchronized by this command.
 
-The CLI talks to the configured host's core server routes. The host verifies
-the CLI token and uses its project key to call the platform. The platform
-verifies the same token, derives a workspace name from the project, token, and
-local session ID, and runs the BUSL-licensed `@tailorkit/builder-agent` in a session-specific sandbox.
-Only public transport types and the generated API client ship with the CLI.
+The path is:
 
-Streaming uses the [oRPC AI SDK integration](https://orpc.dev/docs/integrations/ai-sdk):
-Workflow converts model parts to standard `UIMessageChunk` values, and oRPC carries
-the chunks through the platform and host. A small `ChatTransport` converts the
-oRPC iterator with `asyncIteratorToUnproxiedDataStream`. `runAgentTUI` owns input,
-message history, stream assembly, rendering, and cancellation. SDK validation
-checks the chunks; the OpenAPI stream describes their extensible SDK format.
+`AI SDK TUI → core appAgent.chat (oRPC) → generated Hey API appAgentChat →
+platform POST /app-agent/chat (OpenAPI/oRPC) → appAgent workflow`.
 
-The platform needs its existing database and `AUTH_SECRET`,
-plus AI Gateway credentials (`AI_GATEWAY_API_KEY` or Vercel OIDC) and Vercel
-Sandbox credentials. `BUILDER_AGENT_MODEL` optionally overrides the default
-Gateway model (`anthropic/claude-sonnet-5.5`). The web server enables
-`workflow/vite`, scanning the built builder-agent package; build dependencies
-before starting the web server, as the existing Turbo tasks do.
+The host verifies the CLI token and supplies its project key to the platform.
+The platform verifies the token and app scope, resolves public IDs to the
+canonical app UUID, converts UI messages to model messages, and starts
+`@tailorkit/app-agent`. Different users working on the same app use the same
+Drive. Busy Drives fail immediately; there is no queue.
 
-Chat uses a single `POST /agent/chat` platform endpoint, generated into the
-platform SDK with Hey API and relayed by the core host's `agent.chat` procedure.
-Each launch creates a local session ID; the SDK terminal UI keeps complete
-`UIMessage[]` history in memory and sends it with every turn through the transport.
-There are no agent start/close endpoints,
-KV session records, or previous-run lookups. Each workflow converts the UI
-messages to model messages before running the builder.
+Workflow model/tool parts become standard AI SDK UI chunks at the platform
+boundary. oRPC relays the stream, and a small `ChatTransport` adapts its iterator
+with `asyncIteratorToUnproxiedDataStream`. The response finishes after workflow
+cleanup releases the Drive. Disconnecting the terminal closes HTTP streaming;
+the durable workflow continues to its own timeout and cleanup.
 
-A named sandbox resumes the same workspace on follow-up turns. The builder also
-accepts the previous run's `sandboxId` so persisted threads can reuse their
-workspace.
-Compute stops after each completed turn. Workspace snapshots expire one day after
-last use, including when an older workspace is resumed. Vercel's VM timeout is
-separate from this retention policy. Exiting the CLI disconnects its response and
-discards local history.
-The durable workflow continues independently and owns sandbox cleanup, including
-stopping compute after errors. Its output stream closes after cleanup; setup
-failures emit a brief error before closing. Stopped workspace snapshots expire.
-Workflow execution logs follow the configured backend's retention policy.
+The platform needs its usual database and `AUTH_SECRET`, AI Gateway credentials
+(`AI_GATEWAY_API_KEY` or Vercel OIDC), and Vercel Sandbox credentials.
+The platform hardcodes `openai/gpt-6.1-sol`. The web app re-exports
+`@tailorkit/app-agent/workflows` from its `workflows/` directory for
+`workflow/vite` discovery; build dependencies with `vp pack` before starting it.
 
-Verification:
+After changing the platform route contract, regenerate the API and client:
 
 ```sh
-pnpm --filter @tailorkit/cli test
-pnpm --filter @tailorkit/core test
-pnpm --filter @tailorkit/api-platform test
+pnpm --filter @tailorkit/api-platform generate:openapi
+pnpm --filter @tailorkit/client-platform generate
 ```
+
+There is one chat endpoint, with no start/close APIs or server chat records.
+The workflow manages sandbox creation, sliding 15-minute expiry, heartbeat and
+final deletion. Drive contents survive sandbox deletion, including partial edits
+from a failed turn. The terminal command does not deploy the app or back up code.

@@ -4,17 +4,17 @@ import type { TailorKitRouterClient } from "@tailorkit/core/server";
 import type { ChatTransport, UIMessage } from "ai";
 
 interface AgentTuiOptions {
-  client: Pick<TailorKitRouterClient, "agent">;
+  client: Pick<TailorKitRouterClient, "appAgent">;
   hostUrl: string;
-  sessionId: string;
+  appId: string;
 }
 
-export async function openAgentTui({ client, hostUrl, sessionId }: AgentTuiOptions) {
+export async function openAgentTui({ client, hostUrl, appId }: AgentTuiOptions) {
   const transport: ChatTransport<UIMessage> = {
     async sendMessages({ messages, abortSignal }) {
-      const chunks = await client.agent.chat(
+      const chunks = await client.appAgent.chat(
         {
-          sessionId,
+          appId,
           messages: messages.filter(
             (message): message is UIMessage & { role: "user" | "assistant" } =>
               message.role !== "system",

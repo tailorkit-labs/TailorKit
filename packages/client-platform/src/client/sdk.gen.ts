@@ -10,9 +10,9 @@ import type {
 } from "./client/index.js";
 import { client } from "./client.gen.js";
 import type {
-  AgentChatData,
-  AgentChatResponse,
-  AgentChatResponses,
+  AppAgentChatData,
+  AppAgentChatResponse,
+  AppAgentChatResponses,
   AppsCreateData,
   AppsCreateResponses,
   AppsDeleteData,
@@ -77,11 +77,11 @@ export type Options<
   meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
 
-export const agentChat = <ThrowOnError extends boolean = false>(
-  options: Options<AgentChatData, ThrowOnError, AgentChatResponse>,
-): Promise<ServerSentEventsResult<AgentChatResponses>> =>
-  (options.client ?? client).sse.post<AgentChatResponses, unknown, ThrowOnError>({
-    url: "/agent/chat",
+export const appAgentChat = <ThrowOnError extends boolean = false>(
+  options: Options<AppAgentChatData, ThrowOnError, AppAgentChatResponse>,
+): Promise<ServerSentEventsResult<AppAgentChatResponses>> =>
+  (options.client ?? client).sse.post<AppAgentChatResponses, unknown, ThrowOnError>({
+    url: "/app-agent/chat",
     ...options,
     headers: {
       "Content-Type": "application/json",

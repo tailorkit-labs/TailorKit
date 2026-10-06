@@ -14,9 +14,9 @@ export type Schema0 =
       [key: string]: Schema0;
     };
 
-export type AgentChatData = {
+export type AppAgentChatData = {
   body: {
-    sessionId: string;
+    appId: string;
     messages: Array<{
       id: string;
       role: "user" | "assistant";
@@ -30,10 +30,10 @@ export type AgentChatData = {
   };
   path?: never;
   query?: never;
-  url: "/agent/chat";
+  url: "/app-agent/chat";
 };
 
-export type AgentChatResponses = {
+export type AppAgentChatResponses = {
   /**
    * OK
    */
@@ -61,7 +61,7 @@ export type AgentChatResponses = {
       };
 };
 
-export type AgentChatResponse = AgentChatResponses[keyof AgentChatResponses];
+export type AppAgentChatResponse = AppAgentChatResponses[keyof AppAgentChatResponses];
 
 export type AppsRuntimeSessionData = {
   body: {

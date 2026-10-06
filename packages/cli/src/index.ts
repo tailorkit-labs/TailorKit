@@ -341,12 +341,14 @@ cli
   });
 
 cli
-  .command("agent", "Chat with the TailorKit builder agent")
+  .command("agent", "Chat with the TailorKit app agent")
+  .option("--app <id>", "App ID (defaults to appId in tailorkit.config.ts)")
   .option("--config <path>", "Path to tailorkit config")
   .action(async (options: Record<string, unknown>) => {
     try {
       const { runAgentCommand } = await import("./agent");
       await runAgentCommand({
+        appId: options.app as string | undefined,
         configPath: options.config as string | undefined,
         cwd: String(options.cwd ?? "."),
         onLoginRequired: () =>

@@ -31,6 +31,7 @@
     "@tailorkit/api": "workspace:*",
     "@tailorkit/api-platform": "workspace:*",
     "@tailorkit/api-utils": "workspace:*",
+    "@tailorkit/app-agent": "workspace:*",
     "@tailorkit/asset-delivery": "workspace:*",
     "@tailorkit/auth": "workspace:*",
     "@tailorkit/db": "workspace:*",

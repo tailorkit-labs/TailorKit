@@ -22,6 +22,6 @@ export const agentMessagesSchema = z
   .min(1);
 
 export const agentChatSchema = z.object({
-  sessionId: z.uuid(),
+  appId: z.string().min(1),
   messages: agentMessagesSchema,
 });

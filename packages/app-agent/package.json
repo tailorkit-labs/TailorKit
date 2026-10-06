@@ -1,27 +1,29 @@
 {
-  "name": "@tailorkit/builder-agent",
+  "name": "@tailorkit/app-agent",
   "version": "0.0.0",
   "private": true,
   "license": "BUSL-1.1",
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./workflows": {
+      "types": "./dist/workflows.d.mts",
+      "import": "./dist/workflows.mjs"
     }
   },
   "scripts": {
-    "build": "vp build && tsc -p tsconfig.build.json",
+    "build": "vp pack",
     "check-types": "tsc --noEmit",
     "test": "vp test run"
   },
   "dependencies": {
-    "@ai-sdk/sandbox-vercel": "1.0.138",
     "@ai-sdk/workflow": "2.0.58",
     "@vercel/sandbox": "3.5.1",
     "ai": "catalog:",
     "workflow": "5.0.1",
-    "yaml": "2.9.1",
     "zod": "catalog:"
   },
   "devDependencies": {

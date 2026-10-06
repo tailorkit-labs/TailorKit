@@ -40,7 +40,7 @@
     }
   },
   "scripts": {
-    "build": "vp pack src/index.ts src/runtime/auth.ts src/context.ts src/pagination.ts src/preview-token.ts src/preview-ws.ts src/preview-ws-auth.ts src/preview-build-store.ts src/preview-lifecycle.ts src/procedures.ts src/cli-token.ts src/public-id.ts src/asset-url.ts src/assets.ts src/scope.ts src/routes/apps.ts src/routes/runtime.ts src/routes/cli-auth.ts src/routes/deployments.ts src/routes/preview.ts src/routes/preview-grants.ts src/routes/agent.ts src/agent-events.ts --format esm --dts --clean",
+    "build": "vp pack src/index.ts src/runtime/auth.ts src/context.ts src/pagination.ts src/preview-token.ts src/preview-ws.ts src/preview-ws-auth.ts src/preview-build-store.ts src/preview-lifecycle.ts src/procedures.ts src/cli-token.ts src/public-id.ts src/asset-url.ts src/assets.ts src/scope.ts src/routes/apps.ts src/routes/runtime.ts src/routes/cli-auth.ts src/routes/deployments.ts src/routes/preview.ts src/routes/preview-grants.ts src/routes/app-agent.ts --format esm --dts --clean",
     "check-types": "tsc --noEmit",
     "generate:openapi": "node --conditions=development --import tsx scripts/generate-openapi.ts && vp fmt openapi.json",
     "test": "vp test run"
@@ -52,9 +52,9 @@
     "@orpc/zod": "catalog:",
     "@tailorkit/api-utils": "workspace:*",
     "@tailorkit/app": "workspace:*",
+    "@tailorkit/app-agent": "workspace:*",
     "@tailorkit/asset-delivery": "workspace:*",
     "@tailorkit/auth": "workspace:*",
-    "@tailorkit/builder-agent": "workspace:*",
     "@tailorkit/db": "workspace:*",
     "@tailorkit/env": "workspace:*",
     "@tailorkit/kv": "workspace:*",

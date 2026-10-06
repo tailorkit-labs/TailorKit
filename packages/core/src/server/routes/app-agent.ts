@@ -1,10 +1,10 @@
 import { eventIterator, ORPCError } from "@orpc/server";
 import { agentChatSchema, agentChunkSchema } from "@tailorkit/client-platform/agent";
-import { agentChat } from "@tailorkit/client-platform/client";
+import { appAgentChat } from "@tailorkit/client-platform/client";
 import { getCliDeployToken, o, requireCliDeployToken } from "../procedures";
 
 /** CLI calls the host; only the host supplies the platform project credential. */
-export const agentRouter = {
+export const appAgentRouter = {
   chat: o
     .use(requireCliDeployToken)
     .input(agentChatSchema)
@@ -17,7 +17,7 @@ export const agentRouter = {
       try {
         let streamError: unknown;
         let done = false;
-        const { stream } = await agentChat({
+        const { stream } = await appAgentChat({
           body: { ...input, deployToken: getCliDeployToken(context.request) },
           client: context.platform,
           headers: context.platformHeaders,
@@ -36,11 +36,11 @@ export const agentRouter = {
         signal?.throwIfAborted();
         if (streamError)
           throw new ORPCError("BAD_GATEWAY", {
-            message: "The builder agent stream failed. Start a new session.",
+            message: "The app agent stream failed. Try again.",
           });
         if (!done)
           throw new ORPCError("BAD_GATEWAY", {
-            message: "The agent stream ended unexpectedly. Start a new session.",
+            message: "The agent stream ended unexpectedly. Try again.",
           });
       } finally {
         // Iterator cancellation must also terminate the upstream HTTP stream.

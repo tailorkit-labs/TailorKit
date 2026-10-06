@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => {
       ? [reactPlugin]
       : [
           workflow({
-            dirs: [resolve(import.meta.dirname, "../../packages/builder-agent/dist")],
+            dirs: [resolve(import.meta.dirname, "workflows")],
             runtime: "nodejs24.x",
           }),
           devtools(),
@@ -82,7 +82,7 @@ export default defineConfig(({ mode }) => {
     },
     ssr: {
       external: isDev ? undefined : serverPackages,
-      noExternal: ["@tailorkit/api-platform", "@tailorkit/builder-agent"],
+      noExternal: ["@tailorkit/api-platform", "@tailorkit/app-agent"],
     },
   };
 });

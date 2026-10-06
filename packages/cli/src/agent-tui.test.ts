@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 const mocks = vi.hoisted(() => ({ tui: vi.fn() }));
 vi.mock("@ai-sdk/tui", () => ({ runAgentTUI: mocks.tui }));
 const { openAgentTui } = await import("./agent-tui");
-const sessionId = "a3e7568a-c4f7-4ac0-8c35-71ff0f4cd002";
+const appId = "a3e7568a-c4f7-4ac0-8c35-71ff0f4cd002";
 const messages: UIMessage[] = [
   { id: "user-1", role: "user", parts: [{ type: "text", text: "Build" }] },
   {
@@ -30,8 +30,8 @@ describe("AI SDK terminal transport", () => {
   it("forwards the SDK's complete history and abort signal to the host client", async () => {
     const chat = vi.fn(
       async (
-        _input: Parameters<TailorKitRouterClient["agent"]["chat"]>[0],
-        _options?: Parameters<TailorKitRouterClient["agent"]["chat"]>[1],
+        _input: Parameters<TailorKitRouterClient["appAgent"]["chat"]>[0],
+        _options?: Parameters<TailorKitRouterClient["appAgent"]["chat"]>[1],
       ) =>
         (async function* () {
           yield { type: "start" as const, messageId: "run-2" };
@@ -41,7 +41,7 @@ describe("AI SDK terminal transport", () => {
           yield { type: "finish" as const };
         })(),
     );
-    await openAgentTui({ client: { agent: { chat } }, hostUrl: "https://host.test", sessionId });
+    await openAgentTui({ client: { appAgent: { chat } }, hostUrl: "https://host.test", appId });
     const options = mocks.tui.mock.lastCall![0];
     expect(options).toMatchObject({
       title: "TailorKit Agent · https://host.test",
@@ -60,7 +60,7 @@ describe("AI SDK terminal transport", () => {
     for await (const message of readUIMessageStream({ stream, terminateOnError: true }))
       answer = message;
     expect(answer).toMatchObject({ id: "run-2", parts: [{ type: "text", text: "Continued" }] });
-    expect(chat).toHaveBeenCalledWith({ sessionId, messages }, { signal: controller.signal });
+    expect(chat).toHaveBeenCalledWith({ appId, messages }, { signal: controller.signal });
     controller.abort();
     expect(chat.mock.calls[0]![1]?.signal?.aborted).toBe(true);
     expect(await options.transport.reconnectToStream({ chatId: "sdk-chat-id" })).toBeNull();

@@ -6,9 +6,12 @@ import { canonicalizeScope } from "../scope";
 
 const mocks = vi.hoisted(() => ({
   token: vi.fn(),
+  app: vi.fn(),
   start: vi.fn(),
 }));
-vi.mock("@tailorkit/db", () => ({ db: { query: { cliToken: { findFirst: mocks.token } } } }));
+vi.mock("@tailorkit/db", () => ({
+  db: { query: { cliToken: { findFirst: mocks.token }, app: { findFirst: mocks.app } } },
+}));
 vi.mock("@tailorkit/api-utils/dev-delay", () => ({
   devDelayMiddleware: async ({ next }: { next: () => unknown }) => next(),
 }));
@@ -19,16 +22,16 @@ vi.mock("@tailorkit/api-utils/rate-limiting", () => ({
     async ({ next }: { next: () => unknown }) =>
       next(),
 }));
-vi.mock("@tailorkit/builder-agent", () => ({ appAgent: vi.fn() }));
+vi.mock("@tailorkit/app-agent/workflows", () => ({ appAgent: vi.fn() }));
 vi.mock("workflow/api", () => ({ start: mocks.start }));
 
-const { agentRouter } = await import("./agent");
+const { appAgentRouter } = await import("./app-agent");
 const context = { project: { id: "project" }, organization: { id: "org" } } as Context;
 const scope = canonicalizeScope({ name: "org", value: { tenant: "one" } });
 const input = {
   body: {
     deployToken: "token",
-    sessionId: "a3e7568a-c4f7-4ac0-8c35-71ff0f4cd002",
+    appId: "a3e7568a-c4f7-4ac0-8c35-71ff0f4cd002",
     messages: [{ id: "user-1", role: "user" as const, parts: [{ type: "text", text: "Build" }] }],
   },
 };
@@ -36,6 +39,7 @@ const input = {
 function run(parts: unknown[]) {
   return {
     runId: "run-1",
+    returnValue: Promise.resolve({ messages: [] }),
     readable: new ReadableStream({
       start(controller) {
         for (const part of parts) controller.enqueue(part);
@@ -45,13 +49,14 @@ function run(parts: unknown[]) {
   };
 }
 async function consume(options = { context }) {
-  const chunks = await call(agentRouter.chat, input, options);
+  const chunks = await call(appAgentRouter.chat, input, options);
   const events = [];
   for await (const event of chunks) events.push(event);
   return events;
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.app.mockResolvedValue({ id: "app-one" });
   mocks.token.mockResolvedValue({
     id: "cli-one",
     scope: scope.scope,
@@ -69,14 +74,14 @@ beforeEach(() => {
   );
 });
 
-describe("platform builder chat", () => {
+describe("platform app chat", () => {
   it("streams SDK chunks and starts each turn with the client's full UI history", async () => {
     const events = await consume();
     expect(events).toContainEqual({ type: "start", messageId: expect.any(String) });
     expect(events).toContainEqual({ type: "text-delta", id: "text-1", delta: "Hello" });
     expect(events.at(-1)).toEqual({ type: "finish" });
     const first = mocks.start.mock.lastCall![1][0];
-    expect(first.messages).toEqual(input.body.messages);
+    expect(first.messages).toEqual([{ role: "user", content: [{ type: "text", text: "Build" }] }]);
     const followup = [
       ...input.body.messages,
       {
@@ -96,7 +101,7 @@ describe("platform builder chat", () => {
       { id: "user-2", role: "user" as const, parts: [{ type: "text", text: "Continue" }] },
     ];
     const stream = await call(
-      agentRouter.chat,
+      appAgentRouter.chat,
       { body: { ...input.body, messages: followup } },
       { context },
     );
@@ -105,7 +110,7 @@ describe("platform builder chat", () => {
     }
     expect(mocks.start.mock.lastCall![1][0]).toMatchObject({
       appId: first.appId,
-      messages: followup,
+      messages: expect.arrayContaining([expect.objectContaining({ role: "tool" })]),
     });
   });
 
@@ -130,7 +135,7 @@ describe("platform builder chat", () => {
         { type: "text-end", id: "new" },
       ]),
     );
-    const chunks = await call(agentRouter.chat, input, { context });
+    const chunks = await call(appAgentRouter.chat, input, { context });
     let latest;
     for await (const message of readUIMessageStream({
       stream: asyncIteratorToUnproxiedDataStream(chunks),
@@ -144,11 +149,9 @@ describe("platform builder chat", () => {
     expect(latest?.parts).not.toContainEqual(expect.objectContaining({ text: "discard me" }));
   });
 
-  it("isolates the same client session ID by authenticated project and CLI token", async () => {
+  it("uses the authorized app's canonical ID across tokens and aliases", async () => {
     await consume();
-    const first = mocks.start.mock.lastCall![1][0].appId;
-    await consume({ context: { ...context, project: { ...context.project, id: "other" } } });
-    const otherProject = mocks.start.mock.lastCall![1][0].appId;
+    expect(mocks.start.mock.lastCall![1][0].appId).toBe("app-one");
     mocks.token.mockResolvedValueOnce({
       id: "cli-two",
       scope: scope.scope,
@@ -156,8 +159,49 @@ describe("platform builder chat", () => {
       expiresAt: new Date(Date.now() + 1000),
     });
     await consume();
-    const otherToken = mocks.start.mock.lastCall![1][0].appId;
-    expect(new Set([first, otherProject, otherToken]).size).toBe(3);
+    expect(mocks.start.mock.lastCall![1][0].appId).toBe("app-one");
+  });
+
+  it("rejects apps outside the authenticated project and scope", async () => {
+    mocks.app.mockResolvedValue(null);
+    await expect(consume()).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(mocks.start).not.toHaveBeenCalled();
+  });
+
+  it("waits for workflow cleanup before finishing the response", async () => {
+    let finish!: () => void;
+    const returnValue = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    mocks.start.mockResolvedValueOnce({
+      ...run([{ type: "text-start", id: "text" }]),
+      returnValue,
+    });
+    let complete = false;
+    const consuming = consume().then(() => {
+      complete = true;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(complete).toBe(false);
+    finish();
+    await consuming;
+    expect(complete).toBe(true);
+  });
+
+  it("surfaces workspace setup failures that happen before the model stream", async () => {
+    const cancelStream = vi.fn();
+    mocks.start.mockResolvedValueOnce({
+      ...run([]),
+      readable: new ReadableStream({ cancel: cancelStream }),
+      get returnValue() {
+        return Promise.reject(new Error("This app is already being edited."));
+      },
+    });
+    expect(await consume()).toContainEqual({
+      type: "error",
+      errorText: "This app is already being edited.",
+    });
+    expect(cancelStream).toHaveBeenCalledOnce();
   });
 
   it("rejects expired/revoked tokens and internal runtime credentials", async () => {
@@ -177,7 +221,7 @@ describe("platform builder chat", () => {
   it("rejects malformed SDK parts and client-supplied system messages", async () => {
     await expect(
       call(
-        agentRouter.chat,
+        appAgentRouter.chat,
         {
           body: {
             ...input.body,
@@ -189,7 +233,7 @@ describe("platform builder chat", () => {
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     await expect(
       call(
-        agentRouter.chat,
+        appAgentRouter.chat,
         {
           body: {
             ...input.body,
@@ -226,7 +270,7 @@ describe("platform builder chat", () => {
       }),
     });
     const controller = new AbortController();
-    const stream = await call(agentRouter.chat, input, { context, signal: controller.signal });
+    const stream = await call(appAgentRouter.chat, input, { context, signal: controller.signal });
     expect(await stream.next()).toMatchObject({ value: { type: "start" } });
     controller.abort();
     await expect(stream.next()).rejects.toMatchObject({ name: "AbortError" });

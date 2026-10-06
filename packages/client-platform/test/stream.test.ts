@@ -6,7 +6,7 @@ describe("generated SSE cancellation", () => {
     const controller = new AbortController();
     const cancel = vi.fn(() => Promise.reject(new DOMException("Connection closed", "AbortError")));
     const { stream } = createSseClient({
-      url: "https://platform.test/agent/chat",
+      url: "https://platform.test/app-agent/chat",
       method: "POST",
       signal: controller.signal,
       sseMaxRetryAttempts: 1,
