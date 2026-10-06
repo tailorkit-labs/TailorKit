@@ -1,0 +1,77 @@
+packages/builder-agent/src/agent.ts
+  s_2a177a38ffd23e::t_ad844e3ac16d06 2-8,178-181
+  s_2a177a38ffd23e::t_a5b3e2168327ba 17,19-24,26-27,150,156
+  s_2a177a38ffd23e::t_47d05abef34c3d 25
+packages/client-platform/src/client/types.gen.ts
+  s_2a177a38ffd23e::t_a386aa4555762c 20-29,31,33
+packages/client-platform/scripts/normalize-sse-cancellation.mjs
+  s_2a177a38ffd23e::t_d1ff0729a4a28a 1-8
+packages/api-platform/src/routes/agent.test.ts
+  s_2a177a38ffd23e::t_911b023c039b55 26,40,43-49,52-57,78-84,115-119,140,153-158,165-167,170,172,177,181,184,211,214-216,220,226,230,240-241,243
+  s_2a177a38ffd23e::t_ad844e3ac16d06 32-38,67-74,85-90,92-95,98,100-103,105,108-114,120-139,159-163,178-180,187-194,196,198-210,218,222,232-237
+packages/client-platform/src/client/sdk.gen.ts
+  s_2a177a38ffd23e::t_a386aa4555762c 84
+packages/api-platform/src/agent-events.ts
+  s_2a177a38ffd23e::t_ad844e3ac16d06 12-21
+  s_2a177a38ffd23e::t_a5b3e2168327ba 11,22-26
+packages/core/src/server/agent.test.ts
+  s_2a177a38ffd23e::t_ad844e3ac16d06 12-14,34,115-117,123-125
+  s_2a177a38ffd23e::t_911b023c039b55 38,77,83-84,89,132,144
+packages/core/src/server/routes/agent.ts
+  s_2a177a38ffd23e::t_a5b3e2168327ba 2-3,10,21
+packages/api-platform/package.json
+  s_2a177a38ffd23e::t_a5b3e2168327ba 43
+packages/cli/src/agent-tui.ts
+  s_2a177a38ffd23e::t_bf3fc9774d4794 74,138
+  s_2a177a38ffd23e::t_29466f05b69ef0 119
+  s_2a177a38ffd23e::t_a5b3e2168327ba 1,13,21,110-111,114,126,154
+  s_2a177a38ffd23e::t_b90d91ccb6071f 120
+packages/cli/src/agent.ts
+  s_2a177a38ffd23e::t_a5b3e2168327ba 1,58
+packages/client-platform/src/agent.ts
+  s_2a177a38ffd23e::t_ad844e3ac16d06 13-22
+  s_2a177a38ffd23e::t_a5b3e2168327ba 12,23-27
+packages/builder-agent/src/agent.test.ts
+  s_2a177a38ffd23e::t_911b023c039b55 1,104-105,107,113,119-121,246
+  s_2a177a38ffd23e::t_ad844e3ac16d06 171-173,225-227,247-249
+  s_2a177a38ffd23e::t_d81dd2af2a4b68 106
+packages/api-platform/src/routes/agent.ts
+  s_2a177a38ffd23e::t_a5b3e2168327ba 1-2,9-10,13,36-37,45,47-49,51-53,56-58,66-75,85,87,91,95-103,108
+  s_2a177a38ffd23e::t_ad844e3ac16d06 54-55,59-65
+.changeset/cli-builder-agent.md
+  s_2a177a38ffd23e::t_ad844e3ac16d06 8-9
+packages/cli/AGENT.md
+  s_2a177a38ffd23e::t_8fa2040b29ce51 18,44-45
+  s_2a177a38ffd23e::t_ad844e3ac16d06 12,17,28,35-43,46-47
+packages/client-platform/package.json
+  s_2a177a38ffd23e::t_d1ff0729a4a28a 41
+packages/cli/scripts/verify-agent-tui.ts
+  s_2a177a38ffd23e::t_911b023c039b55 4,11,18-19,64-65,69-72
+  s_2a177a38ffd23e::t_ad844e3ac16d06 66-68,74-82
+  s_2a177a38ffd23e::t_b90d91ccb6071f 21,73
+packages/cli/src/agent.test.ts
+  s_2a177a38ffd23e::t_911b023c039b55 30,45-46,52-55,57,61,67,72
+packages/client-platform/src/client/core/serverSentEvents.gen.ts
+  s_2a177a38ffd23e::t_d1ff0729a4a28a 145
+packages/client-platform/test/stream.test.ts
+  s_2a177a38ffd23e::t_d1ff0729a4a28a 1-12,22-27,29-31
+  s_2a177a38ffd23e::t_1a02afceecfdc7 13-21,28
+packages/api-platform/openapi.json
+  s_2a177a38ffd23e::t_71973fe6a6663d 13,15,23,25-58,66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "58d0439a794e433684ff81b654f8cb7e6c2d41b0",
+  "prompts": {},
+  "sessions": {
+    "s_2a177a38ffd23e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10e8d-47e4-7e10-a544-aaadaaa77e0f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
