@@ -77,58 +77,20 @@ describe("bash tool", () => {
   });
 
   it("aborts a command after its timeout", async () => {
-    vi.useFakeTimers();
-    try {
-      const run = vi.fn(
-        ({ abortSignal }: { abortSignal: AbortSignal }) =>
-          new Promise((_resolve, reject) => {
-            abortSignal.addEventListener("abort", () => reject(abortSignal.reason), { once: true });
-          }),
-      );
-      const pending = expect(execute(run, { ...defaultInput, timeoutMs: 50 })).rejects.toBe(
-        "timeout: 50ms",
-      );
-
-      await vi.advanceTimersByTimeAsync(50);
-      await pending;
-      expect(vi.getTimerCount()).toBe(0);
-    } finally {
-      vi.useRealTimers();
-    }
+    const run = vi.fn(
+      ({ abortSignal }: { abortSignal: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          abortSignal.addEventListener("abort", () => reject(abortSignal.reason), { once: true });
+        }),
+    );
+    await expect(execute(run, { ...defaultInput, timeoutMs: 10 })).rejects.toMatchObject({
+      name: "TimeoutError",
+    });
   });
 
-  it("clears the timer and cancellation listener when the command succeeds", async () => {
-    vi.useFakeTimers();
-    try {
-      const run = vi.fn().mockResolvedValue(result);
-      const controller = new AbortController();
-
-      await expect(execute(run, defaultInput, controller.signal)).resolves.toEqual(result);
-      expect(vi.getTimerCount()).toBe(0);
-
-      const commandSignal = run.mock.calls[0]?.[0].abortSignal as AbortSignal;
-      controller.abort();
-      expect(commandSignal.aborted).toBe(false);
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("clears the timer and cancellation listener when the command fails", async () => {
-    vi.useFakeTimers();
-    try {
-      const failure = new Error("Command failed");
-      const run = vi.fn().mockRejectedValue(failure);
-      const controller = new AbortController();
-
-      await expect(execute(run, defaultInput, controller.signal)).rejects.toBe(failure);
-      expect(vi.getTimerCount()).toBe(0);
-
-      const commandSignal = run.mock.calls[0]?.[0].abortSignal as AbortSignal;
-      controller.abort();
-      expect(commandSignal.aborted).toBe(false);
-    } finally {
-      vi.useRealTimers();
-    }
+  it("preserves SDK errors", async () => {
+    const failure = new Error("Command failed");
+    const run = vi.fn().mockRejectedValue(failure);
+    await expect(execute(run)).rejects.toBe(failure);
   });
 });

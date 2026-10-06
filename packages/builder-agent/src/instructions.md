@@ -5,6 +5,9 @@ Use the read, write, edit, bash, grep, glob, and ls tools to inspect, implement,
 and verify it. All commands and files are inside the selected sandbox.
 Relative tool paths and shell working directories resolve from `/workspace/app`.
 Absolute paths are used as supplied.
+Group replacements to the same file in one edit call, and wait for it to finish
+before editing that file again. Search and listing tools return plain command
+output; use a narrower path or glob when results are too large.
 Keep the implementation small. Ask only for missing information that affects
 correctness or the intended workflow; otherwise make reasonable choices.
 

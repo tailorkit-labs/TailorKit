@@ -21,12 +21,6 @@ export const fileChangeResultSchema = z.object({
   path: z.string(),
 });
 
-export const searchResultSchema = z.object({
-  exitCode: z.number(),
-  stderr: z.string(),
-  truncated: z.boolean(),
-});
-
 export function ensureSandbox(sandbox?: SandboxSession): asserts sandbox is SandboxSession {
   if (!sandbox) throw new FatalError("Sandbox not available");
 }
