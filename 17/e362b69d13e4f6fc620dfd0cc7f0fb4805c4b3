@@ -1,0 +1,31 @@
+packages/api-platform/src/routes/preview.ts
+  s_2a177a38ffd23e::t_8878fc4c1d8711 17,66-70,239-243
+packages/api-platform/package.json
+  s_2a177a38ffd23e::t_8878fc4c1d8711 43
+packages/api-platform/src/routes/cli-auth.ts
+  s_2a177a38ffd23e::t_8878fc4c1d8711 12,310-314,318
+packages/api-platform/src/cli-token.ts
+  s_2a177a38ffd23e::t_8878fc4c1d8711 1-30
+packages/api-platform/src/cli-token.test.ts
+  s_2a177a38ffd23e::t_eae4f3e17efcb3 1-80
+packages/api-platform/src/routes/cli-auth.test.ts
+  s_2a177a38ffd23e::t_8878fc4c1d8711 133
+packages/api-platform/src/routes/agent.ts
+  s_2a177a38ffd23e::t_8878fc4c1d8711 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "17e362b69d13e4f6fc620dfd0cc7f0fb4805c4b3",
+  "prompts": {},
+  "sessions": {
+    "s_2a177a38ffd23e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10e8d-47e4-7e10-a544-aaadaaa77e0f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
