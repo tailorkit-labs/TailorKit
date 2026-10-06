@@ -9,4 +9,19 @@ export const agentChunkSchema = z
   .describe("An AI SDK UIMessageChunk. Fields depend on the chunk type.");
 
 export type AgentChunk = UIMessageChunk;
-export const agentMessageSchema = z.string().trim().min(1).max(32_000);
+/** Parts stay extensible; the platform validates their SDK shapes before running. */
+export const agentMessagesSchema = z
+  .array(
+    z.object({
+      id: z.string().min(1),
+      role: z.enum(["user", "assistant"]),
+      parts: z.array(z.looseObject({ type: z.string() })).min(1),
+      metadata: z.unknown().optional(),
+    }),
+  )
+  .min(1);
+
+export const agentChatSchema = z.object({
+  sessionId: z.uuid(),
+  messages: agentMessagesSchema,
+});

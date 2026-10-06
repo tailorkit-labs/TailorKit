@@ -1,4 +1,4 @@
-import type { ModelMessage } from "ai";
+import { convertToModelMessages, type ModelMessage, type UIMessage } from "ai";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { appAgent } from "./agent";
 import instructions from "./instructions.md?raw";
@@ -101,20 +101,24 @@ describe("agent skill instructions", () => {
       name: "app-test-app",
       image: "vercel/sandbox/universal",
       persistent: true,
+      resume: true,
+      timeout: 600_000,
+      snapshotExpiration: 86_400_000,
+      keepLastSnapshots: { count: 1 },
     });
     expect(mocks.getOrCreate.mock.calls[1]).toEqual(mocks.getOrCreate.mock.calls[0]);
     expect(mocks.getOrCreate.mock.calls[2]?.[0].name).toBe("app-other-app");
   });
 
-  it("returns the selected sandbox reference and reuses it for a follow-up", async () => {
+  it("resumes the same named workspace without looking up a previous workflow", async () => {
     mocks.run.mockResolvedValue({ exitCode: 0, stdout: "", stderr: "" });
     const input = { appId: "test-app", messages: [], model: "test-model" };
     const first = await appAgent(input);
 
     expect(first).toEqual({ messages: [], sandboxId: "test-sandbox" });
-    await appAgent({ ...input, sandboxId: first.sandboxId });
-    expect(mocks.getOrCreate).toHaveBeenCalledOnce();
-    expect(mocks.get).toHaveBeenCalledWith({ name: "test-sandbox", resume: true });
+    await appAgent(input);
+    expect(mocks.getOrCreate).toHaveBeenCalledTimes(2);
+    expect(mocks.getOrCreate.mock.calls[1]).toEqual(mocks.getOrCreate.mock.calls[0]);
   });
 
   it("stops the completed sandbox without deleting its files", async () => {
@@ -159,13 +163,14 @@ describe("agent skill instructions", () => {
     mocks.run.mockResolvedValue({ exitCode: 2, stdout: "", stderr: "Permission denied" });
     await expect(
       appAgent({
-        sandboxId: "previous",
         appId: "test-app",
         messages: [],
         model: "test-model",
       }),
     ).rejects.toThrow("Skill discovery failed");
-    expect(mocks.get).toHaveBeenCalledWith({ name: "previous", resume: true });
+    expect(mocks.getOrCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "app-test-app", resume: true }),
+    );
     expect(mocks.stop).toHaveBeenCalledOnce();
     expect(mocks.delete).not.toHaveBeenCalled();
   });
@@ -217,7 +222,9 @@ describe("agent skill instructions", () => {
         },
       }),
     });
-    const messages: ModelMessage[] = [{ role: "user", content: "Build my app" }];
+    const messages: UIMessage[] = [
+      { id: "user-1", role: "user", parts: [{ type: "text", text: "Build my app" }] },
+    ];
     const answer: ModelMessage = { role: "assistant", content: "App built" };
     mocks.stream.mockImplementationOnce(async ({ messages: input }) => ({
       messages: [...input, answer],
@@ -236,8 +243,10 @@ describe("agent skill instructions", () => {
     const catalogMessage = mocks.stream.mock.lastCall?.[0].messages[0];
     expect(catalogMessage.role).toBe("user");
     expect(JSON.parse(catalogMessage.content).skills[0].description).toBe(injection);
-    expect(result.messages).toEqual([...messages, answer]);
-    expect(messages).toEqual([{ role: "user", content: "Build my app" }]);
+    expect(result.messages).toEqual([...(await convertToModelMessages(messages)), answer]);
+    expect(messages).toEqual([
+      { id: "user-1", role: "user", parts: [{ type: "text", text: "Build my app" }] },
+    ]);
   });
 
   it("stops the workspace if agent construction fails", async () => {

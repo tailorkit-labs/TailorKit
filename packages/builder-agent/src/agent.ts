@@ -1,5 +1,11 @@
 import { WorkflowAgent, type ModelCallStreamPart } from "@ai-sdk/workflow";
-import { tool, type ModelMessage, type InferToolOutput, type ToolExecutionOptions } from "ai";
+import {
+  tool,
+  convertToModelMessages,
+  type UIMessage,
+  type InferToolOutput,
+  type ToolExecutionOptions,
+} from "ai";
 import { getWritable } from "workflow";
 import { Sandbox } from "@vercel/sandbox";
 import { createVercelNetworkSandboxSessionFromNativeSandbox } from "@ai-sdk/sandbox-vercel";
@@ -8,11 +14,17 @@ import { readTool, writeTool, editTool, bashTool, grepTool, globTool, lsTool } f
 import { formatSkills, getAvailableSkills } from "./skills";
 import instructions from "./instructions.md?raw";
 
-async function prepareSandbox(name: string, previousSandboxId?: string) {
+async function prepareSandbox(name: string) {
   "use step";
-  const nativeSandbox = previousSandboxId
-    ? await Sandbox.get({ name: previousSandboxId, resume: true })
-    : await Sandbox.getOrCreate({ name, image: "vercel/sandbox/universal", persistent: true });
+  const nativeSandbox = await Sandbox.getOrCreate({
+    name,
+    image: "vercel/sandbox/universal",
+    persistent: true,
+    resume: true,
+    timeout: 10 * 60 * 1000,
+    snapshotExpiration: 24 * 60 * 60 * 1000,
+    keepLastSnapshots: { count: 1 },
+  });
 
   try {
     const sandbox = createVercelNetworkSandboxSessionFromNativeSandbox(nativeSandbox);
@@ -134,17 +146,14 @@ export async function appAgent({
   messages,
   model,
   appId,
-  sandboxId: previousSandboxId,
 }: {
-  messages: ModelMessage[];
+  messages: UIMessage[];
   model: string;
   appId: string;
-  /** Pass the sandboxId returned by the previous run to continue its workspace. */
-  sandboxId?: string;
 }) {
   "use workflow";
 
-  const { sandboxId, catalog } = await prepareSandbox(`app-${appId}`, previousSandboxId);
+  const { sandboxId, catalog } = await prepareSandbox(`app-${appId}`);
   const context = { sandboxId };
 
   try {
@@ -166,7 +175,10 @@ export async function appAgent({
     const result = await agent.stream({
       // Workspace-authored metadata belongs in a lower-priority data message,
       // never in the authoritative instructions.
-      messages: [{ role: "user", content: formatSkills(catalog) }, ...messages],
+      messages: [
+        { role: "user", content: formatSkills(catalog) },
+        ...(await convertToModelMessages(messages)),
+      ],
       writable: getWritable<ModelCallStreamPart>(),
     });
     // WorkflowAgent returns the input history too; omit the temporary catalog

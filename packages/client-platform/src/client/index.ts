@@ -2,8 +2,6 @@
 
 export {
   agentChat,
-  agentClose,
-  agentStart,
   appsCreate,
   appsDelete,
   appsDeploy,
@@ -32,12 +30,6 @@ export type {
   AgentChatData,
   AgentChatResponse,
   AgentChatResponses,
-  AgentCloseData,
-  AgentCloseResponse,
-  AgentCloseResponses,
-  AgentStartData,
-  AgentStartResponse,
-  AgentStartResponses,
   AppsCreateData,
   AppsCreateResponse,
   AppsCreateResponses,

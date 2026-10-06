@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
 import { createTailorKitClient } from "@tailorkit/core/server";
 import { getDeployToken, NotLoggedInError, resolveHostUrl, runWhoami } from "./auth";
@@ -53,27 +54,6 @@ export async function runAgentCommand(options: AgentOptions) {
     url: hostUrl,
     headers: { authorization: `Bearer ${auth.deployToken}` },
   });
-  // Load the native renderer before creating a remote session.
   const { openAgentTui } = await import("./agent-tui");
-  const started = await client.agent.start({});
-  const session = "data" in started ? started.data : started;
-  if (!session) throw new Error("Unable to start the agent session.");
-  try {
-    await openAgentTui({ client, hostUrl, sessionId: session.sessionId });
-  } finally {
-    await closeAgentSession(client, session.sessionId);
-  }
-}
-
-async function closeAgentSession(
-  client: ReturnType<typeof createTailorKitClient>,
-  sessionId: string,
-) {
-  try {
-    await client.agent.close({ sessionId }, { signal: AbortSignal.timeout(10_000) });
-  } catch (error) {
-    // Disconnect cleanup may already have ended this session.
-    if (!(error && typeof error === "object" && "code" in error && error.code === "NOT_FOUND"))
-      throw error;
-  }
+  await openAgentTui({ client, hostUrl, sessionId: randomUUID() });
 }

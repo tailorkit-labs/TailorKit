@@ -13,10 +13,6 @@ import type {
   AgentChatData,
   AgentChatResponse,
   AgentChatResponses,
-  AgentCloseData,
-  AgentCloseResponses,
-  AgentStartData,
-  AgentStartResponses,
   AppsCreateData,
   AppsCreateResponses,
   AppsDeleteData,
@@ -81,35 +77,11 @@ export type Options<
   meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
 
-export const agentStart = <ThrowOnError extends boolean = false>(
-  options: Options<AgentStartData, ThrowOnError>,
-): RequestResult<AgentStartResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).post<AgentStartResponses, unknown, ThrowOnError>({
-    url: "/agent/start",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
 export const agentChat = <ThrowOnError extends boolean = false>(
   options: Options<AgentChatData, ThrowOnError, AgentChatResponse>,
 ): Promise<ServerSentEventsResult<AgentChatResponses>> =>
   (options.client ?? client).sse.post<AgentChatResponses, unknown, ThrowOnError>({
-    url: "/agent/{sessionId}/chat",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-export const agentClose = <ThrowOnError extends boolean = false>(
-  options: Options<AgentCloseData, ThrowOnError>,
-): RequestResult<AgentCloseResponses, unknown, ThrowOnError> =>
-  (options.client ?? client).post<AgentCloseResponses, unknown, ThrowOnError>({
-    url: "/agent/{sessionId}/close",
+    url: "/agent/chat",
     ...options,
     headers: {
       "Content-Type": "application/json",

@@ -9,6 +9,9 @@ import { z } from "zod";
 import { createTailorKitClient } from "./client";
 import { createTailorKitServer } from "./handler";
 
+const messages = [
+  { id: "user-1", role: "user" as const, parts: [{ type: "text" as const, text: "Build an app" }] },
+];
 const sessionId = "a3e7568a-c4f7-4ac0-8c35-71ff0f4cd002";
 const events: AgentChunk[] = [
   { type: "start", messageId: "answer" },
@@ -28,13 +31,11 @@ const events: AgentChunk[] = [
   { type: "finish" },
 ];
 
-function setup(
-  options: { events?: AgentChunk[]; status?: number; scopeName?: string; closed?: boolean } = {},
-) {
+function setup(options: { events?: AgentChunk[]; status?: number; scopeName?: string } = {}) {
   const requests: Request[] = [];
   const platform = new OpenAPIHandler({
     chat: os
-      .meta(openapi({ path: "/agent/{sessionId}/chat", method: "POST" }))
+      .meta(openapi({ path: "/agent/chat", method: "POST" }))
       .output(eventIterator(agentChunkSchema))
       .handler(async function* () {
         yield* options.events ?? events;
@@ -54,15 +55,6 @@ function setup(
             scope: { name: options.scopeName ?? "org", value: { tenant: "verified" } },
           });
         }
-        if (request.url.endsWith("/agent/start"))
-          return Response.json({ sessionId, expiresAt: "2026-10-06T01:00:00Z" });
-        if (request.url.endsWith("/close"))
-          return options.closed
-            ? Response.json(
-                { defined: false, code: "NOT_FOUND", message: "Agent session is unavailable." },
-                { status: 404 },
-              )
-            : Response.json({});
         if (options.status) return new Response("Unavailable", { status: options.status });
         const result = await platform.handle(request, { prefix: "/api/platform" });
         return result.response ?? new Response("Missing route", { status: 404 });
@@ -81,22 +73,20 @@ function setup(
 describe("host agent relay", () => {
   it("verifies CLI auth, uses the host project key, and round trips streamed events", async () => {
     const { client, requests } = setup();
-    await expect(client.agent.start({})).resolves.toMatchObject({ sessionId });
     const received = [];
-    for await (const event of await client.agent.chat({ sessionId, message: "Build an app" }))
+    for await (const event of await client.agent.chat({ sessionId, messages }))
       received.push(event);
     expect(received).toEqual(events);
-    await client.agent.close({ sessionId });
     for (const request of requests)
       expect(request.headers.get("authorization")).toBe("Bearer host-project-key");
     const chat = requests.find((request) => request.url.endsWith("/chat"))!;
-    expect(await chat.json()).toEqual({ deployToken: "cli-token", message: "Build an app" });
-    expect(requests.filter((request) => request.url.endsWith("/verify-token"))).toHaveLength(3);
+    expect(await chat.json()).toEqual({ deployToken: "cli-token", sessionId, messages });
+    expect(requests.filter((request) => request.url.endsWith("/verify-token"))).toHaveLength(1);
   });
 
   it("assembles AI SDK messages across the real oRPC and OpenAPI transports", async () => {
     const { client } = setup();
-    const chunks = await client.agent.chat({ sessionId, message: "Build an app" });
+    const chunks = await client.agent.chat({ sessionId, messages });
     let latest;
     for await (const message of readUIMessageStream({
       stream: asyncIteratorToUnproxiedDataStream(chunks),
@@ -122,25 +112,24 @@ describe("host agent relay", () => {
       fetch: async (input, init) =>
         server.handler(new Request(input, init), { authenticate: () => null }),
     });
-    await expect(client.agent.start({})).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    await expect(client.agent.chat({ sessionId, messages })).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
     expect(requests).toHaveLength(0);
-  });
-
-  it("preserves a closed session error for CLI disconnect cleanup", async () => {
-    const { client } = setup({ closed: true });
-    await expect(client.agent.close({ sessionId })).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("rejects a token for an undeclared host scope", async () => {
     const { client } = setup({ scopeName: "forged" });
-    await expect(client.agent.start({})).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    await expect(client.agent.chat({ sessionId, messages })).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
   });
 
   it("fails an interrupted stream without replaying the chat POST", async () => {
     const { client, requests } = setup({ events: events.slice(0, 2) });
     await expect(
       (async () => {
-        for await (const _event of await client.agent.chat({ sessionId, message: "Build" })) {
+        for await (const _event of await client.agent.chat({ sessionId, messages })) {
           /* consume */
         }
       })(),
@@ -152,7 +141,7 @@ describe("host agent relay", () => {
     const { client, requests } = setup({ status: 401 });
     await expect(
       (async () => {
-        for await (const _event of await client.agent.chat({ sessionId, message: "Build" })) {
+        for await (const _event of await client.agent.chat({ sessionId, messages })) {
           /* consume */
         }
       })(),

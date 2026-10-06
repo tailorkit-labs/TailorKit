@@ -10,67 +10,9 @@
   ],
   "openapi": "3.2.0",
   "paths": {
-    "/agent/start": {
-      "post": {
-        "operationId": "agent.start",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "deployToken": {
-                    "type": "string",
-                    "minLength": 1
-                  }
-                },
-                "required": ["deployToken"]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "sessionId": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    },
-                    "expiresAt": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["sessionId", "expiresAt"],
-                  "additionalProperties": false
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/agent/{sessionId}/chat": {
+    "/agent/chat": {
       "post": {
         "operationId": "agent.chat",
-        "parameters": [
-          {
-            "in": "path",
-            "required": true,
-            "name": "sessionId",
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-            }
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -78,17 +20,50 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "sessionId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "messages": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": ["user", "assistant"]
+                        },
+                        "parts": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["type"],
+                            "additionalProperties": {}
+                          }
+                        },
+                        "metadata": {}
+                      },
+                      "required": ["id", "role", "parts"]
+                    }
+                  },
                   "deployToken": {
                     "type": "string",
                     "minLength": 1
-                  },
-                  "message": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 32000
                   }
                 },
-                "required": ["deployToken", "message"]
+                "required": ["sessionId", "messages", "deployToken"]
               }
             }
           }
@@ -151,54 +126,6 @@
                       "required": ["event"]
                     }
                   ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/agent/{sessionId}/close": {
-      "post": {
-        "operationId": "agent.close",
-        "parameters": [
-          {
-            "in": "path",
-            "required": true,
-            "name": "sessionId",
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "deployToken": {
-                    "type": "string",
-                    "minLength": 1
-                  }
-                },
-                "required": ["deployToken"]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {},
-                  "additionalProperties": false
                 }
               }
             }

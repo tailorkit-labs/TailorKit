@@ -1,39 +1,13 @@
 import { eventIterator, ORPCError } from "@orpc/server";
-import { createORPCErrorFromJson, isORPCErrorJson } from "@orpc/client";
-import { agentChunkSchema, agentMessageSchema } from "@tailorkit/client-platform/agent";
-import { agentChat, agentClose, agentStart } from "@tailorkit/client-platform/client";
-import { z } from "zod";
+import { agentChatSchema, agentChunkSchema } from "@tailorkit/client-platform/agent";
+import { agentChat } from "@tailorkit/client-platform/client";
 import { getCliDeployToken, o, requireCliDeployToken } from "../procedures";
-
-const sessionInput = z.object({ sessionId: z.uuid() });
-
-async function platformRequest<T>(request: Promise<T>): Promise<T> {
-  try {
-    return await request;
-  } catch (error) {
-    if (isORPCErrorJson(error)) throw createORPCErrorFromJson(error);
-    throw error;
-  }
-}
 
 /** CLI calls the host; only the host supplies the platform project credential. */
 export const agentRouter = {
-  start: o
-    .use(requireCliDeployToken)
-    .input(z.object({}))
-    .handler(
-      async ({ context }) =>
-        await platformRequest(
-          agentStart({
-            body: { deployToken: getCliDeployToken(context.request) },
-            client: context.platform,
-            headers: context.platformHeaders,
-          }),
-        ),
-    ),
   chat: o
     .use(requireCliDeployToken)
-    .input(sessionInput.extend({ message: agentMessageSchema }))
+    .input(agentChatSchema)
     .output(eventIterator(agentChunkSchema))
     .handler(async function* ({ context, input, signal: clientSignal }) {
       const controller = new AbortController();
@@ -44,8 +18,7 @@ export const agentRouter = {
         let streamError: unknown;
         let done = false;
         const { stream } = await agentChat({
-          body: { deployToken: getCliDeployToken(context.request), message: input.message },
-          path: { sessionId: input.sessionId },
+          body: { ...input, deployToken: getCliDeployToken(context.request) },
           client: context.platform,
           headers: context.platformHeaders,
           signal,
@@ -74,18 +47,4 @@ export const agentRouter = {
         controller.abort();
       }
     }),
-  close: o
-    .use(requireCliDeployToken)
-    .input(sessionInput)
-    .handler(
-      async ({ context, input }) =>
-        await platformRequest(
-          agentClose({
-            body: { deployToken: getCliDeployToken(context.request) },
-            path: { sessionId: input.sessionId },
-            client: context.platform,
-            headers: context.platformHeaders,
-          }),
-        ),
-    ),
 };

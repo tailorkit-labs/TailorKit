@@ -1,17 +1,16 @@
-import { randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
+import { createModelCallToUIChunkTransform } from "@ai-sdk/workflow";
 import { openapi } from "@orpc/openapi";
 import { eventIterator, ORPCError, streamToAsyncIteratorObject } from "@orpc/server";
 import { hashSecret } from "@tailorkit/api-utils/hashing";
 import { appAgent } from "@tailorkit/builder-agent";
-import { agentChunkSchema, agentMessageSchema } from "../agent-events";
 import { db } from "@tailorkit/db";
 import { Sandbox } from "@vercel/sandbox";
-import { createModelCallToUIChunkTransform, type ModelCallStreamPart } from "@ai-sdk/workflow";
-import type { UIMessageChunk } from "ai";
-import { getRun, start, type Run } from "workflow/api";
+import { validateUIMessages, type UIMessageChunk } from "ai";
+import { start } from "workflow/api";
 import { z } from "zod";
 import { env } from "#env";
-import { agentSessionStore, type AgentSession } from "../agent-sessions";
+import { agentChatSchema, agentChunkSchema } from "../agent-events";
 import { o, protectedRouter } from "../procedures";
 import { canonicalizeScope } from "../scope";
 
@@ -33,50 +32,9 @@ async function authenticateCli(projectId: string, deployToken: string, runtimeSe
   return token;
 }
 
-async function disposeSession(sessionId: string, session: AgentSession) {
-  await agentSessionStore().end(sessionId);
-  if (!session.runId) return;
-  const run = getRun(session.runId);
-  const status = await run.status;
-  if (status === "running" || status === "pending") await run.cancel();
-  // The workspace is unique to this conversation, never a deployed app.
-  try {
-    const sandbox = await Sandbox.get({ name: `app-cli-${sessionId}` });
-    await sandbox.delete({ deleteOrphanSnapshots: true });
-  } catch (error) {
-    if (
-      error &&
-      typeof error === "object" &&
-      "response" in error &&
-      error.response instanceof Response &&
-      error.response.status === 404
-    )
-      return;
-    throw error;
-  }
-}
-
-const credentials = z.object({ deployToken: z.string().min(1) });
-const sessionParams = z.object({ sessionId: z.uuid() });
-
-const startSession = protectedRouter
-  .meta(openapi({ path: "/start", method: "POST" }))
-  .input(z.object({ body: credentials }))
-  .output(z.object({ body: z.object({ sessionId: z.uuid(), expiresAt: z.string() }) }))
-  .handler(async ({ context, input }) => {
-    const token = await authenticateCli(
-      context.project.id,
-      input.body.deployToken,
-      context.runtimeService,
-    );
-    return { body: await agentSessionStore().create(context.project.id, token.id) };
-  });
-
 const chat = protectedRouter
-  .meta(openapi({ path: "/{sessionId}/chat", method: "POST", outputStructure: "compact" }))
-  .input(
-    z.object({ params: sessionParams, body: credentials.extend({ message: agentMessageSchema }) }),
-  )
+  .meta(openapi({ path: "/chat", method: "POST", outputStructure: "compact" }))
+  .input(z.object({ body: agentChatSchema.extend({ deployToken: z.string().min(1) }) }))
   .output(eventIterator(agentChunkSchema))
   .handler(async ({ context, input, signal: requestSignal }) => {
     const token = await authenticateCli(
@@ -84,97 +42,67 @@ const chat = protectedRouter
       input.body.deployToken,
       context.runtimeService,
     );
-    const store = agentSessionStore();
-    const { sessionId } = input.params;
-    const session = await store.get(sessionId, context.project.id, token.id);
-    const timeout = AbortSignal.timeout(Math.max(1, session.expiresAt - Date.now()));
-    const signal = requestSignal ? AbortSignal.any([requestSignal, timeout]) : timeout;
-    await store.claim(sessionId, randomUUID());
-    let run: Run<Awaited<ReturnType<typeof appAgent>>>;
+    let messages;
     try {
-      const previous = session.runId
-        ? await getRun<Awaited<ReturnType<typeof appAgent>>>(session.runId).returnValue
-        : undefined;
-      signal?.throwIfAborted();
-      run = await start<[Parameters<typeof appAgent>[0]], Awaited<ReturnType<typeof appAgent>>>(
-        appAgent,
-        [
-          {
-            appId: `cli-${sessionId}`,
-            messages: [
-              ...(previous?.messages ?? []),
-              { role: "user", content: input.body.message },
-            ],
-            sandboxId: previous?.sandboxId,
-            model: env.BUILDER_AGENT_MODEL ?? "anthropic/claude-sonnet-5.5",
-          },
-        ],
-      );
-      session.runId = run.runId;
-      if (!(await store.save(sessionId, session))) {
-        await disposeSession(sessionId, session);
-        throw new ORPCError("NOT_FOUND", { message: "Agent session was closed." });
-      }
-    } catch (error) {
-      await store.release(sessionId);
-      throw error;
+      messages = await validateUIMessages({ messages: input.body.messages });
+    } catch {
+      throw new ORPCError("BAD_REQUEST", { message: "Invalid agent messages." });
     }
-
+    // Client IDs select a workspace only within this authenticated project/token.
+    const workspace = createHash("sha256")
+      .update(JSON.stringify([context.project.id, token.id, input.body.sessionId]))
+      .digest("hex")
+      .slice(0, 32);
+    const timeout = AbortSignal.timeout(10 * 60 * 1000);
+    const signal = requestSignal ? AbortSignal.any([requestSignal, timeout]) : timeout;
+    signal.throwIfAborted();
+    const run = await start(appAgent, [
+      {
+        appId: `cli-${workspace}`,
+        messages,
+        model: env.BUILDER_AGENT_MODEL ?? "anthropic/claude-sonnet-5.5",
+      },
+    ]);
+    const chunks = streamToAsyncIteratorObject(
+      run.readable.pipeThrough(createModelCallToUIChunkTransform()),
+      { signal },
+    );
+    // Sandbox setup can fail before opening the stream. Observe the run too.
+    const result = run.returnValue;
+    const failure = result.then(
+      () => new Promise<never>(() => {}),
+      (error: unknown) => Promise.reject(error),
+    );
     return (async function* (): AsyncGenerator<UIMessageChunk> {
       let completed = false;
-      const chunks = streamToAsyncIteratorObject(
-        run.getReadable<ModelCallStreamPart>().pipeThrough(createModelCallToUIChunkTransform()),
-        { signal },
-      );
-      // A failed setup step never opens/closes the model stream. Observe the
-      // workflow result too so that a failure cannot leave the chat hanging.
-      const result = run.returnValue;
-      const failure = result.then(
-        () => new Promise<never>(() => {}),
-        (error: unknown) => Promise.reject(error),
-      );
       try {
         for (;;) {
           const { done, value } = await Promise.race([chunks.next(), failure]);
           if (done) break;
           if (value.type === "error") throw new Error("Builder failed");
-          // Finish only after the workflow has saved its history and workspace.
           if (value.type !== "finish") yield value;
         }
-        signal?.throwIfAborted();
+        // Let sandbox stop finish before the CLI starts its next turn.
         await result;
+        signal.throwIfAborted();
         completed = true;
         yield { type: "finish" };
       } catch {
-        if (!signal?.aborted)
+        if (!signal.aborted)
           yield { type: "error", errorText: "The builder agent failed. Start a new session." };
       } finally {
         await chunks.return?.().catch(() => {});
-        if (!completed) await disposeSession(sessionId, session);
-        await store.release(sessionId);
+        if (!completed) {
+          await run.cancel();
+          try {
+            const sandbox = await Sandbox.get({ name: `app-cli-${workspace}` });
+            await sandbox.delete({ deleteOrphanSnapshots: true });
+          } catch {
+            // Setup may not have created a workspace; compute also has a timeout.
+          }
+        }
       }
     })();
   });
 
-const close = protectedRouter
-  .meta(openapi({ path: "/{sessionId}/close", method: "POST" }))
-  .input(z.object({ params: sessionParams, body: credentials }))
-  .output(z.object({ body: z.object({}) }))
-  .handler(async ({ context, input }) => {
-    const token = await authenticateCli(
-      context.project.id,
-      input.body.deployToken,
-      context.runtimeService,
-    );
-    const session = await agentSessionStore().get(
-      input.params.sessionId,
-      context.project.id,
-      token.id,
-    );
-    await disposeSession(input.params.sessionId, session);
-    return { body: {} };
-  });
-
-export const agentRouter = o
-  .meta(openapi({ prefix: "/agent" }))
-  .router({ start: startSession, chat, close });
+export const agentRouter = o.meta(openapi({ prefix: "/agent" })).router({ chat });

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   BoxRenderable,
   createCliRenderer,
@@ -9,7 +10,7 @@ import {
 } from "@opentui/core";
 import type { TailorKitRouterClient } from "@tailorkit/core/server";
 import { asyncIteratorToUnproxiedDataStream } from "@orpc/client";
-import { getToolName, isToolUIPart, readUIMessageStream } from "ai";
+import { getToolName, isToolUIPart, readUIMessageStream, type UIMessage } from "ai";
 
 interface AgentTuiOptions {
   client: Pick<TailorKitRouterClient, "agent">;
@@ -17,7 +18,7 @@ interface AgentTuiOptions {
   sessionId: string;
 }
 
-/** The CLI owns only display state. Full model/tool history remains on the platform. */
+/** Conversation history exists only in this CLI process. */
 export function mountAgentTui(renderer: CliRenderer, options: AgentTuiOptions, onExit: () => void) {
   const layout = new BoxRenderable(renderer, {
     id: "agent",
@@ -70,6 +71,7 @@ export function mountAgentTui(renderer: CliRenderer, options: AgentTuiOptions, o
   renderer.root.add(layout);
   input.focus();
 
+  const history: (UIMessage & { role: "user" | "assistant" })[] = [];
   let busy = false;
   let closed = false;
   let turn = 0;
@@ -105,19 +107,23 @@ export function mountAgentTui(renderer: CliRenderer, options: AgentTuiOptions, o
     let usedTools: string[] = [];
     status.content = "Agent is thinking… · Ctrl+C to close";
 
+    history.push({ id: randomUUID(), role: "user", parts: [{ type: "text", text: message }] });
+    let answer: UIMessage | undefined;
     try {
       const chunks = await options.client.agent.chat(
-        { sessionId: options.sessionId, message },
+        { sessionId: options.sessionId, messages: history },
         { signal: controller.signal },
       );
       // oRPC attaches event metadata via proxies. The SDK clones message parts,
       // so unwrap transport data using the documented AI SDK integration.
-      const messages = readUIMessageStream({
+      const messages = readUIMessageStream<UIMessage>({
+        message: { id: randomUUID(), role: "assistant", parts: [] },
         stream: asyncIteratorToUnproxiedDataStream(chunks),
         terminateOnError: true,
       });
       for await (const message of messages) {
         if (closed) break;
+        answer = message;
         const text = message.parts
           .filter((part) => part.type === "text")
           .map((part) => part.text)
@@ -129,6 +135,7 @@ export function mountAgentTui(renderer: CliRenderer, options: AgentTuiOptions, o
           : "Agent is thinking… · Ctrl+C to close";
       }
       if (!closed) {
+        if (answer) history.push({ ...answer, role: "assistant" });
         if (usedTools.length)
           transcript.add(
             new TextRenderable(renderer, {
@@ -144,7 +151,7 @@ export function mountAgentTui(renderer: CliRenderer, options: AgentTuiOptions, o
     } catch (error) {
       if (!closed) {
         status.content = error instanceof Error ? error.message : "Agent request failed.";
-        // A failed stream ends the remote session; don't allow a misleading retry.
+        // Do not send incomplete tool history in another turn.
         input.placeholder = "Session ended. Press Ctrl+C to close.";
         return;
       }

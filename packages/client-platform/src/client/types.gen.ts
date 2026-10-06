@@ -14,37 +14,23 @@ export type Schema0 =
       [key: string]: Schema0;
     };
 
-export type AgentStartData = {
+export type AgentChatData = {
   body: {
+    sessionId: string;
+    messages: Array<{
+      id: string;
+      role: "user" | "assistant";
+      parts: Array<{
+        type: string;
+        [key: string]: unknown;
+      }>;
+      metadata?: unknown;
+    }>;
     deployToken: string;
   };
   path?: never;
   query?: never;
-  url: "/agent/start";
-};
-
-export type AgentStartResponses = {
-  /**
-   * OK
-   */
-  200: {
-    sessionId: string;
-    expiresAt: string;
-  };
-};
-
-export type AgentStartResponse = AgentStartResponses[keyof AgentStartResponses];
-
-export type AgentChatData = {
-  body: {
-    deployToken: string;
-    message: string;
-  };
-  path: {
-    sessionId: string;
-  };
-  query?: never;
-  url: "/agent/{sessionId}/chat";
+  url: "/agent/chat";
 };
 
 export type AgentChatResponses = {
@@ -76,28 +62,6 @@ export type AgentChatResponses = {
 };
 
 export type AgentChatResponse = AgentChatResponses[keyof AgentChatResponses];
-
-export type AgentCloseData = {
-  body: {
-    deployToken: string;
-  };
-  path: {
-    sessionId: string;
-  };
-  query?: never;
-  url: "/agent/{sessionId}/close";
-};
-
-export type AgentCloseResponses = {
-  /**
-   * OK
-   */
-  200: {
-    [key: string]: never;
-  };
-};
-
-export type AgentCloseResponse = AgentCloseResponses[keyof AgentCloseResponses];
 
 export type AppsRuntimeSessionData = {
   body: {
