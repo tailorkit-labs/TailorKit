@@ -1,11 +1,5 @@
 import { WorkflowAgent, type ModelCallStreamPart } from "@ai-sdk/workflow";
-import {
-  tool,
-  type LanguageModel,
-  type ModelMessage,
-  type InferToolOutput,
-  type ToolExecutionOptions,
-} from "ai";
+import { tool, type ModelMessage, type InferToolOutput, type ToolExecutionOptions } from "ai";
 import { getWritable } from "workflow";
 import { Sandbox } from "@vercel/sandbox";
 import { createVercelNetworkSandboxSessionFromNativeSandbox } from "@ai-sdk/sandbox-vercel";
@@ -143,14 +137,14 @@ export async function appAgent({
   sandboxId: previousSandboxId,
 }: {
   messages: ModelMessage[];
-  model: LanguageModel;
+  model: string;
   appId: string;
   /** Pass the sandboxId returned by the previous run to continue its workspace. */
   sandboxId?: string;
 }) {
   "use workflow";
 
-  const { sandboxId, catalog } = await prepareSandbox(`app:${appId}`, previousSandboxId);
+  const { sandboxId, catalog } = await prepareSandbox(`app-${appId}`, previousSandboxId);
   const context = { sandboxId };
 
   try {

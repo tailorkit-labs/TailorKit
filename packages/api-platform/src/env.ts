@@ -4,6 +4,7 @@ import { createEnv } from "@tailorkit/env";
 export const env = createEnv({
   scope: "api-platform",
   schema: {
+    BUILDER_AGENT_MODEL: z.string().min(1).default("anthropic/claude-sonnet-5.5"),
     APP_RUNTIME_SIGNING_KEY: z.string().optional(),
     APP_RUNTIME_PREVIOUS_PUBLIC_KEYS: z.string().optional(),
     // Optional local runtime override; hosted URLs derive from the team and ASSET_DOMAIN.

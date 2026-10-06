@@ -1,11 +1,13 @@
 import type { RouterClient } from "@orpc/server";
 
+import { agentRouter } from "./routes/agent";
 import { appRouter } from "./routes/apps";
 import { cliAuthRouter } from "./routes/cli-auth";
 import { deploymentRouter } from "./routes/deployments";
 import { previewRouter } from "./routes/preview";
 
 export const platformRouter = {
+  agent: agentRouter,
   apps: appRouter,
   cliAuth: cliAuthRouter,
   deployments: deploymentRouter,

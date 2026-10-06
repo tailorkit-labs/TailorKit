@@ -340,6 +340,27 @@ cli
     }
   });
 
+cli
+  .command("agent", "Chat with the TailorKit builder agent")
+  .option("--config <path>", "Path to tailorkit config")
+  .action(async (options: Record<string, unknown>) => {
+    try {
+      const { runAgentCommand } = await import("./agent");
+      await runAgentCommand({
+        configPath: options.config as string | undefined,
+        cwd: String(options.cwd ?? "."),
+        onLoginRequired: () =>
+          loginWithApproval({
+            configPath: options.config as string | undefined,
+            cwd: String(options.cwd ?? "."),
+          }),
+      });
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
+
 cli.help();
 cli.version(__TAILORKIT_VERSION__);
 cli.parse();

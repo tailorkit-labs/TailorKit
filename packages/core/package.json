@@ -67,6 +67,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@orpc/openapi": "catalog:",
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
     "arktype": "^2.2.7",

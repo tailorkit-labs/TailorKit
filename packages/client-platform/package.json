@@ -27,6 +27,10 @@
     "./preview": {
       "types": "./dist/preview.d.ts",
       "import": "./dist/preview.js"
+    },
+    "./agent": {
+      "types": "./dist/agent.d.ts",
+      "import": "./dist/agent.js"
     }
   },
   "publishConfig": {

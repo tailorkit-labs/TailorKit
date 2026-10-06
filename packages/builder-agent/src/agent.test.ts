@@ -1,4 +1,4 @@
-import type { LanguageModel, ModelMessage } from "ai";
+import type { ModelMessage } from "ai";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { appAgent } from "./agent";
 import instructions from "./instructions.md?raw";
@@ -61,7 +61,7 @@ describe("agent skill instructions", () => {
       }),
     });
 
-    await appAgent({ appId: "test-app", messages: [], model: "test-model" as LanguageModel });
+    await appAgent({ appId: "test-app", messages: [], model: "test-model" });
 
     expect(mocks.run).toHaveBeenCalledOnce();
     expect(mocks.configureAgent).toHaveBeenCalledWith(
@@ -81,7 +81,7 @@ describe("agent skill instructions", () => {
   it("runs with base instructions when the sandbox has no skills", async () => {
     mocks.run.mockResolvedValue({ exitCode: 0, stdout: "", stderr: "" });
 
-    await appAgent({ appId: "test-app", messages: [], model: "test-model" as LanguageModel });
+    await appAgent({ appId: "test-app", messages: [], model: "test-model" });
 
     expect(mocks.configureAgent).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -93,22 +93,22 @@ describe("agent skill instructions", () => {
 
   it("provisions a persistent sandbox with a stable app name", async () => {
     mocks.run.mockResolvedValue({ exitCode: 0, stdout: "", stderr: "" });
-    const input = { appId: "test-app", messages: [], model: "test-model" as LanguageModel };
+    const input = { appId: "test-app", messages: [], model: "test-model" };
     await appAgent(input);
     await appAgent(input);
     await appAgent({ ...input, appId: "other-app" });
     expect(mocks.getOrCreate).toHaveBeenNthCalledWith(1, {
-      name: "app:test-app",
+      name: "app-test-app",
       image: "vercel/sandbox/universal",
       persistent: true,
     });
     expect(mocks.getOrCreate.mock.calls[1]).toEqual(mocks.getOrCreate.mock.calls[0]);
-    expect(mocks.getOrCreate.mock.calls[2]?.[0].name).toBe("app:other-app");
+    expect(mocks.getOrCreate.mock.calls[2]?.[0].name).toBe("app-other-app");
   });
 
   it("returns the selected sandbox reference and reuses it for a follow-up", async () => {
     mocks.run.mockResolvedValue({ exitCode: 0, stdout: "", stderr: "" });
-    const input = { appId: "test-app", messages: [], model: "test-model" as LanguageModel };
+    const input = { appId: "test-app", messages: [], model: "test-model" };
     const first = await appAgent(input);
 
     expect(first).toEqual({ messages: [], sandboxId: "test-sandbox" });
@@ -119,7 +119,7 @@ describe("agent skill instructions", () => {
 
   it("stops the completed sandbox without deleting its files", async () => {
     mocks.run.mockResolvedValue({ exitCode: 0, stdout: "", stderr: "" });
-    await appAgent({ appId: "test-app", messages: [], model: "test-model" as LanguageModel });
+    await appAgent({ appId: "test-app", messages: [], model: "test-model" });
 
     expect(mocks.get).toHaveBeenCalledWith({ name: "test-sandbox" });
     expect(mocks.stop).toHaveBeenCalledOnce();
@@ -133,7 +133,7 @@ describe("agent skill instructions", () => {
       const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
       try {
         await expect(
-          appAgent({ appId: "test-app", messages: [], model: "test-model" as LanguageModel }),
+          appAgent({ appId: "test-app", messages: [], model: "test-model" }),
         ).resolves.toEqual({ messages: [], sandboxId: "test-sandbox" });
         expect(warning).toHaveBeenCalledWith(
           "Failed to stop sandbox after agent run",
@@ -148,7 +148,7 @@ describe("agent skill instructions", () => {
   it("stops a fresh sandbox without deleting it if skill discovery fails", async () => {
     mocks.run.mockResolvedValue({ exitCode: 2, stdout: "", stderr: "Permission denied" });
     await expect(
-      appAgent({ appId: "test-app", messages: [], model: "test-model" as LanguageModel }),
+      appAgent({ appId: "test-app", messages: [], model: "test-model" }),
     ).rejects.toThrow("Skill discovery failed");
     expect(mocks.stop).toHaveBeenCalledOnce();
     expect(mocks.delete).not.toHaveBeenCalled();
@@ -162,7 +162,7 @@ describe("agent skill instructions", () => {
         sandboxId: "previous",
         appId: "test-app",
         messages: [],
-        model: "test-model" as LanguageModel,
+        model: "test-model",
       }),
     ).rejects.toThrow("Skill discovery failed");
     expect(mocks.get).toHaveBeenCalledWith({ name: "previous", resume: true });
@@ -176,7 +176,7 @@ describe("agent skill instructions", () => {
     const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
     try {
       await expect(
-        appAgent({ appId: "test-app", messages: [], model: "test-model" as LanguageModel }),
+        appAgent({ appId: "test-app", messages: [], model: "test-model" }),
       ).rejects.toThrow("Skill discovery failed: Permission denied");
       expect(warning).toHaveBeenCalled();
     } finally {
@@ -187,7 +187,7 @@ describe("agent skill instructions", () => {
   it("passes only sandbox references to tool steps and reconnects inside execution", async () => {
     mocks.run.mockResolvedValue({ exitCode: 0, stdout: "", stderr: "" });
     mocks.readTextFile.mockResolvedValue("App source");
-    await appAgent({ appId: "test-app", messages: [], model: "test-model" as LanguageModel });
+    await appAgent({ appId: "test-app", messages: [], model: "test-model" });
     const options = mocks.configureAgent.mock.lastCall?.[0];
     expect(options.experimental_sandbox).toBeUndefined();
     expect(options.toolsContext.read).toEqual({ sandboxId: "test-sandbox" });
@@ -225,7 +225,7 @@ describe("agent skill instructions", () => {
     const result = await appAgent({
       appId: "test-app",
       messages,
-      model: "test-model" as LanguageModel,
+      model: "test-model",
     });
     const options = mocks.configureAgent.mock.lastCall?.[0];
     expect(options.instructions).not.toContain(injection);
@@ -246,9 +246,9 @@ describe("agent skill instructions", () => {
     mocks.configureAgent.mockImplementationOnce(() => {
       throw error;
     });
-    await expect(
-      appAgent({ appId: "test-app", messages: [], model: "test-model" as LanguageModel }),
-    ).rejects.toBe(error);
+    await expect(appAgent({ appId: "test-app", messages: [], model: "test-model" })).rejects.toBe(
+      error,
+    );
     expect(mocks.stop).toHaveBeenCalledOnce();
     expect(mocks.delete).not.toHaveBeenCalled();
   });
@@ -258,9 +258,9 @@ describe("agent skill instructions", () => {
     async (error) => {
       mocks.run.mockResolvedValue({ exitCode: 0, stdout: "", stderr: "" });
       mocks.stream.mockRejectedValueOnce(error);
-      await expect(
-        appAgent({ appId: "test-app", messages: [], model: "test-model" as LanguageModel }),
-      ).rejects.toBe(error);
+      await expect(appAgent({ appId: "test-app", messages: [], model: "test-model" })).rejects.toBe(
+        error,
+      );
       expect(mocks.stop).toHaveBeenCalledOnce();
       expect(mocks.delete).not.toHaveBeenCalled();
     },
@@ -276,7 +276,7 @@ describe("agent skill instructions", () => {
       const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
       try {
         await expect(
-          appAgent({ appId: "test-app", messages: [], model: "test-model" as LanguageModel }),
+          appAgent({ appId: "test-app", messages: [], model: "test-model" }),
         ).rejects.toBe(error);
         expect(warning).toHaveBeenCalledWith(
           "Failed to stop sandbox after agent run",
