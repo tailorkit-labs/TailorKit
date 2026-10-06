@@ -2,9 +2,7 @@ import { createHash } from "node:crypto";
 import { createModelCallToUIChunkTransform } from "@ai-sdk/workflow";
 import { openapi } from "@orpc/openapi";
 import { eventIterator, ORPCError, streamToAsyncIteratorObject } from "@orpc/server";
-import { hashSecret } from "@tailorkit/api-utils/hashing";
 import { appAgent } from "@tailorkit/builder-agent";
-import { db } from "@tailorkit/db";
 import { Sandbox } from "@vercel/sandbox";
 import { validateUIMessages, type UIMessageChunk } from "ai";
 import { start } from "workflow/api";
@@ -12,25 +10,7 @@ import { z } from "zod";
 import { env } from "#env";
 import { agentChatSchema, agentChunkSchema } from "../agent-events";
 import { o, protectedRouter } from "../procedures";
-import { canonicalizeScope } from "../scope";
-
-async function authenticateCli(projectId: string, deployToken: string, runtimeService?: boolean) {
-  if (runtimeService) throw new ORPCError("FORBIDDEN");
-  if (!env.AUTH_SECRET) throw new ORPCError("SERVICE_UNAVAILABLE");
-  const token = await db.query.cliToken.findFirst({
-    where: { projectId, tokenHash: hashSecret(deployToken, env.AUTH_SECRET) },
-  });
-  if (!token || token.revokedAt || token.expiresAt.getTime() <= Date.now()) {
-    throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
-  }
-  try {
-    if (canonicalizeScope(token.scope).scopeKey !== token.scopeKey)
-      throw new Error("Invalid scope");
-  } catch {
-    throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI token scope." });
-  }
-  return token;
-}
+import { authenticateCli } from "../cli-token";
 
 const chat = protectedRouter
   .meta(openapi({ path: "/chat", method: "POST", outputStructure: "compact" }))

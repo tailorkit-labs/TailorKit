@@ -130,6 +130,7 @@ describe("platform CLI auth scopes", () => {
       expect.objectContaining({
         scope: expectedScope,
         scopeKey: expectedScopeKey,
+        lastUsedAt: expect.any(Date),
       }),
     );
   });

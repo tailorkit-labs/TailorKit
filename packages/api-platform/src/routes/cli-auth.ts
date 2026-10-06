@@ -9,6 +9,7 @@ import { randomBytes, randomInt } from "node:crypto";
 import z from "zod";
 import { o, protectedRouter } from "../procedures";
 import { canonicalizeScope, scopeSchema } from "../scope";
+import { authenticateCli } from "../cli-token";
 
 const deviceCodeBytes = 32;
 const deployTokenBytes = 32;
@@ -306,30 +307,15 @@ const verifyCliAuthToken = protectedRouter
   .input(z.object({ body: z.object({ deployToken: z.string().min(1) }) }))
   .output(z.object({ body: z.object({ scope: scopeSchema }) }))
   .handler(async ({ context, input }) => {
-    const token = await db.query.cliToken.findFirst({
-      where: {
-        tokenHash: hashCliSecret(input.body.deployToken),
-        projectId: context.project.id,
-      },
-    });
-
-    if (!token || token.expiresAt.getTime() <= Date.now() || token.revokedAt) {
-      throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
-    }
-
-    let scope: ReturnType<typeof canonicalizeScope>;
-    try {
-      scope = canonicalizeScope(token.scope);
-    } catch {
-      throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
-    }
-    if (scope.scopeKey !== token.scopeKey) {
-      throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
-    }
+    const token = await authenticateCli(
+      context.project.id,
+      input.body.deployToken,
+      context.runtimeService,
+    );
 
     await db.update(cliToken).set({ lastUsedAt: new Date() }).where(eq(cliToken.id, token.id));
 
-    return { body: { scope: scope.scope } };
+    return { body: { scope: token.scope } };
   });
 
 export const cliAuthRouter = o.meta(openapi({ prefix: "/cli-auth" })).router({

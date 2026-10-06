@@ -14,7 +14,7 @@ import { createPreviewBuildStore } from "../preview-build-store";
 import { ensurePreviewDeveloperGrace } from "../preview-lifecycle";
 import { o, protectedRouter } from "../procedures";
 import { previewGrantRoutes } from "./preview-grants";
-import { canonicalizeScope } from "../scope";
+import { authenticateCli } from "../cli-token";
 
 const previewSessionLifetimeMs = 8 * 60 * 60 * 1000;
 const firstConnectionGraceMs = 2 * 60 * 1000;
@@ -31,28 +31,6 @@ function hash(value: string): string {
 
 function createSecret(): string {
   return randomBytes(32).toString("base64url");
-}
-
-async function getValidCliToken(projectId: string, deployToken: string) {
-  const token = await db.query.cliToken.findFirst({
-    where: {
-      projectId,
-      tokenHash: hash(deployToken),
-    },
-  });
-  if (!token || token.revokedAt || token.expiresAt <= new Date()) {
-    throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
-  }
-  let scope: ReturnType<typeof canonicalizeScope>;
-  try {
-    scope = canonicalizeScope(token.scope);
-  } catch {
-    throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
-  }
-  if (scope.scopeKey !== token.scopeKey) {
-    throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
-  }
-  return { ...token, scope: scope.scope, scopeKey: scope.scopeKey };
 }
 
 const startPreview = protectedRouter
@@ -85,7 +63,11 @@ const startPreview = protectedRouter
       });
     }
     const now = new Date();
-    const token = await getValidCliToken(context.project.id, input.body.deployToken);
+    const token = await authenticateCli(
+      context.project.id,
+      input.body.deployToken,
+      context.runtimeService,
+    );
 
     const previewApp = await db.query.app.findFirst({
       where: {
@@ -254,7 +236,11 @@ const stopPreview = protectedRouter
   )
   .output(z.object({ body: z.object({}) }))
   .handler(async ({ context, input }) => {
-    const token = await getValidCliToken(context.project.id, input.body.deployToken);
+    const token = await authenticateCli(
+      context.project.id,
+      input.body.deployToken,
+      context.runtimeService,
+    );
 
     const [endedSession] = await db
       .update(previewSession)
