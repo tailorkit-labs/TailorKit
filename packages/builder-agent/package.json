@@ -1,0 +1,36 @@
+{
+  "name": "@tailorkit/builder-agent",
+  "version": "0.0.0",
+  "private": true,
+  "license": "BUSL-1.1",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "vp build && tsc -p tsconfig.build.json",
+    "check-types": "tsc --noEmit",
+    "test": "vp test run"
+  },
+  "dependencies": {
+    "@ai-sdk/sandbox-vercel": "1.0.138",
+    "@ai-sdk/workflow": "2.0.58",
+    "@vercel/sandbox": "^3.5.1",
+    "ai": "catalog:",
+    "workflow": "^5.0.1",
+    "yaml": "2.9.1",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@tailorkit/config": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
