@@ -1,8 +1,9 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { ensureSandbox, resolvePath } from "./utils";
+import { sandboxContextSchema, toolSandbox, resolvePath } from "./utils";
 
 export const readTool = tool({
+  contextSchema: sandboxContextSchema,
   description: "Read a text file, optionally by line range. Returns null for a missing file.",
   inputSchema: z
     .object({
@@ -26,10 +27,11 @@ export const readTool = tool({
       path: ["endLine"],
     }),
   outputSchema: z.string().nullable(),
-  execute: async ({ path, startLine, endLine }, { experimental_sandbox, abortSignal }) => {
+  execute: async ({ path, startLine, endLine }, options) => {
     "use step";
-    ensureSandbox(experimental_sandbox);
-    return experimental_sandbox.readTextFile({
+    const sandbox = await toolSandbox(options);
+    const { abortSignal } = options;
+    return sandbox.readTextFile({
       path: resolvePath(path),
       startLine,
       endLine,

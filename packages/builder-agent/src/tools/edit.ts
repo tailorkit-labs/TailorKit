@@ -1,9 +1,10 @@
 import { tool } from "ai";
 import { FatalError } from "workflow";
 import { z } from "zod";
-import { ensureSandbox, fileChangeResultSchema, resolvePath } from "./utils";
+import { sandboxContextSchema, toolSandbox, fileChangeResultSchema, resolvePath } from "./utils";
 
 export const editTool = tool({
+  contextSchema: sandboxContextSchema,
   description:
     "Replace text in a file. Each oldText must match once in the original; edits must not overlap.",
   inputSchema: z.object({
@@ -18,13 +19,14 @@ export const editTool = tool({
       .min(1),
   }),
   outputSchema: fileChangeResultSchema,
-  execute: async ({ path, edits }, { experimental_sandbox, abortSignal }) => {
+  execute: async ({ path, edits }, options) => {
     "use step";
-    ensureSandbox(experimental_sandbox);
+    const sandbox = await toolSandbox(options);
+    const { abortSignal } = options;
     path = resolvePath(path);
 
     abortSignal?.throwIfAborted();
-    const file = await experimental_sandbox.readTextFile({ path, abortSignal });
+    const file = await sandbox.readTextFile({ path, abortSignal });
     if (file === null) throw new FatalError("File not found");
 
     // Match against the original file so replacement text cannot affect later edits.
@@ -52,7 +54,7 @@ export const editTool = tool({
     }
 
     abortSignal?.throwIfAborted();
-    await experimental_sandbox.writeTextFile({
+    await sandbox.writeTextFile({
       path,
       content,
       abortSignal,

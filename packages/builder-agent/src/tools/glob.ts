@@ -1,8 +1,15 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { commandResultSchema, ensureSandbox, quote, resolvePath } from "./utils";
+import {
+  commandResultSchema,
+  sandboxContextSchema,
+  toolSandbox,
+  quote,
+  resolvePath,
+} from "./utils";
 
 export const globTool = tool({
+  contextSchema: sandboxContextSchema,
   description: "Find files with a ripgrep glob, including hidden files. Returns one path per line.",
   inputSchema: z.object({
     pattern: z.string().min(1).describe("A ripgrep glob, such as *.ts or src/**/*.tsx."),
@@ -12,10 +19,11 @@ export const globTool = tool({
       .describe("Search directory relative to /workspace/app, or absolute."),
   }),
   outputSchema: commandResultSchema,
-  execute: async ({ pattern, path }, { experimental_sandbox, abortSignal }) => {
+  execute: async ({ pattern, path }, options) => {
     "use step";
-    ensureSandbox(experimental_sandbox);
-    return experimental_sandbox.run({
+    const sandbox = await toolSandbox(options);
+    const { abortSignal } = options;
+    return sandbox.run({
       command: `rg --no-config --files --hidden --glob ${quote(pattern)}`,
       workingDirectory: resolvePath(path),
       abortSignal,

@@ -1,16 +1,8 @@
 import { WorkflowAgent, type ModelCallStreamPart } from "@ai-sdk/workflow";
-import {
-  tool,
-  convertToModelMessages,
-  type UIMessage,
-  type LanguageModel,
-  type InferToolOutput,
-  type ToolExecutionOptions,
-} from "ai";
+import { convertToModelMessages, type UIMessage, type LanguageModel } from "ai";
 import { getWritable } from "workflow";
 import { Sandbox } from "@vercel/sandbox";
 import { createVercelNetworkSandboxSessionFromNativeSandbox } from "@ai-sdk/sandbox-vercel";
-import { z } from "zod";
 import { readTool, writeTool, editTool, bashTool, grepTool, globTool, lsTool } from "./tools";
 import { formatSkills, getAvailableSkills } from "./skills";
 import instructions from "./instructions.md?raw";
@@ -73,95 +65,6 @@ async function closeAgentStream(failed: boolean) {
   await writable.close();
 }
 
-const sandboxContextSchema = z.object({ sandboxId: z.string().min(1) });
-
-async function toolSandbox(options: ToolExecutionOptions<{ sandboxId: string }>) {
-  const nativeSandbox = await Sandbox.get({ name: options.context.sandboxId, resume: true });
-  return createVercelNetworkSandboxSessionFromNativeSandbox(nativeSandbox);
-}
-
-// Only tool input and the sandbox reference cross each step boundary. Reconnect
-// the native session inside the step, then reuse the tool's existing implementation.
-const sandboxTools = {
-  read: tool({
-    ...readTool,
-    contextSchema: sandboxContextSchema,
-    execute: async (input, options) => {
-      "use step";
-      const sandbox = await toolSandbox(options);
-      return readTool.execute!(input, { ...options, experimental_sandbox: sandbox }) as Promise<
-        InferToolOutput<typeof readTool>
-      >;
-    },
-  }),
-  write: tool({
-    ...writeTool,
-    contextSchema: sandboxContextSchema,
-    execute: async (input, options) => {
-      "use step";
-      const sandbox = await toolSandbox(options);
-      return writeTool.execute!(input, { ...options, experimental_sandbox: sandbox }) as Promise<
-        InferToolOutput<typeof writeTool>
-      >;
-    },
-  }),
-  edit: tool({
-    ...editTool,
-    contextSchema: sandboxContextSchema,
-    execute: async (input, options) => {
-      "use step";
-      const sandbox = await toolSandbox(options);
-      return editTool.execute!(input, { ...options, experimental_sandbox: sandbox }) as Promise<
-        InferToolOutput<typeof editTool>
-      >;
-    },
-  }),
-  bash: tool({
-    ...bashTool,
-    contextSchema: sandboxContextSchema,
-    execute: async (input, options) => {
-      "use step";
-      const sandbox = await toolSandbox(options);
-      return bashTool.execute!(input, { ...options, experimental_sandbox: sandbox }) as Promise<
-        InferToolOutput<typeof bashTool>
-      >;
-    },
-  }),
-  grep: tool({
-    ...grepTool,
-    contextSchema: sandboxContextSchema,
-    execute: async (input, options) => {
-      "use step";
-      const sandbox = await toolSandbox(options);
-      return grepTool.execute!(input, { ...options, experimental_sandbox: sandbox }) as Promise<
-        InferToolOutput<typeof grepTool>
-      >;
-    },
-  }),
-  glob: tool({
-    ...globTool,
-    contextSchema: sandboxContextSchema,
-    execute: async (input, options) => {
-      "use step";
-      const sandbox = await toolSandbox(options);
-      return globTool.execute!(input, { ...options, experimental_sandbox: sandbox }) as Promise<
-        InferToolOutput<typeof globTool>
-      >;
-    },
-  }),
-  ls: tool({
-    ...lsTool,
-    contextSchema: sandboxContextSchema,
-    execute: async (input, options) => {
-      "use step";
-      const sandbox = await toolSandbox(options);
-      return lsTool.execute!(input, { ...options, experimental_sandbox: sandbox }) as Promise<
-        InferToolOutput<typeof lsTool>
-      >;
-    },
-  }),
-};
-
 export async function appAgent({
   messages,
   model,
@@ -185,7 +88,15 @@ export async function appAgent({
     const agent = new WorkflowAgent({
       model,
       instructions: instructions.trim(),
-      tools: sandboxTools,
+      tools: {
+        read: readTool,
+        write: writeTool,
+        edit: editTool,
+        bash: bashTool,
+        grep: grepTool,
+        glob: globTool,
+        ls: lsTool,
+      },
       toolsContext: {
         read: context,
         write: context,

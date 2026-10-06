@@ -1,8 +1,9 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { commandResultSchema, ensureSandbox, resolvePath } from "./utils";
+import { commandResultSchema, sandboxContextSchema, toolSandbox, resolvePath } from "./utils";
 
 export const bashTool = tool({
+  contextSchema: sandboxContextSchema,
   description: "Run a shell command; timeout defaults to 30s.",
   inputSchema: z.object({
     command: z.string().min(1),
@@ -13,13 +14,14 @@ export const bashTool = tool({
     timeoutMs: z.number().int().positive().max(2_147_483_647).default(30_000),
   }),
   outputSchema: commandResultSchema,
-  execute: async ({ command, cwd, timeoutMs }, { experimental_sandbox, abortSignal }) => {
+  execute: async ({ command, cwd, timeoutMs }, options) => {
     "use step";
-    ensureSandbox(experimental_sandbox);
+    const sandbox = await toolSandbox(options);
+    const { abortSignal } = options;
     abortSignal?.throwIfAborted();
 
     const timeout = AbortSignal.timeout(timeoutMs);
-    return experimental_sandbox.run({
+    return sandbox.run({
       command,
       workingDirectory: resolvePath(cwd),
       abortSignal: abortSignal ? AbortSignal.any([abortSignal, timeout]) : timeout,

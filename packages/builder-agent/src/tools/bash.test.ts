@@ -69,6 +69,7 @@ describe("bash tool", () => {
     );
     const controller = new AbortController();
     const pending = execute(run, defaultInput, controller.signal);
+    await vi.waitFor(() => expect(run).toHaveBeenCalledOnce());
 
     controller.abort("Cancelled");
 

@@ -1,8 +1,16 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { appDirectory, commandResultSchema, ensureSandbox, quote, resolvePath } from "./utils";
+import {
+  appDirectory,
+  commandResultSchema,
+  sandboxContextSchema,
+  toolSandbox,
+  quote,
+  resolvePath,
+} from "./utils";
 
 export const grepTool = tool({
+  contextSchema: sandboxContextSchema,
   description:
     "Search with ripgrep. Returns matching lines with filenames and line numbers; exit 1 means no matches.",
   inputSchema: z.object({
@@ -16,12 +24,10 @@ export const grepTool = tool({
     literal: z.boolean().default(false),
   }),
   outputSchema: commandResultSchema,
-  execute: async (
-    { pattern, path, glob, ignoreCase, literal },
-    { experimental_sandbox, abortSignal },
-  ) => {
+  execute: async ({ pattern, path, glob, ignoreCase, literal }, options) => {
     "use step";
-    ensureSandbox(experimental_sandbox);
+    const sandbox = await toolSandbox(options);
+    const { abortSignal } = options;
     const args = [
       "rg",
       "--no-config",
@@ -35,7 +41,7 @@ export const grepTool = tool({
     if (literal) args.push("--fixed-strings");
     if (glob) args.push("--glob", glob);
     args.push("--", pattern, resolvePath(path));
-    return experimental_sandbox.run({
+    return sandbox.run({
       command: args.map(quote).join(" "),
       workingDirectory: appDirectory,
       abortSignal,
