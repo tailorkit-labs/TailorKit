@@ -23,14 +23,16 @@ export const appRouter = {
   create: o
     .use(requireCliDeployToken)
     .input(appInput)
-    .handler(
-      async ({ context, input }) =>
-        await appsCreate({
-          body: { ...input, scope: getTailorKitScope(context) },
-          client: context.platform,
-          headers: context.platformHeaders,
-        }),
-    ),
+    .handler(async ({ context, input }) => {
+      const { data } = await appsCreate({
+        responseStyle: "fields",
+        throwOnError: true,
+        body: { ...input, scope: getTailorKitScope(context) },
+        client: context.platform,
+        headers: context.platformHeaders,
+      });
+      return data;
+    }),
   delete: o
     .use(requireCliDeployToken)
     .input(z.object({ appId: z.string() }))
@@ -70,18 +72,20 @@ export const appRouter = {
   list: o
     .use(requireCliDeployToken)
     .input(paginationInput.extend({ scopes: z.array(z.string()).optional() }).optional())
-    .handler(
-      async ({ context, input }) =>
-        await appsList({
-          client: context.platform,
-          headers: context.platformHeaders,
-          body: {
-            page: input?.page,
-            pageSize: input?.pageSize,
-            scopes: getTailorKitScopes(context, input?.scopes),
-          },
-        }),
-    ),
+    .handler(async ({ context, input }) => {
+      const { data } = await appsList({
+        responseStyle: "fields",
+        throwOnError: true,
+        client: context.platform,
+        headers: context.platformHeaders,
+        body: {
+          page: input?.page,
+          pageSize: input?.pageSize,
+          scopes: getTailorKitScopes(context, input?.scopes),
+        },
+      });
+      return data;
+    }),
   update: o
     .use(requireCliDeployToken)
     .input(z.object({ appId: z.string() }).extend(appInput.shape))
