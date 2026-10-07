@@ -1,0 +1,55 @@
+packages/cli/src/generator/templates/src/views/default.tsx.liquid
+  s_355c4e091f817b::t_8647cf9064bdaa 1,6
+examples/apps/backend-todo/README.md
+  s_355c4e091f817b::t_8647cf9064bdaa 7
+examples/apps/todo/src/views/default.tsx
+  s_355c4e091f817b::t_8647cf9064bdaa 1,7
+packages/tailorkit/src/app.test-d.ts
+  s_355c4e091f817b::t_8647cf9064bdaa 1,12
+packages/app/src/instances.test-d.ts
+  s_355c4e091f817b::t_8647cf9064bdaa 2,20,55,66
+examples/apps/email/src/views/default.tsx
+  s_355c4e091f817b::t_8647cf9064bdaa 2,4
+packages/app/src/builder/instances.ts
+  s_355c4e091f817b::t_8647cf9064bdaa 310,331
+packages/cli/src/generator/generate.test.ts
+  s_355c4e091f817b::t_8647cf9064bdaa 252,339
+packages/app/src/slots.test-d.ts
+  s_355c4e091f817b::t_8647cf9064bdaa 1,4-6,19,29,36,53-55,62,70,75,77,80,82
+packages/app/src/builder/server.test.ts
+  s_355c4e091f817b::t_8647cf9064bdaa 178,182
+packages/app/src/view-instance.test.ts
+  s_355c4e091f817b::t_8647cf9064bdaa 9,22,63,75,95
+packages/app/src/views.ts
+  s_355c4e091f817b::t_8647cf9064bdaa 116,164
+examples/apps/notes/src/views/default.tsx
+  s_355c4e091f817b::t_8647cf9064bdaa 1,24
+.changeset/declare-multiple-slots.md
+  s_355c4e091f817b::t_8647cf9064bdaa 11
+examples/apps/backend-todo/src/views/default.tsx
+  s_355c4e091f817b::t_8647cf9064bdaa 1,6
+apps/demo/clients/messages.ts
+  s_355c4e091f817b::t_8647cf9064bdaa 3,6
+examples/apps/email/src/views/navigation.tsx
+  s_355c4e091f817b::t_8647cf9064bdaa 1,4
+apps/demo/clients/todo.ts
+  s_355c4e091f817b::t_8647cf9064bdaa 3,6
+packages/app/src/builder/instances.test.ts
+  s_355c4e091f817b::t_8647cf9064bdaa 5,100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e672a82e775be9c823b617dde7df60d56bd11528",
+  "prompts": {},
+  "sessions": {
+    "s_355c4e091f817b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a110b9-0243-7ab1-98c8-b679ad47fd30",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
