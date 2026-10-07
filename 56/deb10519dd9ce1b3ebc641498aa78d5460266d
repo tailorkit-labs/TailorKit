@@ -1,0 +1,21 @@
+docs/installation.mdx
+  s_febedc71754875::t_c915a3d988809e 10,19,23,27,31,43,47,51,55,67,71,75,79
+apps/docs/content/docs/(getting-started)/installation.mdx
+  s_febedc71754875::t_c915a3d988809e 19-20,22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "56deb10519dd9ce1b3ebc641498aa78d5460266d",
+  "prompts": {},
+  "sessions": {
+    "s_febedc71754875": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11535-b87f-7f73-b0db-66014feda6ba",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
