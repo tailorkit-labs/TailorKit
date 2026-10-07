@@ -18,7 +18,7 @@ export interface UseViewsResult extends Omit<UseAppsResult, "data"> {
 
 export function useViews(options: UseViewsOptions = {}): UseViewsResult {
   const { store } = useTailorRootContext("useViews");
-  const snapshot = useAppsSnapshot(store);
+  const snapshot = useAppsSnapshot(store, options);
   const scopes = normalizeScopeSelection(options.scopes);
   const appIds = normalizeScopeSelection(options.appIds);
   const data = useMemo(

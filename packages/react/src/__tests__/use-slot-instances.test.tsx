@@ -66,6 +66,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  client.fetchClient?.clear();
   vi.restoreAllMocks();
 });
 
@@ -400,4 +401,75 @@ it("rejects a hook used outside Root or under another client", () => {
   expect(() =>
     renderHook(() => client.useSlotInstances({ app, slot: "page" }), { wrapper: wrongWrapper }),
   ).toThrow("useSlotInstances was created for a different TailorKit client");
+});
+
+it("shares one resolver across two hooks and retains data across remounts", async () => {
+  const first = renderHook(
+    () => {
+      useDetail();
+      return [
+        client.useSlotInstances({ app, slot: "page" }),
+        client.useSlotInstances({ app, slot: "page" }),
+      ];
+    },
+    { wrapper },
+  );
+  await waitFor(() => expect(first.result.current.every((query) => query.isSuccess)).toBe(true));
+  expect(calls("/actions")).toHaveLength(1);
+  expect(calls("/backend/session")).toHaveLength(1);
+  first.unmount();
+  const second = renderHook(
+    () => {
+      useDetail();
+      return client.useSlotInstances({ app, slot: "page", staleTime: Infinity });
+    },
+    { wrapper },
+  );
+  await waitFor(() => expect(second.result.current.isSuccess).toBe(true));
+  expect(calls("/actions")).toHaveLength(1);
+  expect(calls("/meta")).toHaveLength(1);
+});
+
+it("shares identical instance requests across roots while keeping their registrations separate", async () => {
+  const first = renderHook(
+    () => {
+      useDetail();
+      return client.useSlotInstances({ app, slot: "page" });
+    },
+    { wrapper },
+  );
+  const second = renderHook(
+    () => {
+      useDetail();
+      return client.useSlotInstances({ app, slot: "page" });
+    },
+    { wrapper },
+  );
+  await waitFor(() =>
+    expect(first.result.current.isSuccess && second.result.current.isSuccess).toBe(true),
+  );
+  expect(calls("/actions")).toHaveLength(1);
+  first.unmount();
+  expect(second.result.current.data).toEqual(instances);
+});
+
+it("honors a zero stale time on remount and an infinite stale time override", async () => {
+  const mount = (staleTime: number) =>
+    renderHook(
+      () => {
+        useDetail();
+        return client.useSlotInstances({ app, slot: "page", staleTime });
+      },
+      { wrapper },
+    );
+  const first = mount(0);
+  await waitFor(() => expect(first.result.current.isSuccess).toBe(true));
+  first.unmount();
+  const fresh = mount(Infinity);
+  await waitFor(() => expect(fresh.result.current.isSuccess).toBe(true));
+  expect(calls("/actions")).toHaveLength(1);
+  fresh.unmount();
+  const stale = mount(0);
+  await waitFor(() => expect(calls("/actions")).toHaveLength(2));
+  await waitFor(() => expect(stale.result.current.isFetching).toBe(false));
 });

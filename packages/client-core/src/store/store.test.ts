@@ -1,6 +1,6 @@
-import { createStore } from "@tanstack/store";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { createTailorKitStore, toBaseUrl } from "./store";
+import { createTailorKitStore } from "./store";
+import { toBaseUrl } from "../client/url";
 import type { TailorKitApp } from "../types";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -35,7 +35,7 @@ describe("client stores", () => {
     const ready = store.getAppsSnapshot();
     expect(ready.status).toBe("ready");
     expect(ready.views[0]?.app).toBe(ready.apps[0]);
-    expect(store.state.state.apps).toBe(ready);
+    expect(store.fetch.apps.getSnapshot()).toBe(ready);
     expect(listener).toHaveBeenCalledTimes(2);
     stop();
     stop();
@@ -43,7 +43,10 @@ describe("client stores", () => {
     await store.fetchApps();
     expect(store.getAppsSnapshot()).toBe(ready);
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(fetchMock).toHaveBeenCalledWith(new URL("https://host.test/api/tailorkit/apps"));
+    expect(fetchMock).toHaveBeenCalledWith(
+      new URL("https://host.test/api/tailorkit/apps"),
+      expect.objectContaining({ credentials: "same-origin", signal: expect.any(AbortSignal) }),
+    );
     stopAgain();
   });
 
@@ -107,9 +110,8 @@ describe("client stores", () => {
         .mockResolvedValue(Response.json({ assetsBaseUrl: "https://assets.test/", schema: {} })),
     );
     const store = createTailorKitStore("https://host.test/", [{ id: "provided" }]);
-    const apps = createStore(() => store.state.state.apps);
     const listener = vi.fn();
-    const { unsubscribe } = apps.subscribe(listener);
+    const unsubscribe = store.subscribeApps(listener);
     const snapshot = store.getAppsSnapshot();
     await store.fetchMeta();
     expect(store.getMetaSnapshot()).toMatchObject({

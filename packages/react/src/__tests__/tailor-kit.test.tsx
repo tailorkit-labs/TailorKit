@@ -277,6 +277,7 @@ describe("tailorKitClient React adapter", () => {
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
     expect(globalThis.fetch).toHaveBeenCalledWith(
       new URL("apps", "http://runtime.test/api/tailorkit/"),
+      expect.objectContaining({ signal: expect.any(AbortSignal), credentials: "same-origin" }),
     );
   });
 
@@ -356,6 +357,7 @@ describe("tailorKitClient React adapter", () => {
     await waitFor(() => expect(testingView.getByText("ready")).toBeTruthy());
     expect(globalThis.fetch).toHaveBeenCalledWith(
       new URL("apps", "http://runtime.test/api/tailorkit/"),
+      expect.objectContaining({ signal: expect.any(AbortSignal), credentials: "same-origin" }),
     );
   });
 
@@ -747,7 +749,7 @@ describe("view registries", () => {
   });
 });
 
-it("replaces the root store only when the normalized endpoint changes", async () => {
+it("isolates a new client cache even when its endpoint is equivalent", async () => {
   const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
     const url = new URL(input.toString());
     return Promise.resolve(
@@ -787,7 +789,7 @@ it("replaces the root store only when the normalized endpoint changes", async ()
       <Contents client={equivalentClient} />
     </Root>,
   );
-  expect(fetchMock.mock.calls).toHaveLength(count);
+  await waitFor(() => expect(fetchMock.mock.calls).toHaveLength(count + 2));
   const secondClient = createClient("http://second.test/api");
   view.rerender(
     <Root client={secondClient}>

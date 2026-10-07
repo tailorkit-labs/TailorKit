@@ -1371,6 +1371,9 @@ importers:
 
   packages/client-core:
     dependencies:
+      '@tailorkit/app':
+        specifier: workspace:*
+        version: link:../app
       '@tailorkit/client-platform':
         specifier: workspace:*
         version: link:../client-platform

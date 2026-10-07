@@ -1,4 +1,3 @@
-import { createSessionProvider } from "@tailorkit/app/client";
 import type { SlotDefinitions, ViewDefinition } from "@tailorkit/core/schema";
 import type { ActiveView, ViewStatus } from "@tailorkit/core/views";
 import { useCallback, useEffect, useId, useMemo, useRef, useSyncExternalStore } from "react";
@@ -168,8 +167,8 @@ function SlotRenderer({ app, name, state }: SlotProps & { state: SlotState }): R
   const { store, client } = useTailorRootContext("Slot");
   const reactId = useId();
   const getBackendSession = useMemo(
-    () => createSessionProvider({ baseUrl: store.baseUrl, appId: app.id }),
-    [store.baseUrl, app.id, app.currentDeployment?.id],
+    () => store.client.endpoints.getSessionProvider(app),
+    [store.client, app.id, app.currentDeployment?.id, app.preview?.sessionId],
   );
   const meta = useSyncExternalStore(store.subscribe, store.getMetaSnapshot, store.getMetaSnapshot);
   const previewSessionId = app.preview?.sessionId ?? "";

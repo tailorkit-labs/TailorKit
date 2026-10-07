@@ -1,11 +1,9 @@
 import { batch, createStore } from "@tanstack/store";
 import type { Store } from "@tanstack/store";
-import {
-  createPreviewWebSocketClient,
-  previewMetadataSchema,
-} from "@tailorkit/client-platform/preview";
+import { createPreviewWebSocketClient } from "@tailorkit/client-platform/preview";
 import type { PreviewBuildManifest, PreviewEvent } from "@tailorkit/client-platform/preview";
-import type { TailorKitApp } from "../types";
+import type { TailorKitApp } from "../../types";
+import { createEndpointClient } from "../../client/endpoints";
 
 export interface PreviewSnapshot {
   revision: number;
@@ -81,6 +79,7 @@ export function createPreviewManager(
   baseUrl: URL,
   onEnded: () => void,
   onViews?: (appId: string, views: NonNullable<TailorKitApp["views"]>) => void,
+  refreshMetadata = createEndpointClient({ baseUrl }).previewMetadata,
 ) {
   const entries = new Map<string, Entry>();
   const close = (entry: Entry) => {
@@ -171,13 +170,11 @@ export function createPreviewManager(
         ? entry.metadata
         : appMetadata;
     try {
-      const refresh = new URL("preview/metadata", baseUrl);
-      refresh.searchParams.set("sessionId", metadata.sessionId);
-      const response = await fetch(refresh, { credentials: "same-origin" });
-      if (response.ok) {
-        metadata = previewMetadataSchema.parse(await response.json());
+      const refreshed = await refreshMetadata(metadata.sessionId);
+      if (refreshed) {
+        metadata = refreshed;
         entry.metadata = metadata;
-      } else if (response.status === 404) {
+      } else {
         end(entry);
         return;
       }
