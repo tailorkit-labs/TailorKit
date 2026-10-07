@@ -1,0 +1,19 @@
+docs/deploying-to-production.mdx
+  s_73b502e0d19bd2::t_2928ff49c218be 9,14,67,73,80,90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b17adb16ddb2739f83ad365f772e4b41b45674e3",
+  "prompts": {},
+  "sessions": {
+    "s_73b502e0d19bd2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11537-ee69-7da3-b161-d1b6f83092db",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
