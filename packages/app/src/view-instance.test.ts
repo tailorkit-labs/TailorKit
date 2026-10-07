@@ -6,7 +6,7 @@ import { act } from "preact/test-utils";
 import { afterEach, expect, it, vi } from "vite-plus/test";
 
 vi.stubGlobal("__PREACT_VERSION__", "10.29.8");
-const { createView, defineClient } = await import("./views");
+const { defineView, defineClient } = await import("./views");
 const roots: HTMLElement[] = [];
 afterEach(() => {
   for (const root of roots.splice(0)) render(null, root);
@@ -19,7 +19,7 @@ function root() {
 }
 
 it("supplies instance data and context, updates data, and resets component state when the key changes", async () => {
-  const view = createView({
+  const view = defineView({
     slot: "page",
     view: "/",
     instances: { resolver: "compiled-resolver" } as never,
@@ -60,7 +60,7 @@ it("supplies instance data and context, updates data, and resets component state
 });
 
 it("keeps ordinary views rendering without an instance", async () => {
-  const view = createView({ slot: "navbar", view: "/", component: () => "ordinary" });
+  const view = defineView({ slot: "navbar", view: "/", component: () => "ordinary" });
   const container = root();
   await act(() =>
     render(
@@ -72,7 +72,7 @@ it("keeps ordinary views rendering without an instance", async () => {
 });
 
 it("reports missing instances and useInstance outside its view", () => {
-  const view = createView({
+  const view = defineView({
     slot: "page",
     view: "/",
     instances: { resolver: "compiled-resolver" } as never,
@@ -92,7 +92,7 @@ it("reports missing instances and useInstance outside its view", () => {
 });
 
 it("rejects registration under a different slot in JavaScript apps", () => {
-  const view = createView({ slot: "navbar", view: "/", component: () => null });
+  const view = defineView({ slot: "navbar", view: "/", component: () => null });
   // @ts-expect-error Exercise runtime validation for untyped registrations.
   expect(() => defineClient({ slots: { panel: { "/": view } } })).toThrow(
     'created for slot "navbar", not "panel"',

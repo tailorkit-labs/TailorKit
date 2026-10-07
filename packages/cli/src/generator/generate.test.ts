@@ -249,7 +249,7 @@ describe("generateApp", () => {
       path.join(targetDirectory, "src", "views", "default.tsx"),
       "utf-8",
     );
-    expect(content).toContain("createView({");
+    expect(content).toContain("defineView({");
     expect(content).toContain('view: "/customers"');
     expect(content).toContain('slot: "sidebar"');
     expect(content).not.toContain("instances:");
@@ -336,7 +336,7 @@ describe("generateApp", () => {
     const client = await readFile(path.join(targetDirectory, "src/client.ts"), "utf-8");
     const view = await readFile(path.join(targetDirectory, "src/views/default.tsx"), "utf-8");
     expect(client).toContain('"alpha": { "/accounts": defaultView }');
-    expect(view).toContain("createView({");
+    expect(view).toContain("defineView({");
     expect(view).toContain('view: "/accounts"');
     expect(view).toContain("return <>");
     expect(view).not.toContain("Box");

@@ -1,7 +1,7 @@
 import { Box } from "#tailorkit";
-import { createView } from "@tailorkit/app";
+import { defineView } from "@tailorkit/app";
 
-const view = createView({ slot: "panel", view: "/", component: ViewComponent });
+const view = defineView({ slot: "panel", view: "/", component: ViewComponent });
 
 function ViewComponent() {
   return <Box>Hello World</Box>;

@@ -2,7 +2,7 @@ import { expect, it } from "vite-plus/test";
 import { extractInstances } from "./instances";
 
 const source = `
-import { createView as cv } from "tailorkit/client";
+import { defineView as cv } from "tailorkit/client";
 import { z } from "zod";
 import { serverHelper } from "./server-helper";
 import { Widget } from "./widget";
@@ -97,7 +97,7 @@ it("rejects dynamic definitions rather than leaving a resolver in the browser", 
   await expect(
     extractInstances(
       "/app/page.tsx",
-      `function factory() { ${source.replace(/^import .*$/gm, "").replace("export default view;", "return view;")} }\nimport { createView as cv } from "tailorkit/client";`,
+      `function factory() { ${source.replace(/^import .*$/gm, "").replace("export default view;", "return view;")} }\nimport { defineView as cv } from "tailorkit/client";`,
       "/app",
     ),
   ).rejects.toThrow("module scope");

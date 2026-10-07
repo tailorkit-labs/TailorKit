@@ -1,9 +1,9 @@
-import { createView, useQuery } from "tailorkit/client";
+import { defineView, useQuery } from "tailorkit/client";
 import { api{% if useBox %}, Box{% endif %} } from "#tailorkit";
 {% if multiple %}import { z } from "zod";
 {% endif %}
 
-const view = createView({
+const view = defineView({
   slot: {{ slotName }},
   view: {{ viewPath }},
 {% if multiple %}  instances: {

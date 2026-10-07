@@ -307,7 +307,7 @@ export async function extractInstances(
       if (
         s.type === "ImportSpecifier" &&
         s.imported.type === "Identifier" &&
-        s.imported.name === "createView"
+        s.imported.name === "defineView"
       )
         aliases.add(s.local.name);
     }
@@ -328,7 +328,7 @@ export async function extractInstances(
       throw new Error(`${filename}: ${message}`);
     };
     if (ancestors.some(isFunction))
-      fail("createView with instances must be declared at module scope.");
+      fail("defineView with instances must be declared at module scope.");
     const owner = ancestors.findLast((n) => n.type === "VariableDeclarator");
     const viewName =
       owner?.type === "VariableDeclarator" && owner.id.type === "Identifier"

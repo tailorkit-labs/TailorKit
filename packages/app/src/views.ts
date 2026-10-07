@@ -113,7 +113,7 @@ type RequireMatchingViewKeys<TViews> =
   ViewKeyPathMismatch<TViews> extends never
     ? unknown
     : {
-        readonly __tailorkit_error__: `View key must match createView path. Invalid view: ${ViewKeyPathMismatch<TViews>}`;
+        readonly __tailorkit_error__: `View key must match defineView path. Invalid view: ${ViewKeyPathMismatch<TViews>}`;
       };
 
 export type SlotView<TSlot extends SlotName> = TailorKitSlots[TSlot] extends { views: infer TViews }
@@ -161,7 +161,7 @@ type ViewOptions<TPath extends AppViewPath, TSlot extends SlotName, TSchema exte
       : { instances?: never });
 }[TSlot];
 
-export const createView = <
+export const defineView = <
   const TPath extends AppViewPath,
   const TSlot extends SlotName,
   TSchema extends z.ZodType,

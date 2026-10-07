@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createView } from "./views";
+import { defineView } from "./views";
 import { defineServer, tk } from "./server";
 
 const server = defineServer({
@@ -17,7 +17,7 @@ declare module "./views" {
   interface TailorKitServerFunctions extends ServerFunctions {}
 }
 
-createView({
+defineView({
   slot: "page",
   view: "/users",
   component: () => null,
@@ -52,7 +52,7 @@ createView({
     },
   },
 });
-createView({
+defineView({
   slot: "page",
   view: "/",
   component: () => null,
@@ -63,7 +63,7 @@ createView({
   },
 });
 
-const instanceView = createView({
+const instanceView = defineView({
   slot: "page",
   view: "/",
   component: () => null,

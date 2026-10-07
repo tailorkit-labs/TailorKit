@@ -1,4 +1,4 @@
-import { createView } from "@tailorkit/app";
+import { defineView } from "@tailorkit/app";
 import { Box } from "#tailorkit";
 
-export default createView({ slot: "navbar", view: "/", component: () => <Box>Email</Box> });
+export default defineView({ slot: "navbar", view: "/", component: () => <Box>Email</Box> });

@@ -1,10 +1,10 @@
-import { createView } from "tailorkit/client";
+import { defineView } from "tailorkit/client";
 import { useAction, useMutation, useQuery } from "tailorkit/client";
 import { useState } from "preact/hooks";
 import { api, Box, Button, Flex, Input } from "#tailorkit";
 import type { Todo } from "../schema";
 
-const view = createView({ slot: "panel", view: "/", component: TodoView });
+const view = defineView({ slot: "panel", view: "/", component: TodoView });
 
 function TodoView() {
   const todos = useQuery(api.list);
