@@ -1,0 +1,60 @@
+.changeset/preact-eleven.md
+  s_e7bd7c008a5dda::t_4c1f924720b6eb 1-6
+packages/cli/src/generator/package-versions.test.ts
+  s_e7bd7c008a5dda::t_0858584a272066 1-28
+packages/app-agent/src/instructions.md
+  s_e7bd7c008a5dda::t_4c1f924720b6eb 55
+packages/app/src/preact.ts
+  s_e7bd7c008a5dda::t_dcb2ae8d30e954 6,33,135-136
+packages/cli/src/generator/generate.test.ts
+  s_e7bd7c008a5dda::t_75945b7b064e54 37,189-190
+  s_e7bd7c008a5dda::t_f4a2f7ec1226b1 35
+packages/app/src/preact-version.test.ts
+  s_e7bd7c008a5dda::t_0858584a272066 1-20
+packages/app/README.md
+  s_e7bd7c008a5dda::t_75945b7b064e54 5
+  s_e7bd7c008a5dda::t_4c1f924720b6eb 4
+packages/app/src/preact.test.ts
+  s_e7bd7c008a5dda::t_4c1f924720b6eb 234-235
+  s_e7bd7c008a5dda::t_77964d45d74a44 105-109
+apps/demo/package.json
+  s_e7bd7c008a5dda::t_76ab156fb17089 31
+examples/apps/backend-todo/package.json
+  s_e7bd7c008a5dda::t_aa81a0c1998333 15
+examples/apps/email/package.json
+  s_e7bd7c008a5dda::t_b9ea9427027ba7 29
+examples/apps/notes/package.json
+  s_e7bd7c008a5dda::t_cb8f091608577b 29
+examples/apps/todo/package.json
+  s_e7bd7c008a5dda::t_f6af4a10ee622c 29
+packages/app/package.json
+  s_e7bd7c008a5dda::t_d02605a8aea8cc 67,73
+packages/app/src/builder/index.ts
+  s_e7bd7c008a5dda::t_7a84059b0776b1 259
+packages/app/src/preact-version.ts
+  s_e7bd7c008a5dda::t_29a62362dc4b47 1
+packages/app/src/providers.test.ts
+  s_e7bd7c008a5dda::t_3cdcac3dc6c5d0 7
+packages/app/src/view-instance.test.ts
+  s_e7bd7c008a5dda::t_6f2e2b3da16bd5 8
+packages/cli/src/generator/package-versions.ts
+  s_e7bd7c008a5dda::t_b9d55ff62993a6 34
+pnpm-lock.yaml
+  s_e7bd7c008a5dda::t_fa91ef7d1c5e57 397-398,612-613,643-644,659-660,678-679,1019,1055-1056,10797-10804,14809,14812,23025-23028
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "268df1e7eff4caf1eb73ddefb7bc2696e6a76a7f",
+  "prompts": {},
+  "sessions": {
+    "s_e7bd7c008a5dda": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1186b-9419-7bb3-a71e-92358ddca90f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
