@@ -1,5 +1,5 @@
 import { gzipSync, gunzipSync } from "node:zlib";
-import { assetHeaders } from "@tailorkit/asset-delivery";
+import { assetHeaders, maxDeploymentBytes } from "@tailorkit/asset-delivery";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import worker from "./assets";
 
@@ -205,8 +205,8 @@ it("keeps the response usable when a background cache write fails", async () => 
   expect(log).toHaveBeenCalledWith(JSON.stringify({ message: "Asset cache write failed" }));
 });
 
-function gzipObject() {
-  const bytes = gzipSync(bundle);
+function gzipObject(body = bundle) {
+  const bytes = gzipSync(body);
   return {
     ...object(),
     body: new Response(bytes).body,
@@ -228,6 +228,39 @@ it("serves stored gzip bytes and caches them without double compression", async 
   const cached = put.mock.calls[0]![1];
   expect(cached.headers.get("Content-Encoding")).toBe("gzip");
   expect(gunzipSync(Buffer.from(await cached.arrayBuffer())).toString()).toBe(bundle);
+});
+
+it.each(["R2", "cache"])("caps inflated bytes from %s at 1 MiB", async (source) => {
+  const stored = gzipObject("a".repeat(maxDeploymentBytes + 1));
+  expect(stored.size).toBeLessThan(maxDeploymentBytes);
+  if (source === "R2") {
+    get.mockResolvedValueOnce(stored);
+  } else {
+    match.mockResolvedValueOnce(
+      new Response(stored.body, {
+        headers: assetHeaders({ contentLength: stored.size, contentEncoding: "gzip" }),
+      }),
+    );
+  }
+  const response = await fetchAsset(new Request(url));
+  const reader = response.body!.getReader();
+  let deliveredBytes = 0;
+  await expect(
+    (async () => {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        deliveredBytes += value.byteLength;
+      }
+    })(),
+  ).rejects.toThrow("Asset delivery failed (404)");
+  expect(deliveredBytes).toBeLessThanOrEqual(maxDeploymentBytes);
+});
+
+it("serves a gzip bundle whose decoded size is exactly 1 MiB", async () => {
+  get.mockResolvedValueOnce(gzipObject("a".repeat(maxDeploymentBytes)));
+  const response = await fetchAsset(new Request(url));
+  expect((await response.arrayBuffer()).byteLength).toBe(maxDeploymentBytes);
 });
 
 it.each([undefined, "identity", "gzip;q=0, *;q=1"])(

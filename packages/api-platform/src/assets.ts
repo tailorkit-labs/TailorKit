@@ -3,6 +3,7 @@ import {
   assetHeaders,
   assetResponse,
   assetSize,
+  limitAssetBody,
   nodeAssetRequest,
   serveAssetRequest,
 } from "@tailorkit/asset-delivery";
@@ -54,7 +55,11 @@ function loadAsset(request: Request, identity: AssetIdentity, storage: Storage) 
     });
     if (!upstream.ok)
       return yield* Effect.fail(new AssetDeliveryError(upstream.status === 404 ? 404 : 503));
-    return new Response(upstream.body, { headers });
+    const body =
+      object.contentEncoding === "gzip" && upstream.body
+        ? limitAssetBody(upstream.body)
+        : upstream.body;
+    return new Response(body, { headers });
   });
 }
 

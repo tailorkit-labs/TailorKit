@@ -34,6 +34,7 @@ import {
 
 const uploadUrlExpiresInSeconds = 15 * 60;
 const logoInspectionTimeoutMs = 10_000;
+const clientInspectionTimeoutMs = 10_000;
 const logoExtensionByContentType = {
   "image/png": "png",
   "image/svg+xml": "svg",
@@ -133,6 +134,48 @@ async function hasMatchingLogo(
       return false;
     }
     throw error;
+  }
+}
+
+async function inspectCompressedClient(storage: Context["storage"], objectKey: string) {
+  const download = await storage.createDownloadUrl({ key: objectKey, expiresInSeconds: 60 });
+  const downloadUrl = new URL(download.url);
+  if (downloadUrl.protocol !== "https:") {
+    throw new Error("Client bundle download URL must use HTTPS.");
+  }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), clientInspectionTimeoutMs);
+  try {
+    const response = await fetch(downloadUrl, {
+      redirect: "error",
+      signal: controller.signal,
+    });
+    if (!response.ok || !response.body) {
+      throw new Error("Failed to inspect uploaded client bundle.");
+    }
+    // Node fetch decodes R2's Content-Encoding before exposing the response body.
+    // Count chunks instead of buffering an arbitrarily large inflated bundle.
+    const reader = response.body.getReader();
+    let contentLength = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        contentLength += value.byteLength;
+        if (contentLength > maxDeploymentBytes) {
+          await reader.cancel();
+          throw new Error(`Decompressed client assets cannot exceed ${maxDeploymentBytes} bytes.`);
+        }
+      }
+      if (contentLength === 0) {
+        throw new Error("Failed to inspect uploaded client bundle.");
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  } finally {
+    controller.abort();
+    clearTimeout(timeout);
   }
 }
 
@@ -532,6 +575,10 @@ const publishAppDeployment = protectedRouter
 
         if (!file.checksum || object.checksumSha256 !== hexToBase64(file.checksum)) {
           throw new Error("Uploaded file checksum does not match deployment record.");
+        }
+
+        if (file.encoding === "gzip" && file.objectKey.endsWith("/client/client.js")) {
+          await inspectCompressedClient(context.storage, file.objectKey);
         }
 
         if (file.contentType !== "application/javascript") {

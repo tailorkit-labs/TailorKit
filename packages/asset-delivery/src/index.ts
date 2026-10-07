@@ -181,6 +181,23 @@ export class AssetDeliveryError extends Error {
   }
 }
 
+/** Bound decoded bytes, including objects that have not passed publication checks. */
+export function limitAssetBody(body: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  let contentLength = 0;
+  return body.pipeThrough(
+    new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        contentLength += chunk.byteLength;
+        if (contentLength > maxAssetBytes) {
+          controller.error(new AssetDeliveryError(404));
+          return;
+        }
+        controller.enqueue(chunk);
+      },
+    }),
+  );
+}
+
 export function hostedAssetRequest(request: Request, assetDomain: string) {
   return Effect.gen(function* () {
     if (new URL(request.url).protocol !== "https:") {
@@ -244,9 +261,9 @@ export function acceptsGzip(request: Request): boolean {
     .toLowerCase()
     .split(",")
     .map((entry) => {
-      const [name, ...parameters] = entry.trim().split(";");
-      const quality = parameters.find((parameter) => parameter.trim().startsWith("q="));
-      return { name, quality: quality ? Number(quality.trim().slice(2)) : 1 };
+      const [name, ...parameters] = entry.split(";").map((part) => part.trim());
+      const quality = parameters.find((parameter) => parameter.startsWith("q="));
+      return { name, quality: quality ? Number(quality.slice(2)) : 1 };
     });
   const encoding =
     encodings.find(({ name }) => name === "gzip") ?? encodings.find(({ name }) => name === "*");

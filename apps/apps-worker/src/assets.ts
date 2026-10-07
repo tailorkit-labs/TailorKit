@@ -5,6 +5,7 @@ import {
   assetResponse,
   assetSize,
   hostedAssetRequest,
+  limitAssetBody,
   serveAssetRequest,
 } from "@tailorkit/asset-delivery";
 import type { AssetIdentity } from "@tailorkit/asset-delivery";
@@ -20,7 +21,7 @@ function downstreamResponse(response: Response, request: Request) {
     headers.delete("Content-Length");
     if (headers.has("ETag")) headers.set("ETag", `W/${headers.get("ETag")}`);
     if (request.method !== "HEAD" && body) {
-      body = body.pipeThrough(new DecompressionStream("gzip"));
+      body = limitAssetBody(body.pipeThrough(new DecompressionStream("gzip")));
     }
   }
   return new Response(request.method === "HEAD" ? null : body, {

@@ -1,4 +1,7 @@
+import { createHash } from "node:crypto";
+import { gzipSync } from "node:zlib";
 import { call } from "@orpc/server";
+import { maxDeploymentBytes } from "@tailorkit/asset-delivery";
 import { app as appTable, appDeployment, appDeploymentFile } from "@tailorkit/db/schema/apps";
 import { organization } from "@tailorkit/db/schema/auth";
 import { project as projectTable } from "@tailorkit/db/schema/project";
@@ -202,7 +205,16 @@ describe("platform deployment uploads", () => {
       ]);
       expect(uploads).toHaveBeenCalledTimes(2);
       expect(uploads).toHaveBeenCalledWith(
-        expect.objectContaining({ contentEncoding: encoding === "gzip" ? "gzip" : undefined }),
+        expect.objectContaining({
+          key: created.body.assets[0]?.file.objectKey,
+          contentEncoding: encoding === "gzip" ? "gzip" : undefined,
+        }),
+      );
+      expect(uploads).toHaveBeenCalledWith(
+        expect.objectContaining({
+          key: created.body.server?.file.objectKey,
+          contentEncoding: encoding === "gzip" ? "gzip" : undefined,
+        }),
       );
       const lookup = { params: { appId: currentApp.id }, body: { scope: productionScope } };
       await expect(
@@ -237,6 +249,9 @@ describe("platform deployment uploads", () => {
           ),
         ).rejects.toThrow("Uploaded file content encoding does not match deployment record.");
       }
+      const fetchMock = vi
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(new Response("client-code"));
       await call(
         deploymentRouter.publish,
         {
@@ -275,12 +290,168 @@ describe("platform deployment uploads", () => {
         contentLength: 11,
         ...(encoding === "gzip" ? { contentEncoding: "gzip" } : {}),
       });
-      expect(context.storage.createDownloadUrl).not.toHaveBeenCalled();
+      if (encoding === "gzip") {
+        expect(context.storage.createDownloadUrl).toHaveBeenCalledExactlyOnceWith({
+          key: created.body.assets[0]!.file.objectKey,
+          expiresInSeconds: 60,
+        });
+        expect(fetchMock).toHaveBeenCalledOnce();
+      } else {
+        expect(context.storage.createDownloadUrl).not.toHaveBeenCalled();
+        expect(fetchMock).not.toHaveBeenCalled();
+      }
       const files = await db.query.appDeploymentFile.findMany({
         where: { appDeploymentId: created.body.deployment.id },
       });
       expect(files).toHaveLength(2);
       expect(files.every((file) => file.status === "verified")).toBe(true);
+    },
+  );
+
+  const createGzipClientDeployment = async (decoded: Uint8Array) => {
+    const bytes = gzipSync(decoded);
+    const checksum = createHash("sha256").update(bytes).digest("hex");
+    const context = publishContext("https://uploads.example/client.js");
+    context.storage.createUploadUrl = vi.fn(({ key }) =>
+      Promise.resolve({ key, uploadUrl: `https://uploads.example/${key}` }),
+    );
+    context.storage.head = vi.fn(({ key }) =>
+      Promise.resolve({
+        key,
+        checksumSha256: Buffer.from(checksum, "hex").toString("base64"),
+        contentLength: bytes.byteLength,
+        contentType: "application/javascript",
+        contentEncoding: "gzip",
+      }),
+    );
+    const currentApp = await db.query.app.findFirst();
+    if (!currentApp) throw new Error("Missing app");
+    const created = await call(
+      deploymentRouter.create,
+      {
+        body: {
+          appId: currentApp.id,
+          scope: productionScope,
+          assets: [
+            {
+              checksum,
+              contentLength: bytes.byteLength,
+              contentType: "application/javascript",
+              encoding: "gzip",
+              objectKey: "client.js",
+            },
+          ],
+        },
+      },
+      { context },
+    );
+    return { context, created };
+  };
+
+  it("rejects oversized inflated client code before publication and cancels the decoded stream", async () => {
+    const decoded = new Uint8Array(maxDeploymentBytes + 1);
+    const { context, created } = await createGzipClientDeployment(decoded);
+    const cancel = vi.fn();
+    let position = 0;
+    const chunks = [
+      decoded.subarray(0, maxDeploymentBytes),
+      decoded.subarray(maxDeploymentBytes),
+      new Uint8Array(1),
+    ];
+    const body = new ReadableStream<Uint8Array>(
+      {
+        pull(controller) {
+          controller.enqueue(chunks[position++]!);
+        },
+        cancel,
+      },
+      { highWaterMark: 0 },
+    );
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(body, { headers: { "Content-Encoding": "gzip" } }));
+
+    await expect(
+      call(
+        deploymentRouter.publish,
+        {
+          params: { deploymentId: created.body.deployment.id },
+          body: { scope: productionScope, rollout: true },
+        },
+        { context },
+      ),
+    ).rejects.toThrow(`Decompressed client assets cannot exceed ${maxDeploymentBytes} bytes.`);
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(position).toBe(2);
+    expect(fetchMock).toHaveBeenCalledWith(
+      new URL("https://uploads.example/client.js"),
+      expect.objectContaining({ redirect: "error", signal: expect.any(AbortSignal) }),
+    );
+    const deployment = await db.query.appDeployment.findFirst({
+      where: { id: created.body.deployment.id },
+    });
+    const file = await db.query.appDeploymentFile.findFirst({
+      where: { appDeploymentId: created.body.deployment.id },
+    });
+    const currentApp = await db.query.app.findFirst();
+    expect(deployment?.status).toBe("uploading");
+    expect(file?.status).toBe("failed");
+    expect(currentApp?.currentDeploymentId).toBeNull();
+  });
+
+  it("publishes gzip client code whose decoded size is exactly 1 MiB", async () => {
+    const decoded = new Uint8Array(maxDeploymentBytes);
+    const { context, created } = await createGzipClientDeployment(decoded);
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(decoded, { headers: { "Content-Encoding": "gzip" } }),
+    );
+    const published = await call(
+      deploymentRouter.publish,
+      {
+        params: { deploymentId: created.body.deployment.id },
+        body: { scope: productionScope, rollout: true },
+      },
+      { context },
+    );
+    expect(published.body.status).toBe("published");
+    const file = await db.query.appDeploymentFile.findFirst({
+      where: { appDeploymentId: created.body.deployment.id },
+    });
+    expect(file?.status).toBe("verified");
+    const currentApp = await db.query.app.findFirst();
+    expect(currentApp?.currentDeploymentId).toBe(published.body.id);
+  });
+
+  it.each(["stream-error", "missing-body", "upstream-failure"])(
+    "rejects gzip client inspection with %s",
+    async (failure) => {
+      const { context, created } = await createGzipClientDeployment(
+        new TextEncoder().encode("client-code"),
+      );
+      const body = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.error(new Error("Invalid gzip"));
+        },
+      });
+      const response =
+        failure === "stream-error"
+          ? new Response(body)
+          : new Response(null, { status: failure === "upstream-failure" ? 503 : 200 });
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(response);
+      await expect(
+        call(
+          deploymentRouter.publish,
+          {
+            params: { deploymentId: created.body.deployment.id },
+            body: { scope: productionScope, rollout: true },
+          },
+          { context },
+        ),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      const file = await db.query.appDeploymentFile.findFirst({
+        where: { appDeploymentId: created.body.deployment.id },
+      });
+      expect(file?.status).toBe("failed");
     },
   );
 
