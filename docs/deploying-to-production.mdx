@@ -1,6 +1,6 @@
 ---
 title: "Deploying to production"
-description: "A practical checklist for the data, components, and actions you expose to apps."
+description: "Production best practices for data sharing, validation, authorization, and UI security."
 ---
 
 Best practices for deploying TailorKit to production, including data sharing,
@@ -8,55 +8,56 @@ input validation, authorization, and UI security.
 
 ## Best practices
 
-### Share only the view data apps need
+### Share only the data apps need
 
-Every field passed through `useRegisterView()` is visible to the app rendering that
-view. Use a small view model instead of raw database records, sessions, access tokens,
-or route-loader objects. Derive permissions on the server; hiding a button is a UI
-choice, not an authorization check.
+Apps can read every field you share through `useRegisterView()`. Pass a small view
+model without raw database records, sessions, access tokens, or route-loader objects.
 
 ### Validate component fields
 
-Prefer enums, bounded numbers, booleans, and structured objects. Check every link `href`
-and media `src` before rendering, allowing only the protocols that component needs:
-usually `https:` for media and `https:` or `mailto:` for links. Render text as text;
-sanitize any raw HTML you choose to support.
+Use enums, bounded numbers, booleans, and structured objects. Validate link `href`
+and media `src` values before rendering. Allow only the protocols each component
+needs: usually `https:` for media and `https:` or `mailto:` for links.
+
+Render text as text. Sanitize any raw HTML you support.
 
 ### Keep callbacks for UI events
 
-Use `onClick`, `onOpenChange`, and `onValueChange` to notify app code of interactions.
-Put API calls, record mutations, billing, auth, invites, role changes, and other side
-effects in host-owned server actions.
+Use callbacks such as `onClick`, `onOpenChange`, and `onValueChange` to notify apps
+of UI interactions. Use host-owned server actions for API calls, data changes,
+billing, authentication, invites, role changes, and other side effects.
 
 ### Authorize every action
 
-Use authenticated host `context` for identity and permissions, even when only one role
-sees the control. Validate action input and output, limit database queries to the
-authenticated tenant, and return only the data the app needs, without secrets or
-internal metadata.
+Check identity and permissions on the server using authenticated host `context`,
+regardless of which controls the UI shows. Validate action inputs and outputs,
+scope database queries to the authenticated tenant, and return only the data the
+app needs, without secrets or internal metadata.
 
-### Scope installations to the signed-in user or organization
+### Scope app installations
 
-Define stable schemas for named `scopes` such as `user` and `organization`. Return
-matching values under the same names from `authenticate`, using the authenticated
-session rather than app request values. Use stable opaque IDs: TailorKit receives them
-to match and display installations. Keep project keys and CLI credentials on the server
-or developer machine, outside browser bundles and app-generated context.
+Define stable `scopes` schemas, such as `user` and `organization`. In `authenticate`,
+return values under the same names from the signed-in session, rather than app
+requests. Use stable opaque IDs; TailorKit receives them to match and display
+installations.
+
+Keep project keys and CLI credentials on the server or developer machine, outside
+browser bundles and app context.
 
 ### Keep your design system in control
 
-Prefer TailorKit primitives and theme tokens over raw class names, HTML, or arbitrary
-`style` objects. If you expose styles, constrain each allowed property and value. Keep
-destructive, billing, auth, invite, role, and permission controls recognizable as
-host-owned UI; embedded apps should not visually replace those flows.
+Use TailorKit primitives and theme tokens. Avoid raw class names, HTML, and
+unrestricted `style` objects; constrain every style property and value you expose.
+
+Keep destructive, billing, authentication, invite, role, and permission controls
+recognizable as host-owned UI. Apps should not visually replace these flows.
 
 See the [installation guide](/installation) for the host configuration,
 authentication handler, and primitive setup.
 
 ## URL validation examples
 
-Choose the validation library you already use. These link schemas allow HTTPS
-and email links; use only `https:` for a media source.
+These examples allow HTTPS and email links. For media sources, allow only `https:`.
 
 <CodeGroup>
 
@@ -103,15 +104,13 @@ const Link = {
 
 ## Sandbox and network access
 
-App JavaScript runs directly in a hidden iframe with an opaque origin. The
-iframe allows scripts without same-origin access, keeping apps separate from
-your page, application state, cookies, and local storage. Your host fetches app
-code, supplies context, renders the returned UI, and executes the actions you
-expose.
+App JavaScript runs in a hidden iframe with an opaque origin and no same-origin
+access. It can run scripts, but cannot directly access your page, app state,
+cookies, or local storage. Your host fetches code, shares context, renders UI,
+and runs exposed actions.
 
-Apps can make direct network requests without a host bridge. The runtime's
-content security policy permits `http:`, `https:`, `ws:`, and `wss:` connections;
-use HTTPS and secure WebSockets (`wss:`) in production. For direct connections,
-services must support the sandbox's opaque origin (`Origin: null`), including
-CORS and preflight for HTTP requests. Authenticate and authorize requests
-independently of that origin.
+Apps can connect directly without a host bridge. The content security policy
+allows `http:`, `https:`, `ws:`, and `wss:`; use HTTPS and secure WebSockets (`wss:`)
+in production. Services must accept the opaque origin (`Origin: null`), including
+CORS and HTTP preflight. Authenticate and authorize requests independently of
+that origin.
