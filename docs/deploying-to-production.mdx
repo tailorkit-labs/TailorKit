@@ -21,43 +21,7 @@ needs: usually `https:` for media and `https:` or `mailto:` for links.
 
 Render text as text. Sanitize any raw HTML you support.
 
-### Keep callbacks for UI events
-
-Use callbacks such as `onClick`, `onOpenChange`, and `onValueChange` to notify apps
-of UI interactions. Use host-owned server actions for API calls, data changes,
-billing, authentication, invites, role changes, and other side effects.
-
-### Authorize every action
-
-Check identity and permissions on the server using authenticated host `context`,
-regardless of which controls the UI shows. Validate action inputs and outputs,
-scope database queries to the authenticated tenant, and return only the data the
-app needs, without secrets or internal metadata.
-
-### Scope app installations
-
-Define stable `scopes` schemas, such as `user` and `organization`. In `authenticate`,
-return values under the same names from the signed-in session, rather than app
-requests. Use stable opaque IDs; TailorKit receives them to match and display
-installations.
-
-Keep project keys and CLI credentials on the server or developer machine, outside
-browser bundles and app context.
-
-### Keep your design system in control
-
-Use TailorKit primitives and theme tokens. Avoid raw class names, HTML, and
-unrestricted `style` objects; constrain every style property and value you expose.
-
-Keep destructive, billing, authentication, invite, role, and permission controls
-recognizable as host-owned UI. Apps should not visually replace these flows.
-
-See the [installation guide](/installation) for the host configuration,
-authentication handler, and primitive setup.
-
-## URL validation examples
-
-These examples allow HTTPS and email links. For media sources, allow only `https:`.
+For example, validate links with the library you already use:
 
 <CodeGroup>
 
@@ -101,3 +65,37 @@ const Link = {
 ```
 
 </CodeGroup>
+
+### Keep callbacks for UI events
+
+Use callbacks such as `onClick`, `onOpenChange`, and `onValueChange` to notify apps
+of UI interactions. Use host-owned server actions for API calls, data changes,
+billing, authentication, invites, role changes, and other side effects.
+
+### Authorize every action
+
+Check identity and permissions on the server using authenticated host `context`,
+regardless of which controls the UI shows. Validate action inputs and outputs,
+scope database queries to the authenticated tenant, and return only the data the
+app needs, without secrets or internal metadata.
+
+### Scope app installations
+
+Define stable `scopes` schemas, such as `user` and `organization`. In `authenticate`,
+return values under the same names from the signed-in session, rather than app
+requests. Use stable opaque IDs; TailorKit receives them to match and display
+installations.
+
+Keep project keys and CLI credentials on the server or developer machine, outside
+browser bundles and app context.
+
+### Keep your design system in control
+
+Use TailorKit primitives and theme tokens. Avoid raw class names, HTML, and
+unrestricted `style` objects; constrain every style property and value you expose.
+
+Keep destructive, billing, authentication, invite, role, and permission controls
+recognizable as host-owned UI. Apps should not visually replace these flows.
+
+See the [installation guide](/installation) for the host configuration,
+authentication handler, and primitive setup.
