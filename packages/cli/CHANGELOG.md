@@ -1,5 +1,25 @@
 # @tailorkit/cli
 
+## 0.1.0-beta.20
+
+### Minor Changes
+
+- a2ed82b: Declare multi-instance host slots with `multiple: true` (omitted or false means single-instance). Client-bound `Slot` requires `instanceKey` for multi-instance slots and rejects it for single-instance slots; ready `Slot.Controlled` similarly requires or rejects `instance`.
+
+  Breaking change: rename `createView` to `defineView`, use `defineView({ slot, view, component, ... })` and regenerate app bindings. Multi-instance slots require `instances: { dataSchema, resolve }`; single-instance slots reject it. View registration is restricted to the slot selected in `defineView`. The CLI scaffolds a resolver when the selected host slot supports multiple instances.
+
+### Patch Changes
+
+- fc09d5b: Gzip client and server deployment bundles before uploading to reduce transfer and R2 storage. Record compressed byte checksums and sizes, and support gzip deployment metadata while retaining compatibility with uncompressed deployments.
+
+  Raise the maximum client and server bundle size to 3 MiB for uploads and decoded runtime/delivery bytes.
+
+- Updated dependencies [a2ed82b]
+- Updated dependencies [fc09d5b]
+  - @tailorkit/core@0.1.0-beta.20
+  - @tailorkit/app@0.1.0-beta.20
+  - @tailorkit/client-platform@0.1.0-beta.20
+
 ## 0.1.0-beta.19
 
 ### Minor Changes

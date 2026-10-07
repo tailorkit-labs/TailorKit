@@ -1,5 +1,13 @@
 # @tailorkit/client-platform
 
+## 0.1.0-beta.20
+
+### Patch Changes
+
+- fc09d5b: Gzip client and server deployment bundles before uploading to reduce transfer and R2 storage. Record compressed byte checksums and sizes, and support gzip deployment metadata while retaining compatibility with uncompressed deployments.
+
+  Raise the maximum client and server bundle size to 3 MiB for uploads and decoded runtime/delivery bytes.
+
 ## 0.1.0-beta.19
 
 ### Minor Changes
