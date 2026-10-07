@@ -1,0 +1,24 @@
+packages/react/src/hooks/use-slot.ts
+  s_25fdd02846e4b2::t_27179b29d22552 55-57
+  s_25fdd02846e4b2::t_86b92971f0a02f 61
+  s_25fdd02846e4b2::t_75c257eb0f87ea 1,39-40,43-54,58-60,62-64,66
+packages/react/src/__tests__/use-slot.test.tsx
+  s_25fdd02846e4b2::t_061ec2897c0713 804
+  s_25fdd02846e4b2::t_c7e179ce80784c 866-935
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f5f036774bf12ad54fcf4a19f2ea66dc64ba14bc",
+  "prompts": {},
+  "sessions": {
+    "s_25fdd02846e4b2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a115f5-4537-7e02-a4fa-b79245294373",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
