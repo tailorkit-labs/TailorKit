@@ -175,11 +175,11 @@ it("builds colocated instance resolvers as query-only server actions", async () 
       'export function title(id: string) { return "PRIVATE_SERVER_ONLY:" + id; }',
     );
     const clientSource = `
-      import { createView, defineClient } from "tailorkit/client";
+      import { defineView, defineClient } from "tailorkit/client";
       import { z } from "zod";
       import { title } from "./private";
       const privatePrefix = (() => "PRIVATE_INITIALIZER")();
-      const view = createView("/", {
+      const view = defineView({ slot: "page", view: "/",
         instances: {
           dataSchema: z.object({ id: z.string().transform(v => v.toUpperCase()) }),
           resolve: async ({ queries, context, identity, signal, ...other }) => {
@@ -191,7 +191,7 @@ it("builds colocated instance resolvers as query-only server actions", async () 
         },
         component: () => "BROWSER_COMPONENT_MUST_NOT_RUN:" + view.useInstance().data.id,
       });
-      export default defineClient({ slots: { page: { "/": view }, "panel.links": { "/": view } } });
+      export default defineClient({ slots: { page: { "/": view }, "panel.links": { "/": { ...view, slot: "panel.links" } } } });
     `;
     await writeFile(path.join(root, "src/client.ts"), clientSource);
     await buildApp({ cwd: root });

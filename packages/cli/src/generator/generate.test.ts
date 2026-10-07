@@ -249,9 +249,31 @@ describe("generateApp", () => {
       path.join(targetDirectory, "src", "views", "default.tsx"),
       "utf-8",
     );
-    expect(content).toContain('createView("/customers", {');
+    expect(content).toContain("defineView({");
+    expect(content).toContain('view: "/customers"');
+    expect(content).toContain('slot: "sidebar"');
+    expect(content).not.toContain("instances:");
     expect(content).not.toContain("context.user");
     expect(content).toContain("<Box>");
+  });
+
+  it("generates an instance resolver for a multi-instance slot", async () => {
+    const targetDirectory = await createTempDir();
+    await generateApp({
+      ...defaultOptions,
+      targetDirectory,
+      schema: {
+        ...defaultOptions.schema,
+        slots: { sidebar: { views: ["/customers"], multiple: true } },
+      },
+    });
+    const view = await readFile(path.join(targetDirectory, "src/views/default.tsx"), "utf-8");
+    expect(view).toContain('slot: "sidebar"');
+    expect(view).toContain('import { z } from "zod"');
+    expect(view).toContain("dataSchema: z.object({})");
+    expect(view).toContain('key: "default"');
+    const types = await readFile(path.join(targetDirectory, "src/tailorkit.gen.ts"), "utf-8");
+    expect(types).toContain('"sidebar": { views: "/customers"; multiple: true }');
   });
 
   it("generates a client entry with the default view", async () => {
@@ -314,7 +336,8 @@ describe("generateApp", () => {
     const client = await readFile(path.join(targetDirectory, "src/client.ts"), "utf-8");
     const view = await readFile(path.join(targetDirectory, "src/views/default.tsx"), "utf-8");
     expect(client).toContain('"alpha": { "/accounts": defaultView }');
-    expect(view).toContain('createView("/accounts", {');
+    expect(view).toContain("defineView({");
+    expect(view).toContain('view: "/accounts"');
     expect(view).toContain("return <>");
     expect(view).not.toContain("Box");
     expect(view).not.toContain("useContext");

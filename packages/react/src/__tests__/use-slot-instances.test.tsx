@@ -18,7 +18,10 @@ const server = createTailorKitServer({
   scopes: { user: schema },
   components: {},
   views: { "/": schema, "/customers": schema, "/customers/detail": schema },
-  slots: { page: { views: ["/", "/customers", "/customers/detail"] }, panel: { views: ["/"] } },
+  slots: {
+    page: { views: ["/", "/customers", "/customers/detail"], multiple: true },
+    panel: { views: ["/"], multiple: true },
+  },
 });
 const client = createTailorKitClient<typeof server>({
   baseUrl: "https://host.test/api/tailorkit/",
@@ -180,6 +183,35 @@ it.each(["missing", "error", "invalid", "duplicate"] as const)(
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toBeInstanceOf(Error);
     expect(result.current.data).toBeUndefined();
+    expect(calls("/backend/session")).toHaveLength(0);
+    expect(calls("/actions")).toHaveLength(0);
+  },
+);
+
+it.each([false, undefined] as const)(
+  "rejects discovered instances when the host slot multiple flag is %s",
+  async (multiple) => {
+    const original = vi.mocked(globalThis.fetch).getMockImplementation()!;
+    vi.mocked(globalThis.fetch).mockImplementation(async (input, options) => {
+      if (url(input).pathname.endsWith("/meta")) {
+        const serialized = server.$internal.schema.serialize();
+        serialized.slots.page = {
+          views: serialized.slots.page!.views,
+          ...(multiple === undefined ? {} : { multiple }),
+        };
+        return Response.json({ schema: serialized });
+      }
+      return original(input, options);
+    });
+    const { result } = renderHook(
+      () => {
+        useDetail();
+        return client.useSlotInstances({ slot: "page" });
+      },
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe('Slot "page" does not support instances.');
     expect(calls("/backend/session")).toHaveLength(0);
     expect(calls("/actions")).toHaveLength(0);
   },

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createView } from "./views";
+import { defineView } from "./views";
 import { defineServer, tk } from "./server";
 
 const server = defineServer({
@@ -17,7 +17,9 @@ declare module "./views" {
   interface TailorKitServerFunctions extends ServerFunctions {}
 }
 
-createView("/users", {
+defineView({
+  slot: "page",
+  view: "/users",
   component: () => null,
   instances: {
     dataSchema: z.object({ reportId: z.string() }),
@@ -50,7 +52,9 @@ createView("/users", {
     },
   },
 });
-createView("/", {
+defineView({
+  slot: "page",
+  view: "/",
   component: () => null,
   instances: {
     dataSchema: z.object({ reportId: z.string() }),
@@ -59,7 +63,9 @@ createView("/", {
   },
 });
 
-const instanceView = createView("/", {
+const instanceView = defineView({
+  slot: "page",
+  view: "/",
   component: () => null,
   instances: {
     dataSchema: z.object({ count: z.string().transform(Number) }),

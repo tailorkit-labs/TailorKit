@@ -14,6 +14,7 @@ export const tailorKit = createTailorKit({
   components,
   views,
   slots: {
+    page: { views: ["/"], multiple: true },
     panel: { views: ["/", "/customers", "/customers/detail"] },
     navbar: { views: ["/"] },
   },

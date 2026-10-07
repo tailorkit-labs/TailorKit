@@ -75,21 +75,20 @@ export type ViewRuntimeProps<TPath extends AppViewPath, TData = unknown> =
       instance?: never;
     };
 
-export interface ViewDefinition<TPath extends AppViewPath = AppViewPath, TData = unknown> {
+export interface ViewDefinition<
+  TPath extends AppViewPath = AppViewPath,
+  TData = unknown,
+  TSlot extends SlotName = SlotName,
+> {
   component: View<ViewRuntimeProps<TPath>>;
   path: TPath;
+  slot: TSlot;
   useContext: () => ViewContext<TPath>;
   /** The selected instance, with data inferred from instances.dataSchema. */
   useInstance: () => ViewInstance<TData>;
   /** Build-only lookup key connecting this view to its extracted server implementation. */
   instances?: { resolver: string };
 }
-
-type RegisteredViews = {
-  [TPath in AppViewPath]: ViewDefinition<TPath>;
-};
-
-type ViewDefinitions = Partial<{ [P in AppViewPath]: RegisteredViews[P] | false }>;
 
 type InvalidViewPath<TViews> = Exclude<keyof TViews & string, AppViewPath>;
 
@@ -114,12 +113,22 @@ type RequireMatchingViewKeys<TViews> =
   ViewKeyPathMismatch<TViews> extends never
     ? unknown
     : {
-        readonly __tailorkit_error__: `View key must match createView path. Invalid view: ${ViewKeyPathMismatch<TViews>}`;
+        readonly __tailorkit_error__: `View key must match defineView path. Invalid view: ${ViewKeyPathMismatch<TViews>}`;
       };
 
-export type SlotView<TSlot extends SlotName> = Extract<TailorKitSlots[TSlot], AppViewPath>;
+export type SlotView<TSlot extends SlotName> = TailorKitSlots[TSlot] extends { views: infer TViews }
+  ? Extract<TViews, AppViewPath>
+  : never;
+type SlotInstanceDefinition<TSlot extends SlotName> = TailorKitSlots[TSlot] extends {
+  multiple: true;
+}
+  ? { instances: { resolver: string } }
+  : { instances?: never };
+
 type SlotDefinitions = {
-  [V in SlotName]?: Pick<ViewDefinitions, SlotView<V>>;
+  [V in SlotName]?: Partial<{
+    [P in SlotView<V>]: (ViewDefinition<P, unknown, V> & SlotInstanceDefinition<V>) | false;
+  }>;
 };
 type RequireSlotViews<V, S> = V extends SlotName
   ? Exclude<keyof S, SlotView<V>> extends never
@@ -147,13 +156,27 @@ export type TailorKitClientWithMeta<TViews extends SlotDefinitions = SlotDefinit
     $runtime: TailorKitClientRuntime;
   };
 
-export const createView = <const TPath extends AppViewPath, TSchema extends z.ZodType>(
-  path: TPath,
-  options: {
+type ViewOptions<TPath extends AppViewPath, TSlot extends SlotName, TSchema extends z.ZodType> = {
+  [S in TSlot]: {
+    slot: S;
+    view: TPath;
     component: View<Record<string, never>>;
-    instances?: ViewInstances<TPath, TSchema>;
-  },
-): ViewDefinition<TPath, z.output<TSchema>> => {
+  } & (TPath extends SlotView<S>
+    ? unknown
+    : { readonly __tailorkit_error__: "View is not supported by this slot" }) &
+    (TailorKitSlots[S] extends { multiple: true }
+      ? { instances: ViewInstances<TPath, TSchema> }
+      : { instances?: never });
+}[TSlot];
+
+export const defineView = <
+  const TPath extends AppViewPath,
+  const TSlot extends SlotName,
+  TSchema extends z.ZodType,
+>(
+  options: ViewOptions<TPath, TSlot, TSchema>,
+): ViewDefinition<TPath, z.output<TSchema>, TSlot> & SlotInstanceDefinition<TSlot> => {
+  const path = options.view;
   const Context = createContext<{ context: ViewContext<TPath>; instance?: ViewInstance } | null>(
     null,
   );
@@ -182,6 +205,7 @@ export const createView = <const TPath extends AppViewPath, TSchema extends z.Zo
   return {
     component: View,
     path,
+    slot: options.slot,
     ...(instances?.resolver ? { instances: { resolver: instances.resolver } } : {}),
     useContext: () => {
       const context = useContext(Context);
@@ -200,7 +224,7 @@ export const createView = <const TPath extends AppViewPath, TSchema extends z.Zo
         );
       return value.instance as ViewInstance<z.output<TSchema>>;
     },
-  };
+  } as ViewDefinition<TPath, z.output<TSchema>, TSlot> & SlotInstanceDefinition<TSlot>;
 };
 
 export const defineClient = <const TSlots extends SlotDefinitions>(
@@ -214,15 +238,26 @@ export const defineClient = <const TSlots extends SlotDefinitions>(
   } & (Exclude<keyof TSlots, SlotName> extends never
       ? unknown
       : { __tailorkit_error__: "Unknown slot" }),
-): TailorKitClientWithMeta<TSlots> => ({
-  ...client,
-  $meta: { preactVersion },
-  $runtime: {
-    h,
-    render: (vnode, parent) =>
-      render(vnode && client.component ? h(client.component, { children: vnode }) : vnode, parent),
-  },
-});
+): TailorKitClientWithMeta<TSlots> => {
+  for (const [slot, views] of Object.entries(client.slots)) {
+    for (const [path, view] of Object.entries(views ?? {})) {
+      if (view !== false && view.slot !== slot)
+        throw new Error(`View "${path}" was created for slot "${view.slot}", not "${slot}".`);
+    }
+  }
+  return {
+    ...client,
+    $meta: { preactVersion },
+    $runtime: {
+      h,
+      render: (vnode, parent) =>
+        render(
+          vnode && client.component ? h(client.component, { children: vnode }) : vnode,
+          parent,
+        ),
+    },
+  };
+};
 
 const componentTagPrefix = "tailorkit-";
 

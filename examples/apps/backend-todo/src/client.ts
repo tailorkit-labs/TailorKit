@@ -3,7 +3,7 @@ import defaultView from "./views/default";
 
 const client = defineClient({
   component: ClientProvider,
-  slots: { panel: { "/": defaultView } },
+  slots: { page: { "/": defaultView } },
 });
 
 export default client;

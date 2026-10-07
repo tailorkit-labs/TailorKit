@@ -28,6 +28,7 @@ const server = createTailorKitServer({
   slots: {
     panel: { views: ["/", "/customers", "/customers/detail"] },
     navbar: { views: ["/"] },
+    page: { views: ["/"], multiple: true },
   },
   views: {
     "/": typedSchema<{ user: { id: string } }>(),
@@ -223,7 +224,7 @@ it.each(["managed", "controlled"] as const)("rejects a %s Slot under the wrong c
   );
 });
 
-const instanceApp = { ...app, views: [{ slot: "navbar", path: "/", instances: true as const }] };
+const instanceApp = { ...app, views: [{ slot: "page", path: "/", instances: true as const }] };
 const overview = { key: "overview", metadata: { title: "Overview" }, data: { reportId: "r1" } };
 const summary = { key: "summary", metadata: { title: "Summary" }, data: { reportId: "r2" } };
 
@@ -246,7 +247,7 @@ it("resolves the key and sends a complete controlled instance through the render
   const content = (key: string) => (
     <Root client={client}>
       <Context detail={false} />
-      <client.Slot app={instanceApp} name="navbar" instanceKey={key} />
+      <client.Slot app={instanceApp} name="page" instanceKey={key} />
     </Root>
   );
   const view = render(content("overview"));
@@ -257,7 +258,7 @@ it("resolves the key and sends a complete controlled instance through the render
   await waitFor(() =>
     expect(requests.at(-1)?.props).toMatchObject({
       controlled: true,
-      slot: "navbar",
+      slot: "page",
       view: "/",
       status: "ready",
       context: { user: { id: "registered" } },
@@ -296,7 +297,7 @@ it("reports resolver failures and missing keys without mounting stale instances"
   render(
     <Root client={client}>
       <Context />
-      <client.Slot app={instanceApp} name="navbar" instanceKey="overview" />
+      <client.Slot app={instanceApp} name="page" instanceKey="overview" />
     </Root>,
   );
   await waitFor(() => expect(screen.getByRole("alert").textContent).toBe("No reports available"));
@@ -307,7 +308,7 @@ it("requires a key for a dynamic managed view", async () => {
   render(
     <Root client={client}>
       <Context />
-      <client.Slot app={instanceApp} name="navbar" />
+      <Slot app={instanceApp} name="page" />
     </Root>,
   );
   await waitFor(() =>
@@ -339,7 +340,9 @@ it.each([false, true])(
     );
     if (dynamic) {
       await waitFor(() =>
-        expect(screen.getByRole("alert").textContent).toContain("Pass instanceKey to Slot"),
+        expect(screen.getByRole("alert").textContent).toBe(
+          'Slot "panel" does not support instances.',
+        ),
       );
       expect(requests).toHaveLength(0);
     } else {
@@ -367,14 +370,14 @@ it("passes supplied instances without resolving them and clears them while loadi
       {status === "ready" ? (
         <client.Slot.Controlled
           app={instanceApp}
-          name="navbar"
+          name="page"
           view="/"
           status="ready"
           context={{ user: { id: "explicit" } }}
           instance={instance}
         />
       ) : (
-        <client.Slot.Controlled app={instanceApp} name="navbar" view="/" status="loading" />
+        <client.Slot.Controlled app={instanceApp} name="page" view="/" status="loading" />
       )}
     </Root>
   );
@@ -390,9 +393,9 @@ it("passes supplied instances without resolving them and clears them while loadi
 it("reports a missing controlled instance and recovers when one is supplied", async () => {
   const content = (instance?: typeof overview) => (
     <Root client={client}>
-      <client.Slot.Controlled
+      <Slot.Controlled
         app={instanceApp}
-        name="navbar"
+        name="page"
         view="/"
         status="ready"
         context={{ user: { id: "explicit" } }}
@@ -405,4 +408,34 @@ it("reports a missing controlled instance and recovers when one is supplied", as
   expect(requests).toHaveLength(0);
   view.rerender(content(overview));
   await waitFor(() => expect(requests.at(-1)?.props.instance).toEqual(overview));
+});
+
+it("rejects instance keys and controlled instances for single-instance slots at runtime", async () => {
+  const singleApp = { ...app, views: [{ slot: "navbar", path: "/", instances: true as const }] };
+  const rendered = render(
+    <Root client={client}>
+      <Context />
+      <Slot app={singleApp} name="navbar" instanceKey="overview" />
+    </Root>,
+  );
+  await waitFor(() =>
+    expect(screen.getByRole("alert").textContent).toBe('Slot "navbar" does not support instances.'),
+  );
+  expect(requests).toHaveLength(0);
+  rendered.rerender(
+    <Root client={client}>
+      <Slot.Controlled
+        app={app}
+        name="navbar"
+        view="/"
+        status="ready"
+        context={{ user: { id: "u1" } }}
+        instance={overview}
+      />
+    </Root>,
+  );
+  await waitFor(() =>
+    expect(screen.getByRole("alert").textContent).toBe('Slot "navbar" does not support instances.'),
+  );
+  expect(requests).toHaveLength(0);
 });

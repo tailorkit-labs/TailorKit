@@ -21,7 +21,8 @@ declare module "./index" {
     "/users": { context: { workspaceId: string; userId: string } };
   }
   interface TailorKitSlots {
-    panel: "/" | "/users";
-    navbar: "/";
+    panel: { views: "/" | "/users"; multiple: false };
+    navbar: { views: "/" };
+    page: { views: "/" | "/users"; multiple: true };
   }
 }

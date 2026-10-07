@@ -132,6 +132,8 @@ function useResolvedSlotInstances(
       if (meta.error) throw meta.error;
       const schema = meta.schema;
       if (!schema) throw new Error("TailorKit metadata is unavailable.");
+      if (schema.slots[slot]?.multiple !== true)
+        throw new Error(`Slot "${slot}" does not support instances.`);
       const matches = candidates.flatMap((app) => {
         const resolved = resolveSlotView(app.views ?? [], slot, activeView, schema);
         return resolved?.instances ? [{ app, resolved }] : [];
