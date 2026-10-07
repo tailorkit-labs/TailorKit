@@ -1,0 +1,51 @@
+packages/api-platform/src/assets.ts
+  s_f361c0f47d3bdc::t_e3f41d3dfdc17b 6,58-62
+packages/api-platform/src/routes/deployments.test.ts
+  s_f361c0f47d3bdc::t_c137ed64b065d3 1-2,4,252-254,293-302,311-454
+  s_f361c0f47d3bdc::t_da50513c09374c 208-217
+  s_f361c0f47d3bdc::t_adb939f1ac8714 455-457
+packages/asset-delivery/src/index.test.ts
+  s_f361c0f47d3bdc::t_43ca9e201ee645 3,22-36
+  s_f361c0f47d3bdc::t_c7b17ce03a39c4 37
+apps/apps-worker/src/assets.ts
+  s_f361c0f47d3bdc::t_b422978b54bc8f 8,24
+packages/api-platform/src/routes/deployments.ts
+  s_f361c0f47d3bdc::t_8df4b14a9b0e1d 37,140-181,580-582
+  s_274d2d8085e5da::t_2b6972b2dd9826 583
+apps/apps-worker/src/assets.test.ts
+  s_f361c0f47d3bdc::t_a112882aad8902 2,208-209,233-264
+  s_f361c0f47d3bdc::t_5e76f0ea223f9b 265
+packages/asset-delivery/src/index.ts
+  s_f361c0f47d3bdc::t_b13c0168ad9997 264-266
+  s_f361c0f47d3bdc::t_cdfbe702412b4d 184-200
+packages/api-platform/src/assets.test.ts
+  s_f361c0f47d3bdc::t_5062ca2efab7d8 3,156-197
+apps/apps-worker/README.md
+  s_f361c0f47d3bdc::t_d0917f9b9757d8 79
+packages/app/README.md
+  s_f361c0f47d3bdc::t_9732b36a075cc4 97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5f7f3a23fc2a3ffcfd6fb289866e29f713d343f7",
+  "prompts": {},
+  "sessions": {
+    "s_274d2d8085e5da": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1154b-5e1d-7593-abe5-13242cabd042",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    },
+    "s_f361c0f47d3bdc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1152e-d1bb-7263-941d-8bd66057a2a7",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
