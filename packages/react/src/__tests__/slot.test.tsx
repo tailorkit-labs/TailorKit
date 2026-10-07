@@ -316,6 +316,51 @@ it("requires a key for a dynamic managed view", async () => {
   expect(requests).toHaveLength(0);
 });
 
+it.each([false, true])(
+  "checks instance support without composing invalid context (dynamic: %s)",
+  async (dynamic) => {
+    function DuplicateContext() {
+      client.useRegisterView("/", { context: { user: { id: "registered" } } });
+      const context = { canEdit: true, user: { id: "duplicate" } };
+      client.useRegisterView("/customers", { context });
+      return null;
+    }
+    const appWithViews = {
+      ...app,
+      views: [
+        { slot: "panel", path: "/customers", ...(dynamic ? { instances: true as const } : {}) },
+      ],
+    };
+    render(
+      <Root client={client}>
+        <DuplicateContext />
+        <client.Slot app={appWithViews} name="panel" />
+      </Root>,
+    );
+    if (dynamic) {
+      await waitFor(() =>
+        expect(screen.getByRole("alert").textContent).toContain("Pass instanceKey to Slot"),
+      );
+      expect(requests).toHaveLength(0);
+    } else {
+      await waitFor(() =>
+        expect(requests.at(-1)?.props).toMatchObject({
+          view: "/customers",
+          layers: [
+            { path: "/", context: { user: { id: "registered" } }, status: "ready" },
+            {
+              path: "/customers",
+              context: { canEdit: true, user: { id: "duplicate" } },
+              status: "ready",
+            },
+          ],
+        }),
+      );
+      expect(screen.queryByRole("alert")).toBeNull();
+    }
+  },
+);
+
 it("passes supplied instances without resolving them and clears them while loading", async () => {
   const content = (instance: typeof overview, status: "ready" | "loading") => (
     <Root client={client}>

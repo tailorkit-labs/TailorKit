@@ -7,7 +7,7 @@ import type { ViewContext, ViewName } from "../hooks/use-register-view";
 import { useStableContext } from "../hooks/use-stable-context";
 import { useSlotInstances } from "../hooks/use-slot-instances";
 import type { SlotInstance } from "../hooks/use-slot-instances";
-import { resolveSlotView } from "../slot-view";
+import { resolveSlotView, selectSlotView } from "../slot-view";
 import { buildThemeCss, PrimitiveThemeContext } from "../primitives";
 import { RemoteViewHost } from "../remote-view";
 import { toBaseUrl } from "../store";
@@ -216,8 +216,8 @@ function SlotRenderer({ app, name, state }: SlotProps & { state: SlotState }): R
 
   if (meta.schema === null || (appUrl === null && preview.source === null)) return null;
   if (!("controlled" in state)) {
-    const resolved = resolveSlotView(app.views ?? [], name, state, meta.schema);
-    if (resolved?.instances)
+    const selected = selectSlotView(app.views ?? [], name, state.view, meta.schema);
+    if (selected?.instances)
       return <div role="alert">A view instance key is required. Pass instanceKey to Slot.</div>;
   }
 
