@@ -16,6 +16,10 @@
       {
         "group": "Getting Started",
         "pages": ["index", "installation"]
+      },
+      {
+        "group": "Guides",
+        "pages": ["deploying-to-production"]
       }
     ],
     "global": {

@@ -1,0 +1,108 @@
+---
+title: "Deploying to production"
+sidebarTitle: "Production checklist"
+description: "A practical checklist for the data, components, and actions you expose to apps."
+---
+
+TailorKit isolates app code in a sandbox. Your product controls the data apps
+receive, the components they render, and the actions they can call. Before
+shipping, review those capabilities with the same checks you use for your own API.
+
+## Production checklist
+
+- **Share only the view data apps need.** Every field passed through
+  `useRegisterView()` is visible to the app rendering that view. Use a small view
+  model instead of raw database records, sessions, access tokens, or route-loader
+  objects. Derive permissions on the server; hiding a button is a UI choice,
+  not an authorization check.
+- **Validate component fields.** Prefer enums, bounded numbers, booleans, and
+  structured objects. Check every link `href` and media `src` before rendering,
+  allowing only the protocols that component needs: usually `https:` for media
+  and `https:` or `mailto:` for links. Render text as text; sanitize any raw HTML
+  you choose to support.
+- **Keep callbacks for UI events.** Use `onClick`, `onOpenChange`, and
+  `onValueChange` to notify app code of interactions. Put API calls, record
+  mutations, billing, auth, invites, role changes, and other side effects in
+  host-owned server actions.
+- **Authorize every action.** Use authenticated host `context` for identity and
+  permissions, even when only one role sees the control. Validate action input
+  and output, limit database queries to the authenticated tenant, and return only
+  the data the app needs, without secrets or internal metadata.
+- **Scope installations to the signed-in user or organization.** Define stable
+  schemas for named `scopes` such as `user` and `organization`. Return matching
+  values under the same names from `authenticate`, using the authenticated
+  session rather than app request values. Use stable opaque IDs: TailorKit
+  receives them to match and display installations. Keep project keys and CLI
+  credentials on the server or developer machine, outside browser bundles and
+  app-generated context.
+- **Keep your design system in control.** Prefer TailorKit primitives and theme
+  tokens over raw class names, HTML, or arbitrary `style` objects. If you expose
+  styles, constrain each allowed property and value. Keep destructive, billing,
+  auth, invite, role, and permission controls recognizable as host-owned UI;
+  embedded apps should not visually replace those flows.
+
+See the [installation guide](/installation) for the host configuration,
+authentication handler, and primitive setup.
+
+## URL validation examples
+
+Choose the validation library you already use. These link schemas allow HTTPS
+and email links; use only `https:` for a media source.
+
+<CodeGroup>
+
+```ts Zod
+import { z } from "zod";
+
+const Link = {
+  fields: z.object({
+    href: z.url({ protocol: /^(https|mailto)$/ }),
+  }),
+};
+```
+
+```ts ArkType
+import { type } from "arktype";
+
+const Link = {
+  fields: type({
+    href: type("string.url").narrow((href) =>
+      ["https:", "mailto:"].includes(new URL(href).protocol),
+    ),
+  }),
+};
+```
+
+```ts Valibot
+import * as v from "valibot";
+import { toStandardJsonSchema } from "@valibot/to-json-schema";
+
+const Link = {
+  fields: toStandardJsonSchema(
+    v.object({
+      href: v.pipe(
+        v.string(),
+        v.url(),
+        v.check((href) => ["https:", "mailto:"].includes(new URL(href).protocol)),
+      ),
+    }),
+  ),
+};
+```
+
+</CodeGroup>
+
+## Sandbox and network access
+
+App JavaScript runs directly in a hidden iframe with an opaque origin. The
+iframe allows scripts without same-origin access, keeping apps separate from
+your page, application state, cookies, and local storage. Your host fetches app
+code, supplies context, renders the returned UI, and executes the actions you
+expose.
+
+Apps can make direct network requests without a host bridge. The runtime's
+content security policy permits `http:`, `https:`, `ws:`, and `wss:` connections;
+use HTTPS and secure WebSockets (`wss:`) in production. For direct connections,
+services must support the sandbox's opaque origin (`Origin: null`), including
+CORS and preflight for HTTP requests. Authenticate and authorize requests
+independently of that origin.

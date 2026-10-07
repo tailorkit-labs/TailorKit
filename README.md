@@ -52,10 +52,8 @@ work.
   terminology.
 - [Installation](https://tailorkit.dev/docs/installation) walks through a host
   integration.
-- [Quickstart](https://tailorkit.dev/docs/quickstart) creates and previews a
-  first TailorKit app.
-- [Writing apps](https://tailorkit.dev/docs/writing-apps) covers the app-side
-  runtime and generated bindings.
+- [Production checklist](https://tailorkit.dev/docs/deploying-to-production)
+  covers the data, components, and actions you expose to apps.
 
 ## Contributing
 
