@@ -1,0 +1,19 @@
+packages/client-core/src/store/fetch/preview-manager.test.ts
+  s_b245a418e94d6e::t_1dad649c44931f 111,116,118-121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d3c0ad24b29061a5f9148fce7b710582bcca8787",
+  "prompts": {},
+  "sessions": {
+    "s_b245a418e94d6e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11603-6c8d-7350-b13f-ba7f7d04dc6b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
