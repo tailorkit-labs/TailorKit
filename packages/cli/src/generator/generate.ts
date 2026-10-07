@@ -108,6 +108,7 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
   const templateData = {
     viewPath: JSON.stringify(viewPath),
     slotName: JSON.stringify(slotName),
+    multiple: schema.slots?.[slotName]?.multiple === true,
     useBox,
     checkScript: checkParts.join(" && "),
     fixScript: fixParts.join(" && "),

@@ -4,6 +4,7 @@ import { api, Box, Button, Flex } from "#tailorkit";
 import { z } from "zod";
 
 const view = createView("/", {
+  slot: "page",
   instances: {
     dataSchema: z.object({ todoId: z.string().nullable() }),
     resolve: async ({ queries }) => {

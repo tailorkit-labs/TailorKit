@@ -212,16 +212,12 @@ function createReactTailorKitClient<
     Slot: Object.assign(
       function ClientSlot(props: SlotProps<TSlots>) {
         useTailorRootContext("Slot", client);
-        const TypedReactSlot = ReactSlot as unknown as (props: SlotProps<TSlots>) => ReactNode;
-        return createElement(TypedReactSlot, props);
+        return createElement(ReactSlot, props as SlotProps);
       },
       {
         Controlled: function ClientControlledSlot(props: ControlledSlotProps<TViews, TSlots>) {
           useTailorRootContext("Slot.Controlled", client);
-          const TypedControlledSlot = ReactSlot.Controlled as unknown as (
-            props: ControlledSlotProps<TViews, TSlots>,
-          ) => ReactNode;
-          return createElement(TypedControlledSlot, props);
+          return createElement(ReactSlot.Controlled, props as unknown as ControlledSlotProps);
         },
       },
     ),

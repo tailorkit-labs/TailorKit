@@ -92,6 +92,8 @@ export function useSlotInstances({ app, slot }: UseSlotInstancesOptions): UseSlo
       const meta = store.getMetaSnapshot();
       if (meta.error) throw meta.error;
       if (!meta.schema) throw new Error("TailorKit metadata is unavailable.");
+      if (meta.schema.slots[slot]?.multiple !== true)
+        throw new Error(`Slot "${slot}" does not support instances.`);
       const resolved = resolveSlotView(request.views, slot, request.activeView, meta.schema);
       if (!resolved?.instances) {
         publish("ready", []);

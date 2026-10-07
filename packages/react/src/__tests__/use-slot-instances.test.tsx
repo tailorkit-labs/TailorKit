@@ -18,7 +18,10 @@ const server = createTailorKitServer({
   scopes: { user: schema },
   components: {},
   views: { "/": schema, "/customers": schema, "/customers/detail": schema },
-  slots: { page: { views: ["/", "/customers", "/customers/detail"] }, panel: { views: ["/"] } },
+  slots: {
+    page: { views: ["/", "/customers", "/customers/detail"], multiple: true },
+    panel: { views: ["/"], multiple: true },
+  },
 });
 const client = createTailorKitClient<typeof server>({
   baseUrl: "https://host.test/api/tailorkit/",

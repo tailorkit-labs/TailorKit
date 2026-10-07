@@ -5,7 +5,7 @@ declare module "tailorkit/app" {
     "/": { context: Record<string, never> };
   }
   interface TailorKitSlots {
-    panel: "/";
+    panel: { views: "/"; multiple: false };
   }
 }
 

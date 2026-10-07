@@ -18,6 +18,7 @@ declare module "./views" {
 }
 
 createView("/users", {
+  slot: "page",
   component: () => null,
   instances: {
     dataSchema: z.object({ reportId: z.string() }),
@@ -51,6 +52,7 @@ createView("/users", {
   },
 });
 createView("/", {
+  slot: "page",
   component: () => null,
   instances: {
     dataSchema: z.object({ reportId: z.string() }),
@@ -60,6 +62,7 @@ createView("/", {
 });
 
 const instanceView = createView("/", {
+  slot: "page",
   component: () => null,
   instances: {
     dataSchema: z.object({ count: z.string().transform(Number) }),

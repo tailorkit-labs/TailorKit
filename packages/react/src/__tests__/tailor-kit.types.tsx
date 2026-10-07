@@ -25,6 +25,8 @@ const server = createTailorKitServer({
   slots: {
     panel: { views: ["/", "/home", "/home/detail", "/user"] },
     navbar: { views: ["/"] },
+    page: { views: ["/"], multiple: true },
+    single: { views: ["/"], multiple: false },
   },
   components: {
     Button: {},
@@ -293,12 +295,43 @@ const UnionSlot = createTailorKitClient<typeof unionContextServer>({
   context={{ kind: "organization", orgId: "o1", detailId: "d1" }}
 />;
 
+<Slot app={app} name="page" instanceKey="overview" />;
+// @ts-expect-error Multi-instance slots require a key.
+<Slot app={app} name="page" />;
+// @ts-expect-error Single-instance slots reject a key (omitted flag).
 <Slot app={app} name="panel" instanceKey="overview" />;
+// @ts-expect-error Single-instance slots reject a key (explicit false).
+<Slot app={app} name="single" instanceKey="overview" />;
 const suppliedInstance = {
   key: "overview",
   metadata: { title: "Overview" },
   data: { reportId: "r1" },
 };
+<Slot.Controlled
+  app={app}
+  name="page"
+  view="/"
+  status="ready"
+  context={{ user: { id: "u1" } }}
+  instance={suppliedInstance}
+/>;
+// @ts-expect-error loading slots cannot expose stale instance data
+<Slot.Controlled app={app} name="page" view="/" status="loading" instance={suppliedInstance} />;
+<Slot.Controlled
+  app={app}
+  name="page"
+  view="/"
+  status="ready"
+  context={{ user: { id: "u1" } }}
+  // @ts-expect-error a controlled slot receives an instance, not a key to resolve
+  instanceKey="overview"
+/>;
+// @ts-expect-error instance keys are strings
+<Slot app={app} name="page" instanceKey={123} />;
+
+// @ts-expect-error Ready multi-instance controlled slots require an instance.
+<Slot.Controlled app={app} name="page" view="/" status="ready" context={{ user: { id: "u1" } }} />;
+// @ts-expect-error Ready single-instance slots reject an instance.
 <Slot.Controlled
   app={app}
   name="navbar"
@@ -307,16 +340,17 @@ const suppliedInstance = {
   context={{ user: { id: "u1" } }}
   instance={suppliedInstance}
 />;
-// @ts-expect-error loading slots cannot expose stale instance data
-<Slot.Controlled app={app} name="navbar" view="/" status="loading" instance={suppliedInstance} />;
+// @ts-expect-error Explicit false also rejects an instance.
 <Slot.Controlled
   app={app}
-  name="navbar"
+  name="single"
   view="/"
   status="ready"
   context={{ user: { id: "u1" } }}
-  // @ts-expect-error a controlled slot receives an instance, not a key to resolve
-  instanceKey="overview"
+  instance={suppliedInstance}
 />;
-// @ts-expect-error instance keys are strings
-<Slot app={app} name="panel" instanceKey={123} />;
+<Slot.Controlled app={app} name="page" view="/" status="loading" />;
+<Slot.Controlled app={app} name="page" view="/" status="error" />;
+const slotName: "page" | "navbar" = Math.random() > 0.5 ? "page" : "navbar";
+// @ts-expect-error A union slot name cannot bypass the key requirement.
+<Slot app={app} name={slotName} />;

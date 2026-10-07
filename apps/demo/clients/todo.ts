@@ -3,7 +3,7 @@ import { useState } from "preact/hooks";
 import { createView, defineClient } from "tailorkit/app";
 import { Box, Button, Flex } from "./components";
 
-const view = createView("/", { component: Content });
+const view = createView("/", { slot: "panel", component: Content });
 function Content() {
   const [done, setDone] = useState(false);
   return h(

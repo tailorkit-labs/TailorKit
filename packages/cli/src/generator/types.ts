@@ -51,7 +51,7 @@ export interface TailorKitSchemaFile {
   actions?: SerializedActions;
   components?: Record<string, SerializedComponent>;
   views?: Record<string, SerializedView>;
-  slots?: Record<string, { views: readonly string[] }>;
+  slots?: Record<string, { views: readonly string[]; multiple?: boolean }>;
 }
 
 export interface GenerateTypesOptions {
@@ -532,7 +532,10 @@ export const renderGeneratedTypes = (
     `declare module "tailorkit/client" {
   interface TailorKitViews extends ViewPropsByPath {}
   interface TailorKitSlots { ${Object.entries(schema.slots ?? {})
-    .map(([name, slot]) => `${quote(name)}: ${slot.views.map(quote).join(" | ") || "never"};`)
+    .map(
+      ([name, slot]) =>
+        `${quote(name)}: { views: ${slot.views.map(quote).join(" | ") || "never"}; multiple: ${slot.multiple === true} };`,
+    )
     .join(" ")} }
 }
 

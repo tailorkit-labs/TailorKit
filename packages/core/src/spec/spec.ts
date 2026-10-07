@@ -19,7 +19,10 @@ export const TailorKitSchemaSpec = z
   .object({
     version: z.literal(1),
     slots: z
-      .record(z.string().min(1), z.object({ views: z.array(z.string().startsWith("/")) }))
+      .record(
+        z.string().min(1),
+        z.object({ views: z.array(z.string().startsWith("/")), multiple: z.boolean().optional() }),
+      )
       .default({}),
     actions: actionRecord.default({}),
     components: componentRecord,

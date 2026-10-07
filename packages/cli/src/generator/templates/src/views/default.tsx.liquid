@@ -1,7 +1,15 @@
 import { createView, useQuery } from "tailorkit/client";
 import { api{% if useBox %}, Box{% endif %} } from "#tailorkit";
+{% if multiple %}import { z } from "zod";
+{% endif %}
 
 const view = createView({{ viewPath }}, {
+  slot: {{ slotName }},
+{% if multiple %}  instances: {
+    dataSchema: z.object({}),
+    resolve: () => [{ key: "default", metadata: { title: "Default" }, data: {} }],
+  },
+{% endif %}
   component: ViewComponent,
 });
 

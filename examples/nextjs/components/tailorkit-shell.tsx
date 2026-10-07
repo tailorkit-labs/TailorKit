@@ -157,7 +157,15 @@ function TailorKitSlot({ app, onClose }: { app: TailorKitApp | null; onClose: ()
 }
 
 function TailorKitSlotContent({ app }: { app: TailorKitApp }) {
-  const { data: instances, isPending, error, refetch } = useSlotInstances({ app, slot: "panel" });
+  return app.views?.some((view) => view.slot === "page" && !view.disabled) ? (
+    <TailorKitPageInstances app={app} />
+  ) : (
+    <Slot name="panel" app={app} />
+  );
+}
+
+function TailorKitPageInstances({ app }: { app: TailorKitApp }) {
+  const { data: instances, isPending, error, refetch } = useSlotInstances({ app, slot: "page" });
   const [instanceKey, setInstanceKey] = useState<string | null>(null);
   const selected = instances?.find((instance) => instance.key === instanceKey) ?? instances?.[0];
   const items = (instances ?? []).map((instance) => ({
@@ -167,6 +175,7 @@ function TailorKitSlotContent({ app }: { app: TailorKitApp }) {
 
   if (isPending) return <p>Loading views…</p>;
   if (error) return <p role="alert">{error.message}</p>;
+  if (!selected) return <p>No instances available.</p>;
 
   return (
     <>
@@ -189,7 +198,7 @@ function TailorKitSlotContent({ app }: { app: TailorKitApp }) {
           </Button>
         </div>
       )}
-      <Slot name="panel" app={app} instanceKey={selected?.key} />
+      <Slot name="page" app={app} instanceKey={selected.key} />
     </>
   );
 }
