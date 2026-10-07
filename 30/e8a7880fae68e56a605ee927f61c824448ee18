@@ -1,0 +1,36 @@
+packages/app/src/preact.ts
+  s_b245a418e94d6e::t_37fece21ebf101 2-3,37,65,72-78,80,117,124,128,151,161,168,183
+packages/app/package.json
+  s_b245a418e94d6e::t_37fece21ebf101 58
+  s_b245a418e94d6e::t_16494bf3440266 53
+packages/app/src/client-boundary.test.ts
+  s_b245a418e94d6e::t_e7a028855f2e3a 33
+  s_b245a418e94d6e::t_1dba8a355a4bcb 38-39
+.changeset/client-core-nanostores.md
+  s_b245a418e94d6e::t_37fece21ebf101 3,7-8
+packages/app/src/client/query-store.ts
+  s_b245a418e94d6e::t_37fece21ebf101 1,31,59,91-93,106
+packages/app/src/preact.test.ts
+  s_b245a418e94d6e::t_407e0bdc915a1d 34-37,40-43,69,88,91,94,102,105,120-121,123,127,129,131,134,144,161,169,175,186,190,195,200,207-209,223,227,229-230,256,260,279,281,284,286,288,301-304,307-308,311,326,328,346-347,350,355,363,365,381-382,385,387,394
+  s_b245a418e94d6e::t_16494bf3440266 331-334,336-345,348-349,351-354,356-362,364,366-380,383-384,386,388-393,395-399
+  s_b245a418e94d6e::t_e0270145b3818f 38-39,335
+  s_b245a418e94d6e::t_2e792c9f141a2e 97-99,157-159,249-251
+pnpm-lock.yaml
+  s_b245a418e94d6e::t_ec90da51f79416 1017-1019,1032-1034,3741-3747,14801-14805
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "30e8a7880fae68e56a605ee927f61c824448ee18",
+  "prompts": {},
+  "sessions": {
+    "s_b245a418e94d6e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11603-6c8d-7350-b13f-ba7f7d04dc6b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
