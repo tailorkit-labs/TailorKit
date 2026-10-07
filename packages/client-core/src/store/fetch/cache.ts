@@ -84,15 +84,23 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
     if (entry.timer) clearTimeout(entry.timer);
     entry.timer = null;
     if (entry.observers || entry.pending || entry.gcTime === Infinity) return;
-    entry.timer = setTimeout(
-      () => {
-        if (entries.get(key) !== entry || entry.observers || entry.pending) return;
-        entries.delete(key);
-        reset(entry);
-      },
-      Math.min(entry.gcTime, 2_147_483_647),
-    );
-    if (typeof entry.timer === "object") entry.timer.unref?.();
+    const expiresAt = Date.now() + entry.gcTime;
+    const arm = () => {
+      entry.timer = setTimeout(
+        () => {
+          if (entries.get(key) !== entry || entry.observers || entry.pending) return;
+          if (Date.now() < expiresAt) {
+            arm();
+            return;
+          }
+          entries.delete(key);
+          reset(entry);
+        },
+        Math.min(Math.max(0, expiresAt - Date.now()), 2_147_483_647),
+      );
+      if (typeof entry.timer === "object") entry.timer.unref?.();
+    };
+    arm();
   };
 
   return {

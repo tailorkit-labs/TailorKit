@@ -114,6 +114,39 @@ describe("fetch cache", () => {
     expect(store.getSnapshot()).toMatchObject({ status: "idle", data: undefined });
   });
 
+  it("retains unused responses for the full gcTime beyond the timer limit", async () => {
+    vi.useFakeTimers();
+    const timerLimit = 2_147_483_647;
+    const gcTime = timerLimit + 1000;
+    const store = createFetchCache({ gcTime, staleTime: Infinity }).getStore(["apps"], () =>
+      Promise.resolve("data"),
+    );
+    await store.fetch();
+    vi.advanceTimersByTime(timerLimit);
+    expect(store.getSnapshot().data).toBe("data");
+    vi.advanceTimersByTime(999);
+    expect(store.getSnapshot().data).toBe("data");
+    vi.advanceTimersByTime(1);
+    expect(store.getSnapshot().status).toBe("idle");
+  });
+
+  it("cancels a chunked eviction while subscribed and restarts retention on unsubscribe", async () => {
+    vi.useFakeTimers();
+    const timerLimit = 2_147_483_647;
+    const gcTime = timerLimit + 1000;
+    const store = createFetchCache({ gcTime }).getStore(["apps"], () => Promise.resolve("data"));
+    await store.fetch();
+    vi.advanceTimersByTime(timerLimit);
+    const stop = store.subscribe(vi.fn());
+    vi.advanceTimersByTime(gcTime);
+    expect(store.getSnapshot().data).toBe("data");
+    stop();
+    vi.advanceTimersByTime(gcTime - 1);
+    expect(store.getSnapshot().data).toBe("data");
+    vi.advanceTimersByTime(1);
+    expect(store.getSnapshot().status).toBe("idle");
+  });
+
   it("forces a new request and discards the superseded response", async () => {
     const old = deferred<string>();
     const fresh = deferred<string>();

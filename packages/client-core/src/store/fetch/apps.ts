@@ -85,7 +85,10 @@ export function createAppsStore(client: TailorKitFetchClient, initialApps?: Tail
       if (supplied) {
         store.setProvidedApps(update(supplied.apps));
       } else {
-        query.setData((apps) => update(apps ?? []));
+        const apps = query.getSnapshot().data;
+        if (apps?.some((app) => app.id === appId)) {
+          query.setData(() => update(apps));
+        }
       }
     },
     invalidate: () => (supplied ? Promise.resolve() : query.invalidate()),

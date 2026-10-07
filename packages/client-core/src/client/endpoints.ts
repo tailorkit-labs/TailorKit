@@ -25,15 +25,41 @@ const resolveInstances = reference<"action", SlotInstancesInput, ViewInstance[]>
 export function createEndpointClient(options: { baseUrl: string | URL; fetch?: typeof fetch }) {
   const baseUrl = toBaseUrl(options.baseUrl);
   const request: typeof fetch = (input, init) => (options.fetch ?? globalThis.fetch)(input, init);
-  const sessions = new Map<string, ReturnType<typeof createSessionProvider>>();
+  type SessionProvider = ReturnType<typeof createSessionProvider>;
+  interface SessionEntry {
+    key: string | undefined;
+    session: SessionProvider | undefined;
+    provider: SessionProvider;
+  }
+  const sessions = new Map<string, SessionEntry>();
+  const createSessionEntry = (appId: string, key?: string): SessionEntry => ({
+    key,
+    session: createSessionProvider({ baseUrl, appId, fetch: request }),
+    // Mounted consumers keep this wrapper, so resolve the current provider on every call.
+    provider: async (input) => {
+      let current = sessions.get(appId);
+      if (!current) {
+        current = createSessionEntry(appId);
+        sessions.set(appId, current);
+      }
+      const session = current.session!;
+      const value = await session(input);
+      if (current.session !== session) {
+        throw new DOMException("The app session was invalidated", "AbortError");
+      }
+      return value;
+    },
+  });
   const getSessionProvider = (app: TailorKitApp) => {
-    const key = JSON.stringify([app.id, app.currentDeployment?.id, app.preview?.sessionId]);
-    let provider = sessions.get(key);
-    if (!provider) {
-      provider = createSessionProvider({ baseUrl, appId: app.id, fetch: request });
-      sessions.set(key, provider);
+    const key = JSON.stringify([app.currentDeployment?.id, app.preview?.sessionId]);
+    let entry = sessions.get(app.id);
+    if (entry && entry.key === undefined) entry.key = key;
+    if (!entry || entry.key !== key) {
+      if (entry) entry.session = undefined;
+      entry = createSessionEntry(app.id, key);
+      sessions.set(app.id, entry);
     }
-    return provider;
+    return entry.provider;
   };
   return {
     baseUrl,
@@ -77,7 +103,10 @@ export function createEndpointClient(options: { baseUrl: string | URL; fetch?: t
       return previewMetadataSchema.parse(await response.json());
     },
     getSessionProvider,
-    clearSessions: () => sessions.clear(),
+    clearSessions: () => {
+      for (const entry of sessions.values()) entry.session = undefined;
+      sessions.clear();
+    },
   };
 }
 

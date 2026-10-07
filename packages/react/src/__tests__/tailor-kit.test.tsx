@@ -11,6 +11,7 @@ import { createTailorKitClient } from "../tailorkit";
 import { RemoteViewHost } from "../remote-view";
 import { createTailorKitStore } from "@tailorkit/client-core";
 import type { TailorKitApp } from "../tailorkit";
+import { useApps } from "../hooks/use-apps";
 
 const hostRecords: {
   appUrl: string;
@@ -799,6 +800,53 @@ it("isolates a new client cache even when its endpoint is equivalent", async () 
   await waitFor(() => expect(testingView.getByText("second.test")).toBeTruthy());
   await waitFor(() => expect(hostRecords.at(-1)?.appUrl).toBe("http://second.test/api/client.js"));
   expect(hostRecords.at(-1)?.props?.view).toBe("/user");
+  view.unmount();
+});
+
+it("replaces the root transport when an explicit fetch client is removed or restored", async () => {
+  const explicitFetch = vi
+    .fn()
+    .mockImplementation(() => Promise.resolve(Response.json([{ id: "explicit-user" }])));
+  const fallbackFetch = vi
+    .spyOn(globalThis, "fetch")
+    .mockImplementation(() => Promise.resolve(Response.json([{ id: "fallback-user" }])));
+  const client = createTailorKitClient<typeof server>({
+    baseUrl: "http://runtime.test/api",
+    components,
+    fetch: explicitFetch,
+  });
+  const fallback = { baseUrl: client.baseUrl, components: client.components, theme: client.theme };
+  function Contents() {
+    const { data } = useApps();
+    return <span>{data?.[0]?.id}</span>;
+  }
+  const view = render(
+    <Root client={client}>
+      <Contents />
+    </Root>,
+  );
+  await waitFor(() => expect(testingView.getByText("explicit-user")).toBeTruthy());
+  view.rerender(
+    <Root client={fallback}>
+      <Contents />
+    </Root>,
+  );
+  await waitFor(() => expect(testingView.getByText("fallback-user")).toBeTruthy());
+  view.rerender(
+    <Root client={{ ...fallback }}>
+      <Contents />
+    </Root>,
+  );
+  expect(testingView.getByText("fallback-user")).toBeTruthy();
+  expect(fallbackFetch).toHaveBeenCalledOnce();
+  view.rerender(
+    <Root client={client}>
+      <Contents />
+    </Root>,
+  );
+  await waitFor(() => expect(testingView.getByText("explicit-user")).toBeTruthy());
+  expect(explicitFetch).toHaveBeenCalledOnce();
+  expect(fallbackFetch).toHaveBeenCalledOnce();
   view.unmount();
 });
 

@@ -102,6 +102,30 @@ describe("client stores", () => {
     stop();
   });
 
+  it("does not seed discovery from preview updates before apps are available", async () => {
+    const response = deferredResponse();
+    const fetchMock = vi.fn<typeof fetch>(() => response.promise);
+    vi.stubGlobal("fetch", fetchMock);
+    const store = createTailorKitStore("https://host.test/");
+    const views = [{ slot: "panel", path: "/preview" }];
+
+    store.fetch.apps.updateViews("app", views);
+    expect(store.getAppsSnapshot().status).toBe("idle");
+    const pending = store.fetchApps();
+    const signal = fetchMock.mock.calls[0]?.[1]?.signal;
+    store.fetch.apps.updateViews("app", views);
+    expect(store.getAppsSnapshot().status).toBe("loading");
+    expect(signal?.aborted).toBe(false);
+    expect(store.fetchApps()).toBe(pending);
+    response.resolve(Response.json([{ id: "app", views: [{ slot: "panel", path: "/remote" }] }]));
+    await pending;
+    expect(store.getAppsSnapshot().apps[0]?.views).toEqual([{ slot: "panel", path: "/remote" }]);
+    expect(fetchMock).toHaveBeenCalledOnce();
+
+    store.fetch.apps.updateViews("app", views);
+    expect(store.getAppsSnapshot().apps[0]?.views).toEqual(views);
+  });
+
   it("supports TanStack selectors without publishing unrelated metadata changes", async () => {
     vi.stubGlobal(
       "fetch",
