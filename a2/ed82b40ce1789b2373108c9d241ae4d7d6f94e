@@ -1,0 +1,127 @@
+packages/react/src/hooks/use-slot-instances.ts
+  s_355c4e091f817b::t_cb0d4e344c99c7 95-96
+examples/nextjs/components/tailorkit-shell.tsx
+  s_355c4e091f817b::t_e6adc0227d8f1f 160-164
+  s_355c4e091f817b::t_f0481dd8637369 165-168,178,201
+packages/react/src/__tests__/use-slot-instances.test.tsx
+  s_355c4e091f817b::t_e6adc0227d8f1f 21-24
+apps/demo/clients/todo.ts
+  s_355c4e091f817b::t_07b4b045752ff6 6
+packages/core/src/schema/schema.ts
+  s_355c4e091f817b::t_4278ed82bbcacd 63-65
+  s_355c4e091f817b::t_e6adc0227d8f1f 129-132
+packages/app/src/instances.test-d.ts
+  s_355c4e091f817b::t_e6adc0227d8f1f 21,55,65
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_355c4e091f817b::t_e6adc0227d8f1f 335-342,344-351
+  s_355c4e091f817b::t_f0481dd8637369 28-29,298-301,303-304,312,319,322,330-334,343,352-356
+packages/cli/src/init.test.ts
+  s_355c4e091f817b::t_73baa9363a9858 58
+examples/apps/notes/src/views/default.tsx
+  s_355c4e091f817b::t_e6adc0227d8f1f 24
+packages/react/src/tailorkit.tsx
+  s_355c4e091f817b::t_591347efb93a7a 215,220
+packages/cli/src/generator/types.test.ts
+  s_355c4e091f817b::t_e6adc0227d8f1f 448-451
+  s_355c4e091f817b::t_a8ae9700b01aba 477
+packages/react/src/__tests__/slot.test.tsx
+  s_355c4e091f817b::t_f0481dd8637369 31,227,250,261,300,311,396
+  s_355c4e091f817b::t_4278ed82bbcacd 412-418,422-424,433,437-439
+  s_355c4e091f817b::t_e6adc0227d8f1f 398,419-421,425-432,434-436
+  s_355c4e091f817b::t_54be9961f0801c 343
+  s_355c4e091f817b::t_a0de60d254313f 344-345,373,380,440-441
+packages/core/src/schema/views.ts
+  s_355c4e091f817b::t_cb0d4e344c99c7 44
+examples/apps/backend-todo/src/views/default.tsx
+  s_355c4e091f817b::t_e6adc0227d8f1f 7
+packages/app/src/view-instance.test.ts
+  s_355c4e091f817b::t_07b4b045752ff6 23,62,75
+  s_355c4e091f817b::t_4278ed82bbcacd 9,91-94
+  s_355c4e091f817b::t_e6adc0227d8f1f 95-97
+  s_355c4e091f817b::t_46e440fcfc9cf0 98
+examples/apps/email/src/tailorkit.gen.ts
+  s_355c4e091f817b::t_07b4b045752ff6 20-21
+packages/core/src/schema/slots.test.ts
+  s_355c4e091f817b::t_d2c2541cdc1e83 7-8,11-21,28
+  s_355c4e091f817b::t_e6adc0227d8f1f 9-10,22-27,61-68
+  s_355c4e091f817b::t_4278ed82bbcacd 60,69-70
+examples/tanstack-start/src/lib/tailorkit.ts
+  s_355c4e091f817b::t_07b4b045752ff6 17
+examples/nextjs/lib/tailorkit.ts
+  s_355c4e091f817b::t_07b4b045752ff6 17
+examples/apps/backend-todo/README.md
+  s_355c4e091f817b::t_06f99abf211d8e 7,9,11
+  s_355c4e091f817b::t_05f18312177263 21
+apps/demo/clients/messages.ts
+  s_355c4e091f817b::t_07b4b045752ff6 6
+packages/react/src/components/slot.tsx
+  s_355c4e091f817b::t_790d7b168110c6 145-146
+  s_355c4e091f817b::t_e6adc0227d8f1f 43-45,52-56,69-73
+  s_355c4e091f817b::t_54be9961f0801c 249-251
+  s_355c4e091f817b::t_cb0d4e344c99c7 35,38,46-51,57-58,96,117,189,240-246
+examples/apps/email/src/views/navigation.tsx
+  s_355c4e091f817b::t_e6adc0227d8f1f 4
+examples/apps/notes/src/tailorkit.gen.ts
+  s_355c4e091f817b::t_07b4b045752ff6 20-21
+packages/app/src/children.test-d.ts
+  s_355c4e091f817b::t_07b4b045752ff6 24,26
+  s_355c4e091f817b::t_a8ae9700b01aba 25
+packages/core/src/spec/spec.ts
+  s_355c4e091f817b::t_e6adc0227d8f1f 22-25
+packages/app/src/slots.test-d.ts
+  s_355c4e091f817b::t_07b4b045752ff6 4-6,10,19
+  s_355c4e091f817b::t_e6adc0227d8f1f 30,36,54-55,60-61
+  s_355c4e091f817b::t_d2c2541cdc1e83 50-53,56,58-59,62,64-71
+  s_355c4e091f817b::t_e36f15ba82be81 2,57,63,72-73
+packages/cli/src/generator/generate.ts
+  s_355c4e091f817b::t_dbeb49692024ab 111
+apps/demo/clients/components.ts
+  s_355c4e091f817b::t_07b4b045752ff6 8
+examples/apps/backend-todo/src/client.ts
+  s_355c4e091f817b::t_07b4b045752ff6 6
+packages/cli/src/generator/templates/src/views/default.tsx.liquid
+  s_355c4e091f817b::t_dbeb49692024ab 3-4,7-12
+packages/cli/src/generator/types.ts
+  s_355c4e091f817b::t_790d7b168110c6 54
+  s_355c4e091f817b::t_e6adc0227d8f1f 535-538
+packages/cli/src/generator/generate.test.ts
+  s_355c4e091f817b::t_e6adc0227d8f1f 261-268
+  s_355c4e091f817b::t_3dddc5939b01a3 253-254,259-260,269-275
+  s_355c4e091f817b::t_3163b9d0a6bdce 276-277
+.changeset/declare-multiple-slots.md
+  s_355c4e091f817b::t_790d7b168110c6 1-11
+packages/app/src/views.ts
+  s_355c4e091f817b::t_e6adc0227d8f1f 78-82,119-121,155-160,163-167,239-250
+  s_355c4e091f817b::t_3f0c4a305280ab 85,123,151-153,161-162,168-170,199,232-238,251
+examples/apps/backend-todo/src/tailorkit.gen.ts
+  s_355c4e091f817b::t_07b4b045752ff6 27
+examples/apps/todo/src/views/default.tsx
+  s_355c4e091f817b::t_07b4b045752ff6 7
+packages/tailorkit/src/app.test-d.ts
+  s_355c4e091f817b::t_07b4b045752ff6 4-6,12
+examples/apps/email/src/views/default.tsx
+  s_355c4e091f817b::t_e6adc0227d8f1f 4
+examples/tanstack-start/src/components/tailorkit-shell.tsx
+  s_355c4e091f817b::t_e6adc0227d8f1f 135-139
+  s_355c4e091f817b::t_f0481dd8637369 140-143,153,176
+packages/app/src/builder/server.test.ts
+  s_355c4e091f817b::t_07b4b045752ff6 182,194
+examples/apps/todo/src/tailorkit.gen.ts
+  s_355c4e091f817b::t_07b4b045752ff6 23-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a2ed82b40ce1789b2373108c9d241ae4d7d6f94e",
+  "prompts": {},
+  "sessions": {
+    "s_355c4e091f817b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a110b9-0243-7ab1-98c8-b679ad47fd30",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
