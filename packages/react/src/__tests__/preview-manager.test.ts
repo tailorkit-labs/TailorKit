@@ -187,6 +187,7 @@ it("keeps the last complete build through a corrupt transfer and recovers after 
         buildId: `build-${revision}`,
         revision,
         manifest: {
+          views: [{ slot: "page", path: `/revision-${revision}` }],
           files: [
             {
               path: "client.js",
@@ -213,7 +214,12 @@ it("keeps the last complete build through a corrupt transfer and recovers after 
     buildEvents(2, "replacement", "REPLACEMENT"),
     buildEvents(2, "replacement", "replacement"),
   ];
-  const manager = createPreviewManager(new URL("https://host.test/api/tailorkit/"), vi.fn());
+  const onViews = vi.fn();
+  const manager = createPreviewManager(
+    new URL("https://host.test/api/tailorkit/"),
+    vi.fn(),
+    onViews,
+  );
   const unsubscribe = manager.subscribe(
     {
       id: "app",
@@ -236,12 +242,16 @@ it("keeps the last complete build through a corrupt transfer and recovers after 
   FakeSocket.instances[1]?.open();
   await vi.waitFor(() => expect(state.batches).toHaveLength(1));
   expect(manager.getSnapshot("session")).toEqual({ revision: 1, source: "original" });
+  expect(onViews).toHaveBeenCalledTimes(1);
+  expect(onViews).toHaveBeenLastCalledWith("app", [{ slot: "page", path: "/revision-1" }]);
   FakeSocket.instances[1]?.close();
   await vi.waitFor(() => expect(FakeSocket.instances).toHaveLength(3), { timeout: 2500 });
   FakeSocket.instances[2]?.open();
   await vi.waitFor(() =>
     expect(manager.getSnapshot("session")).toEqual({ revision: 2, source: "replacement" }),
   );
+  expect(onViews).toHaveBeenCalledTimes(2);
+  expect(onViews).toHaveBeenLastCalledWith("app", [{ slot: "page", path: "/revision-2" }]);
   unsubscribe();
   expect(FakeSocket.instances[2]?.closed).toBe(true);
 });

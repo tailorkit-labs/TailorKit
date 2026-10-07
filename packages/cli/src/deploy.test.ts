@@ -46,6 +46,10 @@ beforeEach(async () => {
     path.join(root, ".tailorkit/tailorkit-upload.json"),
     JSON.stringify({
       version: 1,
+      views: [
+        { slot: "page", path: "/", instances: true },
+        { slot: "page", path: "/disabled", disabled: true },
+      ],
       assets: { client: "client/client.js", server: "server/server.js" },
     }),
   );
@@ -76,6 +80,10 @@ it("uploads server and client code without a provisioned Worker or migration upl
   await runDeploy({ cwd: root });
   expect(mocks.create.mock.calls[0]?.[0]).toMatchObject({
     assets: [{ objectKey: "client.js" }],
+    views: [
+      { slot: "page", path: "/", instances: true },
+      { slot: "page", path: "/disabled", disabled: true },
+    ],
     server: { objectKey: "server.js" },
   });
   expect(fetch).toHaveBeenCalledTimes(2);

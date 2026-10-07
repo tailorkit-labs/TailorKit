@@ -744,6 +744,53 @@ describe("createTailorKitServer", () => {
     });
   });
 
+  it("preserves instance discovery when the CLI deploys through the host", async () => {
+    const requests: Request[] = [];
+    const server = createTailorKitServer({
+      scopes: { org: testScopeSchema },
+      components: {},
+      $internal: {
+        platformFetch: async (input, init) => {
+          const request = input instanceof Request ? input : new Request(input, init);
+          requests.push(request);
+          if (request.url.endsWith("/cli-auth/verify-token")) {
+            return Response.json({ scope: { name: "org", value: { orgId: "org_1" } } });
+          }
+          return Response.json({ deployment: { id: "deployment" }, assets: [] });
+        },
+      },
+    });
+    const client = createTailorKitClient({
+      headers: { authorization: "Bearer cli-token" },
+      url: "https://host.test/api/tailorkit",
+      fetch: async (input, init) =>
+        server.handler(input instanceof Request ? input : new Request(input, init), {
+          authenticate: () => {
+            throw new Error("Expected CLI authentication");
+          },
+        }),
+    });
+    const views = [
+      { slot: "page", path: "/", instances: true as const },
+      { slot: "panel", path: "/" },
+      { slot: "page", path: "/disabled", disabled: true as const },
+    ];
+    await client.deployments.create({
+      appId: "app",
+      views,
+      assets: [
+        {
+          objectKey: "client.js",
+          checksum: "0".repeat(64),
+          contentLength: 1,
+          contentType: "application/javascript",
+          encoding: "utf-8",
+        },
+      ],
+    });
+    await expect(requests[1]?.json()).resolves.toMatchObject({ views });
+  });
+
   it("accepts a CLI token containing a transformed scope output", async () => {
     const platformBodies: unknown[] = [];
     const server = createTailorKitServer({

@@ -73,7 +73,7 @@ export const tailorClient = createTailorKitClient<typeof tailorKit>({
   },
 });
 
-export const { AppView, useApps, useView } = tailorClient;
+export const { Slot, useApps, useRegisterView } = tailorClient;
 
 export default tailorClient;
 ```
@@ -239,7 +239,7 @@ export const tailorClient = createTailorKitClient<typeof tailorKit>({
   theme,
 });
 
-export const { AppView, useApps, useView } = tailorClient;
+export const { Slot, useApps, useRegisterView } = tailorClient;
 ```
 
 Keep the shared `theme` object in a module that is safe to import from both the

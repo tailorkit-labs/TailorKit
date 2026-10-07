@@ -40,7 +40,7 @@ const server = createTailorKitServer({
 });
 
 const tailor = createTailorKitClient<typeof server>({ baseUrl: "http://runtime.test" });
-const { AppView, useApps, useView } = tailor;
+const { Slot, useApps, useViews, useSlotInstances, useRegisterView } = tailor;
 const app = { clientPath: "/apps/todo.js", id: "todo" };
 
 const childrenServer = createTailorKitServer({
@@ -113,45 +113,25 @@ components(callbackServer.$internal.schema, {
   },
 });
 
-useView("/home", {
+useRegisterView("/home", {
   context: { page: { title: "Home" } },
 });
 
-useView("/user", { status: "loading" });
+useRegisterView("/user", { status: "loading" });
 
-useView("/user", { status: "error" });
+useRegisterView("/user", { status: "error" });
 
 // @ts-expect-error invalid view name
-useView("missing", { context: {} });
+useRegisterView("missing", { context: {} });
 
 // @ts-expect-error invalid context shape for selected view
-useView("/user", { context: { page: { title: "Home" } } });
+useRegisterView("/user", { context: { page: { title: "Home" } } });
 
 // @ts-expect-error ready matches require context
-useView("/home", {});
+useRegisterView("/home", {});
 
 // @ts-expect-error loading views cannot expose partial context
-useView("/user", { status: "loading", context: { userId: "user_1" } });
-
-<AppView slot="panel" app={app} />;
-
-<AppView slot="panel" app={app} view="/home" context={{ page: { title: "Home" } }} />;
-
-<AppView slot="panel" app={app} view="/user" status="loading" />;
-
-<AppView slot="panel" app={app} view="/user" status="error" />;
-
-// @ts-expect-error invalid view name
-<AppView slot="panel" app={app} view="missing" context={{}} />;
-
-// @ts-expect-error invalid context shape for selected view
-<AppView slot="panel" app={app} view="/user" context={{ page: { title: "Home" } }} />;
-
-// @ts-expect-error ready app views require context when view is provided
-<AppView slot="panel" app={app} view="/home" />;
-
-// @ts-expect-error loading app views cannot expose context
-<AppView slot="panel" app={app} view="/user" status="loading" context={{ userId: "user_1" }} />;
+useRegisterView("/user", { status: "loading", context: { userId: "user_1" } });
 
 useApps();
 useApps({ scopes: ["organization", "user"] });
@@ -169,12 +149,174 @@ workspaceClient.useApps({ scopes: ["workspace"] });
 // @ts-expect-error scope names belong to the client that declared them
 workspaceClient.useApps({ scopes: ["organization"] });
 
-// @ts-expect-error Unknown host slot.
-<AppView app={app} slot="missing" />;
-
-// @ts-expect-error The navbar supports root only, despite /user being globally declared.
-<AppView app={app} slot="navbar" view="/user" context={{ userId: "u1" }} />;
-<AppView app={app} slot="navbar" view="/" context={{ user: { id: "u1" } }} />;
-
 // @ts-expect-error The former object-only hook signature is not supported.
-useView({ view: "/user", context: { userId: "u1" } });
+useRegisterView({ view: "/user", context: { userId: "u1" } });
+
+useViews();
+useViews({ scopes: ["organization"], appIds: ["todo"], slot: "panel" });
+// @ts-expect-error scope names must be declared by this server
+useViews({ scopes: ["unknown"] });
+// @ts-expect-error slots must be declared by this server
+useViews({ slot: "missing" });
+
+const instances = useSlotInstances({ app, slot: "panel" });
+const instanceKey: string | undefined = instances.data?.[0]?.key;
+const instanceData: unknown = instances.data?.[0]?.data;
+void instanceKey;
+void instanceData;
+// @ts-expect-error slots must be declared by this server
+useSlotInstances({ app, slot: "missing" });
+// @ts-expect-error an app must be supplied
+useSlotInstances({ slot: "panel" });
+// @ts-expect-error a slot must be supplied
+useSlotInstances({ app });
+
+<Slot app={app} name="panel" />;
+<Slot app={app} name="navbar" />;
+// @ts-expect-error slots must be declared by the host
+<Slot app={app} name="missing" />;
+// @ts-expect-error managed slots do not accept an explicit view
+<Slot app={app} name="panel" view="/home" />;
+// @ts-expect-error managed slots do not expose a fallback prop
+<Slot app={app} name="panel" fallback={null} />;
+
+<Slot.Controlled
+  app={app}
+  name="panel"
+  view="/home"
+  status="ready"
+  context={{ user: { id: "u1" }, page: { title: "Home" } }}
+/>;
+<Slot.Controlled
+  app={app}
+  name="panel"
+  view="/home/detail"
+  status="ready"
+  context={{ user: { id: "u1" }, page: { title: "Home" }, detail: { id: "d1" } }}
+/>;
+<Slot.Controlled
+  app={app}
+  name="navbar"
+  view="/"
+  status="ready"
+  context={{ user: { id: "u1" } }}
+/>;
+<Slot.Controlled app={app} name="panel" view="/user" status="loading" />;
+<Slot.Controlled app={app} name="panel" view="/user" status="error" />;
+
+// @ts-expect-error controlled slots require an explicit view and status
+<Slot.Controlled app={app} name="panel" />;
+// @ts-expect-error controlled slots require status even with ready context
+<Slot.Controlled app={app} name="panel" view="/" context={{ user: { id: "u1" } }} />;
+// @ts-expect-error ready controlled slots require context
+<Slot.Controlled app={app} name="panel" view="/home" status="ready" />;
+<Slot.Controlled
+  app={app}
+  name="panel"
+  view="/home"
+  status="ready"
+  // @ts-expect-error controlled slots require ancestor context as well as their own fields
+  context={{ page: { title: "Home" } }}
+/>;
+<Slot.Controlled
+  app={app}
+  name="panel"
+  view="/user"
+  status="ready"
+  // @ts-expect-error combined context must have the correct field types
+  context={{ user: { id: "u1" }, userId: 1 }}
+/>;
+// @ts-expect-error loading controlled slots cannot expose partial context
+<Slot.Controlled
+  app={app}
+  name="panel"
+  view="/user"
+  status="loading"
+  context={{ user: { id: "u1" }, userId: "u1" }}
+/>;
+// @ts-expect-error the navbar only supports root
+<Slot.Controlled app={app} name="navbar" view="/user" status="loading" />;
+// @ts-expect-error unknown views cannot be rendered
+<Slot.Controlled app={app} name="panel" view="/missing" status="loading" />;
+
+const optionalContextServer = createTailorKitServer({
+  components: {},
+  scopes: { user: typedSchema<{ userId: string }>() },
+  slots: { panel: { views: ["/detail"] } },
+  views: {
+    "/": typedSchema<{ workspaceId: string } | undefined>(),
+    "/detail": typedSchema<{ detailId: string }>(),
+  },
+});
+const OptionalSlot = createTailorKitClient<typeof optionalContextServer>({
+  baseUrl: "http://runtime.test",
+}).Slot;
+<OptionalSlot.Controlled
+  app={app}
+  name="panel"
+  view="/detail"
+  status="ready"
+  context={{ detailId: "d1" }}
+/>;
+<OptionalSlot.Controlled
+  app={app}
+  name="panel"
+  view="/detail"
+  status="ready"
+  context={{ workspaceId: "w1", detailId: "d1" }}
+/>;
+
+const unionContextServer = createTailorKitServer({
+  components: {},
+  scopes: { user: typedSchema<{ userId: string }>() },
+  slots: { panel: { views: ["/detail"] } },
+  views: {
+    "/": typedSchema<{ kind: "user"; userId: string } | { kind: "organization"; orgId: string }>(),
+    "/detail": typedSchema<{ detailId: string }>(),
+  },
+});
+const UnionSlot = createTailorKitClient<typeof unionContextServer>({
+  baseUrl: "http://runtime.test",
+}).Slot;
+<UnionSlot.Controlled
+  app={app}
+  name="panel"
+  view="/detail"
+  status="ready"
+  context={{ kind: "user", userId: "u1", detailId: "d1" }}
+/>;
+<UnionSlot.Controlled
+  app={app}
+  name="panel"
+  view="/detail"
+  status="ready"
+  context={{ kind: "organization", orgId: "o1", detailId: "d1" }}
+/>;
+
+<Slot app={app} name="panel" instanceKey="overview" />;
+const suppliedInstance = {
+  key: "overview",
+  metadata: { title: "Overview" },
+  data: { reportId: "r1" },
+};
+<Slot.Controlled
+  app={app}
+  name="navbar"
+  view="/"
+  status="ready"
+  context={{ user: { id: "u1" } }}
+  instance={suppliedInstance}
+/>;
+// @ts-expect-error loading slots cannot expose stale instance data
+<Slot.Controlled app={app} name="navbar" view="/" status="loading" instance={suppliedInstance} />;
+<Slot.Controlled
+  app={app}
+  name="navbar"
+  view="/"
+  status="ready"
+  context={{ user: { id: "u1" } }}
+  // @ts-expect-error a controlled slot receives an instance, not a key to resolve
+  instanceKey="overview"
+/>;
+// @ts-expect-error instance keys are strings
+<Slot app={app} name="panel" instanceKey={123} />;

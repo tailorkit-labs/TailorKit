@@ -39,7 +39,7 @@ export function createViewRegistry() {
               .map((entry) => `"${entry.view}"`)
               .join(
                 ", ",
-              )}. TailorKit selected "${selected.view}" by mount order. Only one route at a hierarchy depth should call useView.`,
+              )}. TailorKit selected "${selected.view}" by mount order. Only one route at a hierarchy depth should call useRegisterView.`,
           );
         }
         snapshot = {

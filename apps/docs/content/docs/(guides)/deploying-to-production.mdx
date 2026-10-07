@@ -30,7 +30,7 @@ actions. Those host-controlled edges require the same care as any public API.
 
 ## Minimize view context
 
-Every field published through `useView()` is visible to the app rendering that
+Every field published through `useRegisterView()` is visible to the app rendering that
 view. Pass view models designed for the app contract, not database records,
 sessions, access tokens, or broad route-loader objects.
 

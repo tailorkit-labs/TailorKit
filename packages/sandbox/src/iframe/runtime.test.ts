@@ -104,3 +104,81 @@ it("reports a mount-only module instead of bypassing view resolution", async () 
   );
   expect(mount).not.toHaveBeenCalled();
 });
+
+it("renders controlled requests and updates their context without reimporting the app", async () => {
+  const client: AppClient = {
+    slots: {
+      panel: {
+        "/users/detail": {
+          component: (props) => {
+            if (props.status !== "ready") return null;
+            return document.createTextNode(`${props.context.workspaceId}:${props.context.userId}`);
+          },
+        },
+      },
+    },
+    $runtime: {
+      h: (component, props) => component(props),
+      render: (node, root) => root.replaceChildren(...(node ? [node as Node] : [])),
+    },
+  };
+  const runtime = setup({ default: client });
+  const request = {
+    slot: "panel",
+    view: "/users/detail",
+    controlled: true as const,
+    status: "ready" as const,
+    context: { workspaceId: "w1", userId: "u1" },
+    declaredViews: ["/", "/users", "/users/detail"],
+    supportedViews: ["/users/detail"],
+  };
+  runtime.update(request);
+  await vi.waitFor(() => expect(runtime.root.textContent).toBe("w1:u1"));
+  runtime.update({ ...request, context: { workspaceId: "w1", userId: "u2" } });
+  await vi.waitFor(() => expect(runtime.root.textContent).toBe("w1:u2"));
+  runtime.update({ ...request, status: "loading" as const, context: undefined });
+  await vi.waitFor(() => expect(runtime.root.childNodes).toHaveLength(0));
+  expect(runtime.importModule).toHaveBeenCalledTimes(1);
+});
+
+it("forwards selected instances through the bridge and switches them without reimporting", async () => {
+  const client: AppClient = {
+    slots: {
+      panel: {
+        "/": {
+          instances: { resolver: "compiled" },
+          component: (props) =>
+            props.status === "ready"
+              ? document.createTextNode(
+                  `${props.instance?.key}:${JSON.stringify(props.instance?.data)}`,
+                )
+              : null,
+        },
+      },
+    },
+    $runtime: {
+      h: (component, props) => component(props),
+      render: (node, root) => root.replaceChildren(...(node ? [node as Node] : [])),
+    },
+  };
+  const runtime = setup({ default: client });
+  const request = {
+    slot: "panel",
+    view: "/",
+    controlled: true as const,
+    status: "ready" as const,
+    context: {},
+    declaredViews: ["/"],
+    supportedViews: ["/"],
+    instance: { key: "overview", metadata: {}, data: { count: 1 } },
+  };
+  runtime.update(request);
+  await vi.waitFor(() => expect(runtime.root.textContent).toBe('overview:{"count":1}'));
+  runtime.update({ ...request, instance: { key: "summary", metadata: {}, data: { count: 2 } } });
+  await vi.waitFor(() => expect(runtime.root.textContent).toBe('summary:{"count":2}'));
+  runtime.update({ ...request, status: "loading", context: undefined } as unknown as ViewRequest);
+  await vi.waitFor(() => expect(runtime.root.childNodes).toHaveLength(0));
+  runtime.update(request);
+  await vi.waitFor(() => expect(runtime.root.textContent).toBe('overview:{"count":1}'));
+  expect(runtime.importModule).toHaveBeenCalledTimes(1);
+});

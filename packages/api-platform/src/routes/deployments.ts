@@ -78,6 +78,7 @@ const createDeploymentInput = z
         light: createDeploymentLogoInput.optional(),
       })
       .optional(),
+    views: AppDeployment.shape.views.optional(),
     scope: scopeSchema,
   })
   .refine(
@@ -362,6 +363,7 @@ const createAppDeployment = protectedRouter
           appId: context.app.id,
           publicId: deploymentPublicId,
           status: "uploading",
+          views: input.body.views ?? [],
         })
         .returning();
 

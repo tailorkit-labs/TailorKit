@@ -39,7 +39,7 @@ not a supported deployment model.
    server actions.
 2. Apps are built against that schema.
 3. Host routes authenticate requests and publish named scopes and action context.
-4. The host renders installed apps with `AppView`.
+4. The host renders installed apps with `Slot`.
 5. TailorKit loads app code inside an opaque-origin iframe sandbox and proxies
    declarative UI/events across the host boundary.
 

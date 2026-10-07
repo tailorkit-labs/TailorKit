@@ -156,3 +156,13 @@ it("detects unchanged output and refuses an oversized rebuild snapshot", async (
   await writeFile(path.join(root, "client.js"), Buffer.alloc(1024 * 1024 + 1));
   await expect(capturePreviewSnapshot(root)).rejects.toThrow("exceeds 1 MiB");
 });
+
+it("includes view discovery metadata in preview snapshots", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "tailorkit-preview-views-"));
+  dirs.push(root);
+  await writeFile(path.join(root, "client.js"), "export default {}");
+  await writeFile(path.join(root, "views.json"), JSON.stringify([{ slot: "page", path: "/" }]));
+  expect((await capturePreviewSnapshot(root)).manifest.views).toEqual([
+    { slot: "page", path: "/" },
+  ]);
+});

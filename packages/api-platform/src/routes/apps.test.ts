@@ -468,7 +468,15 @@ describe("platform appRouter", () => {
 
     const [deployment] = await db
       .insert(appDeployment)
-      .values({ appId: created.id, publicId: "deploy0002", status: "published" })
+      .values({
+        appId: created.id,
+        publicId: "deploy0002",
+        status: "published",
+        views: [
+          { slot: "page", path: "/", instances: true },
+          { slot: "page", path: "/disabled", disabled: true },
+        ],
+      })
       .returning();
     if (!deployment) throw new Error("Expected test deployment to be created.");
 
@@ -481,6 +489,15 @@ describe("platform appRouter", () => {
       { context },
     );
     expect(deployed.body.currentDeployment?.id).toBe(deployment.id);
+    expect(deployed.body.views).toEqual([
+      { slot: "page", path: "/", instances: true },
+      { slot: "page", path: "/disabled", disabled: true },
+    ]);
+    const listed = await call(appRouter.list, { body: { scopes: [productionScope] } }, { context });
+    expect(listed.body.items[0]?.views).toEqual([
+      { slot: "page", path: "/", instances: true },
+      { slot: "page", path: "/disabled", disabled: true },
+    ]);
 
     const deleted = await call(
       appRouter.delete,

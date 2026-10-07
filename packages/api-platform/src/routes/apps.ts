@@ -13,6 +13,7 @@ import { canonicalizeScope, canonicalizeScopes, scopeSchema, scopesSchema } from
 
 export const AppWithCurrentDeployment = App.omit({ scopeKey: true }).extend({
   currentDeployment: AppDeployment.nullable(),
+  views: AppDeployment.shape.views,
   clientPath: z.url().optional(),
   logoPaths: z.object({ dark: z.url().optional(), light: z.url().optional() }).optional(),
 });
@@ -141,6 +142,7 @@ const createApp = protectedRouter
       body: {
         ...createdApp,
         currentDeployment: null,
+        views: [],
       },
     };
   });
@@ -200,6 +202,7 @@ const updateApp = protectedRouter
       body: {
         ...updatedApp,
         currentDeployment: null,
+        views: [],
       },
     };
   });

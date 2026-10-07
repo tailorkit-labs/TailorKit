@@ -75,7 +75,11 @@ async function verify(candidate: Candidate): Promise<string | null> {
   return source;
 }
 
-export function createPreviewManager(baseUrl: URL, onEnded: () => void) {
+export function createPreviewManager(
+  baseUrl: URL,
+  onEnded: () => void,
+  onViews?: (appId: string, views: NonNullable<TailorKitApp["views"]>) => void,
+) {
   const entries = new Map<string, Entry>();
   const notify = (entry: Entry) => {
     for (const listener of entry.listeners) {
@@ -149,6 +153,8 @@ export function createPreviewManager(baseUrl: URL, onEnded: () => void) {
         candidate.revision > entry.snapshot.revision
       ) {
         entry.snapshot = { revision: candidate.revision, source };
+        if (candidate.manifest.views !== undefined)
+          onViews?.(entry.app.id, candidate.manifest.views);
         notify(entry);
       }
       if (entry.candidate === candidate) {

@@ -6,7 +6,7 @@ import { ArrowLeft, Mail, Phone } from "lucide-react";
 import { DetailCard } from "#components/crm-ui";
 import { getCustomer } from "#lib/crm-data";
 import { useAuthSession } from "#lib/auth-client";
-import { useView } from "#lib/tailorkit-client";
+import { useRegisterView } from "#lib/tailorkit-client";
 
 export const Route = createFileRoute("/customers/$customerId")({
   component: CustomerDetailPage,
@@ -25,7 +25,7 @@ function CustomerDetailPage() {
   const { customer } = Route.useLoaderData();
   const session = useAuthSession();
 
-  useView(
+  useRegisterView(
     "/customers/detail",
     session.data
       ? {

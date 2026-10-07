@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vite-plus/test";
 import type { ViewLayer } from "@tailorkit/core/views";
-import { assertAppClient, renderClient } from "./resolve-view";
+import { assertAppClient, renderClient, resolveView } from "./resolve-view";
 import type { AppClient, ViewRequest } from "./resolve-view";
 
 function viewResolver() {
@@ -215,5 +215,119 @@ it("composes named array fields and omitted optional object contexts", () => {
     view: "/users/detail",
     status: "ready",
     context: { userIds: ["u1", "u2"], userId: "u1" },
+  });
+});
+
+describe("controlled slot rendering", () => {
+  const request = {
+    slot: "panel",
+    view: "/users/detail",
+    controlled: true as const,
+    status: "ready" as const,
+    context: { workspaceId: "explicit", canManageUsers: false, userId: "u2" },
+    declaredViews: ["/", "/users", "/users/detail"],
+    supportedViews: ["/", "/users", "/users/detail"],
+  };
+
+  it("renders the explicit view using the complete supplied context", () => {
+    const { client, detail } = viewClient();
+    expect(resolveView(client, request)).toEqual({
+      component: detail.component,
+      props: { view: request.view, status: "ready", context: request.context },
+    });
+  });
+
+  it("does not fall back to a different app view or render an unsupported view", () => {
+    const { client, general } = viewClient();
+    expect(resolveView({ ...client, slots: { panel: { "/users": general } } }, request)).toBeNull();
+    expect(resolveView(client, { ...request, supportedViews: ["/users"] })).toBeNull();
+    expect(
+      resolveView({ ...client, slots: { panel: { "/users/detail": false } } }, request),
+    ).toBeNull();
+  });
+
+  it.each(["loading", "error"] as const)("passes %s without exposing stale data", (status) => {
+    const { client } = viewClient();
+    expect(resolveView(client, { ...request, status, context: undefined })?.props).toEqual({
+      view: request.view,
+      status,
+      context: undefined,
+    });
+  });
+
+  it.each([null, undefined, [], 42, "invalid"])(
+    "rejects invalid explicit context %j",
+    (context) => {
+      const { client } = viewClient();
+      expect(resolveView(client, { ...request, context } as unknown as ViewRequest)?.props).toEqual(
+        {
+          view: request.view,
+          status: "error",
+          context: undefined,
+        },
+      );
+    },
+  );
+});
+
+describe("instance rendering", () => {
+  const instance = { key: "overview", metadata: { title: "Overview" }, data: { reportId: "r1" } };
+  const request = { ...resolveProps("panel"), instance };
+  function client() {
+    const { client, detail } = viewClient();
+    return {
+      ...client,
+      slots: { panel: { "/users/detail": { ...detail, instances: { resolver: "compiled" } } } },
+    };
+  }
+
+  it("passes the selected instance alongside the matched context", () => {
+    expect(resolveView(client(), request)?.props).toEqual({
+      view: "/users/detail",
+      status: "ready",
+      context: { workspaceId: "w1", canManageUsers: true, userId: "u1" },
+      instance,
+    });
+    const next = { key: "summary", metadata: {}, data: null };
+    expect(resolveView(client(), { ...request, instance: next })?.props).toMatchObject({
+      instance: next,
+    });
+  });
+
+  it.each(["loading", "error"] as const)("strips stale instances when context is %s", (status) => {
+    const layers = viewLayers.map((layer) =>
+      layer.path === "/users/detail" ? { ...layer, status } : layer,
+    );
+    expect(resolveView(client(), { ...request, layers })?.props).toEqual({
+      view: "/users/detail",
+      status,
+      context: undefined,
+    });
+    expect(
+      resolveView(client(), {
+        ...request,
+        controlled: true,
+        status,
+        context: undefined,
+      } as unknown as ViewRequest)?.props,
+    ).toEqual({ view: "/users/detail", status, context: undefined });
+  });
+
+  it("requires an instance for dynamic views and rejects instances on ordinary views", () => {
+    expect(() => resolveView(client(), resolveProps("panel"))).toThrow(
+      "requires a selected instance",
+    );
+    expect(() => resolveView(viewClient().client, request)).toThrow("does not support instances");
+  });
+
+  it.each([
+    { ...instance, key: "" },
+    { ...instance, key: 123 },
+    { ...instance, metadata: [] },
+    { ...instance, metadata: null },
+  ])("rejects malformed instances %j", (invalid) => {
+    expect(() =>
+      resolveView(client(), { ...request, instance: invalid } as unknown as ViewRequest),
+    ).toThrow("Invalid instance");
   });
 });

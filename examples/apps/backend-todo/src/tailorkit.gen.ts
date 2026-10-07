@@ -8,6 +8,10 @@
 
 import { createApi, createRemoteComponent } from "tailorkit/client";
 import type app from "./server";
+type AppServerFunctions = typeof app.functions;
+declare module "tailorkit/client" {
+  interface TailorKitServerFunctions extends AppServerFunctions {}
+}
 
 export const api = createApi<typeof app.functions>();
 

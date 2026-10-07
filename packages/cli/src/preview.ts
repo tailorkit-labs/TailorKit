@@ -3,7 +3,10 @@ import { readFile, readdir, realpath } from "node:fs/promises";
 import path from "node:path";
 import { log } from "@clack/prompts";
 import { loadTailorKitConfig } from "@tailorkit/app/config/loader";
-import { createPreviewWebSocketClient } from "@tailorkit/client-platform/preview";
+import {
+  createPreviewWebSocketClient,
+  previewBuildManifestSchema,
+} from "@tailorkit/client-platform/preview";
 import type {
   PreviewBuildManifest,
   PreviewWebSocketClient,
@@ -74,6 +77,11 @@ export async function capturePreviewSnapshot(root: string): Promise<Snapshot> {
     total += bytes.length;
     if (total > 10 * 1024 * 1024) {
       throw new Error("Preview build exceeds 10 MiB.");
+    }
+    if (relative === "views.json") {
+      manifest.views = previewBuildManifestSchema.shape.views
+        .unwrap()
+        .parse(JSON.parse(bytes.toString("utf8")));
     }
     files.push(bytes);
     manifest.files.push({

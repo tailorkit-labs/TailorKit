@@ -183,6 +183,10 @@ describe("platform deployment uploads", () => {
           appId: currentApp.id,
           scope: productionScope,
           assets: [{ ...metadata, objectKey: "client.js" }],
+          views: [
+            { slot: "page", path: "/", instances: true },
+            { slot: "page", path: "/disabled", disabled: true },
+          ],
           server: { ...metadata, objectKey: "server.js" },
         },
       },
@@ -190,6 +194,10 @@ describe("platform deployment uploads", () => {
     );
     expect(created.body.assets[0]?.file.objectKey).toMatch(/\/client\/client\.js$/u);
     expect(created.body.server?.file.objectKey).toMatch(/\/server\/server\.js$/u);
+    expect(created.body.deployment.views).toEqual([
+      { slot: "page", path: "/", instances: true },
+      { slot: "page", path: "/disabled", disabled: true },
+    ]);
     expect(uploads).toHaveBeenCalledTimes(2);
     const lookup = { params: { appId: currentApp.id }, body: { scope: productionScope } };
     await expect(

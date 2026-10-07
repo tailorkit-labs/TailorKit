@@ -2,6 +2,7 @@ import { getBaseUrl } from "@tailorkit/env";
 import { env } from "#env";
 
 interface AppDeploymentAssets {
+  views?: { slot: string; path: string; instances?: true; disabled?: true }[];
   clientEntryFileId: string | null;
   logoDarkPath?: string | null;
   logoLightPath?: string | null;
@@ -40,5 +41,10 @@ export function withAppAssetUrl<
     }
   }
 
-  return { ...app, clientPath, logoPaths };
+  return {
+    ...app,
+    clientPath,
+    logoPaths,
+    views: deployment?.status === "published" ? (deployment.views ?? []) : [],
+  };
 }

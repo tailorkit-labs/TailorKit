@@ -118,12 +118,12 @@ export const client = createTailorKitClient<typeof tailorKit>({
   baseUrl: "https://example.com/api/tailorkit/",
 });
 
-export const { AppView, useApps, useView } = client;
+export const { Slot, useApps, useViews, useRegisterView } = client;
 ```
 
 The helpers carry the view and slot types from the client. Import `Root` from
-`tailorkit/react` and pass it the client; use `useApps`, `useView`, and
-`AppView` beneath it. Each root owns an independent registry, even when roots
+`tailorkit/react` and pass it the client; use `useApps`, `useRegisterView`, and
+`Slot` beneath it. Each root owns an independent registry, even when roots
 share a client. Separate clients can expose different view and slot contracts
 in the same TypeScript project.
 The bound `useApps` also types `scopes` from the server schema. Pass names to
@@ -133,17 +133,17 @@ loads no apps.
 
 ```tsx
 import { Root } from "tailorkit/react";
-import { AppView, client } from "./tailorkit-client";
+import { Slot, client } from "./tailorkit-client";
 
 function Host({ app, children }) {
   return (
     <Root client={client}>
       <nav>
-        <AppView app={app} slot="navbar" />
+        <Slot app={app} name="navbar" />
       </nav>
       <main>{children}</main>
       <aside>
-        <AppView app={app} slot="panel" />
+        <Slot app={app} name="panel" />
       </aside>
     </Root>
   );
@@ -155,25 +155,53 @@ supplied app list, pass `apps` to `Root`; the hook returns that list without
 fetching. Updates to the list are reflected in the hook, and removing the prop
 resumes discovery.
 
-## Publish each layer
+## List app views
 
-Call `useView` in the layout or page that owns the data:
+Use `useViews()` to list the views implemented by installed apps:
 
 ```tsx
-import { useView } from "./tailorkit-client";
+const {
+  data: views,
+  isPending,
+  error,
+  refetch,
+} = useViews({
+  scopes: ["org"],
+  appIds: ["app-id"],
+  slot: "panel",
+});
+```
+
+All filters are optional. Values within a filter match any entry; different
+filters must all match. An empty `scopes` or `appIds` array returns no entries.
+Each view has a stable `id`, its `app`, a `slot`, and its declared `path`.
+Disabled entries (`false`) are excluded.
+
+`useApps` and `useViews` share one authenticated `/apps` request per `Root`.
+Filtering happens locally; changing filters does not fetch again. `refetch()`
+refreshes both hooks. After a session change, refresh discovery or remount `Root`.
+Supplied `Root` apps must include `views` metadata to appear in `useViews`.
+Rebuild and redeploy older apps to publish this metadata.
+
+## Publish each layer
+
+Call `useRegisterView` in the layout or page that owns the data:
+
+```tsx
+import { useRegisterView } from "./tailorkit-client";
 
 function WorkspaceLayout({ workspaceId }) {
-  useView("/", { context: { workspaceId } });
+  useRegisterView("/", { context: { workspaceId } });
   return <Outlet />;
 }
 
 function UsersLayout({ canManageUsers }) {
-  useView("/users", { context: { canManageUsers } });
+  useRegisterView("/users", { context: { canManageUsers } });
   return <Outlet />;
 }
 
 function UserDetail({ user }) {
-  useView("/users/detail", { context: { user } });
+  useRegisterView("/users/detail", { context: { user } });
   return <UserDetails user={user} />;
 }
 ```
@@ -216,7 +244,7 @@ paths in its supported `views` list. A supported ancestor remains eligible when
 the current, more specific view is not supported.
 Fallback never crosses slot boundaries. An empty supported view list disables
 all views in that slot. View lists are typed from the configured client schema;
-app bindings and explicit `AppView` views are restricted to the selected slot.
+app bindings and explicit `Slot.Controlled` views are restricted to the selected slot.
 
 Supported lists control view implementations, not context inheritance. For
 example, the panel's `/users` view still receives `workspaceId` from `/`, even
@@ -232,7 +260,7 @@ panel: { "/users": generalTools, "/users/detail": false }
 Keep the view registered while its context is unresolved:
 
 ```tsx
-useView(
+useRegisterView(
   "/users/detail",
   query.isPending
     ? { status: "loading" }
@@ -255,7 +283,7 @@ Call the hook before early returns. When using Suspense or router loaders,
 publish the loading/error view from a boundary that actually mounts in that
 state. A suspended component cannot publish a registration before it commits.
 For Server Components, pass serializable data to a small Client Component that
-calls `useView`.
+calls `useRegisterView`.
 
 ## Explicit mounts
 
@@ -263,11 +291,71 @@ A widget or dedicated page can choose its own view independently of the current
 route:
 
 ```tsx
-import { AppView } from "./tailorkit-client";
+import { Slot } from "./tailorkit-client";
 
-<AppView app={app} slot="panel" view="/users/detail" context={{ user }} />;
+<Slot.Controlled
+  app={app}
+  name="panel"
+  view="/users/detail"
+  status="ready"
+  context={{ workspaceId, canManageUsers, user }}
+/>;
 ```
 
-The override supplies that view's own context; matching mounted ancestors still
-supply inherited fields. It does not change other mounts or the current view.
-Explicit mounts use the same slot-local ancestor fallback rules.
+Supply the complete context, including ancestor fields. This mount does not
+read registered contexts or change other mounts. It renders the exact requested
+view without ancestor fallback.
+
+## Managed and controlled slots
+
+`Slot` takes an `app` and the slot's `name`. It uses the registered view
+hierarchy, including ancestor fallback and each layer's loading or error state.
+For views with instances, also pass `instanceKey` to select one.
+
+```tsx
+import { Slot } from "./tailorkit-client";
+
+<Slot app={app} name="panel" />;
+```
+
+`Slot.Controlled` renders an explicit view without reading the registered
+hierarchy. Supply `view`, `status`, and the complete combined `context` when
+ready, including the fields declared by its ancestors.
+
+```tsx
+<Slot.Controlled
+  app={app}
+  name="panel"
+  view="/users/detail"
+  status="ready"
+  context={{ workspaceId, canManageUsers, user }}
+/>
+```
+
+The controlled component renders the exact view provided; an unsupported or
+unimplemented view renders nothing. It does not fall back to an ancestor.
+For a view with instances, pass the selected instance object as `instance`.
+For `status="loading"` or `status="error"`, omit `context` and `instance`.
+Both components require `Root`, share its metadata cache, and carry the client
+schema's slot and context types.
+
+## Select an instance
+
+Use the client-bound `useSlotInstances` hook to list instances for the matching
+view and registered context. Metadata is available to the host; the app reads
+its validated data with `view.useInstance()`, typed from `instances.dataSchema`.
+
+```tsx
+const { data: instances, isPending, error } = useSlotInstances({ app, slot: "panel" });
+
+if (isPending) return <p>Loading views…</p>;
+if (error) return <p>{error.message}</p>;
+if (!instances?.length) return <p>No instances available.</p>;
+
+return <Slot app={app} name="panel" instanceKey={instances[0].key} />;
+```
+
+`Slot` resolves the key and passes the selected object to the sandbox. It shows
+loading, resolver errors, and missing-key states. Switching keys resets the app
+view's component state. `Slot.Controlled` accepts the object directly and does
+not fetch instances. Call the listing hook's `refetch()` to refresh a picker.

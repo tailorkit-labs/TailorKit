@@ -415,6 +415,36 @@
                                       }
                                     ]
                                   },
+                                  "views": {
+                                    "maxItems": 1000,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "slot": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 255
+                                        },
+                                        "path": {
+                                          "type": "string",
+                                          "maxLength": 1024,
+                                          "format": "starts_with",
+                                          "pattern": "^\\/.*"
+                                        },
+                                        "instances": {
+                                          "type": "boolean",
+                                          "const": true
+                                        },
+                                        "disabled": {
+                                          "type": "boolean",
+                                          "const": true
+                                        }
+                                      },
+                                      "required": ["slot", "path"],
+                                      "additionalProperties": false
+                                    }
+                                  },
                                   "logoLightPath": {
                                     "type": ["string", "null"]
                                   },
@@ -440,6 +470,7 @@
                                   "clientEntryFileId",
                                   "logoLightFileId",
                                   "logoDarkFileId",
+                                  "views",
                                   "logoLightPath",
                                   "logoDarkPath",
                                   "createdAt",
@@ -451,6 +482,36 @@
                                 "type": "null"
                               }
                             ]
+                          },
+                          "views": {
+                            "maxItems": 1000,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "slot": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 255
+                                },
+                                "path": {
+                                  "type": "string",
+                                  "maxLength": 1024,
+                                  "format": "starts_with",
+                                  "pattern": "^\\/.*"
+                                },
+                                "instances": {
+                                  "type": "boolean",
+                                  "const": true
+                                },
+                                "disabled": {
+                                  "type": "boolean",
+                                  "const": true
+                                }
+                              },
+                              "required": ["slot", "path"],
+                              "additionalProperties": false
+                            }
                           },
                           "clientPath": {
                             "type": "string",
@@ -481,7 +542,8 @@
                           "currentDeploymentId",
                           "createdAt",
                           "updatedAt",
-                          "currentDeployment"
+                          "currentDeployment",
+                          "views"
                         ],
                         "additionalProperties": false
                       }
@@ -709,6 +771,36 @@
                                 }
                               ]
                             },
+                            "views": {
+                              "maxItems": 1000,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "slot": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 255
+                                  },
+                                  "path": {
+                                    "type": "string",
+                                    "maxLength": 1024,
+                                    "format": "starts_with",
+                                    "pattern": "^\\/.*"
+                                  },
+                                  "instances": {
+                                    "type": "boolean",
+                                    "const": true
+                                  },
+                                  "disabled": {
+                                    "type": "boolean",
+                                    "const": true
+                                  }
+                                },
+                                "required": ["slot", "path"],
+                                "additionalProperties": false
+                              }
+                            },
                             "logoLightPath": {
                               "type": ["string", "null"]
                             },
@@ -734,6 +826,7 @@
                             "clientEntryFileId",
                             "logoLightFileId",
                             "logoDarkFileId",
+                            "views",
                             "logoLightPath",
                             "logoDarkPath",
                             "createdAt",
@@ -745,6 +838,36 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "views": {
+                      "maxItems": 1000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slot": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255
+                          },
+                          "path": {
+                            "type": "string",
+                            "maxLength": 1024,
+                            "format": "starts_with",
+                            "pattern": "^\\/.*"
+                          },
+                          "instances": {
+                            "type": "boolean",
+                            "const": true
+                          },
+                          "disabled": {
+                            "type": "boolean",
+                            "const": true
+                          }
+                        },
+                        "required": ["slot", "path"],
+                        "additionalProperties": false
+                      }
                     },
                     "clientPath": {
                       "type": "string",
@@ -775,7 +898,8 @@
                     "currentDeploymentId",
                     "createdAt",
                     "updatedAt",
-                    "currentDeployment"
+                    "currentDeployment",
+                    "views"
                   ],
                   "additionalProperties": false
                 }
@@ -978,6 +1102,36 @@
                                 }
                               ]
                             },
+                            "views": {
+                              "maxItems": 1000,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "slot": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 255
+                                  },
+                                  "path": {
+                                    "type": "string",
+                                    "maxLength": 1024,
+                                    "format": "starts_with",
+                                    "pattern": "^\\/.*"
+                                  },
+                                  "instances": {
+                                    "type": "boolean",
+                                    "const": true
+                                  },
+                                  "disabled": {
+                                    "type": "boolean",
+                                    "const": true
+                                  }
+                                },
+                                "required": ["slot", "path"],
+                                "additionalProperties": false
+                              }
+                            },
                             "logoLightPath": {
                               "type": ["string", "null"]
                             },
@@ -1003,6 +1157,7 @@
                             "clientEntryFileId",
                             "logoLightFileId",
                             "logoDarkFileId",
+                            "views",
                             "logoLightPath",
                             "logoDarkPath",
                             "createdAt",
@@ -1014,6 +1169,36 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "views": {
+                      "maxItems": 1000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slot": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255
+                          },
+                          "path": {
+                            "type": "string",
+                            "maxLength": 1024,
+                            "format": "starts_with",
+                            "pattern": "^\\/.*"
+                          },
+                          "instances": {
+                            "type": "boolean",
+                            "const": true
+                          },
+                          "disabled": {
+                            "type": "boolean",
+                            "const": true
+                          }
+                        },
+                        "required": ["slot", "path"],
+                        "additionalProperties": false
+                      }
                     },
                     "clientPath": {
                       "type": "string",
@@ -1044,7 +1229,8 @@
                     "currentDeploymentId",
                     "createdAt",
                     "updatedAt",
-                    "currentDeployment"
+                    "currentDeployment",
+                    "views"
                   ],
                   "additionalProperties": false
                 }
@@ -1326,6 +1512,36 @@
                                 }
                               ]
                             },
+                            "views": {
+                              "maxItems": 1000,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "slot": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 255
+                                  },
+                                  "path": {
+                                    "type": "string",
+                                    "maxLength": 1024,
+                                    "format": "starts_with",
+                                    "pattern": "^\\/.*"
+                                  },
+                                  "instances": {
+                                    "type": "boolean",
+                                    "const": true
+                                  },
+                                  "disabled": {
+                                    "type": "boolean",
+                                    "const": true
+                                  }
+                                },
+                                "required": ["slot", "path"],
+                                "additionalProperties": false
+                              }
+                            },
                             "logoLightPath": {
                               "type": ["string", "null"]
                             },
@@ -1351,6 +1567,7 @@
                             "clientEntryFileId",
                             "logoLightFileId",
                             "logoDarkFileId",
+                            "views",
                             "logoLightPath",
                             "logoDarkPath",
                             "createdAt",
@@ -1362,6 +1579,36 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "views": {
+                      "maxItems": 1000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slot": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255
+                          },
+                          "path": {
+                            "type": "string",
+                            "maxLength": 1024,
+                            "format": "starts_with",
+                            "pattern": "^\\/.*"
+                          },
+                          "instances": {
+                            "type": "boolean",
+                            "const": true
+                          },
+                          "disabled": {
+                            "type": "boolean",
+                            "const": true
+                          }
+                        },
+                        "required": ["slot", "path"],
+                        "additionalProperties": false
+                      }
                     },
                     "clientPath": {
                       "type": "string",
@@ -1392,7 +1639,8 @@
                     "currentDeploymentId",
                     "createdAt",
                     "updatedAt",
-                    "currentDeployment"
+                    "currentDeployment",
+                    "views"
                   ],
                   "additionalProperties": false
                 }
@@ -1593,6 +1841,36 @@
                                 }
                               ]
                             },
+                            "views": {
+                              "maxItems": 1000,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "slot": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 255
+                                  },
+                                  "path": {
+                                    "type": "string",
+                                    "maxLength": 1024,
+                                    "format": "starts_with",
+                                    "pattern": "^\\/.*"
+                                  },
+                                  "instances": {
+                                    "type": "boolean",
+                                    "const": true
+                                  },
+                                  "disabled": {
+                                    "type": "boolean",
+                                    "const": true
+                                  }
+                                },
+                                "required": ["slot", "path"],
+                                "additionalProperties": false
+                              }
+                            },
                             "logoLightPath": {
                               "type": ["string", "null"]
                             },
@@ -1618,6 +1896,7 @@
                             "clientEntryFileId",
                             "logoLightFileId",
                             "logoDarkFileId",
+                            "views",
                             "logoLightPath",
                             "logoDarkPath",
                             "createdAt",
@@ -1629,6 +1908,36 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "views": {
+                      "maxItems": 1000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slot": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255
+                          },
+                          "path": {
+                            "type": "string",
+                            "maxLength": 1024,
+                            "format": "starts_with",
+                            "pattern": "^\\/.*"
+                          },
+                          "instances": {
+                            "type": "boolean",
+                            "const": true
+                          },
+                          "disabled": {
+                            "type": "boolean",
+                            "const": true
+                          }
+                        },
+                        "required": ["slot", "path"],
+                        "additionalProperties": false
+                      }
                     },
                     "clientPath": {
                       "type": "string",
@@ -1659,7 +1968,8 @@
                     "currentDeploymentId",
                     "createdAt",
                     "updatedAt",
-                    "currentDeployment"
+                    "currentDeployment",
+                    "views"
                   ],
                   "additionalProperties": false
                 }
@@ -2105,6 +2415,36 @@
                               }
                             ]
                           },
+                          "views": {
+                            "maxItems": 1000,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "slot": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 255
+                                },
+                                "path": {
+                                  "type": "string",
+                                  "maxLength": 1024,
+                                  "format": "starts_with",
+                                  "pattern": "^\\/.*"
+                                },
+                                "instances": {
+                                  "type": "boolean",
+                                  "const": true
+                                },
+                                "disabled": {
+                                  "type": "boolean",
+                                  "const": true
+                                }
+                              },
+                              "required": ["slot", "path"],
+                              "additionalProperties": false
+                            }
+                          },
                           "logoLightPath": {
                             "type": ["string", "null"]
                           },
@@ -2130,6 +2470,7 @@
                           "clientEntryFileId",
                           "logoLightFileId",
                           "logoDarkFileId",
+                          "views",
                           "logoLightPath",
                           "logoDarkPath",
                           "createdAt",
@@ -2283,6 +2624,36 @@
                         }
                       ]
                     },
+                    "views": {
+                      "maxItems": 1000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slot": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255
+                          },
+                          "path": {
+                            "type": "string",
+                            "maxLength": 1024,
+                            "format": "starts_with",
+                            "pattern": "^\\/.*"
+                          },
+                          "instances": {
+                            "type": "boolean",
+                            "const": true
+                          },
+                          "disabled": {
+                            "type": "boolean",
+                            "const": true
+                          }
+                        },
+                        "required": ["slot", "path"],
+                        "additionalProperties": false
+                      }
+                    },
                     "logoLightPath": {
                       "type": ["string", "null"]
                     },
@@ -2308,6 +2679,7 @@
                     "clientEntryFileId",
                     "logoLightFileId",
                     "logoDarkFileId",
+                    "views",
                     "logoLightPath",
                     "logoDarkPath",
                     "createdAt",
@@ -2449,6 +2821,35 @@
                         },
                         "required": ["checksum", "contentLength", "contentType"]
                       }
+                    }
+                  },
+                  "views": {
+                    "maxItems": 1000,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "slot": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "path": {
+                          "type": "string",
+                          "maxLength": 1024,
+                          "format": "starts_with",
+                          "pattern": "^\\/.*"
+                        },
+                        "instances": {
+                          "type": "boolean",
+                          "const": true
+                        },
+                        "disabled": {
+                          "type": "boolean",
+                          "const": true
+                        }
+                      },
+                      "required": ["slot", "path"]
                     }
                   },
                   "scope": {
@@ -2753,6 +3154,36 @@
                             }
                           ]
                         },
+                        "views": {
+                          "maxItems": 1000,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "slot": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 255
+                              },
+                              "path": {
+                                "type": "string",
+                                "maxLength": 1024,
+                                "format": "starts_with",
+                                "pattern": "^\\/.*"
+                              },
+                              "instances": {
+                                "type": "boolean",
+                                "const": true
+                              },
+                              "disabled": {
+                                "type": "boolean",
+                                "const": true
+                              }
+                            },
+                            "required": ["slot", "path"],
+                            "additionalProperties": false
+                          }
+                        },
                         "logoLightPath": {
                           "type": ["string", "null"]
                         },
@@ -2778,6 +3209,7 @@
                         "clientEntryFileId",
                         "logoLightFileId",
                         "logoDarkFileId",
+                        "views",
                         "logoLightPath",
                         "logoDarkPath",
                         "createdAt",
@@ -3111,6 +3543,36 @@
                         }
                       ]
                     },
+                    "views": {
+                      "maxItems": 1000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slot": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255
+                          },
+                          "path": {
+                            "type": "string",
+                            "maxLength": 1024,
+                            "format": "starts_with",
+                            "pattern": "^\\/.*"
+                          },
+                          "instances": {
+                            "type": "boolean",
+                            "const": true
+                          },
+                          "disabled": {
+                            "type": "boolean",
+                            "const": true
+                          }
+                        },
+                        "required": ["slot", "path"],
+                        "additionalProperties": false
+                      }
+                    },
                     "logoLightPath": {
                       "type": ["string", "null"]
                     },
@@ -3136,6 +3598,7 @@
                     "clientEntryFileId",
                     "logoLightFileId",
                     "logoDarkFileId",
+                    "views",
                     "logoLightPath",
                     "logoDarkPath",
                     "createdAt",
@@ -3658,6 +4121,36 @@
                                           }
                                         ]
                                       },
+                                      "views": {
+                                        "maxItems": 1000,
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "slot": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 255
+                                            },
+                                            "path": {
+                                              "type": "string",
+                                              "maxLength": 1024,
+                                              "format": "starts_with",
+                                              "pattern": "^\\/.*"
+                                            },
+                                            "instances": {
+                                              "type": "boolean",
+                                              "const": true
+                                            },
+                                            "disabled": {
+                                              "type": "boolean",
+                                              "const": true
+                                            }
+                                          },
+                                          "required": ["slot", "path"],
+                                          "additionalProperties": false
+                                        }
+                                      },
                                       "logoLightPath": {
                                         "type": ["string", "null"]
                                       },
@@ -3683,6 +4176,7 @@
                                       "clientEntryFileId",
                                       "logoLightFileId",
                                       "logoDarkFileId",
+                                      "views",
                                       "logoLightPath",
                                       "logoDarkPath",
                                       "createdAt",
@@ -3694,6 +4188,36 @@
                                     "type": "null"
                                   }
                                 ]
+                              },
+                              "views": {
+                                "maxItems": 1000,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "slot": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 255
+                                    },
+                                    "path": {
+                                      "type": "string",
+                                      "maxLength": 1024,
+                                      "format": "starts_with",
+                                      "pattern": "^\\/.*"
+                                    },
+                                    "instances": {
+                                      "type": "boolean",
+                                      "const": true
+                                    },
+                                    "disabled": {
+                                      "type": "boolean",
+                                      "const": true
+                                    }
+                                  },
+                                  "required": ["slot", "path"],
+                                  "additionalProperties": false
+                                }
                               },
                               "clientPath": {
                                 "type": "string",
@@ -3724,7 +4248,8 @@
                               "currentDeploymentId",
                               "createdAt",
                               "updatedAt",
-                              "currentDeployment"
+                              "currentDeployment",
+                              "views"
                             ],
                             "additionalProperties": false
                           },

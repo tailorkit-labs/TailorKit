@@ -305,12 +305,12 @@ Mount the handler at your TailorKit base path. The default is `/api/tailorkit`.
 <Tab title="Next.js App Router">
 
 ```ts app/api/tailorkit/[...tailorkit]/route.ts
-import { auth } from "#lib/auth";
-import { tailorKit } from "#lib/tailorkit";
+import { tailorKit } from "@/lib/tailorkit";
 
 async function handleRequest(request: Request) {
   return tailorKit.handler(request, {
     authenticate: async () => {
+      // Replace this with your own authentication logic.
       const session = await auth(request);
 
       if (!session) {
@@ -333,8 +333,7 @@ export const POST = handleRequest;
 <Tab title="TanStack Start">
 
 ```ts routes/api/tailorkit.$.ts
-import { auth } from "#lib/auth";
-import { tailorKit } from "#lib/tailorkit";
+import { tailorKit } from "@/lib/tailorkit";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/tailorkit/$")({
@@ -349,6 +348,7 @@ export const Route = createFileRoute("/api/tailorkit/$")({
 async function handleRequest({ request }: { request: Request }) {
   return tailorKit.handler(request, {
     authenticate: async () => {
+      // Replace this with your own authentication logic.
       const session = await auth(request);
 
       if (!session) {
@@ -368,13 +368,13 @@ async function handleRequest({ request }: { request: Request }) {
 <Tab title="React Router">
 
 ```ts routes/api.tailorkit.$.ts
-import { auth } from "#lib/auth";
-import { tailorKit } from "#lib/tailorkit";
+import { tailorKit } from "@/lib/tailorkit";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 
 async function handleRequest(request: Request) {
   return tailorKit.handler(request, {
     authenticate: async () => {
+      // Replace this with your own authentication logic.
       const session = await auth(request);
 
       if (!session) {
@@ -402,14 +402,14 @@ export async function action({ request }: ActionFunctionArgs) {
 <Tab title="Nitro">
 
 ```ts server/api/tailorkit/[...].ts
-import { auth } from "#lib/auth";
-import { tailorKit } from "#lib/tailorkit";
+import { tailorKit } from "@/lib/tailorkit";
 import { toWebRequest } from "h3";
 
 export default defineEventHandler(async (event) => {
   const request = toWebRequest(event);
   return tailorKit.handler(request, {
     authenticate: async () => {
+      // Replace this with your own authentication logic.
       const session = await auth(request);
 
       if (!session) {
@@ -430,14 +430,14 @@ export default defineEventHandler(async (event) => {
 
 ```ts src/index.ts
 import { Hono } from "hono";
-import { auth } from "#lib/auth";
-import { tailorKit } from "#lib/tailorkit";
+import { tailorKit } from "@/lib/tailorkit";
 
 const app = new Hono();
 
 app.on(["GET", "POST"], "/api/tailorkit/*", async (c) => {
   return tailorKit.handler(c.req.raw, {
     authenticate: async () => {
+      // Replace this with your own authentication logic.
       const session = await auth(c.req.raw);
 
       if (!session) {
@@ -469,9 +469,10 @@ Create `tailorkit-client.tsx` in your frontend, wherever you keep client-side ut
 ```tsx src/lib/tailorkit-client.tsx
 "use client";
 
+import type { ReactNode } from "react";
 import { Button } from "@/components/button";
-import type { tailorKit } from "./tailorkit";
-import { createTailorKitClient, primitives } from "tailorkit/react";
+import type { tailorKit } from "@/lib/tailorkit";
+import { createTailorKitClient, primitives, Root } from "tailorkit/react";
 
 export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
   // Replace this with your host origin and handler path.
@@ -487,50 +488,250 @@ export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
   },
 });
 
-export const { AppView, useApps, useView } = tailorKitClient;
+export const { Slot, useApps, useViews, useRegisterView } = tailorKitClient;
+
+export function TailorKitProvider({ children }: { children: ReactNode }) {
+  return <Root client={tailorKitClient}>{children}</Root>;
+}
 
 export default tailorKitClient;
 ```
 
 </Step>
-<Step title="Render installed apps">
+<Step title="Add the Root provider">
 
-Mount `Root` around the component that loads and renders apps. Register the `/`
-host view with `useView`, then render each installed app in the `page` slot
-from your server configuration.
+Wrap your pages in the TailorKit provider to use TailorKit hooks and components.
 
-```tsx src/components/tailorkit-page.tsx
-"use client";
+<Tabs>
 
-import { Root } from "tailorkit/react";
-import { AppView, tailorKitClient, useApps, useView } from "../lib/tailorkit-client";
+<Tab title="Next.js App Router">
 
-type User = { id: string; name: string };
+Use `TailorKitProvider` from your client file in your root layout.
 
-function InstalledApps({ user }: { user: User }) {
-  useView("/", { context: { user } });
-  const { data: apps, isPending, error } = useApps({ scopes: ["user"] });
+```tsx app/layout.tsx
+import type { ReactNode } from "react";
+import { TailorKitProvider } from "@/lib/tailorkit-client";
 
-  if (isPending) return <p>Loading apps…</p>;
-  if (error) return <p>Unable to load installed apps.</p>;
-  if (!apps?.length) return <p>No apps installed yet.</p>;
-
-  return apps.map((app) => <AppView key={app.id} app={app} slot="page" />);
-}
-
-export function TailorKitPage({ user }: { user: User }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <Root client={tailorKitClient}>
-      <InstalledApps user={user} />
-    </Root>
+    <html lang="en">
+      <body>
+        <TailorKitProvider>{children}</TailorKitProvider>
+      </body>
+    </html>
   );
 }
 ```
 
-Add `<TailorKitPage user={session.user} />` to a signed-in page or layout, passing
-the user from your host session. The `user` scope loads apps installed for the
-user returned by `authenticate`.
-An empty list is expected until you install or accept a preview of an app.
+</Tab>
+
+<Tab title="TanStack Start">
+
+Wrap your app.
+
+```tsx src/routes/__root.tsx
+import type { ReactNode } from "react";
+import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
+import { TailorKitProvider } from "@/lib/tailorkit-client";
+
+export const Route = createRootRoute({
+  shellComponent: RootDocument,
+  component: Outlet,
+});
+
+function RootDocument({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        <TailorKitProvider>{children}</TailorKitProvider>
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+```
+
+</Tab>
+
+<Tab title="React Router">
+
+Wrap the root route's `Outlet` in `TailorKitProvider`. Keep the document shell in `Layout`.
+
+```tsx app/root.tsx
+import type { ReactNode } from "react";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { TailorKitProvider } from "@/lib/tailorkit-client";
+
+export function Layout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+export default function App() {
+  return (
+    <TailorKitProvider>
+      <Outlet />
+    </TailorKitProvider>
+  );
+}
+```
+
+</Tab>
+
+</Tabs>
+
+</Step>
+<Step title="Render a view">
+
+Add a page to register context and switch between available views.
+
+<Tabs>
+
+<Tab title="Next.js App Router">
+
+```tsx app/app-views/page.tsx
+"use client";
+
+import { useState } from "react";
+import { Slot, useViews, useRegisterView } from "@/lib/tailorkit-client";
+
+export default function Page() {
+  const [selectedId, setSelectedId] = useState("");
+  const { data: views, isPending, error } = useViews({ slot: "page" });
+  // Replace this with your own authentication hook.
+  const { data: session, isPending: isSessionPending } = useSession();
+
+  useRegisterView("/", session ? { context: { user: session.user } } : { status: "loading" });
+
+  const selectedView = views?.find((view) => view.id === selectedId) ?? views?.[0];
+
+  if (isPending || isSessionPending) return <p>Loading views…</p>;
+  if (error) return "An error has occurred: " + error.message;
+  if (!selectedView) return <p>No views available yet.</p>;
+
+  return (
+    <>
+      <label>
+        View
+        <select value={selectedView.id} onChange={(event) => setSelectedId(event.target.value)}>
+          {views?.map((view) => (
+            <option key={view.id} value={view.id}>
+              {view.app.name ?? view.app.id} ({view.path})
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <Slot key={selectedView.id} app={selectedView.app} name="page" />
+    </>
+  );
+}
+```
+
+</Tab>
+
+<Tab title="TanStack Start">
+
+```tsx src/routes/app-views.tsx
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { Slot, useViews, useRegisterView } from "@/lib/tailorkit-client";
+
+export const Route = createFileRoute("/app-views")({ component: Page });
+
+function Page() {
+  const [selectedId, setSelectedId] = useState("");
+  const { data: views, isPending, error } = useViews({ slot: "page" });
+  // Replace this with your own authentication hook.
+  const { data: session, isPending: isSessionPending } = useSession();
+
+  useRegisterView("/", session ? { context: { user: session.user } } : { status: "loading" });
+
+  const selectedView = views?.find((view) => view.id === selectedId) ?? views?.[0];
+
+  if (isPending || isSessionPending) return <p>Loading views…</p>;
+  if (error) return "An error has occurred: " + error.message;
+  if (!selectedView) return <p>No views available yet.</p>;
+
+  return (
+    <>
+      <label>
+        View
+        <select value={selectedView.id} onChange={(event) => setSelectedId(event.target.value)}>
+          {views?.map((view) => (
+            <option key={view.id} value={view.id}>
+              {view.app.name ?? view.app.id} ({view.path})
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <Slot key={selectedView.id} app={selectedView.app} name="page" />
+    </>
+  );
+}
+```
+
+</Tab>
+
+<Tab title="React Router">
+
+```tsx app/routes/app-views.tsx
+import { useState } from "react";
+import { Slot, useViews, useRegisterView } from "@/lib/tailorkit-client";
+
+export default function Page() {
+  const [selectedId, setSelectedId] = useState("");
+  const { data: views, isPending, error } = useViews({ slot: "page" });
+  // Replace this with your own authentication hook.
+  const { data: session, isPending: isSessionPending } = useSession();
+
+  useRegisterView("/", session ? { context: { user: session.user } } : { status: "loading" });
+
+  const selectedView = views?.find((view) => view.id === selectedId) ?? views?.[0];
+
+  if (isPending || isSessionPending) return <p>Loading views…</p>;
+  if (error) return "An error has occurred: " + error.message;
+  if (!selectedView) return <p>No views available yet.</p>;
+
+  return (
+    <>
+      <label>
+        View
+        <select value={selectedView.id} onChange={(event) => setSelectedId(event.target.value)}>
+          {views?.map((view) => (
+            <option key={view.id} value={view.id}>
+              {view.app.name ?? view.app.id} ({view.path})
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <Slot key={selectedView.id} app={selectedView.app} name="page" />
+    </>
+  );
+}
+```
+
+</Tab>
+
+</Tabs>
 
 </Step>
 <Step title="Verify the integration">
@@ -547,8 +748,8 @@ The schema and metadata endpoints describe your public app contract. The apps
 endpoint requires a valid host session and returns the apps installed for the
 authenticated scopes. Each scope is named by the schema key, such as `user`.
 
-While signed in to your host, open the page containing `TailorKitPage`. You
-should see either your installed apps or “No apps installed yet.” An
+While signed in to your host, open `/app-views`. You
+should see either an app view or “No views available yet.” An
 unauthenticated request to `/api/tailorkit/apps` should be rejected.
 
 If the routes return 404, check the catch-all route and handler path. If the

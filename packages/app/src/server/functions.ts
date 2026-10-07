@@ -16,7 +16,7 @@ export type FunctionResult<D> = D extends { result: infer R extends z.ZodType }
   : D extends { handler: (context: never) => infer O }
     ? Awaited<O>
     : never;
-type FunctionCalls<F, K extends "query" | "mutation"> = {
+export type FunctionCalls<F, K extends "query" | "mutation"> = {
   readonly [
     N in keyof F as F[N] extends { kind: FunctionKind } ? (F[N] extends { kind: K } ? N : never) : N
   ]: F[N] extends {

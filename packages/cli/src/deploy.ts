@@ -332,6 +332,7 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
     unwrapRpcResult<DeploymentCreateResult>(
       await client.deployments.create({
         appId: targetAppId,
+        views: manifest.views,
         assets: [
           {
             checksum: sha256Hex(clientAsset),

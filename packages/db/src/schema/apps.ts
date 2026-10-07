@@ -90,6 +90,10 @@ export const appDeployment = pgTable(
     logoDarkFileId: uuid("logo_dark_file_id").references((): AnyPgColumn => appDeploymentFile.id, {
       onDelete: "restrict",
     }),
+    views: jsonb("views")
+      .$type<{ slot: string; path: string; instances?: true; disabled?: true }[]>()
+      .notNull()
+      .default([]),
     logoLightPath: text("logo_light_path"),
     logoDarkPath: text("logo_dark_path"),
 
@@ -104,7 +108,18 @@ export const appDeployment = pgTable(
   ],
 );
 
-export const AppDeployment = createSelectSchema(appDeployment);
+export const AppDeployment = createSelectSchema(appDeployment, {
+  views: z
+    .array(
+      z.object({
+        slot: z.string().min(1).max(255),
+        path: z.string().startsWith("/").max(1024),
+        instances: z.literal(true).optional(),
+        disabled: z.literal(true).optional(),
+      }),
+    )
+    .max(1000),
+});
 export type AppDeployment = z.output<typeof AppDeployment>;
 
 export const appDeploymentFileContentType = pgEnum("app_deployment_file_content_type", [

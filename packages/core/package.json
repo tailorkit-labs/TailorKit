@@ -11,6 +11,7 @@
     "dist"
   ],
   "type": "module",
+  "sideEffects": false,
   "exports": {
     "./server": {
       "types": "./dist/server/index.d.ts",
