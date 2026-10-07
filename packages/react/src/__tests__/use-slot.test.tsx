@@ -801,7 +801,7 @@ it("shares app discovery with useApps and refetch refreshes single-slot entries"
   expect(calls("/apps")).toHaveLength(1);
   discovered = [{ ...discovered[0]!, id: "new-app" }];
   await act(() => result.current.slot.refetch());
-  await waitFor(() => expect(result.current.slot.data).toEqual([{ app: discovered[0] }]));
+  expect(result.current.slot.data).toEqual([{ app: discovered[0] }]);
   expect(result.current.apps.data).toEqual(discovered);
   expect(calls("/apps")).toHaveLength(2);
   expect(calls("/backend/session")).toHaveLength(0);
@@ -863,3 +863,73 @@ it("retries failed single-slot metadata without authorizing an app", async () =>
   expect(calls("/backend/session")).toHaveLength(0);
   expect(calls("/actions")).toHaveLength(0);
 });
+
+it.each(["page", "single"] as const)(
+  "awaits the resulting %s query after retrying app discovery",
+  async (slot) => {
+    apps = undefined;
+    let fail = true;
+    let finishMeta!: (response: Response) => void;
+    let finishInstances!: (response: Response) => void;
+    const discovered: TailorKitApp = {
+      ...app,
+      scope: { name: "user" },
+      views: slot === "page" ? app.views : [{ slot, path: "/" }],
+    };
+    const excluded: TailorKitApp = { ...discovered, id: "excluded" };
+    const original = vi.mocked(globalThis.fetch).getMockImplementation()!;
+    vi.mocked(globalThis.fetch).mockImplementation((input, options) => {
+      const path = url(input).pathname;
+      if (path.endsWith("/apps"))
+        return Promise.resolve(
+          fail ? new Response(null, { status: 503 }) : Response.json([discovered, excluded]),
+        );
+      if (path.endsWith("/meta"))
+        return new Promise((resolve) => {
+          finishMeta = resolve;
+        });
+      if (path.endsWith("/actions"))
+        return new Promise((resolve) => {
+          finishInstances = resolve;
+        });
+      return original(input, options);
+    });
+    const { result } = renderHook(
+      () => {
+        useDetail();
+        return client.useSlot({ slot, scopes: ["user"], appIds: [discovered.id] });
+      },
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    fail = false;
+    let complete = false;
+    let pending!: Promise<void>;
+    act(() => {
+      pending = result.current.refetch().then(() => {
+        complete = true;
+      });
+    });
+    await waitFor(() => expect(calls("/meta")).toHaveLength(1));
+    expect(complete).toBe(false);
+    await act(async () => {
+      finishMeta(Response.json({ schema: server.$internal.schema.serialize() }));
+    });
+    if (slot === "page") {
+      await waitFor(() => expect(calls("/actions")).toHaveLength(1));
+      expect(complete).toBe(false);
+      await act(async () => {
+        finishInstances(Response.json({ json: instances }));
+      });
+    }
+    await act(() => pending);
+    expect(complete).toBe(true);
+    expect(result.current.isSuccess).toBe(true);
+    expect(result.current.isFetching).toBe(false);
+    expect(result.current.data).toEqual(
+      slot === "page" ? withApp(instances, discovered) : [{ app: discovered }],
+    );
+    expect(calls("/apps")).toHaveLength(2);
+    expect(calls("/actions")).toHaveLength(slot === "page" ? 1 : 0);
+  },
+);

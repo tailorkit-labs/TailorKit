@@ -1,4 +1,4 @@
-import { createSlotStore } from "@tailorkit/client-core";
+import { createSlotStore, matchesApp, serializeCacheKey } from "@tailorkit/client-core";
 import type { FetchCacheOptions, TailorKitApp, SlotItem } from "@tailorkit/client-core";
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useTailorRootContext } from "../components/context";
@@ -36,16 +36,34 @@ export function useSlot({
   });
   const refetch = useCallback(async () => {
     const multiple = store.client.meta().getSnapshot().data?.schema.slots[slot]?.multiple;
-    if (!apps.isSuccess) {
-      await apps.refetch();
+    if (apps.isSuccess && multiple === true) {
+      await items.refetch();
       return;
     }
-    if (multiple !== true) {
-      await apps.refetch();
-      if (multiple !== undefined) return;
+    await apps.refetch();
+    let previousKey: string | undefined;
+    // Read live store state: React may not have rendered the discovery result yet.
+    // Join the new query, including a key change when metadata identifies a single slot.
+    while (true) {
+      const discovery = store.getAppsSnapshot();
+      if (discovery.status !== "ready") return;
+      const schema = store.getMetaSnapshot().schema;
+      const options = {
+        apps: discovery.apps.filter((app) => matchesApp(app, scopes, appIds)),
+        slot,
+        activeView:
+          schema === null || schema.slots[slot]?.multiple === true
+            ? store.views.getSnapshot()
+            : null,
+        staleTime,
+        gcTime,
+      };
+      const key = serializeCacheKey([options.apps, slot, options.activeView]);
+      if (key === previousKey) return;
+      previousKey = key;
+      await createSlotStore(store.client, options).fetch();
     }
-    await items.refetch();
-  }, [store.client, slot, apps.isSuccess, apps.refetch, items.refetch]);
+  }, [store, slot, scopes, appIds, staleTime, gcTime, apps.isSuccess, apps.refetch, items.refetch]);
   return { ...items, isFetching: apps.isFetching || items.isFetching, refetch };
 }
 
