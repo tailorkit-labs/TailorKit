@@ -1,0 +1,30 @@
+packages/react/src/hooks/use-apps.ts
+  s_25fdd02846e4b2::t_a5f0572bb20c8c 5,8,29,39,45,52-53
+docs/installation.mdx
+  s_25fdd02846e4b2::t_21daff8c18edda 617-619
+  s_25fdd02846e4b2::t_09bd4d347f7356 616
+.changeset/unified-use-slot.md
+  s_25fdd02846e4b2::t_09bd4d347f7356 6
+packages/react/src/__tests__/use-slot.test.tsx
+  s_25fdd02846e4b2::t_09bd4d347f7356 470
+.changeset/hide-hook-cache-options.md
+  s_25fdd02846e4b2::t_a5f0572bb20c8c 1-5
+packages/react/src/hooks/use-slot.ts
+  s_25fdd02846e4b2::t_09bd4d347f7356 2,11-14,26,29,57,92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bab3d24aee01d87815949357e08d80ac22c5faf4",
+  "prompts": {},
+  "sessions": {
+    "s_25fdd02846e4b2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a115f5-4537-7e02-a4fa-b79245294373",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
