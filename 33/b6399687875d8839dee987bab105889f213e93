@@ -1,0 +1,123 @@
+packages/client-core/src/client/fetch-client.ts
+  s_a48ab343401d93::t_d666fcafc5f70d 28-31
+  s_a48ab343401d93::t_821260e5d66a13 27
+  s_a48ab343401d93::t_e9fa77beb22ebd 1-26,32-39
+packages/client-core/src/store/local/index.ts
+  s_a48ab343401d93::t_ef39513dccca42 1-4
+packages/client-core/src/store/fetch/cache.ts
+  s_a48ab343401d93::t_11696c2b90fa25 121
+  s_a48ab343401d93::t_d666fcafc5f70d 87-94,163-165,167-168,180-186,227-231
+  s_a48ab343401d93::t_b95138d2b85c22 1-17,19-86,95-120,122,127-162,166,169-174,176-179,187-201,209,217-226,232-252
+  s_a48ab343401d93::t_0fc55d93c27b4f 18,175,202-208,210-216
+  s_a48ab343401d93::t_7170cca5a1bab3 123-126
+packages/client-core/src/store/fetch/apps.ts
+  s_a48ab343401d93::t_0fc55d93c27b4f 80
+  s_a48ab343401d93::t_d666fcafc5f70d 19-23,43-49,57-59,83-84
+  s_a48ab343401d93::t_11696c2b90fa25 73-75,91
+  s_a48ab343401d93::t_e31f621e8e8b7d 1-18,24-42,50-56,60-72,76-79,81-82,85-90,92-94
+packages/react/src/scope-query.ts
+  s_a48ab343401d93::t_02c67f625b9c4b 1
+packages/client-core/src/index.ts
+  s_a48ab343401d93::t_3dd481c68a8ef4 1,3
+packages/react/src/components/slot.tsx
+  s_a48ab343401d93::t_65812c1cc655e3 170-171
+packages/react/src/tailorkit.tsx
+  s_a48ab343401d93::t_d666fcafc5f70d 190-194
+  s_a48ab343401d93::t_65812c1cc655e3 1-2,60,141-142,165-166
+packages/client-core/src/client/endpoints.ts
+  s_a48ab343401d93::t_e9fa77beb22ebd 1-19,22-40,48-49,57-84
+  s_a48ab343401d93::t_d666fcafc5f70d 20-21,41-47,50-56
+packages/react/src/__tests__/use-views.test.tsx
+  s_a48ab343401d93::t_0fc55d93c27b4f 128-131
+  s_a48ab343401d93::t_a326adc1bf3999 41
+  s_a48ab343401d93::t_eed454f5dd3499 45,49-50,56,62,68,76-78,84-86
+  s_a48ab343401d93::t_48b2f526854c9b 46-48,51-55,57-61,63-67,69-75,79-83
+packages/react/src/__tests__/slot.test.tsx
+  s_a48ab343401d93::t_0fc55d93c27b4f 49
+.changeset/shared-client-stores.md
+  s_a48ab343401d93::t_11696c2b90fa25 3,6
+packages/react/src/components/root.tsx
+  s_a48ab343401d93::t_d666fcafc5f70d 18-20,22-25
+  s_a48ab343401d93::t_65812c1cc655e3 26
+packages/client-core/src/client/index.ts
+  s_a48ab343401d93::t_e9fa77beb22ebd 1-3,9-12
+  s_a48ab343401d93::t_d666fcafc5f70d 4-8
+packages/react/src/hooks/use-views.ts
+  s_a48ab343401d93::t_65812c1cc655e3 21
+packages/client-core/src/store/store.test.ts
+  s_a48ab343401d93::t_0fc55d93c27b4f 46-49
+  s_a48ab343401d93::t_a326adc1bf3999 2-3,38,114
+packages/client-core/src/client/url.ts
+  s_a48ab343401d93::t_b95138d2b85c22 1-5
+packages/client-core/package.json
+  s_a48ab343401d93::t_02c67f625b9c4b 42
+  s_a48ab343401d93::t_0fc55d93c27b4f 19-30,37
+packages/react/src/hooks/use-apps.ts
+  s_a48ab343401d93::t_d666fcafc5f70d 5-9,46-49,55-56,58
+  s_a48ab343401d93::t_0fc55d93c27b4f 12-15,57,66
+  s_a48ab343401d93::t_65812c1cc655e3 4,23,36,53,65,77
+packages/react/src/hooks/use-slot-instances.ts
+  s_a48ab343401d93::t_d666fcafc5f70d 20-25,33-35,39-40
+  s_a48ab343401d93::t_65812c1cc655e3 1-4,11,32,37,41,43-47
+packages/client-core/src/client/scope-query.ts
+  s_a48ab343401d93::t_02c67f625b9c4b 1-23
+packages/client-core/src/store/store.ts
+  s_a48ab343401d93::t_11696c2b90fa25 34
+  s_a48ab343401d93::t_d666fcafc5f70d 32
+  s_a48ab343401d93::t_ef39513dccca42 1-7,11-18,20-30,36-37
+packages/client-core/src/client/apps.ts
+  s_a48ab343401d93::t_e9fa77beb22ebd 1-2,12-14,26
+  s_a48ab343401d93::t_d666fcafc5f70d 3-11,15-25
+packages/client-core/src/client/slot-view.ts
+  s_a48ab343401d93::t_02c67f625b9c4b 1-38
+packages/react/src/slot-view.ts
+  s_a48ab343401d93::t_02c67f625b9c4b 1
+packages/client-core/src/store/fetch/index.ts
+  s_a48ab343401d93::t_d666fcafc5f70d 2-8
+  s_a48ab343401d93::t_ef39513dccca42 1,9-16
+packages/client-core/src/client/fetch-client.test.ts
+  s_a48ab343401d93::t_eed454f5dd3499 1-5,10-39,45,48-78,96-98,107-116,119
+  s_a48ab343401d93::t_48b2f526854c9b 6-9,40-44,46-47,79-95,99-106,117-118
+packages/client-core/src/store/fetch/meta.ts
+  s_a48ab343401d93::t_e31f621e8e8b7d 1-20,28-36
+  s_a48ab343401d93::t_d666fcafc5f70d 21-27
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_a48ab343401d93::t_0fc55d93c27b4f 280,360,752,792
+packages/client-core/src/store/fetch/cache.test.ts
+  s_a48ab343401d93::t_fa3fc27868ceb3 8-10,29-33,96-103,136-139,152-157,159-161,174-176,188-190,192-194
+  s_a48ab343401d93::t_4219a01f605031 1-7,11-28,34-95,104-135,140-151,158,162-173,177-187,191,195-196
+packages/client-core/src/store/index.ts
+  s_a48ab343401d93::t_3dd481c68a8ef4 3-4
+  s_a48ab343401d93::t_ef39513dccca42 1-2
+packages/client-core/src/store/fetch/preview-manager.ts
+  s_a48ab343401d93::t_02c67f625b9c4b 1-2,4-5,7-81,83-172,176,178-278
+  s_a48ab343401d93::t_e31f621e8e8b7d 3,6,82,173-175,177
+packages/client-core/src/store/fetch/slot-instances.ts
+  s_a48ab343401d93::t_d666fcafc5f70d 27-30,36-41,43-53,55-57,68-69,72-76,88-90,92-93,98-100
+  s_a48ab343401d93::t_821260e5d66a13 1-26,31-35,42,54,58-67,70-71,77-87,91,94-97,101-103
+packages/client-core/README.md
+  s_a48ab343401d93::t_48c3cf612d3fec 14
+  s_a48ab343401d93::t_7170cca5a1bab3 3,5,7-11,15-25,27-32,35-36,39,42-48
+packages/react/src/__tests__/use-slot-instances.test.tsx
+  s_a48ab343401d93::t_eed454f5dd3499 405-406,417-420,428-433,451-456,465-475
+  s_a48ab343401d93::t_48b2f526854c9b 407-416,421-427,434-450,457-464
+  s_a48ab343401d93::t_a326adc1bf3999 69
+pnpm-lock.yaml
+  s_a48ab343401d93::t_5e8f5fe74b60f7 1374-1376
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "33b6399687875d8839dee987bab105889f213e93",
+  "prompts": {},
+  "sessions": {
+    "s_a48ab343401d93": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11530-4288-71d1-b6e4-ad4f7934580a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
