@@ -15,12 +15,12 @@ import type {
 import type { primitives } from "./primitives";
 
 import { useTailorRootContext } from "./components/context";
-import { useRegisterView as useRootRegisterView } from "./hooks/use-register-view";
-import type { UseRegisterView, ViewName, ViewState } from "./hooks/use-register-view";
+import { useViewContext as useRootViewContext } from "./hooks/use-view-context";
+import type { UseViewContext, ViewName, ViewState } from "./hooks/use-view-context";
 import { useApps as useRootApps } from "./hooks/use-apps";
 import type { UseAppsOptions, UseAppsResult } from "./hooks/use-apps";
-import { useSlot as useRootSlot } from "./hooks/use-slot";
-import type { UseSlotOptions, UseSlotResult } from "./hooks/use-slot";
+import { useViews as useRootViews } from "./hooks/use-views";
+import type { UseViewsOptions, UseViewsResult } from "./hooks/use-views";
 import { Slot as ReactSlot } from "./components/slot";
 import type { ControlledSlotProps, SlotComponent, SlotProps } from "./components/slot";
 
@@ -69,10 +69,10 @@ export interface TailorKitInstance<
   readonly $views?: TViews;
   readonly Slot: SlotComponent<TViews, TSlots>;
   readonly useApps: (options?: UseAppsOptions<TScopeNames>) => UseAppsResult;
-  readonly useSlot: <TSlot extends keyof TSlots & string>(
-    options: UseSlotOptions<TScopeNames, TSlot>,
-  ) => UseSlotResult<SlotMultiple<TSlots[TSlot]>>;
-  readonly useRegisterView: UseRegisterView<TViews>;
+  readonly useViews: <TSlot extends keyof TSlots & string>(
+    options: UseViewsOptions<TScopeNames, TSlot>,
+  ) => UseViewsResult<SlotMultiple<TSlots[TSlot]>>;
+  readonly useViewContext: UseViewContext<TViews>;
 }
 
 type SlotMultiple<TSlot> = TSlot extends { multiple: infer TMultiple extends boolean }
@@ -214,22 +214,22 @@ function createReactTailorKitClient<
       useTailorRootContext("useApps", client);
       return useRootApps(options);
     },
-    useSlot: function useClientSlot<TSlot extends keyof TSlots & string>(
-      options: UseSlotOptions<TScopeNames, TSlot>,
+    useViews: function useClientViews<TSlot extends keyof TSlots & string>(
+      options: UseViewsOptions<TScopeNames, TSlot>,
     ) {
-      useTailorRootContext("useSlot", client);
-      return useRootSlot(options) as UseSlotResult<SlotMultiple<TSlots[TSlot]>>;
+      useTailorRootContext("useViews", client);
+      return useRootViews(options) as UseViewsResult<SlotMultiple<TSlots[TSlot]>>;
     },
-    useRegisterView: function useClientRegisterView<TView extends ViewName<TViews>>(
+    useViewContext: function useClientViewContext<TView extends ViewName<TViews>>(
       view: TView,
       options: ViewState<TViews, NoInfer<TView>>,
     ) {
-      useTailorRootContext("useRegisterView", client);
-      useRootRegisterView<TViews, TView>(view, options);
+      useTailorRootContext("useViewContext", client);
+      useRootViewContext<TViews, TView>(view, options);
     },
   };
 
   return client;
 }
 
-export type { ViewOptions } from "./hooks/use-register-view";
+export type { ViewOptions } from "./hooks/use-view-context";

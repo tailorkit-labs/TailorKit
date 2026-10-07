@@ -4,6 +4,6 @@ export { components, createTailorKitClient } from "./tailorkit";
 export type { TailorKitApp, TailorKitClientConfig, TailorKitInstance } from "./tailorkit";
 export { Root } from "./components/root";
 export type { UseAppsOptions, UseAppsResult } from "./hooks/use-apps";
-export type { SlotItem, UseSlotOptions, UseSlotResult } from "./hooks/use-slot";
-export type { UseRegisterView, ViewOptions, ViewState } from "./hooks/use-register-view";
+export type { SlotItem, UseViewsOptions, UseViewsResult } from "./hooks/use-views";
+export type { UseViewContext, ViewOptions, ViewState } from "./hooks/use-view-context";
 export { primitives } from "./primitives";

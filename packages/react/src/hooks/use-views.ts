@@ -8,14 +8,14 @@ import { useStableContext } from "./use-stable-context";
 
 export type { SlotItem } from "@tailorkit/client-core";
 
-export interface UseSlotOptions<
+export interface UseViewsOptions<
   TScopeNames extends string = string,
   TSlot extends string = string,
 > extends UseAppsOptions<TScopeNames> {
   slot: TSlot;
 }
 
-export interface UseSlotResult<TMultiple extends boolean = boolean> extends Omit<
+export interface UseViewsResult<TMultiple extends boolean = boolean> extends Omit<
   UseAppsResult,
   "data"
 > {
@@ -23,8 +23,8 @@ export interface UseSlotResult<TMultiple extends boolean = boolean> extends Omit
 }
 
 /** List apps for single-view slots or resolve instances for multiple-view slots. */
-export function useSlot({ slot, scopes, appIds }: UseSlotOptions): UseSlotResult {
-  const { store } = useTailorRootContext("useSlot");
+export function useViews({ slot, scopes, appIds }: UseViewsOptions): UseViewsResult {
+  const { store } = useTailorRootContext("useViews");
   const apps = useApps({ scopes, appIds });
   const items = useResolvedSlot(slot, apps.data, apps.status, apps.error);
   const refetch = useCallback(async () => {
@@ -59,7 +59,7 @@ export function useSlot({ slot, scopes, appIds }: UseSlotOptions): UseSlotResult
 }
 
 /** Managed Slot resolves only its explicitly supplied app. */
-export function useAppSlot(app: TailorKitApp, slot: string): UseSlotResult {
+export function useAppSlot(app: TailorKitApp, slot: string): UseViewsResult {
   return useResolvedSlot(slot, [app], "ready", null);
 }
 
@@ -68,8 +68,8 @@ function useResolvedSlot(
   apps: TailorKitApp[] | undefined,
   appsStatus: UseAppsResult["status"],
   appsError: Error | null,
-): UseSlotResult {
-  const { store } = useTailorRootContext("useSlot");
+): UseViewsResult {
+  const { store } = useTailorRootContext("useViews");
   const activeView = useSyncExternalStore(
     store.views.subscribe,
     store.views.getSnapshot,
