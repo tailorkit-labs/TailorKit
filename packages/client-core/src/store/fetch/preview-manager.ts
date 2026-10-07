@@ -1,5 +1,5 @@
-import { batch, createStore } from "@tanstack/store";
-import type { Store } from "@tanstack/store";
+import { atom, batch } from "nanostores";
+import type { WritableAtom } from "nanostores";
 import { createPreviewWebSocketClient } from "@tailorkit/client-platform/preview";
 import type { PreviewBuildManifest, PreviewEvent } from "@tailorkit/client-platform/preview";
 import type { TailorKitApp } from "../../types";
@@ -22,7 +22,7 @@ interface Entry {
   metadata: NonNullable<TailorKitApp["preview"]> | null;
   candidate: Candidate | null;
   subscribers: number;
-  state: Store<PreviewSnapshot>;
+  state: WritableAtom<PreviewSnapshot>;
   socket: WebSocket | null;
   connecting: boolean;
   reconnect: ReturnType<typeof setTimeout> | null;
@@ -96,7 +96,7 @@ export function createPreviewManager(
   const end = (entry: Entry) => {
     close(entry);
     entry.metadata = null;
-    entry.state.setState(() => empty);
+    entry.state.set(empty);
     onEnded();
   };
   const handleEvent = async (entry: Entry, event: PreviewEvent) => {
@@ -104,7 +104,7 @@ export function createPreviewManager(
       end(entry);
       return;
     }
-    if (event.revision <= entry.state.state.revision) {
+    if (event.revision <= entry.state.get().revision) {
       return;
     }
     if (event.type === "begin") {
@@ -145,10 +145,10 @@ export function createPreviewManager(
       if (
         source !== null &&
         entry.candidate === candidate &&
-        candidate.revision > entry.state.state.revision
+        candidate.revision > entry.state.get().revision
       ) {
         batch(() => {
-          entry.state.setState(() => ({ revision: candidate.revision, source }));
+          entry.state.set({ revision: candidate.revision, source });
           if (candidate.manifest.views !== undefined)
             onViews?.(entry.app.id, candidate.manifest.views);
         });
@@ -222,7 +222,7 @@ export function createPreviewManager(
   };
   return {
     getSnapshot: (sessionId: string): PreviewSnapshot =>
-      entries.get(sessionId)?.state.state ?? empty,
+      entries.get(sessionId)?.state.get() ?? empty,
     updateApp: (app: TailorKitApp): void => {
       const sessionId = app.preview?.sessionId;
       const entry = sessionId && entries.get(sessionId);
@@ -242,7 +242,7 @@ export function createPreviewManager(
           metadata: null,
           candidate: null,
           subscribers: 0,
-          state: createStore(empty),
+          state: atom(empty),
           socket: null,
           connecting: false,
           reconnect: null,
@@ -253,7 +253,7 @@ export function createPreviewManager(
       entry.app = app;
       entry.subscribers += 1;
       const current = entry;
-      const { unsubscribe } = current.state.subscribe(listener);
+      const unsubscribe = current.state.listen(listener);
       void connect(entry);
       let active = true;
       return () => {

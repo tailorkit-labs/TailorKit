@@ -2,6 +2,8 @@
 import { createHash } from "node:crypto";
 import { afterEach, expect, it, vi } from "vite-plus/test";
 import { createPreviewManager } from "./preview-manager";
+import { createTailorKitStore } from "../store";
+import type { TailorKitApp } from "../../types";
 import type { PreviewEvent } from "@tailorkit/client-platform/preview";
 
 const state = vi.hoisted(() => ({
@@ -42,6 +44,78 @@ class FakeSocket extends EventTarget {
     this.dispatchEvent(new Event("open"));
   }
 }
+
+it("publishes preview source and views together without notifying on subscription", async () => {
+  state.hold = true;
+  vi.stubGlobal("WebSocket", FakeSocket);
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        sessionId: "session",
+        websocketUrl: "wss://platform.test/preview",
+        token: "token",
+      }),
+    })),
+  );
+  const source = "export default 1";
+  const bytes = Buffer.from(source);
+  const views = [{ slot: "page", path: "/new" }];
+  state.events = [
+    {
+      type: "begin",
+      buildId: "build",
+      revision: 1,
+      manifest: {
+        views,
+        files: [
+          {
+            path: "client.js",
+            contentType: "text/javascript",
+            size: bytes.length,
+            chunks: 1,
+            sha256: createHash("sha256").update(bytes).digest("hex"),
+          },
+        ],
+      },
+    },
+    { type: "chunk", revision: 1, fileIndex: 0, chunkIndex: 0, base64: bytes.toString("base64") },
+    { type: "complete", revision: 1 },
+  ];
+  const app: TailorKitApp = {
+    id: "app",
+    views: [{ slot: "page", path: "/old" }],
+    preview: {
+      sessionId: "session",
+      expiresAt: "later",
+      websocketUrl: "wss://platform.test/preview",
+      token: "token",
+    },
+  };
+  const store = createTailorKitStore("https://host.test/api/tailorkit/", [app]);
+  const snapshot = () => ({
+    preview: store.previews.getSnapshot("session"),
+    views: store.getAppsSnapshot().apps[0]?.views,
+  });
+  const previewListener = vi.fn(snapshot);
+  const appsListener = vi.fn(snapshot);
+  const stopPreview = store.previews.subscribe(app, previewListener);
+  const stopApps = store.subscribeApps(appsListener);
+  expect(previewListener).not.toHaveBeenCalled();
+  expect(appsListener).not.toHaveBeenCalled();
+  await vi.waitFor(() => expect(FakeSocket.instances).toHaveLength(1));
+  FakeSocket.instances[0]?.open();
+  await vi.waitFor(() => expect(previewListener).toHaveBeenCalledOnce());
+  expect(appsListener).toHaveBeenCalledOnce();
+  const published = { preview: { revision: 1, source }, views };
+  expect(previewListener).toHaveLastReturnedWith(published);
+  expect(appsListener).toHaveLastReturnedWith(published);
+  stopPreview();
+  stopApps();
+  store.setProvidedApps([app]);
+  expect(appsListener).toHaveBeenCalledOnce();
+});
 
 it("refreshes the viewer token and reconnects when its stream ends", async () => {
   const sessionId = "11111111-1111-4111-8111-111111111111";

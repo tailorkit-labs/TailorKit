@@ -25,7 +25,7 @@ describe("view registry", () => {
         { path: "/home/detail", context: { child: true }, status: "loading" },
       ],
     });
-    expect(registry.state.state).toBe(registry.getSnapshot());
+    expect(registry.state.get()).toBe(registry.getSnapshot());
     registry.unregister(child);
     await Promise.resolve();
     expect(registry.getSnapshot()?.view).toBe("/home");

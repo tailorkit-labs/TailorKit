@@ -1,4 +1,4 @@
-import { createStore } from "@tanstack/store";
+import { atom } from "nanostores";
 import { getViewDepth, isViewAncestor } from "@tailorkit/core/views";
 import type { ActiveView, ViewStatus } from "@tailorkit/core/views";
 
@@ -12,7 +12,7 @@ export interface ViewEntry {
 
 export function createViewRegistry() {
   const entries = new Map<symbol, ViewEntry>();
-  const state = createStore<ActiveView | null>(null);
+  const state = atom<ActiveView | null>(null);
   let nextOrder = 0;
   let scheduled = false;
 
@@ -42,22 +42,22 @@ export function createViewRegistry() {
               )}. TailorKit selected "${selected.view}" by mount order. Only one route at a hierarchy depth should register a view.`,
           );
         }
-        state.setState(() => ({
+        state.set({
           view: selected.view,
           layers: ordered
             .filter((entry) => isViewAncestor(entry.view, selected.view))
             .toReversed()
             .map((entry) => ({ path: entry.view, context: entry.context, status: entry.status })),
-        }));
+        });
       } else {
-        state.setState(() => null);
+        state.set(null);
       }
     });
   };
   return {
     state,
-    getSnapshot: () => state.state,
-    subscribe: (listener: () => void): (() => void) => state.subscribe(listener).unsubscribe,
+    getSnapshot: () => state.get(),
+    subscribe: (listener: () => void): (() => void) => state.listen(listener),
     register(entry: Omit<ViewEntry, "order">) {
       entries.set(entry.id, { ...entry, order: entries.get(entry.id)?.order ?? nextOrder++ });
       publish();

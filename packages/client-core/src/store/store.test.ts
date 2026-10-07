@@ -152,7 +152,7 @@ describe("client stores", () => {
     expect(store.getAppsSnapshot().apps[0]?.views).toEqual(views);
   });
 
-  it("supports TanStack selectors without publishing unrelated metadata changes", async () => {
+  it("keeps apps subscribers isolated from unrelated metadata changes", async () => {
     vi.stubGlobal(
       "fetch",
       vi

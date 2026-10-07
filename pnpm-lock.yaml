@@ -1250,9 +1250,9 @@ importers:
       '@tailorkit/sandbox':
         specifier: workspace:*
         version: link:../sandbox
-      '@tanstack/store':
-        specifier: 0.11.2
-        version: 0.11.2
+      nanostores:
+        specifier: 1.5.4
+        version: 1.5.4
     devDependencies:
       '@tailorkit/config':
         specifier: workspace:*
@@ -10137,6 +10137,10 @@ packages:
 
   nanostores@1.5.3:
     resolution: {integrity: sha512-rQLB6eV4f2AW/n3L0JmwCROpaisYy9EDEADvEFSd1C/qG8hB6O5TPlh9A791JRbJr4CnMQBzptDcvD9OR1+6WA==}
+    engines: {node: ^20.0.0 || >=22.0.0}
+
+  nanostores@1.5.4:
+    resolution: {integrity: sha512-4UXY7OAJEK0Y6V3SudBU7cXjAzTDc189R78dDOh0Xbm19gpKYto6WizSg58LJf12lTsRxKSLGyE117OiLpM4DQ==}
     engines: {node: ^20.0.0 || >=22.0.0}
 
   napi-build-utils@2.0.0:
@@ -22104,6 +22108,8 @@ snapshots:
   nanoid@6.0.1: {}
 
   nanostores@1.5.3: {}
+
+  nanostores@1.5.4: {}
 
   napi-build-utils@2.0.0:
     optional: true
