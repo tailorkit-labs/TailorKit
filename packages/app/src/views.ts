@@ -119,8 +119,16 @@ type RequireMatchingViewKeys<TViews> =
 export type SlotView<TSlot extends SlotName> = TailorKitSlots[TSlot] extends { views: infer TViews }
   ? Extract<TViews, AppViewPath>
   : never;
+type SlotInstanceDefinition<TSlot extends SlotName> = TailorKitSlots[TSlot] extends {
+  multiple: true;
+}
+  ? { instances: { resolver: string } }
+  : { instances?: never };
+
 type SlotDefinitions = {
-  [V in SlotName]?: Partial<{ [P in SlotView<V>]: ViewDefinition<P, unknown, V> | false }>;
+  [V in SlotName]?: Partial<{
+    [P in SlotView<V>]: (ViewDefinition<P, unknown, V> & SlotInstanceDefinition<V>) | false;
+  }>;
 };
 type RequireSlotViews<V, S> = V extends SlotName
   ? Exclude<keyof S, SlotView<V>> extends never
@@ -167,7 +175,7 @@ export const defineView = <
   TSchema extends z.ZodType,
 >(
   options: ViewOptions<TPath, TSlot, TSchema>,
-): ViewDefinition<TPath, z.output<TSchema>, TSlot> => {
+): ViewDefinition<TPath, z.output<TSchema>, TSlot> & SlotInstanceDefinition<TSlot> => {
   const path = options.view;
   const Context = createContext<{ context: ViewContext<TPath>; instance?: ViewInstance } | null>(
     null,
@@ -216,7 +224,7 @@ export const defineView = <
         );
       return value.instance as ViewInstance<z.output<TSchema>>;
     },
-  };
+  } as ViewDefinition<TPath, z.output<TSchema>, TSlot> & SlotInstanceDefinition<TSlot>;
 };
 
 export const defineClient = <const TSlots extends SlotDefinitions>(

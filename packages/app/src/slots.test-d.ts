@@ -80,3 +80,21 @@ defineView({ view: "/", component: () => null });
 defineView({ slot: "panel", component: () => null });
 // @ts-expect-error The positional signature is no longer supported.
 defineView("/", { slot: "panel", component: () => null });
+
+// @ts-expect-error Rewriting a single-instance view's slot cannot bypass the resolver requirement.
+defineClient({ slots: { page: { "/": { ...panelRoot, slot: "page" } } } });
+
+const page = defineView({
+  slot: "page",
+  view: "/",
+  component: () => null,
+  instances: { dataSchema: z.object({}), resolve: () => [] },
+});
+defineClient({ slots: { page: { "/": page, "/users": false } } });
+// @ts-expect-error Rewriting a multi-instance view's slot cannot add a resolver to a single-instance slot.
+defineClient({ slots: { panel: { "/": { ...page, slot: "panel" } } } });
+// @ts-expect-error An omitted multiple flag rejects resolvers during registration too.
+defineClient({ slots: { navbar: { "/": { ...page, slot: "navbar" } } } });
+const { instances: _resolver, ...pageWithoutResolver } = page;
+// @ts-expect-error Multi-instance registrations cannot omit their resolver.
+defineClient({ slots: { page: { "/": pageWithoutResolver } } });
