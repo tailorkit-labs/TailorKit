@@ -1,5 +1,17 @@
 # @tailorkit/react
 
+## 0.1.0-beta.21
+
+### Patch Changes
+
+- 1c52fe8: Add minimal package READMEs with readable names and short descriptions.
+- Updated dependencies [1c52fe8]
+  - @tailorkit/app@0.1.0-beta.21
+  - @tailorkit/client-core@0.1.0-beta.21
+  - @tailorkit/client-platform@0.1.0-beta.21
+  - @tailorkit/core@0.1.0-beta.21
+  - @tailorkit/sandbox@0.1.0-beta.21
+
 ## 0.1.0-beta.20
 
 ### Minor Changes
