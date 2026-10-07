@@ -327,12 +327,31 @@ describe("platform preview lifecycle and grants", () => {
       { context },
     );
     expect(wrongScope.body.items).toEqual([]);
+    const kv = state.kv as ReturnType<typeof fakeKV>;
+    await kv.set(
+      `preview:current:${started.body.sessionId}`,
+      JSON.stringify({
+        buildId: "build",
+        revision: 1,
+        manifest: {
+          files: [],
+          views: [
+            { slot: "page", path: "/", instances: true },
+            { slot: "page", path: "/disabled", disabled: true },
+          ],
+        },
+      }),
+    );
     const viewer = await call(
       previewRouter.accepted,
       { body: { grantIds: [accepted.body.grantId], scopes: [viewerScope] } },
       { context },
     );
     expect(viewer.body.items).toHaveLength(1);
+    expect(viewer.body.items[0]?.app.views).toEqual([
+      { slot: "page", path: "/", instances: true },
+      { slot: "page", path: "/disabled", disabled: true },
+    ]);
     expect(viewer.body.items[0]?.preview.token).toBeTruthy();
     await call(
       previewRouter.stop,

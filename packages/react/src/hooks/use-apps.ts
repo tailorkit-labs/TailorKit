@@ -1,11 +1,12 @@
 import { useTailorRootContext } from "../components/context";
-import { useCallback, useEffect, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import type { TailorKitApp } from "../tailorkit";
 import type { TailorKitAppsSnapshot, TailorKitStore } from "../store";
 import { normalizeScopeSelection } from "../scope-query";
 
 export interface UseAppsOptions<TScopeNames extends string = string> {
   scopes?: readonly TScopeNames[];
+  appIds?: readonly string[];
 }
 
 export interface UseAppsResult {
@@ -23,30 +24,44 @@ export function useApps(options: UseAppsOptions = {}): UseAppsResult {
   return useAppsStore(useTailorRootContext("useApps").store, options);
 }
 export function useAppsStore(store: TailorKitStore, options: UseAppsOptions = {}): UseAppsResult {
-  const selection = normalizeScopeSelection(options.scopes);
-  const subscribe = useCallback(
-    (listener: () => void) => store.subscribeApps(selection.scopes, listener),
-    [store, selection.key],
+  const snapshot = useAppsSnapshot(store);
+  const scopes = normalizeScopeSelection(options.scopes);
+  const appIds = normalizeScopeSelection(options.appIds);
+  const data = useMemo(
+    () =>
+      snapshot.status === "ready"
+        ? snapshot.apps.filter((app) => matchesApp(app, scopes.scopes, appIds.scopes))
+        : undefined,
+    [snapshot, scopes.key, appIds.key],
   );
-  const snapshot = useSyncExternalStore(
-    subscribe,
-    () => store.getAppsSnapshot(selection.scopes),
-    () => store.getAppsSnapshot(selection.scopes),
-  );
-
-  useEffect(() => {
-    void store.fetchApps({ scopes: selection.scopes });
-  }, [store, selection.key]);
-
-  const refetch = useCallback(
-    () => store.fetchApps({ force: true, scopes: selection.scopes }),
-    [store, selection.key],
-  );
-
-  return toUseAppsResult(snapshot, refetch);
+  const refetch = useCallback(() => store.fetchApps({ force: true }), [store]);
+  return { ...toUseAppsResult(snapshot, refetch), data };
 }
 
-function toUseAppsResult(
+export function matchesApp(
+  app: TailorKitApp,
+  scopes?: readonly string[],
+  appIds?: readonly string[],
+): boolean {
+  return (
+    (scopes === undefined || (app.scope !== undefined && scopes.includes(app.scope.name))) &&
+    (appIds === undefined || appIds.includes(app.id))
+  );
+}
+
+export function useAppsSnapshot(store: TailorKitStore): TailorKitAppsSnapshot {
+  const snapshot = useSyncExternalStore(
+    store.subscribeApps,
+    store.getAppsSnapshot,
+    store.getAppsSnapshot,
+  );
+  useEffect(() => {
+    void store.fetchApps();
+  }, [store]);
+  return snapshot;
+}
+
+export function toUseAppsResult(
   snapshot: TailorKitAppsSnapshot,
   refetch: () => Promise<void>,
 ): UseAppsResult {

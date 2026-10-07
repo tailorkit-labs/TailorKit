@@ -6,7 +6,7 @@ export const invocationSchema = z.strictObject({
   name: z
     .string()
     .max(512)
-    .regex(/^[a-zA-Z][a-zA-Z0-9_]{0,63}(?:\.[a-zA-Z][a-zA-Z0-9_]{0,63})*$/u),
+    .regex(/^(?:[a-zA-Z][a-zA-Z0-9_]{0,63}|_tailorkit)(?:\.[a-zA-Z][a-zA-Z0-9_]{0,63})*$/u),
   args: z.unknown().optional(),
 });
 export type Invocation = z.infer<typeof invocationSchema>;

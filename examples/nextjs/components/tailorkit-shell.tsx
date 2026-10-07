@@ -8,10 +8,11 @@ import { Root } from "tailorkit/react";
 import type { DemoUser } from "@examples/shared";
 import { signOutDemoUser } from "@examples/shared";
 import { Button } from "@tailorkit/ui/button";
+import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "@tailorkit/ui/select";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@tailorkit/ui/sidebar";
 import type { TailorKitApp } from "tailorkit/react";
 import { AppSidebar } from "@/components/app-sidebar";
-import tailor, { AppView, useApps, useView } from "@/lib/tailorkit-client";
+import tailor, { Slot, useApps, useRegisterView, useSlotInstances } from "@/lib/tailorkit-client";
 
 type Apps = NonNullable<ReturnType<typeof useApps>["data"]>;
 
@@ -56,7 +57,7 @@ function TailorKitShellContent({
   signOut: () => Promise<void>;
   user: DemoUser;
 }) {
-  useView("/", { context: { user } });
+  useRegisterView("/", { context: { user } });
 
   return (
     <SidebarProvider className="isolate">
@@ -68,7 +69,7 @@ function TailorKitShellContent({
         </header>
         <main className="mx-auto w-full max-w-6xl p-6">{children}</main>
       </SidebarInset>
-      <TailorKitAppView app={currentApp} onClose={() => onSelectApp(null)} />
+      <TailorKitSlot app={currentApp} onClose={() => onSelectApp(null)} />
       <TailorKitAppList
         apps={apps}
         currentApp={currentApp}
@@ -126,7 +127,7 @@ function TailorKitAppList({
   );
 }
 
-function TailorKitAppView({ app, onClose }: { app: TailorKitApp | null; onClose: () => void }) {
+function TailorKitSlot({ app, onClose }: { app: TailorKitApp | null; onClose: () => void }) {
   if (!app) {
     return null;
   }
@@ -149,13 +150,47 @@ function TailorKitAppView({ app, onClose }: { app: TailorKitApp | null; onClose:
         </Button>
       </header>
       <main className="min-h-0 flex-1 overflow-auto p-4">
-        <AppView
-          slot="panel"
-          app={app}
-          fallback={<p className="text-muted-foreground text-sm">Loading app…</p>}
-        />
+        <TailorKitSlotContent key={app.id} app={app} />
       </main>
     </aside>
+  );
+}
+
+function TailorKitSlotContent({ app }: { app: TailorKitApp }) {
+  const { data: instances, isPending, error, refetch } = useSlotInstances({ app, slot: "panel" });
+  const [instanceKey, setInstanceKey] = useState<string | null>(null);
+  const selected = instances?.find((instance) => instance.key === instanceKey) ?? instances?.[0];
+  const items = (instances ?? []).map((instance) => ({
+    value: instance.key,
+    label: typeof instance.metadata.title === "string" ? instance.metadata.title : instance.key,
+  }));
+
+  if (isPending) return <p>Loading views…</p>;
+  if (error) return <p role="alert">{error.message}</p>;
+
+  return (
+    <>
+      {selected && (
+        <div className="mb-4 flex items-center gap-2">
+          <Select items={items} value={selected.key} onValueChange={setInstanceKey}>
+            <SelectTrigger aria-label="View instance">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectPopup>
+              {items.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectPopup>
+          </Select>
+          <Button type="button" variant="outline" onClick={() => void refetch()}>
+            Refresh
+          </Button>
+        </div>
+      )}
+      <Slot name="panel" app={app} instanceKey={selected?.key} />
+    </>
   );
 }
 

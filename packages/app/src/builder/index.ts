@@ -1,12 +1,15 @@
 import path from "node:path";
 import { createRequire } from "node:module";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, realpath, writeFile } from "node:fs/promises";
 import { validateLogoAsset } from "@tailorkit/asset-delivery/logo-validation";
 import type { LogoContentType } from "@tailorkit/asset-delivery/logo-validation";
 import { build as viteBuild } from "vite";
 import { loadTailorKitConfig } from "../config/loader";
 import { assertSupportedPreactVersion } from "../preact-version";
-import { buildServer } from "./server";
+import { readClientManifest } from "./client-views";
+import { buildServer, validateServerBuildOutput } from "./server";
+import { instanceExtractionPlugin } from "./instances";
+import type { InstanceModule } from "./instances";
 
 import { createTailorKitUploadManifest } from "./upload-manifest";
 
@@ -33,6 +36,7 @@ export interface BuildAppOptions {
 // eslint-disable-next-line complexity
 export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> => {
   const loaded = await loadTailorKitConfig(options.configPath, options.cwd);
+  loaded.root = await realpath(loaded.root);
   const entry = path.resolve(loaded.root, loaded.config.client?.entry ?? "src/client.ts");
   const serverEntry = path.resolve(loaded.root, loaded.config.server?.entry ?? "src/server.ts");
   const outDir = options.outDir ?? loaded.config.build?.outDir ?? ".tailorkit";
@@ -41,9 +45,37 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
   assertSupportedPreactVersion(preactVersion);
 
   const resolvedOutDir = path.resolve(loaded.root, outDir);
+  validateServerBuildOutput(loaded, resolvedOutDir);
   const clientOutDir = path.join(resolvedOutDir, "client");
-  const serverWatcher = await buildServer(loaded, options.watch, resolvedOutDir);
+  const instanceModules = new Map<string, InstanceModule>();
+  let serverWatcher: Awaited<ReturnType<typeof buildServer>>;
   const writeBuildExtras = async (): Promise<void> => {
+    const { views, instanceResolvers } = await readClientManifest(
+      path.join(clientOutDir, "client.js"),
+    );
+    const resolverNames = new Set(instanceResolvers.map((registration) => registration.resolver));
+    const activeModules = [...instanceModules.values()]
+      .map((module) => ({
+        ...module,
+        names: module.names.filter((name) => resolverNames.has(name)),
+      }))
+      .filter((module) => module.names.length)
+      .sort((a, b) => a.filename.localeCompare(b.filename));
+    if (
+      activeModules.reduce((count, module) => count + module.names.length, 0) !== resolverNames.size
+    ) {
+      throw new Error(
+        "Client references an instance resolver that was not extracted by the app build.",
+      );
+    }
+    if (serverWatcher && "close" in serverWatcher) await serverWatcher.close();
+    serverWatcher = await buildServer(
+      loaded,
+      options.watch,
+      resolvedOutDir,
+      activeModules,
+      instanceResolvers,
+    );
     const logoManifest: { dark?: string; light?: string } = {};
     for (const variant of ["light", "dark"] as const) {
       const configuredPath = loaded.config.logos?.[variant];
@@ -63,9 +95,10 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
       await writeFile(path.join(clientOutDir, filename), content);
       logoManifest[variant] = `client/${filename}`;
     }
+    await writeFile(path.join(clientOutDir, "views.json"), `${JSON.stringify(views)}\n`);
     await writeFile(
       path.join(resolvedOutDir, "tailorkit-upload.json"),
-      `${JSON.stringify(createTailorKitUploadManifest(logoManifest, Boolean(loaded.config.server)), null, 2)}\n`,
+      `${JSON.stringify(createTailorKitUploadManifest(logoManifest, Boolean(loaded.config.server), views), null, 2)}\n`,
       "utf-8",
     );
   };
@@ -78,6 +111,15 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
   if (!options.watch) {
     void firstBuild.catch(() => {});
   }
+  const completeBuild = async () => {
+    try {
+      await writeBuildExtras();
+      firstBuildDone?.();
+    } catch (error) {
+      firstBuildFailed?.(error instanceof Error ? error : new Error(String(error)));
+      throw error;
+    }
+  };
   const result = await viteBuild({
     build: {
       emptyOutDir: true,
@@ -105,6 +147,7 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
     mode: options.mode,
     oxc: { jsx: { importSource: "preact" } },
     plugins: [
+      instanceExtractionPlugin(loaded.root, Boolean(loaded.config.server), instanceModules),
       {
         name: "tailorkit-browser-server-boundary",
         enforce: "pre",
@@ -133,13 +176,7 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
       {
         name: "tailorkit-preview-build-ready",
         async writeBundle() {
-          try {
-            await writeBuildExtras();
-            firstBuildDone?.();
-          } catch (error) {
-            firstBuildFailed?.(error instanceof Error ? error : new Error(String(error)));
-            throw error;
-          }
+          await completeBuild();
         },
       },
       {
@@ -165,9 +202,7 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
     ],
     root: loaded.root,
   }).catch(async (error: unknown) => {
-    if (serverWatcher && typeof serverWatcher === "object" && "close" in serverWatcher) {
-      await (serverWatcher as { close(): Promise<void> }).close();
-    }
+    if (serverWatcher && "close" in serverWatcher) await serverWatcher.close();
     throw error;
   });
   if (options.watch) {
@@ -188,34 +223,24 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
       if (result && typeof result === "object" && "close" in result) {
         await (result as { close(): Promise<void> }).close();
       }
-      if (serverWatcher && typeof serverWatcher === "object" && "close" in serverWatcher) {
-        await (serverWatcher as { close(): Promise<void> }).close();
-      }
+      if (serverWatcher && "close" in serverWatcher) await serverWatcher.close();
       throw error;
+    }
+    if (result && "close" in result && serverWatcher && "close" in serverWatcher) {
+      const clientWatcher = result as {
+        close(): Promise<void>;
+        on(name: string, listener: (...args: unknown[]) => void): void;
+      };
+      return {
+        on: clientWatcher.on.bind(clientWatcher),
+        async close() {
+          await clientWatcher.close();
+          if (serverWatcher && "close" in serverWatcher) await serverWatcher.close();
+        },
+      };
     }
   }
 
-  if (
-    options.watch &&
-    result &&
-    typeof result === "object" &&
-    "close" in result &&
-    serverWatcher &&
-    typeof serverWatcher === "object" &&
-    "close" in serverWatcher
-  ) {
-    const clientWatcher = result as {
-      close(): Promise<void>;
-      on(name: string, listener: (...args: unknown[]) => void): void;
-    };
-    return {
-      on: clientWatcher.on.bind(clientWatcher),
-      async close() {
-        await clientWatcher.close();
-        await (serverWatcher as { close(): Promise<void> }).close();
-      },
-    };
-  }
   return result;
 };
 

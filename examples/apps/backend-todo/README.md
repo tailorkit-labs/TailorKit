@@ -4,6 +4,12 @@ A small app using `tailorkit/server`: SQLite tables, typed queries/mutations/act
 
 Backend functions live in `src/functions/` and use the chained `tk` API. `src/schema.ts` defines tables, `src/server.ts` registers functions, and `src/views/` uses `useQuery`, `useMutation` and `useAction`. The client root installs `ClientProvider`, which owns the connection and cleans up subscriptions automatically.
 
+`src/views/default.tsx` also defines an `instances` resolver. It runs on the server, calls the registered `list` query, and returns an “All todos” instance plus each todo's stable key, title metadata, and validated `{ todoId }` data. The view reads `view.useInstance()` to display all todos or the selected task.
+
+The Next.js and TanStack Start hosts use `useSlotInstances({ app, slot: "panel" })` to populate an instance picker, then render `<Slot app={app} name="panel" instanceKey={selected.key} />`. Refresh the picker after adding or removing tasks. Static views still render without an instance key.
+
+Hosts that already have the complete context and instance can render `<Slot.Controlled app={app} name="panel" view="/" status="ready" context={context} instance={selected} />` directly. The instance data stays opaque to the host; its type is inferred from `instances.dataSchema` inside the app.
+
 ```sh
 pnpm --filter @tailorkit/app build
 pnpm --filter tailorkit build
@@ -11,6 +17,8 @@ pnpm --filter @tailorkit/cli build
 pnpm --filter backend-todo build
 pnpm --filter @tailorkit/apps-worker test
 ```
+
+Inspect `.tailorkit/server/server.js` for the extracted resolver and its data schema. Call it through `_tailorkit.instances.resolve` with `{ slot: "panel", path: "/", context: {} }`. The resolver implementation and schema stay out of the client bundle. `.tailorkit/client/views.json` contains the slot/view manifest with `instances: true` on views that support instances, and `.tailorkit/tailorkit-upload.json` lists the deployable artifacts.
 
 The runtime integration test bundles this server, loads it from disposable local R2, initializes its schema with the bundled Drizzle-generated migrations, and connects two clients to the same installation. It verifies shared updates, deduplication, token renewal, writes surviving a workerd restart, and an action importing a todo from a mocked external API while other clients keep writing. It deploys nothing and requires no platform or Cloudflare credentials.
 

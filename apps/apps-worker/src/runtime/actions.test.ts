@@ -218,3 +218,149 @@ it("reuses compiled nested bindings while isolating concurrent calls and retaine
   for (const context of contexts)
     expect(() => context.mutations.records.write({ value: 1 })).toThrow("Action has ended");
 });
+
+it("runs generated instance resolvers with all registered queries and no write capabilities", async () => {
+  const { withInstanceResolvers } = await import("@tailorkit/app/server");
+  let retainedQuery!: () => Promise<unknown>;
+  const app = withInstanceResolvers(defineServer({ reports: functions }), [
+    {
+      slot: "page",
+      path: "/reports/annual.summary",
+      dataSchema: z.object({ id: z.string() }),
+      resolve: async (context) => {
+        expect(Object.keys(context).sort()).toEqual(["context", "identity", "queries", "signal"]);
+        const queries = context.queries as { reports: { read: (args: object) => Promise<number> } };
+        expect(Object.keys(queries.reports)).toEqual(["read"]);
+        expect(context.context).toEqual({ userId: "user" });
+        expect(context.identity).toEqual(identity);
+        retainedQuery = () => queries.reports.read({});
+        const count = await retainedQuery();
+        return [
+          { key: "overview", metadata: { title: `Reports: ${count}` }, data: { id: "report" } },
+        ];
+      },
+    },
+  ]);
+  const queryCall = vi.fn().mockResolvedValue(4);
+  const mutateCall = vi.fn();
+  const run = actionRunner(app, { query: queryCall, mutate: mutateCall });
+  expect(
+    await run(
+      {
+        name: "_tailorkit.instances.resolve",
+        args: { slot: "page", path: "/reports/annual.summary", context: { userId: "user" } },
+      },
+      identity,
+    ),
+  ).toEqual([{ key: "overview", metadata: { title: "Reports: 4" }, data: { id: "report" } }]);
+  expect(queryCall).toHaveBeenCalledExactlyOnceWith({ name: "reports.read", args: {} });
+  expect(mutateCall).not.toHaveBeenCalled();
+  expect(retainedQuery).toThrow("Action has ended");
+  await expect(
+    run(
+      {
+        name: "_tailorkit.instances.resolve",
+        args: { slot: "page", path: "/reports/annual.summary", context: null },
+      },
+      identity,
+    ),
+  ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  await expect(
+    run(
+      {
+        name: "_tailorkit.instances.resolve",
+        args: { slot: "page", path: "/reports/annual.summary", context: {} },
+      },
+      { ...identity, expiresAt: 0 },
+    ),
+  ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+});
+
+it("validates instance payloads and stable keys before returning resolver results", async () => {
+  const { withInstanceResolvers } = await import("@tailorkit/app/server");
+  for (const result of [
+    [{ key: "overview", metadata: {}, data: { id: 123 } }],
+    [{ key: "", metadata: {}, data: { id: "report" } }],
+    [
+      { key: "overview", metadata: {}, data: { id: "one" } },
+      { key: "overview", metadata: {}, data: { id: "two" } },
+    ],
+  ]) {
+    const app = withInstanceResolvers(defineServer({}), [
+      { slot: "page", path: "/", dataSchema: z.object({ id: z.string() }), resolve: () => result },
+    ]);
+    await expect(
+      actionRunner(app, { query: vi.fn(), mutate: vi.fn() })(
+        {
+          name: "_tailorkit.instances.resolve",
+          args: { slot: "page", path: "/", context: {} },
+        },
+        identity,
+      ),
+    ).rejects.toMatchObject({ code: "INTERNAL_SERVER_ERROR" });
+  }
+});
+
+it("reserves the internal namespace and rejects duplicate or invalid slot/path addresses", async () => {
+  const { withInstanceResolvers } = await import("@tailorkit/app/server");
+  const resolver = { slot: "page", path: "/", dataSchema: z.object({}), resolve: () => [] };
+  const app = withInstanceResolvers(defineServer({}), [resolver]);
+  expect(() => withInstanceResolvers(app, [])).toThrow(
+    "The _tailorkit function namespace is reserved by TailorKit.",
+  );
+  expect(() => withInstanceResolvers(defineServer({}), [resolver, resolver])).toThrow(
+    "Duplicate instance resolver",
+  );
+  expect(() =>
+    withInstanceResolvers(defineServer({}), [{ ...resolver, path: "invalid" }]),
+  ).toThrow();
+});
+
+it("dispatches by exact slot/path pairs and validates against the selected data schema", async () => {
+  const { withInstanceResolvers } = await import("@tailorkit/app/server");
+  const first = vi.fn(() => [{ key: "one", metadata: {}, data: { id: "item" } }]);
+  const second = vi.fn(() => [{ key: "two", metadata: {}, data: { count: 3 } }]);
+  const app = withInstanceResolvers(defineServer({}), [
+    {
+      slot: "page.links",
+      path: "/reports/annual.summary",
+      dataSchema: z.object({ id: z.string().transform((id) => id.toUpperCase()) }),
+      resolve: first,
+    },
+    {
+      slot: "panel",
+      path: "/reports/annual.summary",
+      dataSchema: z.object({ count: z.number() }),
+      resolve: second,
+    },
+  ]);
+  const run = actionRunner(app, { query: vi.fn(), mutate: vi.fn() });
+  const name = "_tailorkit.instances.resolve";
+  await expect(
+    run(
+      { name, args: { slot: "page.links", path: "/reports/annual.summary", context: {} } },
+      identity,
+    ),
+  ).resolves.toEqual([{ key: "one", metadata: {}, data: { id: "ITEM" } }]);
+  await expect(
+    run({ name, args: { slot: "panel", path: "/reports/annual.summary", context: {} } }, identity),
+  ).resolves.toEqual([{ key: "two", metadata: {}, data: { count: 3 } }]);
+  for (const [slot, path] of [
+    ["page.links", "/reports"],
+    ["missing", "/reports/annual.summary"],
+    ["__proto__", "/constructor"],
+  ]) {
+    await expect(run({ name, args: { slot, path, context: {} } }, identity)).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+  }
+  for (const args of [
+    { slot: "page.links", context: {} },
+    { slot: "page.links", path: "invalid", context: {} },
+    { slot: "", path: "/", context: {} },
+  ]) {
+    await expect(run({ name, args }, identity)).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  }
+  expect(first).toHaveBeenCalledOnce();
+  expect(second).toHaveBeenCalledOnce();
+});

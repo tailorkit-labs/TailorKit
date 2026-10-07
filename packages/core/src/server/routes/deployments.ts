@@ -72,6 +72,17 @@ export const deploymentRouter = {
       z.object({
         appId: z.string(),
         assets: deploymentAssetsInput,
+        views: z
+          .array(
+            z.object({
+              slot: z.string().min(1).max(255),
+              path: z.string().startsWith("/").max(1024),
+              instances: z.literal(true).optional(),
+              disabled: z.literal(true).optional(),
+            }),
+          )
+          .max(1000)
+          .optional(),
         server: serverAssetInput.optional(),
         logos: deploymentLogosInput,
       }),
@@ -82,6 +93,7 @@ export const deploymentRouter = {
           body: {
             appId: input.appId,
             assets: input.assets,
+            views: input.views,
             server: input.server,
             logos: input.logos,
             scope: getTailorKitScope(context),

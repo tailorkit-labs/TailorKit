@@ -38,8 +38,8 @@ Open `http://localhost:5020`. The TailorKit API is mounted at
 - `lib/tailorkit.ts` defines the server contract.
 - `app/api/tailorkit/[[...path]]/route.ts` mounts the catch-all API handler.
 - `lib/tailorkit-client.tsx` maps contract components to React renderers.
-- `components/tailorkit-shell.tsx` loads installed apps and renders `AppView`.
-- `app/customers/layout.tsx` publishes route context with `useView`.
+- `components/tailorkit-shell.tsx` loads installed apps and renders `Slot`.
+- `app/customers/layout.tsx` publishes route context with `useRegisterView`.
 
 The example defaults to the platform at `http://localhost:3000` and the
 SeaweedFS service started by the root development command. Override

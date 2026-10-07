@@ -68,6 +68,22 @@ it("validates names inside nested groups", () => {
   expect(() => defineServer({ todos: { "invalid.name": tk.query.handler(() => null) } })).toThrow(
     "Invalid function name",
   );
-  for (const name of ["todos..read", ".read", "todos.__proto__", "todos.read."])
+  for (const name of [
+    "todos..read",
+    ".read",
+    "todos.__proto__",
+    "todos.read.",
+    "_other.instances.page",
+    "_tailorkitExtra.instances.page",
+    "todos._tailorkit.read",
+    "_tailorkit.instances._page",
+    "_tailorkit..page",
+  ])
     expect(invocationSchema.safeParse({ name }).success).toBe(false);
+});
+
+it("allows the reserved internal invocation namespace without allowing apps to register it", () => {
+  for (const name of ["_tailorkit.instances.resolve", "_tailorkit.future.resolve"])
+    expect(invocationSchema.parse({ name })).toEqual({ name });
+  expect(() => defineServer({ _tailorkit: {} })).toThrow("Invalid function name");
 });

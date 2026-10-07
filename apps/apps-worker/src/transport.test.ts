@@ -110,6 +110,16 @@ it("routes HTTP calls with shared client types, CORS and typed error statuses", 
   const requestId = crypto.randomUUID();
   expect(await client.mutations({ name: "nested.add", requestId })).toBe(requestId);
   expect(await client.actions({ name: "import" })).toBe("action");
+  const instances = {
+    name: "_tailorkit.instances.resolve",
+    args: { slot: "page.links", path: "/reports/annual.summary", context: { userId: "user" } },
+  };
+  expect(await client.actions(instances)).toBe("action");
+  expect(operations.action).toHaveBeenCalledWith(instances, expect.any(AbortSignal));
+  await expect(client.actions({ name: "_other.instances.page" })).rejects.toMatchObject({
+    code: "BAD_REQUEST",
+  });
+  expect(operations.action).toHaveBeenCalledTimes(2);
   // eslint-disable-next-line prefer-promise-reject-errors -- Verify serialized failures from the runtime boundary.
   operations.query = () => Effect.fail({ code: "INCOMPATIBLE_VERSION", message: "Reload" });
   await expect(client.queries({ name: "list" })).rejects.toMatchObject({

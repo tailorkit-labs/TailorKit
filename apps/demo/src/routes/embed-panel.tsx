@@ -65,7 +65,7 @@ function EmbedPanel() {
     (demo ? decodeState(demo) : null) ?? createHandoff(defaultTheme, defaultEmbedConfig);
   const theme = handoff.tailorkitTheme;
   const tailorClient = useMemo(() => createDemoTailorClient(theme), [theme]);
-  const { AppView, useView } = tailorClient;
+  const { Slot, useRegisterView } = tailorClient;
   const activeApp = demoApps.find((app) => app.id === handoff.selectedApp) ?? demoApps[0];
   const cssVars = useMemo(() => toCssVars(theme) as CSSProperties, [theme]);
 
@@ -84,7 +84,7 @@ function EmbedPanel() {
 
   return (
     <Root client={tailorClient} apps={demoApps}>
-      <CurrentDemoView useView={useView} />
+      <CurrentDemoView useRegisterView={useRegisterView} />
       <main className="h-screen flex flex-col" style={cssVars}>
         {/* Panel header */}
         <div
@@ -122,7 +122,7 @@ function EmbedPanel() {
           {/* Make the view wrapper fill the panel height */}
           <style>{`[data-tailorkit-view] { display: flex; flex-direction: column; height: 100%; }`}</style>
           {activeApp ? (
-            <AppView slot="panel" app={activeApp} />
+            <Slot name="panel" app={activeApp} />
           ) : (
             <div className="p-5 text-sm" style={{ color: "var(--muted-foreground)" }}>
               No app selected
@@ -135,10 +135,10 @@ function EmbedPanel() {
 }
 
 function CurrentDemoView({
-  useView,
+  useRegisterView,
 }: {
-  useView: ReturnType<typeof createDemoTailorClient>["useView"];
+  useRegisterView: ReturnType<typeof createDemoTailorClient>["useRegisterView"];
 }) {
-  useView("/", { context: {} });
+  useRegisterView("/", { context: {} });
   return null;
 }

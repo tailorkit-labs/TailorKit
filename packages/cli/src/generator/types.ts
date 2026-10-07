@@ -547,7 +547,7 @@ export const actions = ${renderActionRuntime(schema.actions ?? {})} as TailorKit
     chunks.splice(
       1,
       0,
-      `import { createApi } from "tailorkit/client";\nimport type app from ${quote(options.serverModule)};\n\nexport const api = createApi<typeof app.functions>();`,
+      `import { createApi } from "tailorkit/client";\nimport type app from ${quote(options.serverModule)};\ntype AppServerFunctions = typeof app.functions;\ndeclare module "tailorkit/client" {\n  interface TailorKitServerFunctions extends AppServerFunctions {}\n}\n\nexport const api = createApi<typeof app.functions>();`,
     );
   }
 

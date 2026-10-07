@@ -1,17 +1,24 @@
-import { getViewHierarchy } from "@tailorkit/core/views";
-import type { ActiveView, ViewStatus } from "@tailorkit/core/views";
+import { composeViewContext, getViewHierarchy } from "@tailorkit/core/views";
+import type { ActiveView, ResolvedViewProps as ContextProps } from "@tailorkit/core/views";
+import type { ViewInstance } from "@tailorkit/app/client";
+export type ResolvedViewProps =
+  | (Extract<ContextProps, { status: "ready" }> & { instance?: ViewInstance })
+  | (Extract<ContextProps, { status: "loading" | "error" }> & { instance?: never });
 
-export interface ViewRequest extends ActiveView {
+interface ViewRequestMetadata {
   slot: string;
   declaredViews: readonly string[];
   supportedViews: readonly string[];
+  instance?: ViewInstance;
 }
 
-export type ResolvedViewProps =
-  | { view: string; status: "ready"; context: Record<string, unknown> }
-  | { view: string; status: "loading" | "error"; context?: never };
+type LayeredViewRequest = ViewRequestMetadata & ActiveView & { controlled?: false };
+export type ViewRequest =
+  | LayeredViewRequest
+  | (ViewRequestMetadata & ResolvedViewProps & { controlled: true });
 
 export interface AppViewDefinition {
+  instances?: { resolver: string };
   component: (props: ResolvedViewProps) => unknown;
 }
 
@@ -27,7 +34,7 @@ export function resolveView(client: AppClient, request: ViewRequest) {
   const views = client.slots[request.slot];
   const selected =
     views &&
-    getViewHierarchy(request.view).find(
+    (request.controlled ? [request.view] : getViewHierarchy(request.view)).find(
       (path) => request.supportedViews.includes(path) && Object.hasOwn(views, path),
     );
   if (!selected || views[selected] === false) {
@@ -38,53 +45,45 @@ export function resolveView(client: AppClient, request: ViewRequest) {
     throw new TypeError(`TailorKit app client view "${selected}" is missing a component.`);
   }
 
-  return { component: definition.component, props: composeViewContext(selected, request) };
+  const props = request.controlled
+    ? controlledViewProps(request)
+    : composeViewContext(selected, request);
+  if (props.status !== "ready") return { component: definition.component, props };
+  if (definition.instances && !request.instance)
+    throw new Error(`View "${selected}" requires a selected instance.`);
+  if (request.instance !== undefined) {
+    if (!definition.instances) throw new Error(`View "${selected}" does not support instances.`);
+    const instance = request.instance;
+    if (
+      !instance ||
+      typeof instance !== "object" ||
+      typeof instance.key !== "string" ||
+      !instance.key ||
+      !instance.metadata ||
+      typeof instance.metadata !== "object" ||
+      Array.isArray(instance.metadata)
+    ) {
+      throw new TypeError(`Invalid instance for view "${selected}".`);
+    }
+    return { component: definition.component, props: { ...props, instance } };
+  }
+  return { component: definition.component, props };
 }
 
-function composeViewContext(selected: string, request: ViewRequest): ResolvedViewProps {
-  let status: ViewStatus = "ready";
-  const context: Record<string, unknown> = {};
-  for (const path of getViewHierarchy(selected).toReversed()) {
-    const layer = request.layers.find((entry) => entry.path === path);
-    if (!layer) {
-      if (request.declaredViews.includes(path) || path === selected) {
-        status = "error";
-      }
-      continue;
-    }
-    if (layer.status === "error") {
-      status = "error";
-    } else if (layer.status === "loading" && status !== "error") {
-      status = "loading";
-    }
-    if (layer.status !== "ready" || layer.context === undefined) {
-      continue;
-    }
-    if (
-      layer.context === null ||
-      typeof layer.context !== "object" ||
-      Array.isArray(layer.context)
-    ) {
-      status = "error";
-      continue;
-    }
-    for (const [key, value] of Object.entries(layer.context)) {
-      if (Object.hasOwn(context, key)) {
-        throw new Error(`Duplicate view context field "${key}".`);
-      }
-      Object.defineProperty(context, key, {
-        value,
-        enumerable: true,
-        configurable: true,
-        writable: true,
-      });
-    }
+function controlledViewProps(
+  request: Extract<ViewRequest, { controlled: true }>,
+): ResolvedViewProps {
+  if (request.status !== "ready") {
+    return { view: request.view, status: request.status, context: undefined };
   }
-  const props: ResolvedViewProps =
-    status === "ready"
-      ? { view: selected, status, context }
-      : { view: selected, status, context: undefined };
-  return props;
+  if (
+    request.context === null ||
+    typeof request.context !== "object" ||
+    Array.isArray(request.context)
+  ) {
+    return { view: request.view, status: "error", context: undefined };
+  }
+  return { view: request.view, status: "ready", context: request.context };
 }
 
 export function renderClient(client: AppClient, request: ViewRequest, root: Element): void {

@@ -40,7 +40,7 @@ at `http://localhost:5010/api/tailorkit`.
   context.
 - `src/lib/tailorkit-client.tsx` maps contract components to React renderers.
 - `src/components/tailorkit-shell.tsx` loads installed apps, publishes the root
-  view context with `useView`, and renders the selected app in its slot.
+  view context with `useRegisterView`, and renders the selected app in its slot.
 
 The example defaults to the platform at `http://localhost:3000` and the
 SeaweedFS service started by the root development command. Set

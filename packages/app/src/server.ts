@@ -1,5 +1,6 @@
 export { defineServer, query, mutation, action } from "./server/functions";
 export { tk } from "./server/builder";
+export { withInstanceResolvers } from "./server/instances";
 export type { QueryDatabase, MutationDatabase } from "./database/types";
 export type {
   Identity,

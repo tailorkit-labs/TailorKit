@@ -1,22 +1,13 @@
 import type { TailorKitSchemaSpecType } from "@tailorkit/core/spec";
-import type { TailorKitApp } from "./tailorkit";
+import type { TailorKitApp, TailorKitView } from "./tailorkit";
 import { createViewRegistry } from "./view-registry";
 import { createPreviewManager } from "./preview-manager";
-import { appendScopeSelection, normalizeScopeSelection } from "./scope-query";
 
 export interface TailorKitAppsSnapshot {
   apps: TailorKitApp[];
+  views: TailorKitView[];
   error: Error | null;
   status: "error" | "idle" | "loading" | "ready";
-}
-
-interface AppsEntry {
-  scopes?: readonly string[];
-  snapshot: TailorKitAppsSnapshot;
-  promise: Promise<void> | null;
-  requestId: number;
-  requested: boolean;
-  subscribers: number;
 }
 
 interface TailorKitMetaSnapshot {
@@ -32,12 +23,16 @@ export function createTailorKitStore(baseUrlInput: string | URL, initialApps?: T
   const baseUrl = toBaseUrl(baseUrlInput);
   const listeners = new Set<() => void>();
   let providedApps = initialApps;
-  let unrequestedSnapshot: TailorKitAppsSnapshot = {
+  let appsSnapshot: TailorKitAppsSnapshot = {
     apps: initialApps ?? [],
+    views: listViews(initialApps ?? []),
     error: null,
     status: initialApps === undefined ? "idle" : "ready",
   };
-  const appsEntries = new Map<string, AppsEntry>();
+  let appsPromise: Promise<void> | null = null;
+  let appsRequestId = 0;
+  let appsRequested = false;
+  let appsSubscribers = 0;
   let metaSnapshot: TailorKitMetaSnapshot = {
     assetsBaseUrl: null,
     error: null,
@@ -45,23 +40,7 @@ export function createTailorKitStore(baseUrlInput: string | URL, initialApps?: T
     status: "idle",
   };
   let fetchMetaPromise: Promise<void> | null = null;
-
-  const getAppsEntry = (scopes?: readonly string[]): AppsEntry => {
-    const selection = normalizeScopeSelection(scopes);
-    let entry = appsEntries.get(selection.key);
-    if (!entry) {
-      entry = {
-        scopes: selection.scopes,
-        snapshot: unrequestedSnapshot,
-        promise: null,
-        requestId: 0,
-        requested: false,
-        subscribers: 0,
-      };
-      appsEntries.set(selection.key, entry);
-    }
-    return entry;
-  };
+  let metaRequestId = 0;
 
   const emit = (): void => {
     for (const listener of listeners) {
@@ -77,80 +56,60 @@ export function createTailorKitStore(baseUrlInput: string | URL, initialApps?: T
         return;
       }
       providedApps = apps;
-      unrequestedSnapshot = {
+      appsRequestId += 1;
+      appsPromise = null;
+      appsSnapshot = {
         apps: apps ?? [],
+        views: listViews(apps ?? []),
         error: null,
         status: apps === undefined ? "idle" : "ready",
       };
-      for (const entry of appsEntries.values()) {
-        entry.requestId += 1;
-        entry.promise = null;
-        entry.snapshot = unrequestedSnapshot;
-      }
       emit();
-      if (apps === undefined) {
-        for (const entry of appsEntries.values()) {
-          if (entry.requested && entry.subscribers > 0) {
-            void store.fetchApps({ scopes: entry.scopes });
-          }
-        }
+      if (apps === undefined && appsRequested && appsSubscribers > 0) {
+        void store.fetchApps();
       }
     },
-    fetchApps: (options: { force?: boolean; scopes?: readonly string[] } = {}): Promise<void> => {
-      const entry = getAppsEntry(options.scopes);
-      entry.requested = true;
+    fetchApps: (options: { force?: boolean } = {}): Promise<void> => {
+      appsRequested = true;
       if (providedApps !== undefined) {
         return Promise.resolve();
       }
-      if (entry.promise && !options.force) {
-        return entry.promise;
+      if (appsPromise && !options.force) {
+        return appsPromise;
       }
-
-      entry.snapshot = { ...entry.snapshot, status: "loading" };
+      appsSnapshot = { ...appsSnapshot, error: null, status: "loading" };
       emit();
-
-      const requestId = ++entry.requestId;
-
-      const appsUrl = new URL("apps", baseUrl);
-      appendScopeSelection(appsUrl, entry.scopes);
-      entry.promise = fetch(appsUrl)
+      const requestId = ++appsRequestId;
+      appsPromise = fetch(new URL("apps", baseUrl))
         .then(async (response) => {
           if (!response.ok) {
             throw new Error(`Unable to fetch TailorKit apps from ${baseUrl.toString()}.`);
           }
           const apps = (await response.json()) as TailorKitApp[];
-          if (requestId !== entry.requestId) {
-            return;
-          }
-          entry.snapshot = {
-            apps,
-            error: null,
-            status: "ready",
-          };
+          if (requestId !== appsRequestId) return;
+          appsSnapshot = { apps, views: listViews(apps), error: null, status: "ready" };
           emit();
         })
         .catch((error: unknown) => {
-          if (requestId !== entry.requestId) {
-            return;
-          }
-          entry.snapshot = {
-            ...entry.snapshot,
+          if (requestId !== appsRequestId) return;
+          appsSnapshot = {
+            ...appsSnapshot,
             error: error instanceof Error ? error : new Error(String(error)),
             status: "error",
           };
           emit();
         });
-
-      return entry.promise;
+      return appsPromise;
     },
-    fetchMeta: (): Promise<void> => {
-      if (fetchMetaPromise) {
+    fetchMeta: (options: { force?: boolean } = {}): Promise<void> => {
+      if (fetchMetaPromise && !options.force) {
         return fetchMetaPromise;
       }
 
-      metaSnapshot = { ...metaSnapshot, status: "loading" };
+      metaSnapshot = { ...metaSnapshot, error: null, status: "loading" };
       emit();
 
+      const requestId = ++metaRequestId;
       fetchMetaPromise = fetch(new URL("meta", baseUrl))
         .then(async (response) => {
           if (!response.ok) {
@@ -160,6 +119,7 @@ export function createTailorKitStore(baseUrlInput: string | URL, initialApps?: T
             assetsBaseUrl?: string | null;
             schema: TailorKitSchemaSpecType;
           };
+          if (requestId !== metaRequestId) return;
           metaSnapshot = {
             assetsBaseUrl: meta.assetsBaseUrl ?? null,
             error: null,
@@ -169,6 +129,7 @@ export function createTailorKitStore(baseUrlInput: string | URL, initialApps?: T
           emit();
         })
         .catch((error: unknown) => {
+          if (requestId !== metaRequestId) return;
           metaSnapshot = {
             ...metaSnapshot,
             error: error instanceof Error ? error : new Error(String(error)),
@@ -179,8 +140,7 @@ export function createTailorKitStore(baseUrlInput: string | URL, initialApps?: T
 
       return fetchMetaPromise;
     },
-    getAppsSnapshot: (scopes?: readonly string[]): TailorKitAppsSnapshot =>
-      appsEntries.get(normalizeScopeSelection(scopes).key)?.snapshot ?? unrequestedSnapshot,
+    getAppsSnapshot: (): TailorKitAppsSnapshot => appsSnapshot,
     getMetaSnapshot: (): TailorKitMetaSnapshot => metaSnapshot,
     subscribe: (listener: () => void): (() => void) => {
       listeners.add(listener);
@@ -188,30 +148,28 @@ export function createTailorKitStore(baseUrlInput: string | URL, initialApps?: T
         listeners.delete(listener);
       };
     },
-    subscribeApps: (scopes: readonly string[] | undefined, listener: () => void): (() => void) => {
-      const selection = normalizeScopeSelection(scopes);
-      const entry = getAppsEntry(selection.scopes);
-      entry.subscribers += 1;
+    subscribeApps: (listener: () => void): (() => void) => {
+      appsSubscribers += 1;
       listeners.add(listener);
       return () => {
         listeners.delete(listener);
-        entry.subscribers -= 1;
-        if (entry.subscribers === 0) {
-          entry.requestId += 1;
-          appsEntries.delete(selection.key);
-        }
+        appsSubscribers -= 1;
       };
     },
   };
   return {
     ...store,
-    previews: createPreviewManager(baseUrl, () => {
-      for (const entry of appsEntries.values()) {
-        if (entry.requested && entry.subscribers > 0) {
-          void store.fetchApps({ force: true, scopes: entry.scopes });
-        }
-      }
-    }),
+    previews: createPreviewManager(
+      baseUrl,
+      () => {
+        if (appsRequested) void store.fetchApps({ force: true });
+      },
+      (appId, views) => {
+        const apps = appsSnapshot.apps.map((app) => (app.id === appId ? { ...app, views } : app));
+        appsSnapshot = { ...appsSnapshot, apps, views: listViews(apps) };
+        emit();
+      },
+    ),
   };
 }
 
@@ -221,4 +179,18 @@ export function toBaseUrl(value: string | URL): URL {
     url.pathname = `${url.pathname}/`;
   }
   return url;
+}
+
+function listViews(apps: TailorKitApp[]): TailorKitView[] {
+  return apps.flatMap((app) =>
+    (app.views ?? [])
+      .filter((view) => !view.disabled)
+      .map(({ slot, path, instances }) => ({
+        id: JSON.stringify([app.id, slot, path]),
+        ...(instances ? { instances } : {}),
+        app,
+        slot,
+        path,
+      })),
+  );
 }

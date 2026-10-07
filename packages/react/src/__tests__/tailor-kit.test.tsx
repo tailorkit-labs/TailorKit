@@ -1,4 +1,4 @@
-import { Root, AppView } from "../index";
+import { Root, Slot } from "../index";
 import { act, cleanup, render, screen as testingView, waitFor } from "@testing-library/react";
 import { createElement, StrictMode } from "react";
 import type { ReactNode } from "react";
@@ -107,8 +107,8 @@ function CurrentViewRoute({
   nested: boolean;
   tailor: ReturnType<typeof createTailorKitClient<typeof server>>;
 }) {
-  const { useView } = tailor;
-  useView(
+  const { useRegisterView } = tailor;
+  useRegisterView(
     nested ? "/home/detail" : "/home",
     nested
       ? {
@@ -119,7 +119,7 @@ function CurrentViewRoute({
         },
   );
 
-  return <AppView slot="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
+  return <Slot name="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
 }
 
 function CurrentViewHost({
@@ -136,16 +136,16 @@ function CurrentViewHost({
   );
 }
 
-function HomeAppView({
+function HomeSlot({
   app,
   tailor,
 }: {
   app: TailorKitApp;
   tailor: ReturnType<typeof createTailorKitClient<typeof server>>;
 }) {
-  const { useView } = tailor;
-  useView("/home", { context: { page: { title: "home" } } });
-  return <AppView slot="panel" app={app} />;
+  const { useRegisterView } = tailor;
+  useRegisterView("/home", { context: { page: { title: "home" } } });
+  return <Slot name="panel" app={app} />;
 }
 
 describe("tailorKitClient React adapter", () => {
@@ -216,7 +216,7 @@ describe("tailorKitClient React adapter", () => {
     const suppliedApps: TailorKitApp[] = [];
     const content = (token: string) => (
       <Root client={tailor} apps={suppliedApps}>
-        <HomeAppView
+        <HomeSlot
           tailor={tailor}
           app={{
             id: "preview",
@@ -251,7 +251,9 @@ describe("tailorKitClient React adapter", () => {
   });
 
   it("fetches and caches apps", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json([{ id: "todo", name: "Todo" }]));
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      Response.json([{ id: "todo", name: "Todo", scope: { name: "user" } }]),
+    );
     const tailor = createTailorKitClient<typeof server>({
       baseUrl: "http://runtime.test/api/tailorkit",
       components,
@@ -274,22 +276,21 @@ describe("tailorKitClient React adapter", () => {
     });
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      new URL("apps?scopes=organization&scopes=user", "http://runtime.test/api/tailorkit/"),
+      new URL("apps", "http://runtime.test/api/tailorkit/"),
     );
   });
 
-  it("keeps app lists for different scope selections separate", async () => {
-    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
-      const url = new URL(input.toString());
-      const names = url.searchParams.getAll("scopes");
-      const id = names.length === 0 ? "all" : names.join("-");
-      return Promise.resolve(Response.json([{ id }]));
-    });
+  it("filters scope selections locally using one shared request", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      Response.json([
+        { id: "organization", scope: { name: "organization" } },
+        { id: "user", scope: { name: "user" } },
+      ]),
+    );
     const tailor = createTailorKitClient<typeof server>({
       baseUrl: "http://runtime.test/api/tailorkit",
       components,
     });
-
     function AppList({
       label,
       scopes,
@@ -298,39 +299,40 @@ describe("tailorKitClient React adapter", () => {
       scopes?: readonly ("organization" | "user")[];
     }) {
       const { data, status } = tailor.useApps({ scopes });
-      return createElement("p", null, `${label}:${status}:${data?.[0]?.id ?? ""}`);
+      return (
+        <p>
+          {label}:{status}:{data?.map((app) => app.id).join(",")}
+        </p>
+      );
     }
-
     render(
       <Root client={tailor}>
         <AppList label="org" scopes={["organization"]} />
         <AppList label="user" scopes={["user"]} />
         <AppList label="all" />
+        <AppList label="empty" scopes={[]} />
       </Root>,
     );
-
-    await waitFor(() => {
-      expect(testingView.getByText("org:ready:organization")).toBeTruthy();
-      expect(testingView.getByText("user:ready:user")).toBeTruthy();
-      expect(testingView.getByText("all:ready:all")).toBeTruthy();
-    });
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    await waitFor(() => expect(testingView.getByText("all:ready:organization,user")).toBeTruthy());
+    expect(testingView.getByText("org:ready:organization")).toBeTruthy();
+    expect(testingView.getByText("user:ready:user")).toBeTruthy();
+    expect(testingView.getByText("empty:ready:")).toBeTruthy();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps snapshots pure and discards inactive scope selections", async () => {
+  it("retains app discovery across subscriber unmounts", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json([]));
     const store = createTailorKitStore("http://runtime.test/api/tailorkit");
-    const idle = store.getAppsSnapshot(["organization"]);
-    expect(store.getAppsSnapshot(["user"])).toBe(idle);
-
-    const unsubscribe = store.subscribeApps(["organization"], () => {});
-    await store.fetchApps({ scopes: ["organization"] });
-    expect(store.getAppsSnapshot(["organization"]).status).toBe("ready");
+    const idle = store.getAppsSnapshot();
+    expect(store.getAppsSnapshot()).toBe(idle);
+    const unsubscribe = store.subscribeApps(() => {});
+    await store.fetchApps();
+    const ready = store.getAppsSnapshot();
     unsubscribe();
-    expect(store.getAppsSnapshot(["organization"])).toBe(idle);
-
-    store.setProvidedApps([]);
-    store.setProvidedApps(undefined);
+    expect(store.getAppsSnapshot()).toBe(ready);
+    const stop = store.subscribeApps(() => {});
+    await store.fetchApps();
+    stop();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -401,9 +403,9 @@ describe("tailorKitClient React adapter", () => {
     });
 
     function Route({ status }: { status: "error" | "loading" }) {
-      const { useView } = tailor;
-      useView("/home/detail", { status });
-      return <AppView slot="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
+      const { useRegisterView } = tailor;
+      useRegisterView("/home/detail", { status });
+      return <Slot name="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
     }
 
     const view = render(
@@ -439,13 +441,13 @@ describe("tailorKitClient React adapter", () => {
     });
 
     function Route() {
-      const { useView } = tailor;
-      useView("/home", { context: { page: { title: "home" } } });
+      const { useRegisterView } = tailor;
+      useRegisterView("/home", { context: { page: { title: "home" } } });
       return (
         <>
-          <AppView slot="panel" app={{ clientPath: "/apps/b.js", id: "b" }} />
-          <AppView
-            slot="panel"
+          <Slot name="panel" app={{ clientPath: "/apps/b.js", id: "b" }} />
+          <Slot
+            name="panel"
             app={{
               currentDeployment: { id: "deployment_1" },
               id: "a",
@@ -485,38 +487,36 @@ describe("tailorKitClient React adapter", () => {
     ]);
   });
 
-  it("renders an explicit view override without a registered current view", async () => {
+  it("renders a controlled view without a registered current view", async () => {
     const tailor = createTailorKitClient<typeof server>({
       baseUrl: "http://runtime.test",
       components,
     });
-    const { AppView: ClientAppView } = tailor;
+    const { Slot: ClientSlot } = tailor;
 
     render(
       <Root client={tailor}>
-        <ClientAppView
-          slot="panel"
+        <ClientSlot.Controlled
+          name="panel"
           app={{ clientPath: "/apps/todo.js", id: "todo" }}
           context={{ userId: "user_1" }}
           view="/user"
+          status="ready"
         />
       </Root>,
     );
 
     await waitFor(() => {
       expect(hostRecords.at(-1)?.props).toMatchObject({
-        layers: [
-          {
-            context: { userId: "user_1" },
-            path: "/user",
-            status: "ready",
-          },
-        ],
+        controlled: true,
+        context: { userId: "user_1" },
+        view: "/user",
+        status: "ready",
       });
     });
   });
 
-  it("rejects a client AppView rendered under a different Root client", () => {
+  it("rejects a client Slot rendered under a different Root client", () => {
     const tailor = createTailorKitClient<typeof server>({
       baseUrl: "http://runtime.test",
       components,
@@ -525,16 +525,16 @@ describe("tailorKitClient React adapter", () => {
       baseUrl: "http://other-runtime.test",
       components,
     });
-    const { AppView: ClientAppView } = tailor;
+    const { Slot: ClientSlot } = tailor;
     vi.spyOn(console, "error").mockImplementation(() => {});
 
     expect(() =>
       render(
         <Root client={otherTailor}>
-          <ClientAppView slot="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />
+          <ClientSlot name="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />
         </Root>,
       ),
-    ).toThrow("AppView was created for a different TailorKit client than the one passed to Root.");
+    ).toThrow("Slot was created for a different TailorKit client than the one passed to Root.");
   });
 
   it("warns when multiple hooks register views at the same hierarchy depth", async () => {
@@ -545,15 +545,15 @@ describe("tailorKitClient React adapter", () => {
     });
 
     function HomeRoute() {
-      const { useView } = tailor;
-      useView("/home", { context: { page: { title: "home" } } });
+      const { useRegisterView } = tailor;
+      useRegisterView("/home", { context: { page: { title: "home" } } });
       return null;
     }
 
     function UserRoute() {
-      const { useView } = tailor;
-      useView("/user", { context: { userId: "user_1" } });
-      return <AppView slot="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
+      const { useRegisterView } = tailor;
+      useRegisterView("/user", { context: { userId: "user_1" } });
+      return <Slot name="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
     }
 
     render(
@@ -583,7 +583,7 @@ describe("tailorKitClient React adapter", () => {
 
     render(
       <Root client={tailor} apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
-        <HomeAppView app={{ clientPath: "/apps/todo.js", id: "todo" }} tailor={tailor} />
+        <HomeSlot app={{ clientPath: "/apps/todo.js", id: "todo" }} tailor={tailor} />
       </Root>,
     );
 
@@ -603,7 +603,7 @@ describe("tailorKitClient React adapter", () => {
 
     render(
       <Root client={tailor} apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
-        <HomeAppView app={{ clientPath: "/apps/todo.js", id: "todo" }} tailor={tailor} />
+        <HomeSlot app={{ clientPath: "/apps/todo.js", id: "todo" }} tailor={tailor} />
       </Root>,
     );
 
@@ -622,10 +622,7 @@ describe("tailorKitClient React adapter", () => {
 
     const view = render(
       <Root client={tailor} apps={[{ clientPath: "/apps/missing-component.js", id: "bad" }]}>
-        <HomeAppView
-          app={{ clientPath: "/apps/missing-component.js", id: "bad" }}
-          tailor={tailor}
-        />
+        <HomeSlot app={{ clientPath: "/apps/missing-component.js", id: "bad" }} tailor={tailor} />
       </Root>,
     );
 
@@ -638,7 +635,7 @@ describe("tailorKitClient React adapter", () => {
     await act(() => {
       view.rerender(
         <Root client={tailor} apps={[{ clientPath: "/apps/email.js", id: "email" }]}>
-          <HomeAppView app={{ clientPath: "/apps/email.js", id: "email" }} tailor={tailor} />
+          <HomeSlot app={{ clientPath: "/apps/email.js", id: "email" }} tailor={tailor} />
         </Root>,
       );
     });
@@ -668,20 +665,20 @@ describe("view registries", () => {
     client: ReturnType<typeof createTailorKitClient<typeof server>>;
     detail?: boolean;
   }) {
-    const { useView } = client;
-    useView("/", { context: { user: { id: "u1" } } });
-    useView("/home", { context: { page: { title: "Home" } } });
+    const { useRegisterView } = client;
+    useRegisterView("/", { context: { user: { id: "u1" } } });
+    useRegisterView("/home", { context: { page: { title: "Home" } } });
     return (
       <>
         {detail ? <Detail client={client} /> : null}
-        <AppView slot="navbar" app={{ id: "nav", clientPath: "/nav.js" }} />
-        <AppView slot="panel" app={{ id: "panel", clientPath: "/panel.js" }} />
+        <Slot name="navbar" app={{ id: "nav", clientPath: "/nav.js" }} />
+        <Slot name="panel" app={{ id: "panel", clientPath: "/panel.js" }} />
       </>
     );
   }
   function Detail({ client }: { client: ReturnType<typeof createTailorKitClient<typeof server>> }) {
-    const { useView } = client;
-    useView("/home/detail", { status: "loading" });
+    const { useRegisterView } = client;
+    useRegisterView("/home/detail", { status: "loading" });
     return null;
   }
 
@@ -721,9 +718,9 @@ describe("view registries", () => {
       components,
     });
     function OtherRoute() {
-      const { useView } = client;
-      useView("/user", { context: { userId: "other" } });
-      return <AppView slot="panel" app={{ id: "other", clientPath: "/other.js" }} />;
+      const { useRegisterView } = client;
+      useRegisterView("/user", { context: { userId: "other" } });
+      return <Slot name="panel" app={{ id: "other", clientPath: "/other.js" }} />;
     }
     render(
       <StrictMode>
@@ -764,13 +761,13 @@ it("replaces the root store only when the normalized endpoint changes", async ()
   }: {
     client: ReturnType<typeof createTailorKitClient<typeof server>>;
   }) {
-    const { useApps, useView } = client;
+    const { useApps, useRegisterView } = client;
     const { data } = useApps();
-    useView("/user", { context: { userId: "u1" } });
+    useRegisterView("/user", { context: { userId: "u1" } });
     return (
       <>
         <span>{data?.[0]?.id}</span>
-        <AppView slot="panel" app={{ id: "test", clientPath: "client.js" }} />
+        <Slot name="panel" app={{ id: "test", clientPath: "client.js" }} />
       </>
     );
   }
@@ -813,11 +810,12 @@ it("retains equivalent explicit context identity and publishes changed values", 
   });
   const content = (userId: string) => (
     <Root client={client}>
-      <AppView
-        slot="panel"
+      <Slot.Controlled
+        name="panel"
         view="/user"
         context={{ userId }}
         app={{ id: "test", clientPath: "/client.js" }}
+        status="ready"
       />
     </Root>
   );
@@ -827,11 +825,7 @@ it("retains equivalent explicit context identity and publishes changed values", 
   view.rerender(content("u1"));
   expect(hostRecords.at(-1)?.props).toBe(initialProps);
   view.rerender(content("u2"));
-  await waitFor(() =>
-    expect(hostRecords.at(-1)?.props?.layers).toEqual([
-      { path: "/user", context: { userId: "u2" }, status: "ready" },
-    ]),
-  );
+  await waitFor(() => expect(hostRecords.at(-1)?.props?.context).toEqual({ userId: "u2" }));
   view.unmount();
 });
 

@@ -39,6 +39,17 @@ export const previewFileManifestSchema = z.object({
 export const previewBuildManifestSchema = z
   .object({
     files: z.array(previewFileManifestSchema).max(100),
+    views: z
+      .array(
+        z.object({
+          slot: z.string().min(1).max(255),
+          path: z.string().startsWith("/").max(1024),
+          instances: z.literal(true).optional(),
+          disabled: z.literal(true).optional(),
+        }),
+      )
+      .max(1000)
+      .optional(),
   })
   .superRefine((manifest, context) => {
     const paths = new Set<string>();

@@ -17,6 +17,17 @@ export const tailorkitUploadManifestSchema = z.object({
       })
       .optional(),
   }),
+  views: z
+    .array(
+      z.object({
+        slot: z.string().min(1).max(255),
+        path: z.string().startsWith("/").max(1024),
+        instances: z.literal(true).optional(),
+        disabled: z.literal(true).optional(),
+      }),
+    )
+    .max(1000)
+    .optional(),
   version: z.literal(1),
 });
 
@@ -25,6 +36,7 @@ export type TailorKitUploadManifest = z.output<typeof tailorkitUploadManifestSch
 export const createTailorKitUploadManifest = (
   logos?: TailorKitUploadManifest["assets"]["logos"],
   server = false,
+  views?: TailorKitUploadManifest["views"],
 ): TailorKitUploadManifest =>
   tailorkitUploadManifestSchema.parse({
     assets: {
@@ -32,5 +44,6 @@ export const createTailorKitUploadManifest = (
       ...(server ? { server: "server/server.js" } : {}),
       ...(logos && Object.keys(logos).length > 0 ? { logos } : {}),
     },
+    views,
     version: 1,
   });

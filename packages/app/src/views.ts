@@ -1,6 +1,8 @@
 import { createContext, h, render } from "preact";
 import type { ComponentChild, ComponentChildren, ComponentType, VNode } from "preact";
 import { useContext } from "preact/hooks";
+import type { z } from "zod";
+import type { FunctionCalls, Identity } from "./server/functions";
 
 declare const __PREACT_VERSION__: string;
 
@@ -11,6 +13,30 @@ export interface TailorKitViews {}
 
 // oxlint-disable-next-line typescript-eslint/no-empty-interface, typescript-eslint/no-empty-object-type
 export interface TailorKitSlots {}
+// Filled by the generated host bindings using a type-only link to the app server.
+// oxlint-disable-next-line typescript-eslint/no-empty-interface, typescript-eslint/no-empty-object-type
+export interface TailorKitServerFunctions {}
+
+export interface ViewInstance<TData = unknown> {
+  key: string;
+  metadata: Record<string, unknown>;
+  data: TData;
+}
+
+export interface InstanceResolverContext<TPath extends AppViewPath> {
+  context: ViewContext<TPath>;
+  identity: Identity;
+  signal: AbortSignal;
+  queries: FunctionCalls<TailorKitServerFunctions, "query">;
+}
+
+export interface ViewInstances<TPath extends AppViewPath, TSchema extends z.ZodType> {
+  dataSchema: TSchema;
+  /** Runs on the app server. Only registered queries are available. */
+  resolve: (
+    context: InstanceResolverContext<TPath>,
+  ) => ViewInstance<z.input<TSchema>>[] | Promise<ViewInstance<z.input<TSchema>>[]>;
+}
 export type SlotName = keyof TailorKitSlots & string;
 
 export type ViewPath = Extract<keyof TailorKitViews & string, `/${string}`>;
@@ -29,27 +55,34 @@ export type ViewContext<TPath extends AppViewPath> =
 
 export type View<TProps extends object = Record<string, never>> = (props: TProps) => ComponentChild;
 
-export type ViewRuntimeProps<TPath extends AppViewPath> =
+export type ViewRuntimeProps<TPath extends AppViewPath, TData = unknown> =
   | {
       context: ViewContext<TPath>;
       view: TPath;
       status: "ready";
+      instance?: ViewInstance<TData>;
     }
   | {
       context?: never;
       view: TPath;
       status: "loading";
+      instance?: never;
     }
   | {
       context?: never;
       view: TPath;
       status: "error";
+      instance?: never;
     };
 
-export interface ViewDefinition<TPath extends AppViewPath = AppViewPath> {
+export interface ViewDefinition<TPath extends AppViewPath = AppViewPath, TData = unknown> {
   component: View<ViewRuntimeProps<TPath>>;
   path: TPath;
   useContext: () => ViewContext<TPath>;
+  /** The selected instance, with data inferred from instances.dataSchema. */
+  useInstance: () => ViewInstance<TData>;
+  /** Build-only lookup key connecting this view to its extracted server implementation. */
+  instances?: { resolver: string };
 }
 
 type RegisteredViews = {
@@ -114,29 +147,42 @@ export type TailorKitClientWithMeta<TViews extends SlotDefinitions = SlotDefinit
     $runtime: TailorKitClientRuntime;
   };
 
-export const createView = <const TPath extends AppViewPath>(
+export const createView = <const TPath extends AppViewPath, TSchema extends z.ZodType>(
   path: TPath,
   options: {
     component: View<Record<string, never>>;
+    instances?: ViewInstances<TPath, TSchema>;
   },
-): ViewDefinition<TPath> => {
-  const Context = createContext<ViewContext<TPath> | null>(null);
+): ViewDefinition<TPath, z.output<TSchema>> => {
+  const Context = createContext<{ context: ViewContext<TPath>; instance?: ViewInstance } | null>(
+    null,
+  );
+  const instances = options.instances as unknown as { resolver?: string } | undefined;
+  if (instances && !instances.resolver) {
+    throw new Error("View instance resolvers must be compiled with the TailorKit app build.");
+  }
 
   const View = (props: ViewRuntimeProps<TPath>) => {
     if (props.status !== "ready") {
       return null;
     }
 
+    if (instances && !props.instance) {
+      throw new Error(
+        `View "${path}" requires a selected instance. Pass instanceKey to Slot or instance to Slot.Controlled.`,
+      );
+    }
     return h(
       Context.Provider,
-      { value: props.context as ViewContext<TPath> },
-      h(options.component as ComponentType<object>, {}),
+      { value: { context: props.context as ViewContext<TPath>, instance: props.instance } },
+      h(options.component as ComponentType<object>, { key: props.instance?.key }),
     );
   };
 
   return {
     component: View,
     path,
+    ...(instances?.resolver ? { instances: { resolver: instances.resolver } } : {}),
     useContext: () => {
       const context = useContext(Context);
 
@@ -144,7 +190,15 @@ export const createView = <const TPath extends AppViewPath>(
         throw new Error(`View context is only available while rendering "${path}".`);
       }
 
-      return context;
+      return context.context;
+    },
+    useInstance: () => {
+      const value = useContext(Context);
+      if (!value?.instance)
+        throw new Error(
+          `View instance is only available while rendering an instance of "${path}".`,
+        );
+      return value.instance as ViewInstance<z.output<TSchema>>;
     },
   };
 };

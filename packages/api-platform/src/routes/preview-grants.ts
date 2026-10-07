@@ -10,6 +10,7 @@ import { withAppAssetUrl } from "../asset-url";
 import { protectedRouter } from "../procedures";
 import { createPreviewViewerToken } from "../preview-token";
 import { ensurePreviewDeveloperGrace } from "../preview-lifecycle";
+import { createPreviewBuildStore } from "../preview-build-store";
 import { AppWithCurrentDeployment } from "./apps";
 import {
   canonicalizeScope,
@@ -170,8 +171,13 @@ export const accepted = protectedRouter
       );
       websocketUrl.searchParams.set("session", session.id);
       websocketUrl.searchParams.set("role", "viewer");
+      const build = await createPreviewBuildStore(kv).current(session.id);
       items.push({
-        app: withAppAssetUrl(session.app, context.organization.publicId, context.project.id),
+        app: {
+          ...withAppAssetUrl(session.app, context.organization.publicId, context.project.id),
+          // Until the first build arrives, the published deployment remains the fallback.
+          ...(build?.manifest.views !== undefined ? { views: build.manifest.views } : {}),
+        },
         preview: {
           sessionId: session.id,
           expiresAt: session.expiresAt,

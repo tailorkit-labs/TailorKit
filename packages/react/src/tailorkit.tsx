@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import type { Attributes, ReactNode } from "react";
+import type { ReactNode } from "react";
 import type {
   TailorKitTheme,
   CallbackMap,
@@ -13,11 +13,16 @@ import type {
 import type { primitives } from "./primitives";
 
 import { useTailorRootContext } from "./components/context";
-import { useView as useRootView } from "./hooks/use-view";
-import type { UseView, ViewName, ViewOptions, ViewState } from "./hooks/use-view";
+import { useRegisterView as useRootRegisterView } from "./hooks/use-register-view";
+import type { UseRegisterView, ViewName, ViewState } from "./hooks/use-register-view";
 import { useApps as useRootApps } from "./hooks/use-apps";
 import type { UseAppsOptions, UseAppsResult } from "./hooks/use-apps";
-import { AppView as ReactAppView } from "./components/app-view";
+import { useViews as useRootViews } from "./hooks/use-views";
+import type { UseViewsOptions, UseViewsResult } from "./hooks/use-views";
+import { useSlotInstances as useRootSlotInstances } from "./hooks/use-slot-instances";
+import type { UseSlotInstancesOptions, UseSlotInstancesResult } from "./hooks/use-slot-instances";
+import { Slot as ReactSlot } from "./components/slot";
+import type { ControlledSlotProps, SlotComponent, SlotProps } from "./components/slot";
 
 type AnyComponentDefinition = ComponentDefinition<
   Schema | undefined,
@@ -39,6 +44,8 @@ type CompleteComponentRenderers<TComponents extends Record<string, AnyComponentD
 };
 
 export interface TailorKitApp {
+  scope?: { name: string };
+  views?: { slot: string; path: string; instances?: true; disabled?: true }[];
   clientPath?: string;
   description?: string;
   id: string;
@@ -54,39 +61,13 @@ export interface TailorKitApp {
   preview?: { sessionId: string; expiresAt: string; websocketUrl: string; token: string };
 }
 
-interface AppViewBaseProps {
+export interface TailorKitView {
+  instances?: true;
+  id: string;
   app: TailorKitApp;
-  createIframe?: () => HTMLIFrameElement;
-  fallback?: ReactNode;
+  slot: string;
+  path: string;
 }
-
-type AppViewViewProps<
-  TViews extends Record<string, ViewDefinition>,
-  TView extends ViewName<TViews> = ViewName<TViews>,
-> = [ViewName<TViews>] extends [never]
-  ? {
-      context?: never;
-      view?: never;
-      status?: never;
-    }
-  :
-      | {
-          context?: never;
-          view?: never;
-          status?: never;
-        }
-      | ViewOptions<TViews, TView>;
-
-export type AppViewProps<
-  TViews extends Record<string, ViewDefinition> = Record<`/${string}`, ViewDefinition>,
-  TView extends ViewName<TViews> = ViewName<TViews>,
-  TSlots extends SlotDefinitions = SlotDefinitions,
-> = {
-  [V in keyof TSlots & string]: AppViewBaseProps & { slot: V } & AppViewViewProps<
-      TViews,
-      Extract<TView, SlotView<TSlots, V>>
-    >;
-}[keyof TSlots & string];
 
 const componentTagPrefix = "tailorkit-";
 
@@ -96,11 +77,6 @@ const toComponentTagName = (name: string): string =>
     .replaceAll(/[\s_]+/gu, "-")
     .toLowerCase()}`;
 
-type SlotView<TSlots extends SlotDefinitions, V extends keyof TSlots & string> = TSlots[V] extends {
-  views: readonly (infer P)[];
-}
-  ? Extract<P, string>
-  : never;
 export interface TailorKitClientConfig {
   readonly baseUrl: string | URL;
   readonly components: Record<string, unknown>;
@@ -114,9 +90,15 @@ export interface TailorKitInstance<
 > extends TailorKitClientConfig {
   readonly $slots?: TSlots;
   readonly $views?: TViews;
-  readonly AppView: (props: AppViewProps<TViews, ViewName<TViews>, TSlots>) => ReactNode;
+  readonly Slot: SlotComponent<TViews, TSlots>;
   readonly useApps: (options?: UseAppsOptions<TScopeNames>) => UseAppsResult;
-  readonly useView: UseView<TViews>;
+  readonly useViews: (
+    options?: UseViewsOptions<TScopeNames, keyof TSlots & string>,
+  ) => UseViewsResult;
+  readonly useSlotInstances: (
+    options: UseSlotInstancesOptions<keyof TSlots & string>,
+  ) => UseSlotInstancesResult;
+  readonly useRegisterView: UseRegisterView<TViews>;
 }
 
 type PrimitiveRenderers = typeof primitives;
@@ -227,30 +209,44 @@ function createReactTailorKitClient<
   };
   const client: TailorKitInstance<TViews, TSlots, TScopeNames> = {
     ...clientConfig,
-    AppView: function ClientAppView(props) {
-      useTailorRootContext("AppView", client);
-      const TypedReactAppView = ReactAppView as unknown as (
-        props: AppViewProps<TViews, ViewName<TViews>, TSlots>,
-      ) => ReactNode;
-      return createElement(
-        TypedReactAppView,
-        props as AppViewProps<TViews, ViewName<TViews>, TSlots> & Attributes,
-      );
-    },
+    Slot: Object.assign(
+      function ClientSlot(props: SlotProps<TSlots>) {
+        useTailorRootContext("Slot", client);
+        const TypedReactSlot = ReactSlot as unknown as (props: SlotProps<TSlots>) => ReactNode;
+        return createElement(TypedReactSlot, props);
+      },
+      {
+        Controlled: function ClientControlledSlot(props: ControlledSlotProps<TViews, TSlots>) {
+          useTailorRootContext("Slot.Controlled", client);
+          const TypedControlledSlot = ReactSlot.Controlled as unknown as (
+            props: ControlledSlotProps<TViews, TSlots>,
+          ) => ReactNode;
+          return createElement(TypedControlledSlot, props);
+        },
+      },
+    ),
     useApps: function useClientApps(options) {
       useTailorRootContext("useApps", client);
       return useRootApps(options);
     },
-    useView: function useClientView<TView extends ViewName<TViews>>(
+    useViews: function useClientViews(options) {
+      useTailorRootContext("useViews", client);
+      return useRootViews(options);
+    },
+    useSlotInstances: function useClientSlotInstances(options) {
+      useTailorRootContext("useSlotInstances", client);
+      return useRootSlotInstances(options);
+    },
+    useRegisterView: function useClientRegisterView<TView extends ViewName<TViews>>(
       view: TView,
       options: ViewState<TViews, NoInfer<TView>>,
     ) {
-      useTailorRootContext("useView", client);
-      useRootView<TViews, TView>(view, options);
+      useTailorRootContext("useRegisterView", client);
+      useRootRegisterView<TViews, TView>(view, options);
     },
   };
 
   return client;
 }
 
-export type { ViewOptions } from "./hooks/use-view";
+export type { ViewOptions } from "./hooks/use-register-view";

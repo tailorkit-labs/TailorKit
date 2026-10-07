@@ -137,11 +137,23 @@ export type AppsListResponses = {
         clientEntryFileId: string | null;
         logoLightFileId: string | null;
         logoDarkFileId: string | null;
+        views: Array<{
+          slot: string;
+          path: string;
+          instances?: true;
+          disabled?: true;
+        }>;
         logoLightPath: string | null;
         logoDarkPath: string | null;
         createdAt: string;
         updatedAt: string;
       } | null;
+      views: Array<{
+        slot: string;
+        path: string;
+        instances?: true;
+        disabled?: true;
+      }>;
       clientPath?: string;
       logoPaths?: {
         dark?: string;
@@ -201,11 +213,23 @@ export type AppsGetResponses = {
       clientEntryFileId: string | null;
       logoLightFileId: string | null;
       logoDarkFileId: string | null;
+      views: Array<{
+        slot: string;
+        path: string;
+        instances?: true;
+        disabled?: true;
+      }>;
       logoLightPath: string | null;
       logoDarkPath: string | null;
       createdAt: string;
       updatedAt: string;
     } | null;
+    views: Array<{
+      slot: string;
+      path: string;
+      instances?: true;
+      disabled?: true;
+    }>;
     clientPath?: string;
     logoPaths?: {
       dark?: string;
@@ -259,11 +283,23 @@ export type AppsCreateResponses = {
       clientEntryFileId: string | null;
       logoLightFileId: string | null;
       logoDarkFileId: string | null;
+      views: Array<{
+        slot: string;
+        path: string;
+        instances?: true;
+        disabled?: true;
+      }>;
       logoLightPath: string | null;
       logoDarkPath: string | null;
       createdAt: string;
       updatedAt: string;
     } | null;
+    views: Array<{
+      slot: string;
+      path: string;
+      instances?: true;
+      disabled?: true;
+    }>;
     clientPath?: string;
     logoPaths?: {
       dark?: string;
@@ -346,11 +382,23 @@ export type AppsUpdateResponses = {
       clientEntryFileId: string | null;
       logoLightFileId: string | null;
       logoDarkFileId: string | null;
+      views: Array<{
+        slot: string;
+        path: string;
+        instances?: true;
+        disabled?: true;
+      }>;
       logoLightPath: string | null;
       logoDarkPath: string | null;
       createdAt: string;
       updatedAt: string;
     } | null;
+    views: Array<{
+      slot: string;
+      path: string;
+      instances?: true;
+      disabled?: true;
+    }>;
     clientPath?: string;
     logoPaths?: {
       dark?: string;
@@ -405,11 +453,23 @@ export type AppsDeployResponses = {
       clientEntryFileId: string | null;
       logoLightFileId: string | null;
       logoDarkFileId: string | null;
+      views: Array<{
+        slot: string;
+        path: string;
+        instances?: true;
+        disabled?: true;
+      }>;
       logoLightPath: string | null;
       logoDarkPath: string | null;
       createdAt: string;
       updatedAt: string;
     } | null;
+    views: Array<{
+      slot: string;
+      path: string;
+      instances?: true;
+      disabled?: true;
+    }>;
     clientPath?: string;
     logoPaths?: {
       dark?: string;
@@ -581,6 +641,12 @@ export type DeploymentsListResponses = {
       clientEntryFileId: string | null;
       logoLightFileId: string | null;
       logoDarkFileId: string | null;
+      views: Array<{
+        slot: string;
+        path: string;
+        instances?: true;
+        disabled?: true;
+      }>;
       logoLightPath: string | null;
       logoDarkPath: string | null;
       createdAt: string;
@@ -624,6 +690,12 @@ export type DeploymentsGetResponses = {
     clientEntryFileId: string | null;
     logoLightFileId: string | null;
     logoDarkFileId: string | null;
+    views: Array<{
+      slot: string;
+      path: string;
+      instances?: true;
+      disabled?: true;
+    }>;
     logoLightPath: string | null;
     logoDarkPath: string | null;
     createdAt: string;
@@ -664,6 +736,12 @@ export type DeploymentsCreateData = {
         contentType: "image/svg+xml" | "image/png" | "image/webp";
       };
     };
+    views?: Array<{
+      slot: string;
+      path: string;
+      instances?: true;
+      disabled?: true;
+    }>;
     scope: {
       name: string;
       value: {
@@ -725,6 +803,12 @@ export type DeploymentsCreateResponses = {
       clientEntryFileId: string | null;
       logoLightFileId: string | null;
       logoDarkFileId: string | null;
+      views: Array<{
+        slot: string;
+        path: string;
+        instances?: true;
+        disabled?: true;
+      }>;
       logoLightPath: string | null;
       logoDarkPath: string | null;
       createdAt: string;
@@ -803,6 +887,12 @@ export type DeploymentsPublishResponses = {
     clientEntryFileId: string | null;
     logoLightFileId: string | null;
     logoDarkFileId: string | null;
+    views: Array<{
+      slot: string;
+      path: string;
+      instances?: true;
+      disabled?: true;
+    }>;
     logoLightPath: string | null;
     logoDarkPath: string | null;
     createdAt: string;
@@ -984,11 +1074,23 @@ export type PreviewAcceptedResponses = {
           clientEntryFileId: string | null;
           logoLightFileId: string | null;
           logoDarkFileId: string | null;
+          views: Array<{
+            slot: string;
+            path: string;
+            instances?: true;
+            disabled?: true;
+          }>;
           logoLightPath: string | null;
           logoDarkPath: string | null;
           createdAt: string;
           updatedAt: string;
         } | null;
+        views: Array<{
+          slot: string;
+          path: string;
+          instances?: true;
+          disabled?: true;
+        }>;
         clientPath?: string;
         logoPaths?: {
           dark?: string;

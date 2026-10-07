@@ -21,6 +21,7 @@ export interface PreviewFileManifest {
 
 export interface PreviewBuildManifest {
   files: PreviewFileManifest[];
+  views?: { slot: string; path: string; instances?: true; disabled?: true }[];
 }
 
 export interface CommittedPreviewBuild {
@@ -48,7 +49,20 @@ const fileSchema = z.object({
   chunks: z.number().int().min(0).max(4),
   sha256: z.string().regex(/^[a-f0-9]{64}$/u),
 });
-const manifestSchema = z.object({ files: z.array(fileSchema).max(previewBuildFiles) });
+const manifestSchema = z.object({
+  files: z.array(fileSchema).max(previewBuildFiles),
+  views: z
+    .array(
+      z.object({
+        slot: z.string().min(1).max(255),
+        path: z.string().startsWith("/").max(1024),
+        instances: z.literal(true).optional(),
+        disabled: z.literal(true).optional(),
+      }),
+    )
+    .max(1000)
+    .optional(),
+});
 const buildSchema = z.discriminatedUnion("state", [
   z.object({ manifest: manifestSchema, state: z.literal("uploading") }),
   z.object({
