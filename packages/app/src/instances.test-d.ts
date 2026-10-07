@@ -17,8 +17,9 @@ declare module "./views" {
   interface TailorKitServerFunctions extends ServerFunctions {}
 }
 
-createView("/users", {
+createView({
   slot: "page",
+  view: "/users",
   component: () => null,
   instances: {
     dataSchema: z.object({ reportId: z.string() }),
@@ -51,8 +52,9 @@ createView("/users", {
     },
   },
 });
-createView("/", {
+createView({
   slot: "page",
+  view: "/",
   component: () => null,
   instances: {
     dataSchema: z.object({ reportId: z.string() }),
@@ -61,8 +63,9 @@ createView("/", {
   },
 });
 
-const instanceView = createView("/", {
+const instanceView = createView({
   slot: "page",
+  view: "/",
   component: () => null,
   instances: {
     dataSchema: z.object({ count: z.string().transform(Number) }),

@@ -9,7 +9,7 @@ declare module "@tailorkit/app" {
   }
 }
 
-const view = createView("/package-test", { slot: "packageTest", component: () => null });
+const view = createView({ slot: "packageTest", view: "/package-test", component: () => null });
 const context = view.useContext();
 context.customerId satisfies string;
 // @ts-expect-error The umbrella export must preserve the registered context type.

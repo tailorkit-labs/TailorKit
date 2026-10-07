@@ -21,7 +21,7 @@ const starterNotes: Note[] = [
   },
 ];
 
-const view = createView("/", { slot: "panel", component: ViewComponent });
+const view = createView({ slot: "panel", view: "/", component: ViewComponent });
 
 function ViewComponent() {
   const [notes, setNotes] = useState<Note[]>(starterNotes);

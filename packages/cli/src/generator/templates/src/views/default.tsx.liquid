@@ -3,8 +3,9 @@ import { api{% if useBox %}, Box{% endif %} } from "#tailorkit";
 {% if multiple %}import { z } from "zod";
 {% endif %}
 
-const view = createView({{ viewPath }}, {
+const view = createView({
   slot: {{ slotName }},
+  view: {{ viewPath }},
 {% if multiple %}  instances: {
     dataSchema: z.object({}),
     resolve: () => [{ key: "default", metadata: { title: "Default" }, data: {} }],

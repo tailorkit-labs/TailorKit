@@ -151,6 +151,7 @@ export type TailorKitClientWithMeta<TViews extends SlotDefinitions = SlotDefinit
 type ViewOptions<TPath extends AppViewPath, TSlot extends SlotName, TSchema extends z.ZodType> = {
   [S in TSlot]: {
     slot: S;
+    view: TPath;
     component: View<Record<string, never>>;
   } & (TPath extends SlotView<S>
     ? unknown
@@ -165,9 +166,9 @@ export const createView = <
   const TSlot extends SlotName,
   TSchema extends z.ZodType,
 >(
-  path: TPath,
   options: ViewOptions<TPath, TSlot, TSchema>,
 ): ViewDefinition<TPath, z.output<TSchema>, TSlot> => {
+  const path = options.view;
   const Context = createContext<{ context: ViewContext<TPath>; instance?: ViewInstance } | null>(
     null,
   );

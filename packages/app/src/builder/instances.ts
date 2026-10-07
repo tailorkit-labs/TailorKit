@@ -320,7 +320,7 @@ export async function extractInstances(
       !aliases.has(node.callee.name)
     )
       return;
-    const options = node.arguments[1];
+    const options = node.arguments[0];
     if (options?.type !== "ObjectExpression") return;
     const instances = property(options, "instances");
     if (!instances) return;
@@ -334,7 +334,7 @@ export async function extractInstances(
       owner?.type === "VariableDeclarator" && owner.id.type === "Identifier"
         ? owner.id.name
         : "default";
-    const view = node.arguments[0];
+    const view = property(options, "view")?.value;
     if (view?.type !== "Literal" || typeof view.value !== "string")
       fail("Instance view paths must be string literals.");
     if (instances.value.type !== "ObjectExpression")
