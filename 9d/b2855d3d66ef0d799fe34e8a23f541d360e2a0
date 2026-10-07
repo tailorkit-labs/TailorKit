@@ -1,0 +1,226 @@
+packages/cli/src/generator/types.test.ts
+  s_a48ab343401d93::t_283580e730d61c 448-451,477
+packages/client-platform/package.json
+  s_a48ab343401d93::t_283580e730d61c 3
+examples/apps/email/src/tailorkit.gen.ts
+  s_a48ab343401d93::t_283580e730d61c 20-21
+packages/core/package.json
+  s_a48ab343401d93::t_283580e730d61c 3
+packages/client-platform/src/client/types.gen.ts
+  s_a48ab343401d93::t_283580e730d61c 716,724,768,786,824,842,928
+.changeset/pre/host-slot-instances.md
+  s_a48ab343401d93::t_283580e730d61c 1-11
+packages/api-platform/src/routes/deployments.test.ts
+  s_a48ab343401d93::t_283580e730d61c 1-2,4,168-315,318-326,335-342,348-373,376-381,383-391,393-408,416-417,420-422,425-457,521,635,678
+apps/apps-worker/src/tests/integration.test.mjs
+  s_a48ab343401d93::t_283580e730d61c 1,119-122,128-130,230-233,240-242,581-594,598-603
+examples/apps/notes/src/views/default.tsx
+  s_a48ab343401d93::t_283580e730d61c 1,24
+examples/tanstack-start/src/components/tailorkit-shell.tsx
+  s_a48ab343401d93::t_283580e730d61c 135-144,154,177
+packages/client-platform/CHANGELOG.md
+  s_a48ab343401d93::t_283580e730d61c 3-12
+packages/app/src/builder/instances.test.ts
+  s_a48ab343401d93::t_283580e730d61c 5,12,92-95,100
+packages/cli/package.json
+  s_a48ab343401d93::t_283580e730d61c 3
+examples/apps/backend-todo/README.md
+  s_a48ab343401d93::t_283580e730d61c 7,9,11,21
+examples/apps/backend-todo/src/views/default.tsx
+  s_a48ab343401d93::t_283580e730d61c 1,6-8
+.changeset/declare-multiple-slots.md
+  s_a48ab343401d93::t_283580e730d61c 1-11
+packages/cli/src/generator/generate.ts
+  s_a48ab343401d93::t_283580e730d61c 111
+.changeset/pre/colocated-instance-resolvers.md
+  s_a48ab343401d93::t_283580e730d61c 1-7
+packages/api-platform/src/assets.ts
+  s_a48ab343401d93::t_283580e730d61c 6,41-46,58-62
+.changeset/pre/explicit-slot-rendering.md
+  s_a48ab343401d93::t_283580e730d61c 1-7
+examples/apps/email/src/views/default.tsx
+  s_a48ab343401d93::t_283580e730d61c 2,4
+packages/cli/src/generator/templates/src/views/default.tsx.liquid
+  s_a48ab343401d93::t_283580e730d61c 1,3-4,6-13
+packages/app/src/instances.test-d.ts
+  s_a48ab343401d93::t_283580e730d61c 2,20-22,55-57,66-68
+packages/db/src/schema/apps.ts
+  s_a48ab343401d93::t_283580e730d61c 132
+packages/app/README.md
+  s_a48ab343401d93::t_283580e730d61c 97
+packages/app/src/builder/server.test.ts
+  s_a48ab343401d93::t_283580e730d61c 178,182,194
+packages/react/src/__tests__/slot.test.tsx
+  s_a48ab343401d93::t_283580e730d61c 31,228,251,262,301,312,344-346,374,381,397,399,413-441
+  s_a48ab343401d93::t_a5feea80c91dfc 442
+packages/app/src/builder/instances.ts
+  s_a48ab343401d93::t_283580e730d61c 310,323,331,337
+examples/apps/backend-todo/src/client.ts
+  s_a48ab343401d93::t_283580e730d61c 6
+examples/nextjs/lib/tailorkit.ts
+  s_a48ab343401d93::t_283580e730d61c 17
+packages/app/package.json
+  s_a48ab343401d93::t_283580e730d61c 3
+packages/cli/CHANGELOG.md
+  s_a48ab343401d93::t_283580e730d61c 3-21
+apps/apps-worker/src/assets.ts
+  s_a48ab343401d93::t_283580e730d61c 4,8,14,18-27,30,38-39,43,56,60,71,75,79,81-87,96
+packages/cli/src/deploy.ts
+  s_a48ab343401d93::t_283580e730d61c 84,132,147-148,281,300-309,352-353,355,359,361-362,364,403-406,435,437
+packages/react/src/__tests__/use-slot-instances.test.tsx
+  s_a48ab343401d93::t_283580e730d61c 21-24,38-46,55,77,99,104,126,130,134,177,187,206,218-246,248,273,294,302,322,335,358,366,380,388,402,411,413,415,417,420-421,424-425,431,437-439,445,452,467,475,547-731
+  s_a48ab343401d93::t_62e50e85d7d4c3 149,153,158,494,507,514,523,531,546
+  s_a48ab343401d93::t_8e4956086b2af3 483
+docs/installation.mdx
+  s_a48ab343401d93::t_283580e730d61c 19,23,27,31,43,47,51,55,67,71,75,79
+examples/apps/todo/src/tailorkit.gen.ts
+  s_a48ab343401d93::t_283580e730d61c 23-24
+apps/demo/clients/components.ts
+  s_a48ab343401d93::t_283580e730d61c 8
+packages/storage/test/s3.test.mjs
+  s_a48ab343401d93::t_283580e730d61c 55-68
+apps/apps-worker/src/supervisor/source.test.ts
+  s_a48ab343401d93::t_283580e730d61c 1-2,28,108-158
+packages/cli/src/generator/types.ts
+  s_a48ab343401d93::t_283580e730d61c 54,535-538
+packages/react/src/components/slot.tsx
+  s_a48ab343401d93::t_283580e730d61c 1,8,34,37,42-57,68-72,92,95,116,118,127-129,146-147,190,241-247,250-252
+packages/sandbox/CHANGELOG.md
+  s_a48ab343401d93::t_283580e730d61c 3-20
+packages/tailorkit/CHANGELOG.md
+  s_a48ab343401d93::t_283580e730d61c 3-28
+packages/react/src/tailorkit.tsx
+  s_a48ab343401d93::t_283580e730d61c 203,208
+packages/client-core/README.md
+  s_a48ab343401d93::t_178d4bcde8f67a 50-51
+.changeset/gzip-deployment-artifacts.md
+  s_a48ab343401d93::t_283580e730d61c 1-9
+packages/cli/src/generator/generate.test.ts
+  s_a48ab343401d93::t_283580e730d61c 252-255,260-278,339-340
+packages/core/src/schema/schema.ts
+  s_a48ab343401d93::t_283580e730d61c 63-65,129-132
+packages/storage/src/types.ts
+  s_a48ab343401d93::t_283580e730d61c 27,41
+packages/client-core/package.json
+  s_a48ab343401d93::t_62e50e85d7d4c3 3
+apps/apps-worker/src/assets.test.ts
+  s_a48ab343401d93::t_283580e730d61c 1-2,179-181,209-308
+examples/tanstack-start/src/lib/tailorkit.ts
+  s_a48ab343401d93::t_283580e730d61c 17
+.changeset/all-app-slot-instances.md
+  s_a48ab343401d93::t_283580e730d61c 1-5
+.changeset/pre/clear-host-view-registration.md
+  s_a48ab343401d93::t_283580e730d61c 1-6
+.changeset/pre/render-slot-instances.md
+  s_a48ab343401d93::t_283580e730d61c 1-8
+examples/nextjs/components/tailorkit-shell.tsx
+  s_a48ab343401d93::t_283580e730d61c 160-169,179,202
+packages/core/src/schema/views.ts
+  s_a48ab343401d93::t_283580e730d61c 44
+packages/core/src/spec/spec.ts
+  s_a48ab343401d93::t_283580e730d61c 22-25
+.changeset/pre/smaller-app-server-bundles.md
+  s_a48ab343401d93::t_283580e730d61c 1-7
+packages/tailorkit/src/app.test-d.ts
+  s_a48ab343401d93::t_283580e730d61c 1,4-6,12
+examples/apps/backend-todo/src/tailorkit.gen.ts
+  s_a48ab343401d93::t_283580e730d61c 27
+packages/app/src/slots.test-d.ts
+  s_a48ab343401d93::t_283580e730d61c 1-2,4-6,10,19,29-31,36-38,52-100
+packages/api-platform/src/routes/runtime.ts
+  s_a48ab343401d93::t_283580e730d61c 133
+packages/cli/src/deploy.test.ts
+  s_a48ab343401d93::t_283580e730d61c 1-2,78,94,98-109,276,340-399
+packages/asset-delivery/src/index.ts
+  s_a48ab343401d93::t_283580e730d61c 14,118,135-138,184-200,257-270
+  s_a48ab343401d93::t_632ca182ddb09c 271
+packages/core/src/server/routes/deployments.ts
+  s_a48ab343401d93::t_283580e730d61c 20
+packages/sandbox/package.json
+  s_a48ab343401d93::t_283580e730d61c 3
+packages/tailorkit/package.json
+  s_a48ab343401d93::t_283580e730d61c 3
+packages/cli/src/init.test.ts
+  s_a48ab343401d93::t_283580e730d61c 58
+examples/apps/todo/src/views/default.tsx
+  s_a48ab343401d93::t_283580e730d61c 1,7
+packages/db/src/migrations/20261007070850_left_maginty/migration.sql
+  s_a48ab343401d93::t_283580e730d61c 1
+examples/apps/notes/src/tailorkit.gen.ts
+  s_a48ab343401d93::t_283580e730d61c 20-21
+apps/demo/clients/todo.ts
+  s_a48ab343401d93::t_283580e730d61c 3,6
+packages/client-core/src/store/fetch/slot-instances.ts
+  s_a48ab343401d93::t_8e4956086b2af3 37-45,60-62,71-72,78-79,86-96,126-127
+  s_a48ab343401d93::t_62e50e85d7d4c3 8,10-13,16-17,21,29,32,46,51,53-54,58,63,70,73-77,80-85,97-103,111,124
+examples/apps/email/src/views/navigation.tsx
+  s_a48ab343401d93::t_283580e730d61c 1,4
+.changeset/pre/simple-view-discovery.md
+  s_a48ab343401d93::t_283580e730d61c 1-10
+packages/app/src/view-instance.test.ts
+  s_a48ab343401d93::t_283580e730d61c 9,22-24,63,75-77,93-99
+  s_a48ab343401d93::t_71edef78a1a161 100
+packages/core/src/schema/slots.test.ts
+  s_a48ab343401d93::t_283580e730d61c 7-28,60-69
+  s_a48ab343401d93::t_7f07c7b8ee4023 70
+packages/db/src/migrations/20261007070850_left_maginty/snapshot.json
+  s_a48ab343401d93::t_283580e730d61c 1-3589
+apps/demo/clients/messages.ts
+  s_a48ab343401d93::t_283580e730d61c 3,6
+packages/api-platform/src/routes/deployments.ts
+  s_a48ab343401d93::t_283580e730d61c 37,56,140-181,390,570-575,580-583,657
+packages/react/CHANGELOG.md
+  s_a48ab343401d93::t_283580e730d61c 3-25
+packages/react/package.json
+  s_a48ab343401d93::t_283580e730d61c 3
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_a48ab343401d93::t_283580e730d61c 5,29-30,165,171-175,177,301-304,306-307,315,322,325,333-359
+packages/react/src/hooks/use-slot-instances.ts
+  s_a48ab343401d93::t_8e4956086b2af3 26-29,57-64
+  s_a48ab343401d93::t_62e50e85d7d4c3 2,9,19,34,37,47,55,65
+  s_a48ab343401d93::t_283580e730d61c 5,25,30-33,35-36,38-46,48
+packages/client-core/src/client/fetch-client.test.ts
+  s_a48ab343401d93::t_62e50e85d7d4c3 84,100
+packages/client-core/src/store/fetch/index.ts
+  s_a48ab343401d93::t_8e4956086b2af3 16-20
+packages/api-utils/src/app-auth/deployments.ts
+  s_a48ab343401d93::t_283580e730d61c 11
+packages/api-platform/src/assets.test.ts
+  s_a48ab343401d93::t_283580e730d61c 1-3,116-197
+apps/apps-worker/README.md
+  s_a48ab343401d93::t_283580e730d61c 13,79
+apps/apps-worker/src/supervisor/source.ts
+  s_a48ab343401d93::t_283580e730d61c 1,18-47,122,131,142-148
+packages/app/CHANGELOG.md
+  s_a48ab343401d93::t_283580e730d61c 3-15
+packages/app/src/views.ts
+  s_a48ab343401d93::t_283580e730d61c 78-82,85,116,119-127,129-131,159-162,164-179,208,227,241-260
+packages/asset-delivery/src/index.test.ts
+  s_a48ab343401d93::t_283580e730d61c 3,22-37,103,105
+packages/storage/src/s3.ts
+  s_a48ab343401d93::t_283580e730d61c 70,96,117,122
+packages/api-platform/openapi.json
+  s_a48ab343401d93::t_283580e730d61c 2730,2760,2768,2927,3031,3252,3350,3675-3678
+packages/core/CHANGELOG.md
+  s_a48ab343401d93::t_283580e730d61c 3-16
+packages/app/src/children.test-d.ts
+  s_a48ab343401d93::t_283580e730d61c 24-26
+pnpm-lock.yaml
+  s_a48ab343401d93::t_a8baaa31dfd6c5 450,453,459,462,465,516,531,540,546,1693,5127-5129,5131-5132,5134-5135,5137-5141,5143-5147,5149-5153,5155-5159,5161-5165,5167-5171,5173-5178,5180-5185,5187-5192,5194-5199,5201-5206,7849-7851,7853-7855,7857-7858,7860-7863,7865-7867,7869-7875,7877-7878,13264,13271,13307,13314,13319,13326,15234-15248,15250-15252,15257,15263-15264,15326,15330,16750,16756,16807-16809,16813,16817,16820,16839,16843,16846,16914,16918,16920,16922,17133,18757,18777,19316,19318,19320-19321,19323,19325-19327,19329-19332,19334-19336,19338,19340-19341,19343,19345,19347
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9db2855d3d66ef0d799fe34e8a23f541d360e2a0",
+  "prompts": {},
+  "sessions": {
+    "s_a48ab343401d93": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11530-4288-71d1-b6e4-ad4f7934580a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
