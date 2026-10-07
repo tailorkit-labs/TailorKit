@@ -1,3 +1,6 @@
+import { createServer } from "node:http";
+import { gzipSync } from "node:zlib";
+import { maxDeploymentBytes } from "@tailorkit/asset-delivery";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Storage } from "@tailorkit/storage";
 import { handleAssetRequest } from "./assets";
@@ -109,4 +112,86 @@ it("maps rejected storage reads to a sanitized service-unavailable response", as
   const response = await handleAssetRequest(new Request(url), backend);
   expect(response.status).toBe(503);
   expect(await response.text()).toBe("");
+});
+
+it("serves Node fetch's decoded gzip body with consistent GET and HEAD metadata", async () => {
+  const bytes = gzipSync(bundle);
+  const origin = createServer((_request, response) => {
+    response.writeHead(200, { "Content-Encoding": "gzip", "Content-Length": bytes.byteLength });
+    response.end(bytes);
+  });
+  await new Promise<void>((resolve, reject) => {
+    origin.once("error", reject);
+    origin.listen(0, "127.0.0.1", resolve);
+  });
+  try {
+    const address = origin.address();
+    if (!address || typeof address === "string") throw new Error("Missing test server address");
+    const backend = storage();
+    vi.mocked(backend.head).mockResolvedValue({
+      key,
+      contentEncoding: "gzip",
+      contentLength: bytes.byteLength,
+      contentType: "application/javascript",
+      etag: '"gzip-etag"',
+    });
+    vi.mocked(backend.createDownloadUrl).mockResolvedValue({
+      key,
+      url: `http://127.0.0.1:${address.port}/file`,
+    });
+    const response = await handleAssetRequest(new Request(url), backend);
+    expect(await response.text()).toBe(bundle);
+    expect(response.headers.get("Content-Encoding")).toBeNull();
+    expect(response.headers.get("Content-Length")).toBeNull();
+    expect(response.headers.get("ETag")).toBe('W/"gzip-etag"');
+    const head = await handleAssetRequest(new Request(url, { method: "HEAD" }), backend);
+    expect([...head.headers]).toEqual([...response.headers]);
+    expect(await head.text()).toBe("");
+  } finally {
+    await new Promise<void>((resolve, reject) =>
+      origin.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
+});
+
+it("limits decoded gzip assets and cancels the upstream stream on overflow", async () => {
+  const backend = storage();
+  vi.mocked(backend.head).mockResolvedValue({
+    key,
+    contentEncoding: "gzip",
+    contentLength: 1024,
+    contentType: "application/javascript",
+  });
+  const cancel = vi.fn();
+  let chunks = 0;
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response(
+      new ReadableStream<Uint8Array>({
+        pull(controller) {
+          controller.enqueue(new Uint8Array(chunks++ === 0 ? maxDeploymentBytes : 1));
+        },
+        cancel,
+      }),
+    ),
+  );
+  const response = await handleAssetRequest(new Request(url), backend);
+  const reader = response.body!.getReader();
+  expect((await reader.read()).value?.byteLength).toBe(maxDeploymentBytes);
+  await expect(reader.read()).rejects.toThrow("Asset delivery failed (404)");
+  await vi.waitFor(() => expect(cancel).toHaveBeenCalledOnce());
+});
+
+it("serves decoded gzip assets at exactly the 3 MiB limit", async () => {
+  const backend = storage();
+  vi.mocked(backend.head).mockResolvedValue({
+    key,
+    contentEncoding: "gzip",
+    contentLength: 1024,
+    contentType: "application/javascript",
+  });
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response(new Uint8Array(maxDeploymentBytes)),
+  );
+  const response = await handleAssetRequest(new Request(url), backend);
+  expect((await response.arrayBuffer()).byteLength).toBe(maxDeploymentBytes);
 });

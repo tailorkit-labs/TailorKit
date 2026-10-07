@@ -445,7 +445,10 @@ describe("renderGeneratedTypes", () => {
 it("composes independent ancestor contexts and generates slot names", () => {
   const generated = renderGeneratedTypes({
     components: {},
-    slots: { panel: { views: ["/", "/users", "/users/detail"] }, navbar: { views: ["/"] } },
+    slots: {
+      panel: { views: ["/", "/users", "/users/detail"], multiple: true },
+      navbar: { views: ["/"] },
+    },
     views: {
       "/": {
         context: {
@@ -471,7 +474,7 @@ it("composes independent ancestor contexts and generates slot names", () => {
     },
   });
   expect(generated).toContain(
-    'interface TailorKitSlots { "panel": "/" | "/users" | "/users/detail"; "navbar": "/"; }',
+    'interface TailorKitSlots { "panel": { views: "/" | "/users" | "/users/detail"; multiple: true }; "navbar": { views: "/"; multiple: false }; }',
   );
   const detail = generated.slice(
     generated.indexOf('"/users/detail":'),

@@ -11,7 +11,7 @@ const teamIdPattern = /^[a-z0-9][a-z0-9-]{12}[a-z0-9]$/u;
 const nodeAssetPath = /^\/api\/assets\/t\/([^/]+)(\/p\/.*)$/u;
 const methods = new Set(["GET", "HEAD", "OPTIONS"]);
 
-export const maxDeploymentBytes = 1024 * 1024;
+export const maxDeploymentBytes = 3 * 1024 * 1024;
 export const maxAssetBytes = maxDeploymentBytes;
 
 export interface AssetIdentity {
@@ -115,6 +115,7 @@ export function assetPreflight(): Response {
 
 export function assetHeaders(input: {
   contentLength: number;
+  contentEncoding?: string;
   contentType?: AssetIdentity["contentType"];
   etag?: string;
 }): Headers {
@@ -131,6 +132,10 @@ export function assetHeaders(input: {
     "Referrer-Policy": "no-referrer",
     "X-Content-Type-Options": "nosniff",
   });
+  if (input.contentEncoding === "gzip") {
+    headers.set("Content-Encoding", "gzip");
+    headers.set("Vary", "Accept-Encoding");
+  }
   if (input.etag) {
     headers.set("ETag", input.etag);
   }
@@ -174,6 +179,23 @@ export class AssetDeliveryError extends Error {
   constructor(readonly status: 400 | 404 | 405 | 503) {
     super(`Asset delivery failed (${status})`);
   }
+}
+
+/** Bound decoded bytes, including objects that have not passed publication checks. */
+export function limitAssetBody(body: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  let contentLength = 0;
+  return body.pipeThrough(
+    new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        contentLength += chunk.byteLength;
+        if (contentLength > maxAssetBytes) {
+          controller.error(new AssetDeliveryError(404));
+          return;
+        }
+        controller.enqueue(chunk);
+      },
+    }),
+  );
 }
 
 export function hostedAssetRequest(request: Request, assetDomain: string) {
@@ -231,4 +253,19 @@ export function assetResponse(
       }),
     ),
   );
+}
+
+/** An explicit gzip refusal takes precedence over a wildcard. */
+export function acceptsGzip(request: Request): boolean {
+  const encodings = (request.headers.get("Accept-Encoding") ?? "")
+    .toLowerCase()
+    .split(",")
+    .map((entry) => {
+      const [name, ...parameters] = entry.split(";").map((part) => part.trim());
+      const quality = parameters.find((parameter) => parameter.startsWith("q="));
+      return { name, quality: quality ? Number(quality.slice(2)) : 1 };
+    });
+  const encoding =
+    encodings.find(({ name }) => name === "gzip") ?? encodings.find(({ name }) => name === "*");
+  return encoding !== undefined && encoding.quality > 0 && encoding.quality <= 1;
 }

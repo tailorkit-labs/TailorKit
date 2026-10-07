@@ -4,6 +4,28 @@ import { TailorKitSchemaSpec } from "../spec/spec";
 import { z } from "zod";
 
 describe("slot view contracts", () => {
+  it("preserves true, false, and omitted multiplicity through serialization", () => {
+    const host = createTailorKitSchema({
+      components: {},
+      views: { "/": z.object({}) },
+      slots: {
+        page: { views: ["/"], multiple: true },
+        panel: { views: ["/"], multiple: false },
+        navbar: { views: ["/"] },
+      },
+    });
+    expect(TailorKitSchemaSpec.parse(host.serialize()).slots).toEqual({
+      page: { views: ["/"], multiple: true },
+      panel: { views: ["/"], multiple: false },
+      navbar: { views: ["/"] },
+    });
+    expect(
+      TailorKitSchemaSpec.safeParse({
+        ...host.serialize(),
+        slots: { page: { views: ["/"], multiple: "true" } },
+      }).success,
+    ).toBe(false);
+  });
   it("serializes supported view lists", () => {
     const userView = z.object({ userId: z.string() });
     const host = createTailorKitSchema({
@@ -33,6 +55,17 @@ describe("slot view contracts", () => {
         slots: { panel: { views: ["/missing"] } },
       }).success,
     ).toBe(false);
+  });
+
+  it("rejects invalid multiplicity in JavaScript host configurations", () => {
+    expect(() =>
+      createTailorKitSchema({
+        components: {},
+        views: { "/": z.object({}) },
+        // @ts-expect-error Exercise runtime validation for JavaScript hosts.
+        slots: { page: { views: ["/"], multiple: "true" } },
+      }),
+    ).toThrow("multiple must be a boolean");
   });
 
   it("rejects untyped host configurations with undeclared views", () => {

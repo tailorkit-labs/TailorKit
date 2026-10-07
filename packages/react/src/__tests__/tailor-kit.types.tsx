@@ -2,6 +2,7 @@ import { createTailorKitServer } from "@tailorkit/core/server";
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from "@standard-schema/spec";
 import type { ReactNode } from "react";
 import { components, createTailorKitClient } from "../tailorkit";
+import type { TailorKitApp } from "../tailorkit";
 
 const typedSchema = <TValue,>(): StandardSchemaV1<unknown, TValue> &
   StandardJSONSchemaV1<unknown, TValue> =>
@@ -25,6 +26,8 @@ const server = createTailorKitServer({
   slots: {
     panel: { views: ["/", "/home", "/home/detail", "/user"] },
     navbar: { views: ["/"] },
+    page: { views: ["/"], multiple: true },
+    single: { views: ["/"], multiple: false },
   },
   components: {
     Button: {},
@@ -159,17 +162,19 @@ useViews({ scopes: ["unknown"] });
 // @ts-expect-error slots must be declared by this server
 useViews({ slot: "missing" });
 
-const instances = useSlotInstances({ app, slot: "panel" });
+const instances = useSlotInstances({ slot: "panel" });
 const instanceKey: string | undefined = instances.data?.[0]?.key;
 const instanceData: unknown = instances.data?.[0]?.data;
 void instanceKey;
 void instanceData;
 // @ts-expect-error slots must be declared by this server
-useSlotInstances({ app, slot: "missing" });
-// @ts-expect-error an app must be supplied
-useSlotInstances({ slot: "panel" });
+useSlotInstances({ slot: "missing" });
+const instanceApp: TailorKitApp | undefined = instances.data?.[0]?.app;
+void instanceApp;
+// @ts-expect-error app selection is no longer accepted
+useSlotInstances({ app, slot: "panel" });
 // @ts-expect-error a slot must be supplied
-useSlotInstances({ app });
+useSlotInstances({});
 
 <Slot app={app} name="panel" />;
 <Slot app={app} name="navbar" />;
@@ -293,12 +298,43 @@ const UnionSlot = createTailorKitClient<typeof unionContextServer>({
   context={{ kind: "organization", orgId: "o1", detailId: "d1" }}
 />;
 
+<Slot app={app} name="page" instanceKey="overview" />;
+// @ts-expect-error Multi-instance slots require a key.
+<Slot app={app} name="page" />;
+// @ts-expect-error Single-instance slots reject a key (omitted flag).
 <Slot app={app} name="panel" instanceKey="overview" />;
+// @ts-expect-error Single-instance slots reject a key (explicit false).
+<Slot app={app} name="single" instanceKey="overview" />;
 const suppliedInstance = {
   key: "overview",
   metadata: { title: "Overview" },
   data: { reportId: "r1" },
 };
+<Slot.Controlled
+  app={app}
+  name="page"
+  view="/"
+  status="ready"
+  context={{ user: { id: "u1" } }}
+  instance={suppliedInstance}
+/>;
+// @ts-expect-error loading slots cannot expose stale instance data
+<Slot.Controlled app={app} name="page" view="/" status="loading" instance={suppliedInstance} />;
+<Slot.Controlled
+  app={app}
+  name="page"
+  view="/"
+  status="ready"
+  context={{ user: { id: "u1" } }}
+  // @ts-expect-error a controlled slot receives an instance, not a key to resolve
+  instanceKey="overview"
+/>;
+// @ts-expect-error instance keys are strings
+<Slot app={app} name="page" instanceKey={123} />;
+
+// @ts-expect-error Ready multi-instance controlled slots require an instance.
+<Slot.Controlled app={app} name="page" view="/" status="ready" context={{ user: { id: "u1" } }} />;
+// @ts-expect-error Ready single-instance slots reject an instance.
 <Slot.Controlled
   app={app}
   name="navbar"
@@ -307,16 +343,17 @@ const suppliedInstance = {
   context={{ user: { id: "u1" } }}
   instance={suppliedInstance}
 />;
-// @ts-expect-error loading slots cannot expose stale instance data
-<Slot.Controlled app={app} name="navbar" view="/" status="loading" instance={suppliedInstance} />;
+// @ts-expect-error Explicit false also rejects an instance.
 <Slot.Controlled
   app={app}
-  name="navbar"
+  name="single"
   view="/"
   status="ready"
   context={{ user: { id: "u1" } }}
-  // @ts-expect-error a controlled slot receives an instance, not a key to resolve
-  instanceKey="overview"
+  instance={suppliedInstance}
 />;
-// @ts-expect-error instance keys are strings
-<Slot app={app} name="panel" instanceKey={123} />;
+<Slot.Controlled app={app} name="page" view="/" status="loading" />;
+<Slot.Controlled app={app} name="page" view="/" status="error" />;
+const slotName: "page" | "navbar" = Math.random() > 0.5 ? "page" : "navbar";
+// @ts-expect-error A union slot name cannot bypass the key requirement.
+<Slot app={app} name={slotName} />;

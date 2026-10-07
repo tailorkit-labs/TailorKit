@@ -52,3 +52,17 @@ test("upload signing still supports callers without a checksum", async () => {
   assert.equal(result.headers["x-amz-checksum-sha256"], undefined);
   assert.ok(url.searchParams.get("X-Amz-SignedHeaders").includes("content-type"));
 });
+
+test("presigned gzip uploads sign and return content-encoding", async () => {
+  const result = await storage.createUploadUrl({
+    key: "client.js",
+    contentType: "application/javascript",
+    contentEncoding: "gzip",
+    checksumSha256: Buffer.alloc(32).toString("base64"),
+  });
+  const signedHeaders = new URL(result.uploadUrl).searchParams
+    .get("X-Amz-SignedHeaders")
+    .split(";");
+  assert.ok(signedHeaders.includes("content-encoding"));
+  assert.equal(result.headers["content-encoding"], "gzip");
+});

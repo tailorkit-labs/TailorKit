@@ -41,5 +41,5 @@ export type ViewContextHierarchy<T> = {
 
 export type SlotDefinitions<TPath extends string = string> = Record<
   string,
-  { views: readonly TPath[] }
+  { views: readonly TPath[]; multiple?: boolean }
 >;

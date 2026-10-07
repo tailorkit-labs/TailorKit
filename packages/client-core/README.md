@@ -47,4 +47,6 @@ Caches belong to a client instance. Create a new client when the authenticated i
 
 React's `createTailorKitClient` accepts the same `cache` configuration and an optional `fetch` implementation. `useApps` and `useViews` accept a `staleTime` override; `useSlotInstances` also accepts `gcTime`. Their `refetch()` methods force a new request.
 
+`useSlotInstances({ slot })` resolves instances across discovered apps in discovery order, with the originating `app` attached to each result. Managed `Slot` components resolve only their explicitly supplied app. Instance resolution requires a slot declared with `multiple: true`.
+
 `TailorKitApp` and `TailorKitView` are shared types; the React package re-exports them for compatibility.

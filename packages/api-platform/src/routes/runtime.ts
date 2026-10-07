@@ -130,6 +130,7 @@ export const getRuntimeBundle = protectedRouter
         objectKey: file.objectKey,
         checksum: file.checksum,
         contentLength: file.contentLength,
+        contentEncoding: file.encoding === "gzip" ? "gzip" : undefined,
       },
     };
   });

@@ -1,3 +1,4 @@
+import { maxDeploymentBytes } from "@tailorkit/asset-delivery";
 import { Effect } from "effect";
 import { appError } from "../runtime/errors";
 import { appDeploymentMetadata, deploymentMetadataKey } from "@tailorkit/api-utils/app-auth";
@@ -13,6 +14,36 @@ export function installationName(identity: Identity, issuer: string) {
 }
 
 export const metadataLifetimeSeconds = 300;
+
+/** Bound stored and inflated bytes before allocating or executing bundle code. */
+async function readBundleBytes(
+  stream: ReadableStream<Uint8Array>,
+): Promise<Uint8Array<ArrayBuffer>> {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let length = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      length += value.byteLength;
+      if (length > maxDeploymentBytes) {
+        await reader.cancel();
+        throw new Error("Server bundle exceeds deployment size limit");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(length);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+}
 
 /** Only this trusted service sees platform credentials or the private R2 binding. */
 export function deploymentSource(
@@ -88,7 +119,7 @@ export function deploymentSource(
     code: (deployment: ServerDeployment) =>
       Effect.tryPromise({
         try: async () => {
-          const version = `${deployment.deploymentId}:${deployment.checksum}`;
+          const version = `${deployment.deploymentId}:${deployment.checksum}:${deployment.contentEncoding ?? "utf-8"}`;
           if (cached?.version === version) {
             return cached.code;
           }
@@ -97,7 +128,7 @@ export function deploymentSource(
             throw new AppError("NOT_FOUND", "Server bundle missing");
           }
 
-          const bytes = await new Response(object.body).arrayBuffer();
+          const bytes = await readBundleBytes(object.body);
           if (bytes.byteLength !== deployment.contentLength) {
             throw new Error("Server bundle size mismatch");
           }
@@ -108,7 +139,13 @@ export function deploymentSource(
             throw new Error("Server bundle checksum mismatch");
           }
 
-          const code = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+          const decoded =
+            deployment.contentEncoding === "gzip"
+              ? await readBundleBytes(
+                  new Response(bytes).body!.pipeThrough(new DecompressionStream("gzip")),
+                )
+              : bytes;
+          const code = new TextDecoder("utf-8", { fatal: true }).decode(decoded);
           cached = { version, code };
           return code;
         },

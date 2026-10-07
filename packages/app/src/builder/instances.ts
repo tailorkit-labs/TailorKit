@@ -307,7 +307,7 @@ export async function extractInstances(
       if (
         s.type === "ImportSpecifier" &&
         s.imported.type === "Identifier" &&
-        s.imported.name === "createView"
+        s.imported.name === "defineView"
       )
         aliases.add(s.local.name);
     }
@@ -320,7 +320,7 @@ export async function extractInstances(
       !aliases.has(node.callee.name)
     )
       return;
-    const options = node.arguments[1];
+    const options = node.arguments[0];
     if (options?.type !== "ObjectExpression") return;
     const instances = property(options, "instances");
     if (!instances) return;
@@ -328,13 +328,13 @@ export async function extractInstances(
       throw new Error(`${filename}: ${message}`);
     };
     if (ancestors.some(isFunction))
-      fail("createView with instances must be declared at module scope.");
+      fail("defineView with instances must be declared at module scope.");
     const owner = ancestors.findLast((n) => n.type === "VariableDeclarator");
     const viewName =
       owner?.type === "VariableDeclarator" && owner.id.type === "Identifier"
         ? owner.id.name
         : "default";
-    const view = node.arguments[0];
+    const view = property(options, "view")?.value;
     if (view?.type !== "Literal" || typeof view.value !== "string")
       fail("Instance view paths must be string literals.");
     if (instances.value.type !== "ObjectExpression")

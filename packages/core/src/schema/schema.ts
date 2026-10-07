@@ -60,6 +60,9 @@ export const createTailorKitSchema = <
   views?: TViews & ViewContextHierarchy<NoInfer<TViews>>;
 }): TailorKitSchema<TComponents, TViews, TActions> => {
   for (const [name, slot] of Object.entries(schema.slots ?? {})) {
+    if (slot.multiple !== undefined && typeof slot.multiple !== "boolean") {
+      throw new TypeError(`Slot "${name}" multiple must be a boolean.`);
+    }
     for (const view of slot.views) {
       if (!Object.hasOwn(schema.views ?? {}, view)) {
         throw new Error(`Slot "${name}" references undeclared view "${view}".`);
@@ -123,7 +126,10 @@ export const createTailorKitSchema = <
       slots: Object.fromEntries(
         Object.entries(schema.slots ?? {}).map(([name, slot]) => [
           name,
-          { views: [...slot.views] },
+          {
+            views: [...slot.views],
+            ...(slot.multiple !== undefined ? { multiple: slot.multiple } : {}),
+          },
         ]),
       ),
       version: 1,

@@ -1,15 +1,14 @@
 import { createSlotInstancesStore } from "@tailorkit/client-core";
-import type { FetchCacheOptions, TailorKitApp } from "@tailorkit/client-core";
-import type { ViewInstance } from "@tailorkit/app/client";
+import type { FetchCacheOptions, TailorKitApp, SlotInstance } from "@tailorkit/client-core";
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useTailorRootContext } from "../components/context";
+import { useApps } from "./use-apps";
 import type { UseAppsResult } from "./use-apps";
 import { useStableContext } from "./use-stable-context";
 
-export type SlotInstance = ViewInstance;
+export type { SlotInstance } from "@tailorkit/client-core";
 
 export interface UseSlotInstancesOptions<TSlot extends string = string> extends FetchCacheOptions {
-  app: TailorKitApp;
   slot: TSlot;
 }
 
@@ -17,22 +16,53 @@ export interface UseSlotInstancesResult extends Omit<UseAppsResult, "data"> {
   data: SlotInstance[] | undefined;
 }
 
+/** Resolve instances across discovered apps while sharing endpoint state in client-core. */
 export function useSlotInstances({
-  app,
   slot,
   staleTime,
   gcTime,
 }: UseSlotInstancesOptions): UseSlotInstancesResult {
+  const apps = useApps();
+  const instances = useResolvedSlotInstances(slot, apps.data, apps.status, apps.error, {
+    staleTime,
+    gcTime,
+  });
+  const refetch = useCallback(async () => {
+    if (apps.isSuccess) await instances.refetch();
+    else await apps.refetch();
+  }, [apps.isSuccess, apps.refetch, instances.refetch]);
+  return { ...instances, isFetching: apps.isFetching || instances.isFetching, refetch };
+}
+
+/** Managed Slot resolves only its explicitly supplied app. */
+export function useAppSlotInstances(app: TailorKitApp, slot: string): UseSlotInstancesResult {
+  return useResolvedSlotInstances(slot, [app], "ready", null);
+}
+
+function useResolvedSlotInstances(
+  slot: string,
+  apps: TailorKitApp[] | undefined,
+  appsStatus: UseAppsResult["status"],
+  appsError: Error | null,
+  { staleTime, gcTime }: FetchCacheOptions = {},
+): UseSlotInstancesResult {
   const { store } = useTailorRootContext("useSlotInstances");
   const activeView = useSyncExternalStore(
     store.views.subscribe,
     store.views.getSnapshot,
     store.views.getSnapshot,
   );
-  const options = useStableContext({ app, slot, activeView });
+  const options = useStableContext({ apps: apps ?? [], slot, activeView });
   const query = useMemo(
-    () => createSlotInstancesStore(store.client, { ...options, staleTime, gcTime }),
-    [store.client, options, staleTime, gcTime],
+    () =>
+      createSlotInstancesStore(store.client, {
+        ...options,
+        appsStatus,
+        appsError,
+        staleTime,
+        gcTime,
+      }),
+    [store.client, options, appsStatus, appsError, staleTime, gcTime],
   );
   const snapshot = useSyncExternalStore(query.subscribe, query.getSnapshot, query.getSnapshot);
   useEffect(() => {

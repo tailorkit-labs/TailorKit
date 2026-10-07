@@ -8,6 +8,7 @@ export const appDeploymentMetadata = z.object({
   objectKey: z.string().min(1).max(4096),
   checksum: z.string().regex(/^[a-f0-9]{64}$/u),
   contentLength: z.number().int().positive(),
+  contentEncoding: z.literal("gzip").optional(),
 });
 export type AppDeploymentMetadata = z.infer<typeof appDeploymentMetadata>;
 

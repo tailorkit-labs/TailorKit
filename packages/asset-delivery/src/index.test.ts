@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import {
+  acceptsGzip,
   assetFailure,
   assetHeaders,
   assetPreflight,
@@ -17,6 +18,22 @@ const assetPath = `/p/${projectId}/a/${appId}/d/${deploymentId}/client/client.js
 const logoHash = "b".repeat(64);
 const localUrl = `http://localhost:3000/api/assets/t/${teamId}${assetPath}`;
 const hostedUrl = `https://${teamId}.tailorkit.app${assetPath}`;
+
+describe("gzip content negotiation", () => {
+  it.each([
+    ["gzip ;q=0, *;q=1", false],
+    ["gzip\t; q=0, * ; q=1", false],
+    ["*;q=1, gzip ; q=0", false],
+    ["GZIP ; q=0.5, *;q=0", true],
+    ["br, * ; q=1", true],
+    ["gzip ; q=0", false],
+    ["br", false],
+  ])("negotiates %s as %s", (acceptEncoding, expected) => {
+    expect(
+      acceptsGzip(new Request(hostedUrl, { headers: { "Accept-Encoding": acceptEncoding } })),
+    ).toBe(expected);
+  });
+});
 
 describe("asset delivery contract", () => {
   it("maps the same local and hosted URL contract to one storage key", () => {
@@ -83,9 +100,9 @@ describe("asset delivery contract", () => {
     expect(["GET", "HEAD", "OPTIONS"].every(isAssetMethod)).toBe(true);
     expect(isAssetMethod("POST")).toBe(false);
     expect(isValidAssetSize(1)).toBe(true);
-    expect(isValidAssetSize(1024 * 1024)).toBe(true);
+    expect(isValidAssetSize(3 * 1024 * 1024)).toBe(true);
     expect(isValidAssetSize(0)).toBe(false);
-    expect(isValidAssetSize(1024 * 1024 + 1)).toBe(false);
+    expect(isValidAssetSize(3 * 1024 * 1024 + 1)).toBe(false);
     expect(assetFailure(404).headers.get("Cache-Control")).toBe("no-store");
     expect(assetPreflight().status).toBe(204);
     const headers = assetHeaders({ contentLength: 10, etag: '"etag"' });

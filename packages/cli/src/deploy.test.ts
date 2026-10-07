@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { gunzipSync } from "node:zlib";
 import {
   mkdir,
   mkdtemp,
@@ -73,7 +75,7 @@ afterEach(async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-it("uploads server and client code without a provisioned Worker or migration upload", async () => {
+it("uploads gzip server and client code with metadata matching the stored bytes", async () => {
   const fetch = vi
     .spyOn(globalThis, "fetch")
     .mockResolvedValue(new Response(null, { status: 200 }));
@@ -89,10 +91,22 @@ it("uploads server and client code without a provisioned Worker or migration upl
   expect(fetch).toHaveBeenCalledTimes(2);
   const uploaded = fetch.mock.calls.map(([url, options]) => ({
     url: String(url),
-    code: new TextDecoder().decode(options?.body as Uint8Array),
+    code: gunzipSync(options?.body as Uint8Array).toString("utf-8"),
   }));
   expect(uploaded).toContainEqual({ url: "https://uploads.example/server", code: "server-code" });
   expect(uploaded).toContainEqual({ url: "https://uploads.example/client", code: "client-code" });
+  for (const [uploadUrl, options] of fetch.mock.calls) {
+    const bytes = options?.body as Uint8Array;
+    const metadata = String(uploadUrl).endsWith("server")
+      ? mocks.create.mock.calls[0]?.[0].server
+      : mocks.create.mock.calls[0]?.[0].assets[0];
+    expect(metadata).toMatchObject({
+      checksum: createHash("sha256").update(bytes).digest("hex"),
+      contentLength: bytes.byteLength,
+      encoding: "gzip",
+    });
+    expect(new Headers(options?.headers).get("Content-Encoding")).toBe("gzip");
+  }
   expect(mocks.publish).toHaveBeenCalledOnce();
 });
 
@@ -259,7 +273,7 @@ it.each(["config", "option"])(
       .mockResolvedValue(new Response(null, { status: 200 }));
     await runDeploy({ cwd: root, ...(mode === "option" ? { outDir: "output" } : {}) });
     const server = fetch.mock.calls.find(([url]) => String(url).endsWith("server"));
-    expect(new TextDecoder().decode(server?.[1]?.body as Uint8Array)).toBe("new-backend-code");
+    expect(gunzipSync(server?.[1]?.body as Uint8Array).toString("utf-8")).toBe("new-backend-code");
     expect(fetch).toHaveBeenCalledTimes(2);
     expect(mocks.publish).toHaveBeenCalledOnce();
   },
@@ -322,4 +336,64 @@ it("does not start login for config or credential store errors", async () => {
   await expect(runDeploy({ cwd: root, onLoginRequired })).rejects.toThrow("Invalid auth.json");
   expect(onLoginRequired).not.toHaveBeenCalled();
   expect(mocks.build).not.toHaveBeenCalled();
+});
+
+it.each(["client", "server"])(
+  "rejects oversized raw %s code before creating a deployment",
+  async (kind) => {
+    await writeFile(
+      path.join(root, `.tailorkit/${kind}/${kind}.js`),
+      "x".repeat(3 * 1024 * 1024 + 1),
+    );
+    await expect(runDeploy({ cwd: root })).rejects.toThrow(/exceed/u);
+    expect(mocks.create).not.toHaveBeenCalled();
+    expect(mocks.publish).not.toHaveBeenCalled();
+  },
+);
+
+it("preserves signed upload headers and uploads logos without gzip encoding", async () => {
+  const logo = '<svg xmlns="http://www.w3.org/2000/svg"/>';
+  await writeFile(path.join(root, ".tailorkit/client/logo-light.svg"), logo);
+  const manifestPath = path.join(root, ".tailorkit/tailorkit-upload.json");
+  const manifest = JSON.parse(await readFile(manifestPath, "utf-8"));
+  manifest.assets.logos = { light: "client/logo-light.svg" };
+  await writeFile(manifestPath, JSON.stringify(manifest));
+  mocks.create.mockResolvedValue({
+    deployment: { id: "deployment" },
+    assets: [
+      {
+        uploadUrl: "https://uploads.example/client",
+        headers: { "x-amz-checksum-sha256": "signed-client", "content-encoding": "gzip" },
+      },
+    ],
+    server: { uploadUrl: "https://uploads.example/server" },
+    logos: {
+      light: {
+        uploadUrl: "https://uploads.example/logo",
+        headers: { "content-type": "image/svg+xml" },
+      },
+    },
+  });
+  const fetch = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValue(new Response(null, { status: 200 }));
+  await runDeploy({ cwd: root });
+  const clientUpload = fetch.mock.calls.find(([url]) => String(url).endsWith("client"));
+  expect(new Headers(clientUpload?.[1]?.headers).get("x-amz-checksum-sha256")).toBe(
+    "signed-client",
+  );
+  const logoUpload = fetch.mock.calls.find(([url]) => String(url).endsWith("logo"));
+  expect(new TextDecoder().decode(logoUpload?.[1]?.body as Uint8Array)).toBe(logo);
+  expect(new Headers(logoUpload?.[1]?.headers).get("content-encoding")).toBeNull();
+});
+
+it.each(["client", "server"])("accepts %s code exactly at the 3 MiB limit", async (kind) => {
+  const size = 3 * 1024 * 1024;
+  await writeFile(path.join(root, `.tailorkit/${kind}/${kind}.js`), "x".repeat(size));
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
+  const result = await runDeploy({ cwd: root });
+  expect(result.uploadedFiles).toContainEqual(
+    expect.objectContaining({ path: `${kind}/${kind}.js`, size }),
+  );
+  expect(mocks.publish).toHaveBeenCalledOnce();
 });

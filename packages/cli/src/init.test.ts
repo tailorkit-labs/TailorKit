@@ -55,7 +55,7 @@ it("fetches the host schema and generates real bindings even when installation i
   const directory = await runInit(await initOptions());
   expect(fetch).toHaveBeenCalledExactlyOnceWith("https://host.test/api/tailorkit/schema");
   const bindings = await readFile(path.join(directory, "src/tailorkit.gen.ts"), "utf-8");
-  expect(bindings).toContain('"sidebar": "/people"');
+  expect(bindings).toContain('"sidebar": { views: "/people"; multiple: false }');
   expect(bindings).toContain("customer?: string");
   expect(bindings).not.toContain("Card");
   expect(await readFile(path.join(directory, "src/views/default.tsx"), "utf-8")).toContain("<Box>");

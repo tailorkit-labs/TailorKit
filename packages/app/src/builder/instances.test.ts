@@ -2,14 +2,14 @@ import { expect, it } from "vite-plus/test";
 import { extractInstances } from "./instances";
 
 const source = `
-import { createView as cv } from "tailorkit/client";
+import { defineView as cv } from "tailorkit/client";
 import { z } from "zod";
 import { serverHelper } from "./server-helper";
 import { Widget } from "./widget";
 const privateValue = "SERVER_ONLY_SECRET";
 const shared = "Shared label";
 function format(value) { return serverHelper(value) + privateValue + shared; }
-const view = cv("/", {
+const view = cv({ slot: "page", view: "/",
   instances: {
     dataSchema: z.object({ id: z.string() }),
     resolve: async ({ queries, context }) => {
@@ -89,12 +89,15 @@ it("rejects dynamic definitions rather than leaving a resolver in the browser", 
     ),
   ).rejects.toThrow("cannot contain spreads");
   await expect(
-    extractInstances("/app/page.tsx", source.replace('cv("/",', "cv(path,"), "/app"),
+    extractInstances("/app/page.tsx", source.replace('view: "/"', "view: path"), "/app"),
+  ).rejects.toThrow("must be string literals");
+  await expect(
+    extractInstances("/app/page.tsx", source.replace('view: "/",', ""), "/app"),
   ).rejects.toThrow("must be string literals");
   await expect(
     extractInstances(
       "/app/page.tsx",
-      `function factory() { ${source.replace(/^import .*$/gm, "").replace("export default view;", "return view;")} }\nimport { createView as cv } from "tailorkit/client";`,
+      `function factory() { ${source.replace(/^import .*$/gm, "").replace("export default view;", "return view;")} }\nimport { defineView as cv } from "tailorkit/client";`,
       "/app",
     ),
   ).rejects.toThrow("module scope");

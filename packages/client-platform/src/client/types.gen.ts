@@ -713,7 +713,7 @@ export type DeploymentsCreateData = {
         checksum: string;
         contentLength: number;
         contentType: "application/javascript";
-        encoding: "utf-8";
+        encoding: "utf-8" | "gzip";
         objectKey: "client.js";
       },
     ];
@@ -721,7 +721,7 @@ export type DeploymentsCreateData = {
       checksum: string;
       contentLength: number;
       contentType: "application/javascript";
-      encoding: "utf-8";
+      encoding: "utf-8" | "gzip";
       objectKey: "server.js";
     };
     logos?: {
@@ -765,7 +765,7 @@ export type DeploymentsCreateResponses = {
         appDeploymentId: string;
         objectKey: string;
         contentType: "application/javascript" | "image/svg+xml" | "image/png" | "image/webp";
-        encoding: "utf-8" | null;
+        encoding: "utf-8" | "gzip" | null;
         contentLength: number;
         checksum: string | null;
         status: "uploading" | "verifying" | "verified" | "failed";
@@ -783,7 +783,7 @@ export type DeploymentsCreateResponses = {
         appDeploymentId: string;
         objectKey: string;
         contentType: "application/javascript" | "image/svg+xml" | "image/png" | "image/webp";
-        encoding: "utf-8" | null;
+        encoding: "utf-8" | "gzip" | null;
         contentLength: number;
         checksum: string | null;
         status: "uploading" | "verifying" | "verified" | "failed";
@@ -821,7 +821,7 @@ export type DeploymentsCreateResponses = {
           appDeploymentId: string;
           objectKey: string;
           contentType: "image/svg+xml" | "image/png" | "image/webp";
-          encoding: "utf-8" | null;
+          encoding: "utf-8" | "gzip" | null;
           contentLength: number;
           checksum: string | null;
           status: "uploading" | "verifying" | "verified" | "failed";
@@ -839,7 +839,7 @@ export type DeploymentsCreateResponses = {
           appDeploymentId: string;
           objectKey: string;
           contentType: "image/svg+xml" | "image/png" | "image/webp";
-          encoding: "utf-8" | null;
+          encoding: "utf-8" | "gzip" | null;
           contentLength: number;
           checksum: string | null;
           status: "uploading" | "verifying" | "verified" | "failed";
@@ -925,6 +925,7 @@ export type DeploymentsRuntimeResponses = {
     objectKey: string;
     checksum: string;
     contentLength: number;
+    contentEncoding?: "gzip";
   };
 };
 

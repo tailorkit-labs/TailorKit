@@ -1,11 +1,11 @@
+import type { ViewInstance } from "@tailorkit/app/client";
 import type { SlotDefinitions, ViewDefinition } from "@tailorkit/core/schema";
 import type { ActiveView, ViewStatus } from "@tailorkit/core/views";
 import { useCallback, useEffect, useId, useMemo, useRef, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import type { ViewContext, ViewName } from "../hooks/use-register-view";
 import { useStableContext } from "../hooks/use-stable-context";
-import { useSlotInstances } from "../hooks/use-slot-instances";
-import type { SlotInstance } from "../hooks/use-slot-instances";
+import { useAppSlotInstances } from "../hooks/use-slot-instances";
 import { resolveSlotView, selectSlotView } from "../slot-view";
 import { buildThemeCss, PrimitiveThemeContext } from "../primitives";
 import { RemoteViewHost } from "../remote-view";
@@ -31,13 +31,29 @@ export type SlotContext<
   ? TContext
   : never;
 
-export interface SlotProps<TSlots extends SlotDefinitions = SlotDefinitions> {
+interface RuntimeSlotProps {
   app: TailorKitApp;
   /** The host slot to render in. */
-  name: keyof TSlots & string;
+  name: string;
   /** Select an instance of the matching view. */
   instanceKey?: string;
 }
+
+type InstanceProps<TSlot, TKey extends string, TValue> = boolean extends (
+  TSlot extends { multiple?: infer T } ? T : false
+)
+  ? { [K in TKey]?: TValue }
+  : TSlot extends { multiple: true }
+    ? { [K in TKey]: TValue }
+    : { [K in TKey]?: never };
+
+export type SlotProps<TSlots extends SlotDefinitions = SlotDefinitions> = {
+  [TSlot in keyof TSlots & string]: { app: TailorKitApp; name: TSlot } & InstanceProps<
+    TSlots[TSlot],
+    "instanceKey",
+    string
+  >;
+}[keyof TSlots & string];
 
 export type ControlledSlotProps<
   TViews extends Record<string, ViewDefinition> = DefaultViews,
@@ -49,7 +65,11 @@ export type ControlledSlotProps<
       name: TSlot;
       view: TView;
     } & (
-      | { context: SlotContext<TViews, TView>; status: "ready"; instance?: SlotInstance }
+      | ({ context: SlotContext<TViews, TView>; status: "ready" } & InstanceProps<
+          TSlots[TSlot],
+          "instance",
+          ViewInstance
+        >)
       | { context?: never; status: "loading" | "error"; instance?: never }
     );
   }[Extract<ViewName<TViews>, TSlots[TSlot]["views"][number]>];
@@ -69,10 +89,10 @@ type SlotState =
       controlled: true;
       context?: unknown;
       status: ViewStatus;
-      instance?: SlotInstance;
+      instance?: ViewInstance;
     };
 
-function ManagedSlot({ app, name, instanceKey }: SlotProps): ReactNode {
+function ManagedSlot({ app, name, instanceKey }: RuntimeSlotProps): ReactNode {
   const { store } = useTailorRootContext("Slot");
   const state = useSyncExternalStore(
     store.views.subscribe,
@@ -93,9 +113,9 @@ function InstanceSlot({
   name,
   instanceKey,
   state,
-}: SlotProps & { instanceKey: string; state: ActiveView }): ReactNode {
+}: RuntimeSlotProps & { instanceKey: string; state: ActiveView }): ReactNode {
   const { store } = useTailorRootContext("Slot");
-  const instances = useSlotInstances({ app, slot: name });
+  const instances = useAppSlotInstances(app, name);
   const meta = useSyncExternalStore(store.subscribe, store.getMetaSnapshot, store.getMetaSnapshot);
   const instance = instances.data?.find((instance) => instance.key === instanceKey);
   const resolved =
@@ -104,7 +124,9 @@ function InstanceSlot({
       : null;
   const view = resolved?.status === "ready" ? resolved.view : undefined;
   const stableContext = useStableContext(resolved?.context);
-  const stableInstance = useStableContext(instance);
+  const stableInstance = useStableContext(
+    instance ? { key: instance.key, metadata: instance.metadata, data: instance.data } : undefined,
+  );
   const readyState = useMemo<SlotState | null>(
     () =>
       view === undefined || !stableInstance
@@ -121,6 +143,8 @@ function InstanceSlot({
 
   if (instances.isPending) return <div role="status">Loading view…</div>;
   if (instances.error) return <div role="alert">{instances.error.message}</div>;
+  if (meta.schema && meta.schema.slots[name]?.multiple !== true)
+    return <div role="alert">Slot "{name}" does not support instances.</div>;
   if (!instance) return <div role="alert">View instance "{instanceKey}" is unavailable.</div>;
   if (!readyState) return null;
   return <SlotRenderer app={app} name={name} state={readyState} />;
@@ -163,7 +187,7 @@ function ControlledSlot({
 export const Slot: SlotComponent = Object.assign(ManagedSlot, { Controlled: ControlledSlot });
 
 // Both public components share the runtime; only the managed Slot reads the view registry.
-function SlotRenderer({ app, name, state }: SlotProps & { state: SlotState }): ReactNode {
+function SlotRenderer({ app, name, state }: RuntimeSlotProps & { state: SlotState }): ReactNode {
   const { store, client } = useTailorRootContext("Slot");
   const reactId = useId();
   const getBackendSession = useMemo(
@@ -214,9 +238,18 @@ function SlotRenderer({ app, name, state }: SlotProps & { state: SlotState }): R
   }, [store, app]);
 
   if (meta.schema === null || (appUrl === null && preview.source === null)) return null;
+  const multiple = meta.schema.slots[name]?.multiple === true;
+  if ("controlled" in state && state.status === "ready") {
+    if (multiple && !state.instance)
+      return <div role="alert">A view instance is required. Pass instance to Slot.Controlled.</div>;
+    if (!multiple && state.instance)
+      return <div role="alert">Slot "{name}" does not support instances.</div>;
+  }
   if (!("controlled" in state)) {
     const selected = selectSlotView(app.views ?? [], name, state.view, meta.schema);
-    if (selected?.instances)
+    if (selected?.instances && !multiple)
+      return <div role="alert">Slot "{name}" does not support instances.</div>;
+    if (multiple)
       return <div role="alert">A view instance key is required. Pass instanceKey to Slot.</div>;
   }
 

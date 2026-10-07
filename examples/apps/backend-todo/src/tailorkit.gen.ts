@@ -24,7 +24,7 @@ export interface ViewPropsByPath {
 declare module "tailorkit/client" {
   interface TailorKitViews extends ViewPropsByPath {}
   interface TailorKitSlots {
-    panel: "/";
+    page: { views: "/"; multiple: true };
   }
 }
 

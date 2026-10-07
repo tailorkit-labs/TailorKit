@@ -67,6 +67,7 @@ export function createS3CompatibleStorage(options: S3CompatibleStorageOptions): 
       return {
         key: input.key,
         contentType: result.ContentType,
+        contentEncoding: result.ContentEncoding,
         contentLength: result.ContentLength,
         checksumSha256: result.ChecksumSHA256,
         etag: result.ETag,
@@ -92,6 +93,7 @@ export function createS3CompatibleStorage(options: S3CompatibleStorageOptions): 
         Key: input.key,
         ChecksumSHA256: input.checksumSha256,
         ContentType: input.contentType,
+        ContentEncoding: input.contentEncoding,
         Metadata: input.metadata,
       });
 
@@ -112,11 +114,12 @@ export function createS3CompatibleStorage(options: S3CompatibleStorageOptions): 
               // The upload contract sends this checksum as a header. Keep it
               // signed there instead of also hoisting it into the query string.
               unhoistableHeaders: new Set(["x-amz-checksum-sha256"]),
-              signableHeaders: new Set(["content-type"]),
+              signableHeaders: new Set(["content-type", "content-encoding"]),
             }),
         ),
         headers: {
           ...(input.contentType ? { "content-type": input.contentType } : {}),
+          ...(input.contentEncoding ? { "content-encoding": input.contentEncoding } : {}),
           ...(input.checksumSha256 ? { "x-amz-checksum-sha256": input.checksumSha256 } : {}),
         },
       };

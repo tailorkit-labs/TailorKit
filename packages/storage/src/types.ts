@@ -24,6 +24,7 @@ export interface HeadObjectInput {
 
 export interface HeadObjectOutput {
   key: string;
+  contentEncoding?: string;
   contentType?: string;
   contentLength?: number;
   checksumSha256?: string;
@@ -37,6 +38,7 @@ export interface DeleteObjectInput {
 
 export interface CreateUploadUrlInput {
   key: string;
+  contentEncoding?: string;
   checksumSha256?: string;
   contentType?: string;
   expiresInSeconds?: number;

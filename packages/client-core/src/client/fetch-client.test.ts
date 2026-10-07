@@ -81,7 +81,7 @@ it("deduplicates instance requests and sessions across framework-neutral consume
         Response.json({
           schema: {
             views: { "/": {} },
-            slots: { page: { views: ["/"] } },
+            slots: { page: { views: ["/"], multiple: true } },
           },
         }),
       );
@@ -97,7 +97,7 @@ it("deduplicates instance requests and sessions across framework-neutral consume
   });
   const client = createTailorKitFetchClient({ baseUrl: "https://host.test/", fetch: fetchMock });
   const options = {
-    app: { id: "app", views: [{ slot: "page", path: "/", instances: true as const }] },
+    apps: [{ id: "app", views: [{ slot: "page", path: "/", instances: true as const }] }],
     slot: "page",
     activeView: {
       view: "/",
