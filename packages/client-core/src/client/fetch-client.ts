@@ -5,7 +5,7 @@ import { createEndpointClient } from "./endpoints";
 export interface TailorKitCacheOptions extends FetchCacheOptions {
   apps?: FetchCacheOptions;
   meta?: FetchCacheOptions;
-  slotInstances?: FetchCacheOptions;
+  slot?: FetchCacheOptions;
 }
 
 export interface TailorKitFetchClientOptions {

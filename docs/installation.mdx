@@ -488,7 +488,7 @@ export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
   },
 });
 
-export const { Slot, useApps, useViews, useRegisterView } = tailorKitClient;
+export const { Slot, useApps, useSlot, useRegisterView } = tailorKitClient;
 
 export function TailorKitProvider({ children }: { children: ReactNode }) {
   return <Root client={tailorKitClient}>{children}</Root>;
@@ -599,7 +599,23 @@ export default function App() {
 </Step>
 <Step title="Render a view">
 
-Add a page to register context and switch between available views.
+Add a page to register context and switch between apps available in the `page` slot.
+
+`useSlot({ slot: "page" })` returns one `{ app }` item per app for single-view
+slots (`multiple: false` or omitted). It checks enabled, supported app views
+without calling an instance resolver or requiring registered page context. For
+`multiple: true` slots, it resolves instances using the registered context and
+returns `{ app, key, metadata, data }` items. Render those with
+`<Slot app={item.app} name="page" instanceKey={item.key} />`.
+
+The returned `data` items are typed from your server slot definition: instance
+slots have a required `key: string`, `metadata`, and `data`; single-view slots
+have only `app`. Accessing `item.key` on a single-view slot is a TypeScript error.
+If the slot mode is only known at runtime, narrow an item with `"key" in item`.
+
+Both modes support `scopes`, `appIds`, `staleTime`, and `gcTime`, and return query
+status, errors, and `refetch()`. For single-view slots, `refetch()` refreshes app
+discovery; for multiple slots, it refreshes the resolved instances.
 
 <Tabs>
 
@@ -609,17 +625,17 @@ Add a page to register context and switch between available views.
 "use client";
 
 import { useState } from "react";
-import { Slot, useViews, useRegisterView } from "@/lib/tailorkit-client";
+import { Slot, useSlot, useRegisterView } from "@/lib/tailorkit-client";
 
 export default function Page() {
   const [selectedId, setSelectedId] = useState("");
-  const { data: views, isPending, error } = useViews({ slot: "page" });
+  const { data: views, isPending, error } = useSlot({ slot: "page" });
   // Replace this with your own authentication hook.
   const { data: session, isPending: isSessionPending } = useSession();
 
   useRegisterView("/", session ? { context: { user: session.user } } : { status: "loading" });
 
-  const selectedView = views?.find((view) => view.id === selectedId) ?? views?.[0];
+  const selectedView = views?.find((view) => view.app.id === selectedId) ?? views?.[0];
 
   if (isPending || isSessionPending) return <p>Loading views…</p>;
   if (error) return "An error has occurred: " + error.message;
@@ -629,16 +645,16 @@ export default function Page() {
     <>
       <label>
         View
-        <select value={selectedView.id} onChange={(event) => setSelectedId(event.target.value)}>
+        <select value={selectedView.app.id} onChange={(event) => setSelectedId(event.target.value)}>
           {views?.map((view) => (
-            <option key={view.id} value={view.id}>
-              {view.app.name ?? view.app.id} ({view.path})
+            <option key={view.app.id} value={view.app.id}>
+              {view.app.name ?? view.app.id}
             </option>
           ))}
         </select>
       </label>
 
-      <Slot key={selectedView.id} app={selectedView.app} name="page" />
+      <Slot key={selectedView.app.id} app={selectedView.app} name="page" />
     </>
   );
 }
@@ -651,19 +667,19 @@ export default function Page() {
 ```tsx src/routes/app-views.tsx
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Slot, useViews, useRegisterView } from "@/lib/tailorkit-client";
+import { Slot, useSlot, useRegisterView } from "@/lib/tailorkit-client";
 
 export const Route = createFileRoute("/app-views")({ component: Page });
 
 function Page() {
   const [selectedId, setSelectedId] = useState("");
-  const { data: views, isPending, error } = useViews({ slot: "page" });
+  const { data: views, isPending, error } = useSlot({ slot: "page" });
   // Replace this with your own authentication hook.
   const { data: session, isPending: isSessionPending } = useSession();
 
   useRegisterView("/", session ? { context: { user: session.user } } : { status: "loading" });
 
-  const selectedView = views?.find((view) => view.id === selectedId) ?? views?.[0];
+  const selectedView = views?.find((view) => view.app.id === selectedId) ?? views?.[0];
 
   if (isPending || isSessionPending) return <p>Loading views…</p>;
   if (error) return "An error has occurred: " + error.message;
@@ -673,16 +689,16 @@ function Page() {
     <>
       <label>
         View
-        <select value={selectedView.id} onChange={(event) => setSelectedId(event.target.value)}>
+        <select value={selectedView.app.id} onChange={(event) => setSelectedId(event.target.value)}>
           {views?.map((view) => (
-            <option key={view.id} value={view.id}>
-              {view.app.name ?? view.app.id} ({view.path})
+            <option key={view.app.id} value={view.app.id}>
+              {view.app.name ?? view.app.id}
             </option>
           ))}
         </select>
       </label>
 
-      <Slot key={selectedView.id} app={selectedView.app} name="page" />
+      <Slot key={selectedView.app.id} app={selectedView.app} name="page" />
     </>
   );
 }
@@ -694,17 +710,17 @@ function Page() {
 
 ```tsx app/routes/app-views.tsx
 import { useState } from "react";
-import { Slot, useViews, useRegisterView } from "@/lib/tailorkit-client";
+import { Slot, useSlot, useRegisterView } from "@/lib/tailorkit-client";
 
 export default function Page() {
   const [selectedId, setSelectedId] = useState("");
-  const { data: views, isPending, error } = useViews({ slot: "page" });
+  const { data: views, isPending, error } = useSlot({ slot: "page" });
   // Replace this with your own authentication hook.
   const { data: session, isPending: isSessionPending } = useSession();
 
   useRegisterView("/", session ? { context: { user: session.user } } : { status: "loading" });
 
-  const selectedView = views?.find((view) => view.id === selectedId) ?? views?.[0];
+  const selectedView = views?.find((view) => view.app.id === selectedId) ?? views?.[0];
 
   if (isPending || isSessionPending) return <p>Loading views…</p>;
   if (error) return "An error has occurred: " + error.message;
@@ -714,16 +730,16 @@ export default function Page() {
     <>
       <label>
         View
-        <select value={selectedView.id} onChange={(event) => setSelectedId(event.target.value)}>
+        <select value={selectedView.app.id} onChange={(event) => setSelectedId(event.target.value)}>
           {views?.map((view) => (
-            <option key={view.id} value={view.id}>
-              {view.app.name ?? view.app.id} ({view.path})
+            <option key={view.app.id} value={view.app.id}>
+              {view.app.name ?? view.app.id}
             </option>
           ))}
         </select>
       </label>
 
-      <Slot key={selectedView.id} app={selectedView.app} name="page" />
+      <Slot key={selectedView.app.id} app={selectedView.app} name="page" />
     </>
   );
 }

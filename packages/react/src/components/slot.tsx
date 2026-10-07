@@ -5,11 +5,12 @@ import { useCallback, useEffect, useId, useMemo, useRef, useSyncExternalStore } 
 import type { ReactNode } from "react";
 import type { ViewContext, ViewName } from "../hooks/use-register-view";
 import { useStableContext } from "../hooks/use-stable-context";
-import { useAppSlotInstances } from "../hooks/use-slot-instances";
+import { useAppSlot } from "../hooks/use-slot";
 import { resolveSlotView, selectSlotView } from "../slot-view";
 import { buildThemeCss, PrimitiveThemeContext } from "../primitives";
 import { RemoteViewHost } from "../remote-view";
 import { toBaseUrl } from "@tailorkit/client-core";
+import type { SlotItem } from "@tailorkit/client-core";
 import type { TailorKitApp } from "../tailorkit";
 import { useTailorRootContext } from "./context";
 
@@ -115,9 +116,11 @@ function InstanceSlot({
   state,
 }: RuntimeSlotProps & { instanceKey: string; state: ActiveView }): ReactNode {
   const { store } = useTailorRootContext("Slot");
-  const instances = useAppSlotInstances(app, name);
+  const instances = useAppSlot(app, name);
   const meta = useSyncExternalStore(store.subscribe, store.getMetaSnapshot, store.getMetaSnapshot);
-  const instance = instances.data?.find((instance) => instance.key === instanceKey);
+  const instance = instances.data?.find(
+    (item): item is SlotItem<true> => "key" in item && item.key === instanceKey,
+  );
   const resolved =
     instances.isSuccess && instance && meta.schema
       ? resolveSlotView(app.views ?? [], name, state, meta.schema)

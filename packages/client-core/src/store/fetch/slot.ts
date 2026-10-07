@@ -5,11 +5,15 @@ import { resolveSlotView } from "../../client/slot-view";
 import type { TailorKitApp } from "../../types";
 import type { FetchCacheOptions, FetchOptions, FetchSnapshot } from "./cache";
 
-export interface SlotInstance extends ViewInstance {
+interface SingleSlotItem {
   app: TailorKitApp;
 }
 
-export interface SlotInstancesStoreOptions extends FetchCacheOptions {
+export type SlotItem<TMultiple extends boolean = boolean> = TMultiple extends true
+  ? ViewInstance & { app: TailorKitApp }
+  : SingleSlotItem;
+
+export interface SlotStoreOptions extends FetchCacheOptions {
   apps: TailorKitApp[];
   slot: string;
   activeView: ActiveView | null;
@@ -17,23 +21,20 @@ export interface SlotInstancesStoreOptions extends FetchCacheOptions {
   appsError?: Error | null;
 }
 
-export interface SlotInstancesSnapshot {
-  data: SlotInstance[] | undefined;
+export interface SlotSnapshot {
+  data: SlotItem[] | undefined;
   error: Error | null;
   status: FetchSnapshot<unknown>["status"];
   isFetching: boolean;
 }
 
 interface Result {
-  status: "ready" | "loading";
-  data?: SlotInstance[];
+  status: "idle" | "ready" | "loading";
+  data?: SlotItem[];
 }
 
 /** Match all app contexts before authorizing any app or sending instance requests. */
-export function createSlotInstancesStore(
-  client: TailorKitFetchClient,
-  options: SlotInstancesStoreOptions,
-) {
+export function createSlotStore(client: TailorKitFetchClient, options: SlotStoreOptions) {
   const {
     apps,
     slot,
@@ -43,22 +44,22 @@ export function createSlotInstancesStore(
     appsStatus = "ready",
     appsError = null,
   } = options;
-  const enabled = appsStatus === "ready" && activeView !== null;
+  const enabled = appsStatus === "ready";
   const settings = {
     ...(staleTime === undefined ? {} : { staleTime }),
     ...(gcTime === undefined ? {} : { gcTime }),
   };
-  const waiting: SlotInstancesSnapshot = {
+  const waiting: SlotSnapshot = {
     data: undefined,
     error: appsStatus === "error" ? appsError : null,
-    status: appsStatus === "error" ? "error" : activeView ? "loading" : "idle",
+    status: appsStatus,
     isFetching: false,
   };
   const query = client.cache.getStore<Result>(
-    ["tailorkit", client.baseUrl.toString(), "resolvedInstances", apps, slot, activeView],
+    ["tailorkit", client.baseUrl.toString(), "slot", apps, slot, activeView],
     async (signal) => {
       const candidates = apps.filter((app) =>
-        app.views?.some((view) => view.slot === slot && view.instances && !view.disabled),
+        app.views?.some((view) => view.slot === slot && !view.disabled),
       );
       if (!candidates.length) return { status: "ready", data: [] };
       const meta = client.meta();
@@ -68,10 +69,27 @@ export function createSlotInstancesStore(
       if (snapshot.error) throw snapshot.error;
       if (!snapshot.data) throw new Error("TailorKit metadata is unavailable.");
       const schema = snapshot.data.schema;
-      if (schema.slots[slot]?.multiple !== true)
-        throw new Error(`Slot "${slot}" does not support instances.`);
+      const definition = schema.slots[slot];
+      if (!definition) return { status: "ready", data: [] };
+      if (definition.multiple !== true) {
+        return {
+          status: "ready",
+          data: candidates
+            .filter((app) =>
+              app.views?.some(
+                (view) =>
+                  view.slot === slot &&
+                  !view.disabled &&
+                  !view.instances &&
+                  definition.views.includes(view.path),
+              ),
+            )
+            .map((app) => ({ app })),
+        };
+      }
+      if (activeView === null) return { status: "idle" };
       const matches = candidates.flatMap((app) => {
-        const resolved = resolveSlotView(app.views ?? [], slot, activeView!, schema);
+        const resolved = resolveSlotView(app.views ?? [], slot, activeView, schema);
         return resolved?.instances ? [{ app, resolved }] : [];
       });
       for (const { resolved } of matches) {
@@ -102,12 +120,12 @@ export function createSlotInstancesStore(
         signal.removeEventListener("abort", abort);
       }
     },
-    { ...client.cacheOptions?.slotInstances, ...settings, abortOnUnsubscribe: true },
+    { ...client.cacheOptions?.slot, ...settings, abortOnUnsubscribe: true },
   );
   let last: FetchSnapshot<Result> | undefined;
-  let snapshot: SlotInstancesSnapshot;
+  let snapshot: SlotSnapshot;
   return {
-    getSnapshot(): SlotInstancesSnapshot {
+    getSnapshot(): SlotSnapshot {
       if (!enabled) return waiting;
       const current = query.getSnapshot();
       if (current !== last) {

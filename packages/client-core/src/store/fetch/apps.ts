@@ -1,12 +1,10 @@
 import { createStore } from "@tanstack/store";
 import type { TailorKitFetchClient } from "../../client/fetch-client";
-import { listViews } from "../../client/apps";
-import type { TailorKitApp, TailorKitView } from "../../types";
+import type { TailorKitApp } from "../../types";
 import type { FetchOptions, FetchSnapshot } from "./cache";
 
 export interface TailorKitAppsSnapshot {
   apps: TailorKitApp[];
-  views: TailorKitView[];
   error: Error | null;
   status: FetchSnapshot<unknown>["status"];
   isFetching: boolean;
@@ -17,7 +15,6 @@ export function createAppsStore(client: TailorKitFetchClient, initialApps?: Tail
   const provided = createStore(initialApps);
   const suppliedSnapshot = (apps: TailorKitApp[]): TailorKitAppsSnapshot => ({
     apps,
-    views: listViews(apps),
     error: null,
     status: "ready",
     isFetching: false,
@@ -27,8 +24,6 @@ export function createAppsStore(client: TailorKitFetchClient, initialApps?: Tail
   let snapshot: TailorKitAppsSnapshot;
   let requested = false;
   let subscribers = 0;
-  let lastApps: TailorKitApp[] | undefined;
-  let views: TailorKitView[] = [];
   const empty: TailorKitApp[] = [];
   const store = {
     getSnapshot(): TailorKitAppsSnapshot {
@@ -36,13 +31,8 @@ export function createAppsStore(client: TailorKitFetchClient, initialApps?: Tail
       const current = query.getSnapshot();
       if (current !== last) {
         const apps = current.data ?? empty;
-        if (apps !== lastApps) {
-          views = listViews(apps);
-          lastApps = apps;
-        }
         snapshot = {
           apps,
-          views,
           error: current.error,
           status: current.status,
           isFetching: current.isFetching,

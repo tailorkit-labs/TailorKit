@@ -1,3 +1,3 @@
 export * from "./store/index";
-export type { TailorKitApp, TailorKitView } from "./types";
+export type { TailorKitApp } from "./types";
 export * from "./client/index";

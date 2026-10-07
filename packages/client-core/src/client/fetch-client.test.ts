@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from "vite-plus/test";
 import { createTailorKitFetchClient } from "./fetch-client";
 import { createTailorKitStore } from "../store/store";
-import { createSlotInstancesStore } from "../store/fetch/slot-instances";
+import { createSlotStore } from "../store/fetch/slot";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -104,14 +104,14 @@ it("deduplicates instance requests and sessions across framework-neutral consume
       layers: [{ path: "/", context: { userId: "user" }, status: "ready" as const }],
     },
   };
-  const first = createSlotInstancesStore(client, options);
-  const second = createSlotInstancesStore(client, options);
+  const first = createSlotStore(client, options);
+  const second = createSlotStore(client, options);
   const stopFirst = first.subscribe(vi.fn());
   const stopSecond = second.subscribe(vi.fn());
   const pending = first.fetch();
   expect(second.fetch()).toBe(pending);
   await pending;
-  expect(first.getSnapshot().data?.[0]?.key).toBe("overview");
+  expect(first.getSnapshot().data?.[0]).toMatchObject({ key: "overview" });
   expect(second.getSnapshot().data).toBe(first.getSnapshot().data);
   expect(fetchMock).toHaveBeenCalledTimes(3);
   stopFirst();
