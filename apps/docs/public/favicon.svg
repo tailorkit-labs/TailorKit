@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2" viewBox="0 0 48 48">
-  <style>
-    path { fill: #507200; }
-    @media (prefers-color-scheme: dark) { path { fill: #b8e954; } }
-  </style>
-  <path d="M0 13h11v11H0z" transform="translate(27 -18.273)scale(1.6364)"/>
-  <path d="M0 4h10v10h10v10H0z" transform="matrix(1.8 0 0 1.8 3 1.8)"/>
-</svg>
