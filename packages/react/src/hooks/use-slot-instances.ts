@@ -1,5 +1,5 @@
 import { createSlotInstancesStore } from "@tailorkit/client-core";
-import type { FetchCacheOptions, TailorKitApp, SlotInstance } from "@tailorkit/client-core";
+import type { TailorKitApp, SlotInstance } from "@tailorkit/client-core";
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useTailorRootContext } from "../components/context";
 import { useApps } from "./use-apps";
@@ -8,7 +8,7 @@ import { useStableContext } from "./use-stable-context";
 
 export type { SlotInstance } from "@tailorkit/client-core";
 
-export interface UseSlotInstancesOptions<TSlot extends string = string> extends FetchCacheOptions {
+export interface UseSlotInstancesOptions<TSlot extends string = string> {
   slot: TSlot;
 }
 
@@ -17,16 +17,9 @@ export interface UseSlotInstancesResult extends Omit<UseAppsResult, "data"> {
 }
 
 /** Resolve instances across discovered apps while sharing endpoint state in client-core. */
-export function useSlotInstances({
-  slot,
-  staleTime,
-  gcTime,
-}: UseSlotInstancesOptions): UseSlotInstancesResult {
+export function useSlotInstances({ slot }: UseSlotInstancesOptions): UseSlotInstancesResult {
   const apps = useApps();
-  const instances = useResolvedSlotInstances(slot, apps.data, apps.status, apps.error, {
-    staleTime,
-    gcTime,
-  });
+  const instances = useResolvedSlotInstances(slot, apps.data, apps.status, apps.error);
   const refetch = useCallback(async () => {
     if (apps.isSuccess) await instances.refetch();
     else await apps.refetch();
@@ -44,7 +37,6 @@ function useResolvedSlotInstances(
   apps: TailorKitApp[] | undefined,
   appsStatus: UseAppsResult["status"],
   appsError: Error | null,
-  { staleTime, gcTime }: FetchCacheOptions = {},
 ): UseSlotInstancesResult {
   const { store } = useTailorRootContext("useSlotInstances");
   const activeView = useSyncExternalStore(
@@ -59,10 +51,8 @@ function useResolvedSlotInstances(
         ...options,
         appsStatus,
         appsError,
-        staleTime,
-        gcTime,
       }),
-    [store.client, options, appsStatus, appsError, staleTime, gcTime],
+    [store.client, options, appsStatus, appsError],
   );
   const snapshot = useSyncExternalStore(query.subscribe, query.getSnapshot, query.getSnapshot);
   useEffect(() => {
