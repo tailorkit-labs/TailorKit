@@ -1,0 +1,22 @@
+packages/react/src/__tests__/use-slot-instances.test.tsx
+  s_a48ab343401d93::t_422dd1263678f5 131-155
+  s_a48ab343401d93::t_41825e6f11f650 220-225
+packages/client-core/src/client/slot-view.ts
+  s_a48ab343401d93::t_52ac9615707238 16-17,19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "db6ccc22fd76cf6330ebb355c4f967b4b3aa7bda",
+  "prompts": {},
+  "sessions": {
+    "s_a48ab343401d93": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11530-4288-71d1-b6e4-ad4f7934580a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
