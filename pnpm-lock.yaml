@@ -394,8 +394,8 @@ importers:
         specifier: 'catalog:'
         version: 1.49.0(@types/react@19.3.0)(react@19.3.0)
       preact:
-        specifier: ^10.29.8
-        version: 10.29.8
+        specifier: ^11.0.0
+        version: 11.0.0
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -609,8 +609,8 @@ importers:
   examples/apps/backend-todo:
     dependencies:
       preact:
-        specifier: ^10.29.8
-        version: 10.29.8
+        specifier: ^11.0.0
+        version: 11.0.0
       tailorkit:
         specifier: workspace:*
         version: link:../../../packages/tailorkit
@@ -640,8 +640,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/app
       preact:
-        specifier: ^10.29.8
-        version: 10.29.8
+        specifier: ^11.0.0
+        version: 11.0.0
     devDependencies:
       '@tailorkit/cli':
         specifier: workspace:*
@@ -656,8 +656,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/app
       preact:
-        specifier: ^10.29.8
-        version: 10.29.8
+        specifier: ^11.0.0
+        version: 11.0.0
     devDependencies:
       '@tailorkit/cli':
         specifier: workspace:*
@@ -675,8 +675,8 @@ importers:
   examples/apps/todo:
     dependencies:
       preact:
-        specifier: ^10.29.8
-        version: 10.29.8
+        specifier: ^11.0.0
+        version: 11.0.0
       tailorkit:
         specifier: workspace:*
         version: link:../../../packages/tailorkit
@@ -1016,7 +1016,7 @@ importers:
     dependencies:
       '@nanostores/preact':
         specifier: 1.1.0
-        version: 1.1.0(nanostores@1.5.4)(preact@10.29.8)
+        version: 1.1.0(nanostores@1.5.4)(preact@11.0.0)
       '@orpc/client':
         specifier: 'catalog:'
         version: 2.0.0-beta.40
@@ -1052,8 +1052,8 @@ importers:
         specifier: ^20.14.5
         version: 20.14.5
       preact:
-        specifier: ^10.29.8
-        version: 10.29.8
+        specifier: ^11.0.0
+        version: 11.0.0
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(@swc/core@1.15.3(@swc/helpers@0.5.23))(jiti@2.7.0)(postcss@8.5.28)(supports-color@10.2.2)(tsx@4.23.15)(typescript@7.0.2)(yaml@2.9.1)
@@ -10794,6 +10794,14 @@ packages:
       preact-render-to-string:
         optional: true
 
+  preact@11.0.0:
+    resolution: {integrity: sha512-LRTLKuSe6VYPhvBDjwFaX+nuZnpsw6IN2GSboisAvhGsncylBmrbDCERhgKDn6yP2mAwbGvsB5OVyTe33M8gBg==}
+    peerDependencies:
+      preact-render-to-string: '>=6.7.0'
+    peerDependenciesMeta:
+      preact-render-to-string:
+        optional: true
+
   prebuild-install@7.1.3:
     resolution: {integrity: sha512-8Mf2cbV7x1cXPUILADGI3wuhfqWvtiLA1iclTDbFRZkgRQS0NqsPZphna9V+HyTEadheuPmjaJMsbzKQFOzLug==}
     engines: {node: '>=10'}
@@ -14798,10 +14806,10 @@ snapshots:
       chevrotain: 12.0.0
       lilconfig: 2.1.0
 
-  '@nanostores/preact@1.1.0(nanostores@1.5.4)(preact@10.29.8)':
+  '@nanostores/preact@1.1.0(nanostores@1.5.4)(preact@11.0.0)':
     dependencies:
       nanostores: 1.5.4
-      preact: 10.29.8
+      preact: 11.0.0
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     optional: true
@@ -23014,7 +23022,10 @@ snapshots:
 
   powershell-utils@0.2.1: {}
 
-  preact@10.29.8: {}
+  preact@10.29.8:
+    optional: true
+
+  preact@11.0.0: {}
 
   prebuild-install@7.1.3:
     dependencies:

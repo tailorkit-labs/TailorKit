@@ -52,6 +52,7 @@ and authorization.
   or manipulating `window`, `document`, parent frames, cookies, or browser storage
   to implement host UI. Importing the host's own UI package does not grant access.
 - Read generated bindings and installed public SDK types before implementing.
+  Use Preact 11 for app components and hooks.
   Never hand-edit generated files, invent remote components, use protocol
   internals, or bypass the contract with `any`, casts, or type suppressions.
 - Read page/record identity through the registered view's context. Local state

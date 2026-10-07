@@ -102,7 +102,11 @@ it("shares live queries, preserves subscriptions across equivalent inputs, and c
   await actWithStoreUpdates(() => subscription(0).next([3]));
   expect(first.error).toBeNull();
   expect(first.data).toEqual([3]);
-  await actWithStoreUpdates(() => render(null, root));
+  await actWithStoreUpdates(() => {
+    render(null, root);
+    expect(subscription(0).stop).toHaveBeenCalledOnce();
+    expect(client.close).toHaveBeenCalledOnce();
+  });
   expect(subscription(0).stop).toHaveBeenCalledOnce();
   expect(client.close).toHaveBeenCalledOnce();
   expect(transport.createClient).toHaveBeenCalledOnce();
@@ -226,8 +230,9 @@ it("runs actions explicitly and does not call completion callbacks after unmount
   vi.mocked(client.action).mockReturnValueOnce(pending.promise);
   await actWithStoreUpdates(() => state.execute());
   expect(client.action).toHaveBeenCalledWith({ name: "import" }, undefined);
-  await actWithStoreUpdates(() => render(null, root));
   await actWithStoreUpdates(async () => {
+    // Resolve before passive effect cleanup to cover Preact 11's deferred unmount cleanup.
+    render(null, root);
     pending.resolve("done");
     await pending.promise;
   });

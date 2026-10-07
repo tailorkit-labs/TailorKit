@@ -5,7 +5,7 @@ import { useState } from "preact/hooks";
 import { act } from "preact/test-utils";
 import { afterEach, expect, it, vi } from "vite-plus/test";
 
-vi.stubGlobal("__PREACT_VERSION__", "10.29.8");
+vi.stubGlobal("__PREACT_VERSION__", "11.0.0");
 const { defineView, defineClient } = await import("./views");
 const roots: HTMLElement[] = [];
 afterEach(() => {
