@@ -1,0 +1,22 @@
+packages/app/src/views.ts
+  s_355c4e091f817b::t_7dfe0c85eedf44 122-127,129-131,178,227
+packages/app/src/slots.test-d.ts
+  s_355c4e091f817b::t_c07951ef01c6a3 83-85
+  s_355c4e091f817b::t_7dfe0c85eedf44 86-100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c7a799f320a5f537441f5a83df5acbaa551ffa0d",
+  "prompts": {},
+  "sessions": {
+    "s_355c4e091f817b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a110b9-0243-7ab1-98c8-b679ad47fd30",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
