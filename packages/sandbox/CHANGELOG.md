@@ -1,5 +1,23 @@
 # @tailorkit/sandbox
 
+## 0.1.0-beta.19
+
+### Minor Changes
+
+- fa05f02: Breaking change: replace `AppView` and `AppViewProps` with client-bound `Slot` and `Slot.Controlled`. Use `<Slot app={app} name="panel" />` for registered view matching. For explicit rendering, `Slot.Controlled` requires a view, status, and complete combined context when ready, and renders the exact view without reading the registry or falling back to ancestors. The old `fallback` and `createIframe` props are no longer exposed.
+- fa05f02: Render dynamic view instances with `Slot instanceKey` or an explicit `Slot.Controlled instance`. Pass the selected instance through the sandbox and expose its validated data through the typed `view.useInstance()` hook. Handle pending requests, resolver errors, and missing keys, and reset view component state when the selected key changes.
+
+### Patch Changes
+
+- fa05f02: Add client-bound `useSlotInstances({ app, slot })` to fetch instances through the authenticated app action endpoint using the matching view and registered ancestor context. Expose loading, errors, and refetch; clear stale data when context or deployment changes. Preserve disabled view paths in manifests so host matching respects blocked fallback, while keeping them out of `useViews` discovery.
+- Updated dependencies [fa05f02]
+- Updated dependencies [fa05f02]
+- Updated dependencies [fa05f02]
+- Updated dependencies [fa05f02]
+- Updated dependencies [fa05f02]
+  - @tailorkit/app@0.1.0-beta.19
+  - @tailorkit/core@0.1.0-beta.19
+
 ## 0.1.0-beta.18
 
 ### Patch Changes
