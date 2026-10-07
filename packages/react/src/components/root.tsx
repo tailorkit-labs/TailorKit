@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { createTailorKitStore, toBaseUrl } from "../store";
+import { createTailorKitStore, toBaseUrl } from "@tailorkit/client-core";
 import type { TailorKitApp, TailorKitClientConfig } from "../tailorkit";
 import type { ComponentProps } from "./render";
 import { mergeProps, useRender } from "./render";

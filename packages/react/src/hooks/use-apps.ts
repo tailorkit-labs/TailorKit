@@ -1,7 +1,7 @@
 import { useTailorRootContext } from "../components/context";
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import type { TailorKitApp } from "../tailorkit";
-import type { TailorKitAppsSnapshot, TailorKitStore } from "../store";
+import type { TailorKitAppsSnapshot, TailorKitStore } from "@tailorkit/client-core";
 import { normalizeScopeSelection } from "../scope-query";
 
 export interface UseAppsOptions<TScopeNames extends string = string> {

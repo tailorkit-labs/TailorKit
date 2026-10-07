@@ -1,6 +1,6 @@
 import { createContext } from "react";
 import type { HostToIframePayload } from "@tailorkit/sandbox/protocol";
-import type { NodeStore } from "./node-store";
+import type { NodeStore } from "@tailorkit/client-core";
 
 export interface RemoteViewContext {
   components: Record<string, unknown>;

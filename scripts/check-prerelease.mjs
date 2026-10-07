@@ -4,6 +4,7 @@ const publishablePackages = [
   "packages/tailorkit/package.json",
   "packages/app/package.json",
   "packages/cli/package.json",
+  "packages/client-core/package.json",
   "packages/client-platform/package.json",
   "packages/core/package.json",
   "packages/react/package.json",

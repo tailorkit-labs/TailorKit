@@ -9,7 +9,7 @@ import type { IframeUiHost } from "@tailorkit/sandbox/host";
 import type { HostToIframePayload, RemoteNode } from "@tailorkit/sandbox/protocol";
 import { createTailorKitClient } from "../tailorkit";
 import { RemoteViewHost } from "../remote-view";
-import { createTailorKitStore } from "../store";
+import { createTailorKitStore } from "@tailorkit/client-core";
 import type { TailorKitApp } from "../tailorkit";
 
 const hostRecords: {

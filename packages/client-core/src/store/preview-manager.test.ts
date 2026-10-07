@@ -1,7 +1,7 @@
 /* oxlint-disable require-await -- transport mocks return the asynchronous client shape. */
 import { createHash } from "node:crypto";
 import { afterEach, expect, it, vi } from "vite-plus/test";
-import { createPreviewManager } from "../preview-manager";
+import { createPreviewManager } from "./preview-manager";
 import type { PreviewEvent } from "@tailorkit/client-platform/preview";
 
 const state = vi.hoisted(() => ({
@@ -454,7 +454,40 @@ it("shares one socket, applies only complete checksummed revisions, and closes o
   FakeSocket.instances[0]?.open();
   await vi.waitFor(() => expect(manager.getSnapshot("session")).toEqual({ revision: 1, source }));
   first();
+  first();
   expect(FakeSocket.instances[0]?.closed).toBe(false);
   second();
   expect(FakeSocket.instances[0]?.closed).toBe(true);
+});
+
+it("does not open a socket after disposal while metadata is pending", async () => {
+  let resolve!: (response: Response) => void;
+  const response = new Promise<Response>((done) => {
+    resolve = done;
+  });
+  vi.stubGlobal("WebSocket", FakeSocket);
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => response),
+  );
+  const manager = createPreviewManager(new URL("https://host.test/api/tailorkit/"), vi.fn());
+  const stop = manager.subscribe(
+    {
+      id: "app",
+      preview: {
+        sessionId: "session",
+        expiresAt: "later",
+        websocketUrl: "wss://platform.test/preview",
+        token: "token",
+      },
+    },
+    vi.fn(),
+  );
+  manager.dispose();
+  resolve(new Response(null, { status: 503 }));
+  await response;
+  expect(FakeSocket.instances).toHaveLength(0);
+  expect(manager.getSnapshot("session")).toEqual({ revision: 0, source: null });
+  stop();
+  stop();
 });

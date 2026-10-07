@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vite-plus/test";
-import { NodeStore } from "../node-store";
+import { NodeStore } from "./node-store";
 import type { RemoteNode } from "@tailorkit/sandbox/protocol";
 
 const textNode = (id: string, text: string): RemoteNode => ({ id, kind: "text", text });
@@ -21,6 +21,46 @@ const elementWithCallback = (event: string): RemoteNode => ({
 });
 
 describe("NodeStore", () => {
+  it("retains unchanged node snapshots when a sibling changes", () => {
+    const store = new NodeStore();
+    store.setSnapshot(elemNode("root", "div", {}, [textNode("a", "same"), textNode("b", "old")]));
+    const unchanged = store.getNode("a");
+    const root = store.getNode("root");
+    store.setSnapshot(elemNode("root", "div", {}, [textNode("a", "same"), textNode("b", "new")]));
+    expect(store.getNode("a")).toBe(unchanged);
+    expect(store.getNode("root")).toBe(root);
+    expect(store.getNode("b")).toMatchObject({ text: "new" });
+  });
+
+  it("notifies removed node subscribers and supports reappearing nodes", () => {
+    const store = new NodeStore();
+    store.setSnapshot(elemNode("root", "div", {}, [textNode("child", "old")]));
+    const values: (RemoteNode | null)[] = [];
+    const stop = store.subscribe("child", () => values.push(store.getNode("child")));
+    store.setSnapshot(elemNode("root", "div"));
+    expect(values).toEqual([null]);
+    store.setSnapshot(elemNode("root", "div", {}, [textNode("child", "new")]));
+    expect(values[1]).toMatchObject({ text: "new" });
+    stop();
+  });
+
+  it("clears nodes and root atomically while keeping subscriptions usable", () => {
+    const store = new NodeStore();
+    store.setSnapshot(textNode("root", "old"));
+    const nodeListener = vi.fn(() => expect(store.getRootId()).toBeNull());
+    const rootListener = vi.fn(() => expect(store.getNode("root")).toBeNull());
+    const stopNode = store.subscribe("root", nodeListener);
+    const stopRoot = store.subscribeRoot(rootListener);
+    store.clear();
+    expect(nodeListener).toHaveBeenCalledOnce();
+    expect(rootListener).toHaveBeenCalledOnce();
+    stopNode();
+    stopRoot();
+    store.setSnapshot(textNode("root", "new"));
+    expect(nodeListener).toHaveBeenCalledOnce();
+    expect(rootListener).toHaveBeenCalledOnce();
+  });
+
   describe("setSnapshot", () => {
     it("stores all nodes from the tree", () => {
       const store = new NodeStore();

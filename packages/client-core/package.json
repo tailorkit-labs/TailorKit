@@ -1,16 +1,17 @@
 {
-  "name": "@tailorkit/react",
+  "name": "@tailorkit/client-core",
   "version": "0.1.0-beta.18",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tailorkit-labs/TailorKit.git",
-    "directory": "packages/react"
+    "directory": "packages/client-core"
   },
   "files": [
     "dist"
   ],
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -26,26 +27,15 @@
     "test": "vp test run"
   },
   "dependencies": {
-    "@floating-ui/react-dom": "^2.1.9",
-    "@standard-schema/spec": "^1.1.0",
-    "@tailorkit/app": "workspace:*",
-    "@tailorkit/client-core": "workspace:*",
     "@tailorkit/client-platform": "workspace:*",
     "@tailorkit/core": "workspace:*",
-    "@tailorkit/sandbox": "workspace:*"
+    "@tailorkit/sandbox": "workspace:*",
+    "@tanstack/store": "0.11.2"
   },
   "devDependencies": {
     "@tailorkit/config": "workspace:*",
-    "@testing-library/react": "^16.3.3",
     "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "happy-dom": "^20.14.5",
-    "react": "catalog:",
-    "react-dom": "catalog:",
     "tsup": "^8.5.1",
     "typescript": "catalog:"
-  },
-  "peerDependencies": {
-    "react": ">=19.2.6"
   }
 }

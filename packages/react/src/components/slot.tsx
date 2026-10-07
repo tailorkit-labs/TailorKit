@@ -10,7 +10,7 @@ import type { SlotInstance } from "../hooks/use-slot-instances";
 import { resolveSlotView, selectSlotView } from "../slot-view";
 import { buildThemeCss, PrimitiveThemeContext } from "../primitives";
 import { RemoteViewHost } from "../remote-view";
-import { toBaseUrl } from "../store";
+import { toBaseUrl } from "@tailorkit/client-core";
 import type { TailorKitApp } from "../tailorkit";
 import { useTailorRootContext } from "./context";
 

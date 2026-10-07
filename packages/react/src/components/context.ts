@@ -1,4 +1,4 @@
-import type { TailorKitStore } from "../store";
+import type { TailorKitStore } from "@tailorkit/client-core";
 import { createContext, useContext } from "react";
 
 import type { TailorKitClientConfig } from "../tailorkit";
