@@ -11,8 +11,8 @@ const elemNode = (
   children: RemoteNode[] = [],
 ): RemoteNode => ({ children, id, kind: "element", props, type });
 
-const elementWithCallback = (event: string): RemoteNode => ({
-  callbacks: [{ callback: "onSelect", inputCount: 1, event }],
+const elementWithCallback = (event: string, inputCount = 1): RemoteNode => ({
+  callbacks: [{ callback: "onSelect", inputCount, event }],
   children: [],
   id: "n",
   kind: "element",
@@ -47,18 +47,27 @@ describe("NodeStore", () => {
   it("clears nodes and root atomically while keeping subscriptions usable", () => {
     const store = new NodeStore();
     store.setSnapshot(textNode("root", "old"));
-    const nodeListener = vi.fn(() => expect(store.getRootId()).toBeNull());
-    const rootListener = vi.fn(() => expect(store.getNode("root")).toBeNull());
+    const snapshot = () => ({ node: store.getNode("root"), rootId: store.getRootId() });
+    const nodeListener = vi.fn(snapshot);
+    const rootListener = vi.fn(snapshot);
     const stopNode = store.subscribe("root", nodeListener);
     const stopRoot = store.subscribeRoot(rootListener);
     store.clear();
     expect(nodeListener).toHaveBeenCalledOnce();
     expect(rootListener).toHaveBeenCalledOnce();
+    expect(nodeListener).toHaveLastReturnedWith({ node: null, rootId: null });
+    expect(rootListener).toHaveLastReturnedWith({ node: null, rootId: null });
+    const newRoot = textNode("root", "new");
+    store.setSnapshot(newRoot);
+    expect(nodeListener).toHaveBeenCalledTimes(2);
+    expect(rootListener).toHaveBeenCalledTimes(2);
+    expect(nodeListener).toHaveLastReturnedWith({ node: newRoot, rootId: "root" });
+    expect(rootListener).toHaveLastReturnedWith({ node: newRoot, rootId: "root" });
     stopNode();
     stopRoot();
-    store.setSnapshot(textNode("root", "new"));
-    expect(nodeListener).toHaveBeenCalledOnce();
-    expect(rootListener).toHaveBeenCalledOnce();
+    store.setSnapshot(textNode("another-root", "after unsubscribe"));
+    expect(nodeListener).toHaveBeenCalledTimes(2);
+    expect(rootListener).toHaveBeenCalledTimes(2);
   });
 
   describe("setSnapshot", () => {
@@ -241,6 +250,28 @@ describe("NodeStore", () => {
 
       store.setSnapshot(elementWithCallback("tailorkitcallbackonchange"));
       expect(listener).toHaveBeenCalledTimes(1);
+    });
+
+    it("updates callback bindings when only the input count changes", () => {
+      const store = new NodeStore();
+      const event = "tailorkitcallbackonselect";
+      store.setSnapshot(elementWithCallback(event, 1));
+      const previous = store.getNode("n");
+      const listener = vi.fn();
+      const stop = store.subscribe("n", listener);
+
+      store.setSnapshot(elementWithCallback(event, 2));
+      const updated = store.getNode("n");
+      expect(updated).not.toBe(previous);
+      expect(updated).toMatchObject({
+        callbacks: [{ callback: "onSelect", event, inputCount: 2 }],
+      });
+      expect(listener).toHaveBeenCalledOnce();
+
+      store.setSnapshot(elementWithCallback(event, 2));
+      expect(store.getNode("n")).toBe(updated);
+      expect(listener).toHaveBeenCalledOnce();
+      stop();
     });
   });
 });

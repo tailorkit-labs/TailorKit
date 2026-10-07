@@ -15,7 +15,7 @@ const nodeSignature = (node: RemoteNode): string => {
   // For elements: type + child IDs + serialized props + callback bindings
   const propsStr = JSON.stringify(node.props);
   const callbacksStr = (node.callbacks ?? [])
-    .map((binding) => `${binding.callback}:${binding.event}`)
+    .map((binding) => `${binding.callback}:${binding.event}:${binding.inputCount}`)
     .join(",");
   return `elem:${node.type}|${childIds(node.children)}|${propsStr}|${callbacksStr}`;
 };
