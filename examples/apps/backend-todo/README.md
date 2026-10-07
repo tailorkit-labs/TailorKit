@@ -6,7 +6,7 @@ Backend functions live in `src/functions/` and use the chained `tk` API. `src/sc
 
 `src/views/default.tsx` also defines an `instances` resolver. It runs on the server, calls the registered `list` query, and returns an “All todos” instance plus each todo's stable key, title metadata, and validated `{ todoId }` data. The view reads `view.useInstance()` to display all todos or the selected task.
 
-The Next.js and TanStack Start hosts use `useSlotInstances({ app, slot: "panel" })` to populate an instance picker, then render `<Slot app={app} name="panel" instanceKey={selected.key} />`. Refresh the picker after adding or removing tasks. Static views still render without an instance key.
+The Next.js and TanStack Start hosts use `useSlotInstances({ slot: "panel" })` to discover instances across all apps, filter by `instance.app.id` to populate an app’s instance picker, then render `<Slot app={app} name="panel" instanceKey={selected.key} />`. Refresh the picker after adding or removing tasks. Static views still render without an instance key.
 
 Hosts that already have the complete context and instance can render `<Slot.Controlled app={app} name="panel" view="/" status="ready" context={context} instance={selected} />` directly. The instance data stays opaque to the host; its type is inferred from `instances.dataSchema` inside the app.
 
