@@ -1,0 +1,21 @@
+packages/react/src/__tests__/slot.test.tsx
+  s_355c4e091f817b::t_9ba619364db120 268-270
+packages/react/src/components/slot.tsx
+  s_355c4e091f817b::t_9ba619364db120 101-122,126-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ee238d0a835445a1f9f5148529488049c57654dc",
+  "prompts": {},
+  "sessions": {
+    "s_355c4e091f817b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a110b9-0243-7ab1-98c8-b679ad47fd30",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
