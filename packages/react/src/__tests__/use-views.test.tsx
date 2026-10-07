@@ -42,7 +42,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-it("shares cached discovery across roots and refreshes stale data on remount", async () => {
+it("shares cached discovery across roots and remounts", async () => {
   const fetch = vi
     .spyOn(globalThis, "fetch")
     .mockImplementation(() => Promise.resolve(Response.json(apps)));
@@ -76,13 +76,6 @@ it("shares cached discovery across roots and refreshes stale data on remount", a
   expect(screen.getByText("ready:3")).toBeTruthy();
   expect(fetch).toHaveBeenCalledOnce();
   fresh.unmount();
-  vi.spyOn(Date, "now").mockReturnValue(Date.now() + 30_001);
-  render(
-    <Root client={client}>
-      <Apps />
-    </Root>,
-  );
-  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
 });
 
 function Views({

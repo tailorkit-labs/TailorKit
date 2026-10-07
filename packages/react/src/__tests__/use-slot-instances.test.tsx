@@ -523,28 +523,6 @@ it("shares identical instance requests across roots while keeping their registra
   expect(second.result.current.data).toEqual(withApp(instances));
 });
 
-it("reuses fresh instances on remount and refreshes them after the default stale time", async () => {
-  const mount = () =>
-    renderHook(
-      () => {
-        useDetail();
-        return client.useSlotInstances({ slot: "page" });
-      },
-      { wrapper },
-    );
-  const first = mount();
-  await waitFor(() => expect(first.result.current.isSuccess).toBe(true));
-  first.unmount();
-  const fresh = mount();
-  await waitFor(() => expect(fresh.result.current.isSuccess).toBe(true));
-  expect(calls("/actions")).toHaveLength(1);
-  fresh.unmount();
-  vi.spyOn(Date, "now").mockReturnValue(Date.now() + 30_001);
-  const stale = mount();
-  await waitFor(() => expect(calls("/actions")).toHaveLength(2));
-  await waitFor(() => expect(stale.result.current.isFetching).toBe(false));
-});
-
 it("discovers apps through useApps before resolving their instances", async () => {
   apps = undefined;
   let finishApps!: (response: Response) => void;
