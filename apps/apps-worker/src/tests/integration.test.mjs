@@ -1,3 +1,4 @@
+import { gzipSync } from "node:zlib";
 // Disposable local workerd/R2 test. No Cloudflare account or deployed resources are used.
 /* eslint-disable unicorn/no-await-expression-member, no-restricted-properties */
 import assert from "node:assert/strict";
@@ -115,14 +116,18 @@ export default { functions: { probe: {
     const code = bundle(version);
     const objectKey = `teams/${publicTeamId}/projects/${projectId}/apps/${appPublicId}/deployments/deploy00000${version}/server/server.js`;
     const bucket = await mf.getR2Bucket("BUNDLES");
-    await bucket.put(objectKey, code);
+    const bytes = version === 1 ? Buffer.from(code) : gzipSync(code);
+    await bucket.put(objectKey, bytes, {
+      httpMetadata: version === 1 ? {} : { contentEncoding: "gzip" },
+    });
     published = {
       projectId,
       appId: "app",
       deploymentId: `v${version}`,
       objectKey,
-      checksum: createHash("sha256").update(code).digest("hex"),
-      contentLength: Buffer.byteLength(code),
+      checksum: createHash("sha256").update(bytes).digest("hex"),
+      contentLength: bytes.byteLength,
+      ...(version === 1 ? {} : { contentEncoding: "gzip" }),
     };
     const response = await mf.dispatchFetch(
       `https://internal.tailorkit.app/p/${projectId}/a/${appPublicId}/new-deployment`,
@@ -222,15 +227,19 @@ export const migrations = ${JSON.stringify(history)};`;
       const code = await readFile(path.join(state, "fixture/server.js"), "utf-8");
       const bucket = await mf.getR2Bucket("BUNDLES");
 
-      await bucket.put("private/todo/server/server.js", code);
+      const bytes = gzipSync(code);
+      await bucket.put("private/todo/server/server.js", bytes, {
+        httpMetadata: { contentEncoding: "gzip" },
+      });
 
       published = {
         projectId,
         appId: "app",
         deploymentId,
         objectKey: "private/todo/server/server.js",
-        checksum: createHash("sha256").update(code).digest("hex"),
-        contentLength: Buffer.byteLength(code),
+        checksum: createHash("sha256").update(bytes).digest("hex"),
+        contentLength: bytes.byteLength,
+        contentEncoding: "gzip",
       };
       await (
         await mf.getKVNamespace("DEPLOYMENTS")
@@ -569,11 +578,29 @@ export const migrations = ${JSON.stringify(history)};`;
     const assets = await mf.getR2Bucket("BUNDLES");
     const assetBase = `${rpcUrl.replace(/\/rpc$/u, "")}/d/deploy000001`;
     const clientKey = `teams/${publicTeamId}/projects/${projectId}/apps/${appPublicId}/deployments/deploy000001/client/client.js`;
-    await assets.put(clientKey, "export default 'client';");
-    const client = await mf.dispatchFetch(`${assetBase}/client/client.js`);
+    const clientBytes = gzipSync("export default 'client';");
+    await assets.put(clientKey, clientBytes, { httpMetadata: { contentEncoding: "gzip" } });
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const compressed = await mf.dispatchFetch(`${assetBase}/client/client.js`, {
+        headers: { "Accept-Encoding": "gzip" },
+      });
+      assert.equal(compressed.headers.get("mf-content-encoding"), "gzip");
+      assert.equal(compressed.headers.get("vary"), "Accept-Encoding");
+      // Miniflare dispatchFetch decodes HTTP gzip and preserves its header here.
+      assert.equal(await compressed.text(), "export default 'client';", `gzip request ${attempt}`);
+    }
+    const client = await mf.dispatchFetch(`${assetBase}/client/client.js`, {
+      headers: { "Accept-Encoding": "identity" },
+    });
     assert.equal(client.status, 200);
     assert.equal(await client.text(), "export default 'client';");
     assert.equal(client.headers.get("cache-control"), "private, max-age=3600");
+    const clientHead = await mf.dispatchFetch(`${assetBase}/client/client.js`, {
+      method: "HEAD",
+      headers: { "Accept-Encoding": "gzip" },
+    });
+    assert.equal(clientHead.headers.get("mf-content-encoding"), "gzip");
+    assert.equal(clientHead.headers.get("content-length"), String(clientBytes.byteLength));
     assert.equal((await mf.dispatchFetch(`${assetBase}/client.js`)).status, 404);
     const logoHash = "a".repeat(64);
     await assets.put(

@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { gzipSync } from "node:zlib";
 import { Effect } from "effect";
 import { afterEach, expect, it, vi } from "vite-plus/test";
 import { deploymentSource } from "./source";
@@ -23,7 +25,7 @@ const identity = {
   expiresAt: Date.now() + 120_000,
 };
 
-const setup = (contents: string | null = code) => {
+const setup = (contents: string | Uint8Array<ArrayBuffer> | null = code) => {
   const get = vi.fn(async () =>
     contents === null ? null : { body: new Response(contents).body! },
   );
@@ -103,3 +105,54 @@ it("serves KV hits to old clients and fills misses from the platform", async () 
   expect((await Effect.runPromise(source.current(identity, "v2"))).deploymentId).toBe("v2");
   expect(fetch).toHaveBeenCalledTimes(2);
 });
+
+it("verifies compressed server bytes before inflating and caches the decoded code", async () => {
+  const bytes = gzipSync(code);
+  const metadata = {
+    ...deployment,
+    contentEncoding: "gzip" as const,
+    checksum: createHash("sha256").update(bytes).digest("hex"),
+    contentLength: bytes.byteLength,
+  };
+  const { source, get } = setup(bytes);
+  expect(await Effect.runPromise(source.code(metadata))).toBe(code);
+  expect(await Effect.runPromise(source.code(metadata))).toBe(code);
+  expect(get).toHaveBeenCalledOnce();
+  const tampered = { ...metadata, checksum: "a".repeat(64) };
+  expect((await Effect.runPromiseExit(setup(bytes).source.code(tampered)))._tag).toBe("Failure");
+  expect(
+    (
+      await Effect.runPromiseExit(
+        setup(bytes).source.code({ ...metadata, contentLength: bytes.byteLength + 1 }),
+      )
+    )._tag,
+  ).toBe("Failure");
+});
+
+it.each([Buffer.from("not gzip"), gzipSync("x".repeat(3 * 1024 * 1024 + 1))])(
+  "rejects invalid gzip and inflated code exceeding the deployment limit",
+  async (bytes) => {
+    const metadata = {
+      ...deployment,
+      contentEncoding: "gzip" as const,
+      checksum: createHash("sha256").update(bytes).digest("hex"),
+      contentLength: bytes.byteLength,
+    };
+    expect((await Effect.runPromiseExit(setup(bytes).source.code(metadata)))._tag).toBe("Failure");
+  },
+);
+
+it.each(["utf-8", "gzip"] as const)(
+  "loads %s server code exactly at the 3 MiB limit",
+  async (encoding) => {
+    const content = "x".repeat(3 * 1024 * 1024);
+    const bytes = encoding === "gzip" ? gzipSync(content) : Buffer.from(content);
+    const metadata = {
+      ...deployment,
+      ...(encoding === "gzip" ? { contentEncoding: "gzip" as const } : {}),
+      contentLength: bytes.byteLength,
+      checksum: createHash("sha256").update(bytes).digest("hex"),
+    };
+    expect(await Effect.runPromise(setup(bytes).source.code(metadata))).toBe(content);
+  },
+);

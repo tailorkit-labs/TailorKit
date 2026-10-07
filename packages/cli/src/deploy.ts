@@ -81,7 +81,7 @@ interface UploadedFileSummary {
   size: number;
 }
 
-const maxDeploymentBytes = 1024 * 1024;
+const maxDeploymentBytes = 3 * 1024 * 1024;
 const gzipAsync = promisify(gzip);
 const logoContentTypeByExtension: Record<string, "image/png" | "image/svg+xml" | "image/webp"> = {
   png: "image/png",
@@ -129,6 +129,7 @@ const sha256Hex = (content: Buffer): string => createHash("sha256").update(conte
 const uploadAsset = async (
   asset: DeploymentAssetUpload | DeploymentLogoUpload,
   content: Buffer,
+  contentEncoding?: "gzip",
 ): Promise<void> => {
   if (!asset.uploadUrl) {
     return;
@@ -142,6 +143,8 @@ const uploadAsset = async (
   if (!headers.has("content-type")) {
     headers.set("content-type", "application/javascript");
   }
+
+  if (contentEncoding) headers.set("content-encoding", contentEncoding);
 
   const response = await fetch(asset.uploadUrl, {
     body: new Uint8Array(content),
@@ -275,6 +278,7 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
   const serverAsset = manifest.assets.server
     ? await readFile(path.join(outDir, manifest.assets.server))
     : undefined;
+  const serverAssetGzip = serverAsset ? await gzipAsync(serverAsset) : undefined;
   const logoEntries = Object.entries(manifest.assets.logos ?? {}) as ["dark" | "light", string][];
   const logoAssets = await Promise.all(
     logoEntries.map(async ([variant, filename]) => {
@@ -291,6 +295,16 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
     throw new Error(
       `Combined client assets are ${clientAsset.byteLength} bytes and cannot exceed ${maxDeploymentBytes} bytes.`,
     );
+  }
+
+  if (serverAsset && serverAsset.byteLength > maxDeploymentBytes) {
+    throw new Error(`Server asset exceeds ${maxDeploymentBytes} bytes.`);
+  }
+  if (
+    clientAssetGzip.byteLength > maxDeploymentBytes ||
+    (serverAssetGzip && serverAssetGzip.byteLength > maxDeploymentBytes)
+  ) {
+    throw new Error(`Compressed deployment asset exceeds ${maxDeploymentBytes} bytes.`);
   }
 
   const client = createTailorKitClient({
@@ -335,19 +349,19 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
         views: manifest.views,
         assets: [
           {
-            checksum: sha256Hex(clientAsset),
-            contentLength: clientAsset.byteLength,
+            checksum: sha256Hex(clientAssetGzip),
+            contentLength: clientAssetGzip.byteLength,
             contentType: "application/javascript" as const,
-            encoding: "utf-8" as const,
+            encoding: "gzip" as const,
             objectKey: "client.js" as const,
           },
         ],
-        server: serverAsset
+        server: serverAssetGzip
           ? {
-              checksum: sha256Hex(serverAsset),
-              contentLength: serverAsset.byteLength,
+              checksum: sha256Hex(serverAssetGzip),
+              contentLength: serverAssetGzip.byteLength,
               contentType: "application/javascript" as const,
-              encoding: "utf-8" as const,
+              encoding: "gzip" as const,
               objectKey: "server.js" as const,
             }
           : undefined,
@@ -386,8 +400,10 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
     throw new Error("Deployment did not return an upload URL for the server asset.");
   }
   await Promise.all([
-    ...(serverAsset && created.server ? [uploadAsset(created.server, serverAsset)] : []),
-    uploadAsset(created.assets[0], clientAsset),
+    ...(serverAssetGzip && created.server
+      ? [uploadAsset(created.server, serverAssetGzip, "gzip")]
+      : []),
+    uploadAsset(created.assets[0], clientAssetGzip, "gzip"),
     ...logoAssets.map((logo) => {
       const upload = created.logos?.[logo.variant];
       if (!upload) {
@@ -416,10 +432,9 @@ export const runDeploy = async (options: DeployOptions): Promise<DeployResult> =
   );
 
   const uploadedServer = [];
-  if (serverAsset && manifest.assets.server) {
-    const compressed = await gzipAsync(serverAsset);
+  if (serverAsset && serverAssetGzip && manifest.assets.server) {
     uploadedServer.push({
-      gzipSize: compressed.byteLength,
+      gzipSize: serverAssetGzip.byteLength,
       path: manifest.assets.server,
       size: serverAsset.byteLength,
     });

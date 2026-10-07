@@ -1,21 +1,33 @@
 import {
   AssetDeliveryError,
   assetHeaders,
+  acceptsGzip,
   assetResponse,
   assetSize,
   hostedAssetRequest,
+  limitAssetBody,
   serveAssetRequest,
 } from "@tailorkit/asset-delivery";
 import type { AssetIdentity } from "@tailorkit/asset-delivery";
 import { Effect } from "effect";
 
-function downstreamResponse(response: Response, method: string) {
+function downstreamResponse(response: Response, request: Request) {
   const headers = new Headers(response.headers);
   // Keep browser reuse bounded when a deployment is removed.
   headers.set("Cache-Control", "private, max-age=3600");
-  return new Response(method === "HEAD" ? null : response.body, {
+  let body = response.body;
+  if (headers.get("Content-Encoding") === "gzip" && !acceptsGzip(request)) {
+    headers.delete("Content-Encoding");
+    headers.delete("Content-Length");
+    if (headers.has("ETag")) headers.set("ETag", `W/${headers.get("ETag")}`);
+    if (request.method !== "HEAD" && body) {
+      body = limitAssetBody(body.pipeThrough(new DecompressionStream("gzip")));
+    }
+  }
+  return new Response(request.method === "HEAD" ? null : body, {
     headers,
     status: response.status,
+    encodeBody: "manual",
   });
 }
 
@@ -23,11 +35,12 @@ function loadAsset(request: Request, identity: AssetIdentity, env: Env, ctx: Exe
   return Effect.gen(function* () {
     // Node/DOM ambient types omit Cloudflare's default edge cache.
     const edgeCache = caches as CacheStorage & { readonly default: Cache };
-    const cacheKey = new Request(request.url);
+    // Cache the stored representation, then negotiate for each downstream request.
+    const cacheKey = new Request(request.url, { headers: { "Accept-Encoding": "gzip" } });
     const cached = yield* Effect.tryPromise(() => edgeCache.default.match(cacheKey)).pipe(
       Effect.catch(() => Effect.succeed(undefined)),
     );
-    if (cached) return downstreamResponse(cached, request.method);
+    if (cached) return downstreamResponse(cached, request);
 
     if (request.method === "HEAD") {
       const object = yield* Effect.tryPromise({
@@ -40,10 +53,11 @@ function loadAsset(request: Request, identity: AssetIdentity, env: Env, ctx: Exe
           headers: assetHeaders({
             contentLength,
             contentType: identity.contentType,
+            contentEncoding: object?.httpMetadata?.contentEncoding,
             etag: object?.httpEtag,
           }),
         }),
-        request.method,
+        request,
       );
     }
 
@@ -54,14 +68,23 @@ function loadAsset(request: Request, identity: AssetIdentity, env: Env, ctx: Exe
     const contentLength = yield* assetSize(object?.size);
     if (!object) return yield* Effect.fail(new AssetDeliveryError(404));
     const response = new Response(object.body, {
+      encodeBody: "manual",
       headers: assetHeaders({
         contentLength,
         contentType: identity.contentType,
+        contentEncoding: object.httpMetadata?.contentEncoding,
         etag: object.httpEtag,
       }),
     });
+    // workerd clones reset encodeBody; keep cached bytes compressed exactly once.
     const cacheWrite = Effect.tryPromise(() =>
-      edgeCache.default.put(cacheKey, response.clone()),
+      edgeCache.default.put(
+        cacheKey,
+        new Response(response.clone().body, {
+          headers: response.headers,
+          encodeBody: "manual",
+        }),
+      ),
     ).pipe(
       Effect.catch(() =>
         Effect.sync(() => {
@@ -70,7 +93,7 @@ function loadAsset(request: Request, identity: AssetIdentity, env: Env, ctx: Exe
       ),
     );
     yield* Effect.sync(() => ctx.waitUntil(Effect.runPromise(cacheWrite)));
-    return downstreamResponse(response, request.method);
+    return downstreamResponse(response, request);
   });
 }
 
