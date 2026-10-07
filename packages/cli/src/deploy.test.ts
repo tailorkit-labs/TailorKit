@@ -341,7 +341,10 @@ it("does not start login for config or credential store errors", async () => {
 it.each(["client", "server"])(
   "rejects oversized raw %s code before creating a deployment",
   async (kind) => {
-    await writeFile(path.join(root, `.tailorkit/${kind}/${kind}.js`), "x".repeat(1024 * 1024 + 1));
+    await writeFile(
+      path.join(root, `.tailorkit/${kind}/${kind}.js`),
+      "x".repeat(3 * 1024 * 1024 + 1),
+    );
     await expect(runDeploy({ cwd: root })).rejects.toThrow(/exceed/u);
     expect(mocks.create).not.toHaveBeenCalled();
     expect(mocks.publish).not.toHaveBeenCalled();
@@ -382,4 +385,15 @@ it("preserves signed upload headers and uploads logos without gzip encoding", as
   const logoUpload = fetch.mock.calls.find(([url]) => String(url).endsWith("logo"));
   expect(new TextDecoder().decode(logoUpload?.[1]?.body as Uint8Array)).toBe(logo);
   expect(new Headers(logoUpload?.[1]?.headers).get("content-encoding")).toBeNull();
+});
+
+it.each(["client", "server"])("accepts %s code exactly at the 3 MiB limit", async (kind) => {
+  const size = 3 * 1024 * 1024;
+  await writeFile(path.join(root, `.tailorkit/${kind}/${kind}.js`), "x".repeat(size));
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
+  const result = await runDeploy({ cwd: root });
+  expect(result.uploadedFiles).toContainEqual(
+    expect.objectContaining({ path: `${kind}/${kind}.js`, size }),
+  );
+  expect(mocks.publish).toHaveBeenCalledOnce();
 });

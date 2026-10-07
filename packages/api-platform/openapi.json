@@ -2757,7 +2757,7 @@
                       "contentLength": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 1048576
+                        "maximum": 3145728
                       },
                       "contentType": {
                         "type": "string",

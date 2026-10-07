@@ -399,7 +399,7 @@ describe("platform deployment uploads", () => {
     expect(currentApp?.currentDeploymentId).toBeNull();
   });
 
-  it("publishes gzip client code whose decoded size is exactly 1 MiB", async () => {
+  it("publishes gzip client code whose decoded size is exactly 3 MiB", async () => {
     const decoded = new Uint8Array(maxDeploymentBytes);
     const { context, created } = await createGzipClientDeployment(decoded);
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
@@ -518,7 +518,7 @@ describe("platform deployment uploads", () => {
           assets: [
             {
               checksum: "a".repeat(64),
-              contentLength: 1_048_576,
+              contentLength: maxDeploymentBytes,
               contentType: "application/javascript",
               encoding: "utf-8",
               objectKey: "client.js",
@@ -632,7 +632,7 @@ describe("platform deployment uploads", () => {
     });
   });
 
-  it("rejects the client assets array when it exceeds 1 MiB", async () => {
+  it("rejects the client assets array when it exceeds 3 MiB", async () => {
     const createUploadUrl = vi.fn();
     const context = {
       organization: {
@@ -675,7 +675,7 @@ describe("platform deployment uploads", () => {
             assets: [
               {
                 checksum: "a".repeat(64),
-                contentLength: 1_048_577,
+                contentLength: maxDeploymentBytes + 1,
                 contentType: "application/javascript",
                 encoding: "utf-8",
                 objectKey: "client.js",

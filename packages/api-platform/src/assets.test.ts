@@ -181,7 +181,7 @@ it("limits decoded gzip assets and cancels the upstream stream on overflow", asy
   await vi.waitFor(() => expect(cancel).toHaveBeenCalledOnce());
 });
 
-it("serves decoded gzip assets at exactly the 1 MiB limit", async () => {
+it("serves decoded gzip assets at exactly the 3 MiB limit", async () => {
   const backend = storage();
   vi.mocked(backend.head).mockResolvedValue({
     key,

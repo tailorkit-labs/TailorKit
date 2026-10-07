@@ -176,7 +176,9 @@ describe("tenant asset gateway", () => {
   });
 
   it("hides missing or oversized objects and fails safely on R2 errors", async () => {
-    get.mockResolvedValueOnce(null).mockResolvedValueOnce({ ...object(), size: 1024 * 1024 + 1 });
+    get
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ ...object(), size: maxDeploymentBytes + 1 });
     await expect(fetchAsset(new Request(url))).resolves.toHaveProperty("status", 404);
     await expect(fetchAsset(new Request(url))).resolves.toHaveProperty("status", 404);
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -230,7 +232,7 @@ it("serves stored gzip bytes and caches them without double compression", async 
   expect(gunzipSync(Buffer.from(await cached.arrayBuffer())).toString()).toBe(bundle);
 });
 
-it.each(["R2", "cache"])("caps inflated bytes from %s at 1 MiB", async (source) => {
+it.each(["R2", "cache"])("caps inflated bytes from %s at 3 MiB", async (source) => {
   const stored = gzipObject("a".repeat(maxDeploymentBytes + 1));
   expect(stored.size).toBeLessThan(maxDeploymentBytes);
   if (source === "R2") {
@@ -257,7 +259,7 @@ it.each(["R2", "cache"])("caps inflated bytes from %s at 1 MiB", async (source) 
   expect(deliveredBytes).toBeLessThanOrEqual(maxDeploymentBytes);
 });
 
-it("serves a gzip bundle whose decoded size is exactly 1 MiB", async () => {
+it("serves a gzip bundle whose decoded size is exactly 3 MiB", async () => {
   get.mockResolvedValueOnce(gzipObject("a".repeat(maxDeploymentBytes)));
   const response = await fetchAsset(new Request(url));
   expect((await response.arrayBuffer()).byteLength).toBe(maxDeploymentBytes);

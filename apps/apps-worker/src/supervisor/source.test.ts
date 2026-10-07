@@ -129,7 +129,7 @@ it("verifies compressed server bytes before inflating and caches the decoded cod
   ).toBe("Failure");
 });
 
-it.each([Buffer.from("not gzip"), gzipSync("x".repeat(1024 * 1024 + 1))])(
+it.each([Buffer.from("not gzip"), gzipSync("x".repeat(3 * 1024 * 1024 + 1))])(
   "rejects invalid gzip and inflated code exceeding the deployment limit",
   async (bytes) => {
     const metadata = {
@@ -139,5 +139,20 @@ it.each([Buffer.from("not gzip"), gzipSync("x".repeat(1024 * 1024 + 1))])(
       contentLength: bytes.byteLength,
     };
     expect((await Effect.runPromiseExit(setup(bytes).source.code(metadata)))._tag).toBe("Failure");
+  },
+);
+
+it.each(["utf-8", "gzip"] as const)(
+  "loads %s server code exactly at the 3 MiB limit",
+  async (encoding) => {
+    const content = "x".repeat(3 * 1024 * 1024);
+    const bytes = encoding === "gzip" ? gzipSync(content) : Buffer.from(content);
+    const metadata = {
+      ...deployment,
+      ...(encoding === "gzip" ? { contentEncoding: "gzip" as const } : {}),
+      contentLength: bytes.byteLength,
+      checksum: createHash("sha256").update(bytes).digest("hex"),
+    };
+    expect(await Effect.runPromise(setup(bytes).source.code(metadata))).toBe(content);
   },
 );

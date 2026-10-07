@@ -11,7 +11,7 @@ const teamIdPattern = /^[a-z0-9][a-z0-9-]{12}[a-z0-9]$/u;
 const nodeAssetPath = /^\/api\/assets\/t\/([^/]+)(\/p\/.*)$/u;
 const methods = new Set(["GET", "HEAD", "OPTIONS"]);
 
-export const maxDeploymentBytes = 1024 * 1024;
+export const maxDeploymentBytes = 3 * 1024 * 1024;
 export const maxAssetBytes = maxDeploymentBytes;
 
 export interface AssetIdentity {

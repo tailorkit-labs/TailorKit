@@ -81,7 +81,7 @@ interface UploadedFileSummary {
   size: number;
 }
 
-const maxDeploymentBytes = 1024 * 1024;
+const maxDeploymentBytes = 3 * 1024 * 1024;
 const gzipAsync = promisify(gzip);
 const logoContentTypeByExtension: Record<string, "image/png" | "image/svg+xml" | "image/webp"> = {
   png: "image/png",
