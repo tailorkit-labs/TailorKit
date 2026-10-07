@@ -140,7 +140,8 @@ function TailorKitSlotContent({ app }: { app: TailorKitApp }) {
 }
 
 function TailorKitPageInstances({ app }: { app: TailorKitApp }) {
-  const { data: instances, isPending, error, refetch } = useSlotInstances({ app, slot: "page" });
+  const { data: allInstances, isPending, error, refetch } = useSlotInstances({ slot: "page" });
+  const instances = allInstances?.filter((instance) => instance.app.id === app.id);
   const [instanceKey, setInstanceKey] = useState<string | null>(null);
   const selected = instances?.find((instance) => instance.key === instanceKey) ?? instances?.[0];
   const items = (instances ?? []).map((instance) => ({

@@ -1,3 +1,4 @@
+import type { ViewInstance } from "@tailorkit/app/client";
 import { createSessionProvider } from "@tailorkit/app/client";
 import type { SlotDefinitions, ViewDefinition } from "@tailorkit/core/schema";
 import type { ActiveView, ViewStatus } from "@tailorkit/core/views";
@@ -5,8 +6,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useSyncExternalStore } 
 import type { ReactNode } from "react";
 import type { ViewContext, ViewName } from "../hooks/use-register-view";
 import { useStableContext } from "../hooks/use-stable-context";
-import { useSlotInstances } from "../hooks/use-slot-instances";
-import type { SlotInstance } from "../hooks/use-slot-instances";
+import { useAppSlotInstances } from "../hooks/use-slot-instances";
 import { resolveSlotView, selectSlotView } from "../slot-view";
 import { buildThemeCss, PrimitiveThemeContext } from "../primitives";
 import { RemoteViewHost } from "../remote-view";
@@ -69,7 +69,7 @@ export type ControlledSlotProps<
       | ({ context: SlotContext<TViews, TView>; status: "ready" } & InstanceProps<
           TSlots[TSlot],
           "instance",
-          SlotInstance
+          ViewInstance
         >)
       | { context?: never; status: "loading" | "error"; instance?: never }
     );
@@ -90,7 +90,7 @@ type SlotState =
       controlled: true;
       context?: unknown;
       status: ViewStatus;
-      instance?: SlotInstance;
+      instance?: ViewInstance;
     };
 
 function ManagedSlot({ app, name, instanceKey }: RuntimeSlotProps): ReactNode {
@@ -116,7 +116,7 @@ function InstanceSlot({
   state,
 }: RuntimeSlotProps & { instanceKey: string; state: ActiveView }): ReactNode {
   const { store } = useTailorRootContext("Slot");
-  const instances = useSlotInstances({ app, slot: name });
+  const instances = useAppSlotInstances(app, name);
   const meta = useSyncExternalStore(store.subscribe, store.getMetaSnapshot, store.getMetaSnapshot);
   const instance = instances.data?.find((instance) => instance.key === instanceKey);
   const resolved =
@@ -125,7 +125,9 @@ function InstanceSlot({
       : null;
   const view = resolved?.status === "ready" ? resolved.view : undefined;
   const stableContext = useStableContext(resolved?.context);
-  const stableInstance = useStableContext(instance);
+  const stableInstance = useStableContext(
+    instance ? { key: instance.key, metadata: instance.metadata, data: instance.data } : undefined,
+  );
   const readyState = useMemo<SlotState | null>(
     () =>
       view === undefined || !stableInstance

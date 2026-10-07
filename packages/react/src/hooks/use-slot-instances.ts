@@ -4,13 +4,15 @@ import { resolveSlotView } from "../slot-view";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useTailorRootContext } from "../components/context";
 import type { TailorKitApp } from "../tailorkit";
+import { useApps } from "./use-apps";
 import type { UseAppsResult } from "./use-apps";
 import { useStableContext } from "./use-stable-context";
 
-export type SlotInstance = ViewInstance;
+export interface SlotInstance extends ViewInstance {
+  app: TailorKitApp;
+}
 
 export interface UseSlotInstancesOptions<TSlot extends string = string> {
-  app: TailorKitApp;
   slot: TSlot;
 }
 
@@ -21,11 +23,31 @@ export interface UseSlotInstancesResult extends Omit<UseAppsResult, "data"> {
 const resolveInstances = reference<
   "action",
   { slot: string; path: string; context: Record<string, unknown> },
-  SlotInstance[]
+  ViewInstance[]
 >("_tailorkit.instances.resolve", "action");
 
-/** Fetch instances for the app's matching slot view using registered host context. */
-export function useSlotInstances({ app, slot }: UseSlotInstancesOptions): UseSlotInstancesResult {
+/** Fetch instances across all apps' matching slot views using registered host context. */
+export function useSlotInstances({ slot }: UseSlotInstancesOptions): UseSlotInstancesResult {
+  const apps = useApps();
+  const instances = useResolvedSlotInstances(slot, apps.data, apps.status, apps.error);
+  const refetch = useCallback(async () => {
+    if (apps.isSuccess) await instances.refetch();
+    else await apps.refetch();
+  }, [apps.isSuccess, apps.refetch, instances.refetch]);
+  return { ...instances, refetch };
+}
+
+/** Keep managed Slot resolution scoped to its explicitly supplied app. */
+export function useAppSlotInstances(app: TailorKitApp, slot: string): UseSlotInstancesResult {
+  return useResolvedSlotInstances(slot, [app], "ready", null);
+}
+
+function useResolvedSlotInstances(
+  slot: string,
+  apps: TailorKitApp[] | undefined,
+  appsStatus: UseAppsResult["status"],
+  appsError: Error | null,
+): UseSlotInstancesResult {
   const { store } = useTailorRootContext("useSlotInstances");
   const activeView = useSyncExternalStore(
     store.views.subscribe,
@@ -34,15 +56,23 @@ export function useSlotInstances({ app, slot }: UseSlotInstancesOptions): UseSlo
   );
   const request = useStableContext({
     baseUrl: store.baseUrl.toString(),
-    appId: app.id,
-    deploymentId: app.currentDeployment?.id,
-    views: app.views ?? [],
+    apps: apps ?? [],
+    appsStatus,
     slot,
     activeView,
   });
-  const getSession = useMemo(
-    () => createSessionProvider({ baseUrl: store.baseUrl, appId: app.id }),
-    [store, app.id, app.currentDeployment?.id],
+  const sessionApps = useStableContext(
+    request.apps.map((app) => ({ id: app.id, deploymentId: app.currentDeployment?.id })),
+  );
+  const sessions = useMemo(
+    () =>
+      new Map(
+        sessionApps.map((app) => [
+          app.id,
+          createSessionProvider({ baseUrl: store.baseUrl, appId: app.id }),
+        ]),
+      ),
+    [store, sessionApps],
   );
   const [snapshot, setSnapshot] = useState<{
     request: typeof request | null;
@@ -56,85 +86,109 @@ export function useSlotInstances({ app, slot }: UseSlotInstancesOptions): UseSlo
     status: "idle",
   });
   const generation = useRef(0);
-  const backend = useRef<Client | null>(null);
+  const backends = useRef(new Set<Client>());
+  const closeBackends = useCallback(() => {
+    for (const client of backends.current) client.close();
+    backends.current.clear();
+  }, []);
 
   const refetch = useCallback(async () => {
     const id = ++generation.current;
-    backend.current?.close();
-    backend.current = null;
+    closeBackends();
     const publish = (
       status: UseSlotInstancesResult["status"],
       data?: SlotInstance[],
       error: Error | null = null,
     ) => {
       if (id === generation.current) {
-        setSnapshot({
-          request,
-          status,
-          data,
-          error,
-        });
+        setSnapshot({ request, status, data, error });
       }
     };
-    if (!request.activeView) {
+    if (request.appsStatus === "error") {
+      publish("error", undefined, appsError);
+      return;
+    }
+    const activeView = request.activeView;
+    if (!activeView) {
       publish("idle");
       return;
     }
-    if (!request.views.some((view) => view.slot === slot && view.instances && !view.disabled)) {
+    if (request.appsStatus !== "ready") {
+      publish("loading");
+      return;
+    }
+    const candidates = request.apps.filter((app) =>
+      app.views?.some((view) => view.slot === slot && view.instances && !view.disabled),
+    );
+    if (candidates.length === 0) {
       publish("ready", []);
       return;
     }
     publish("loading");
-    let client: Client | undefined;
     try {
       await store.fetchMeta({ force: store.getMetaSnapshot().status === "error" });
       if (id !== generation.current) return;
       const meta = store.getMetaSnapshot();
       if (meta.error) throw meta.error;
-      if (!meta.schema) throw new Error("TailorKit metadata is unavailable.");
-      if (meta.schema.slots[slot]?.multiple !== true)
+      const schema = meta.schema;
+      if (!schema) throw new Error("TailorKit metadata is unavailable.");
+      if (schema.slots[slot]?.multiple !== true)
         throw new Error(`Slot "${slot}" does not support instances.`);
-      const resolved = resolveSlotView(request.views, slot, request.activeView, meta.schema);
-      if (!resolved?.instances) {
-        publish("ready", []);
-        return;
-      }
-      if (resolved.status !== "ready") {
+      const matches = candidates.flatMap((app) => {
+        const resolved = resolveSlotView(app.views ?? [], slot, activeView, schema);
+        return resolved?.instances ? [{ app, resolved }] : [];
+      });
+      for (const { resolved } of matches) {
         if (resolved.status === "error")
           throw new Error(`Context for view "${resolved.view}" is unavailable.`);
-        publish("loading");
-        return;
       }
-      client = createClient({ getSession });
-      backend.current = client;
-      const instances = await client.action(resolveInstances, {
-        slot,
-        path: resolved.view,
-        context: resolved.context,
-      });
-      publish("ready", instances);
+      if (matches.some(({ resolved }) => resolved.status !== "ready")) return;
+      const results = await Promise.all(
+        matches.map(async ({ app, resolved }) => {
+          if (resolved.status !== "ready") return [];
+          const client = createClient({ getSession: sessions.get(app.id)! });
+          backends.current.add(client);
+          try {
+            const instances = await client.action(resolveInstances, {
+              slot,
+              path: resolved.view,
+              context: resolved.context,
+            });
+            return instances.map((instance) => ({ ...instance, app }));
+          } finally {
+            client.close();
+            backends.current.delete(client);
+          }
+        }),
+      );
+      publish("ready", results.flat());
     } catch (error) {
+      if (id === generation.current) closeBackends();
       publish("error", undefined, error instanceof Error ? error : new Error(String(error)));
-    } finally {
-      client?.close();
-      if (backend.current === client) backend.current = null;
     }
-  }, [request, store, slot, getSession]);
+  }, [request, appsError, store, slot, sessions, closeBackends]);
 
   useEffect(() => {
     void refetch();
     return () => {
       generation.current += 1;
-      backend.current?.close();
-      backend.current = null;
+      closeBackends();
     };
-  }, [refetch]);
+  }, [refetch, closeBackends]);
 
-  // Never expose a previous app or context's data while its replacement request starts.
-  const status = snapshot.request === request ? snapshot.status : activeView ? "loading" : "idle";
+  // Never expose a previous app list or context's data while its replacement request starts.
+  const status =
+    appsStatus === "error"
+      ? "error"
+      : snapshot.request === request
+        ? snapshot.status
+        : activeView
+          ? "loading"
+          : "idle";
   return {
     data: snapshot.request === request ? snapshot.data : undefined,
-    error: snapshot.request === request ? snapshot.error : null,
+    error:
+      appsStatus === "error" ? appsError : snapshot.request === request ? snapshot.error : null,
     status,
     isPending: status === "idle" || status === "loading",
     isLoading: status === "loading",

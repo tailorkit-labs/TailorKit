@@ -2,6 +2,7 @@ import { createTailorKitServer } from "@tailorkit/core/server";
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from "@standard-schema/spec";
 import type { ReactNode } from "react";
 import { components, createTailorKitClient } from "../tailorkit";
+import type { TailorKitApp } from "../tailorkit";
 
 const typedSchema = <TValue,>(): StandardSchemaV1<unknown, TValue> &
   StandardJSONSchemaV1<unknown, TValue> =>
@@ -161,17 +162,19 @@ useViews({ scopes: ["unknown"] });
 // @ts-expect-error slots must be declared by this server
 useViews({ slot: "missing" });
 
-const instances = useSlotInstances({ app, slot: "panel" });
+const instances = useSlotInstances({ slot: "panel" });
 const instanceKey: string | undefined = instances.data?.[0]?.key;
 const instanceData: unknown = instances.data?.[0]?.data;
 void instanceKey;
 void instanceData;
 // @ts-expect-error slots must be declared by this server
-useSlotInstances({ app, slot: "missing" });
-// @ts-expect-error an app must be supplied
-useSlotInstances({ slot: "panel" });
+useSlotInstances({ slot: "missing" });
+const instanceApp: TailorKitApp | undefined = instances.data?.[0]?.app;
+void instanceApp;
+// @ts-expect-error app selection is no longer accepted
+useSlotInstances({ app, slot: "panel" });
 // @ts-expect-error a slot must be supplied
-useSlotInstances({ app });
+useSlotInstances({});
 
 <Slot app={app} name="panel" />;
 <Slot app={app} name="navbar" />;
