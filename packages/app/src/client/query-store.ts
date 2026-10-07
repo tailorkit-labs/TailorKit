@@ -1,4 +1,4 @@
-import { createStore } from "@tanstack/store";
+import { atom } from "nanostores";
 import type { Client } from "./connection";
 import type { Reference } from "./reference";
 import type { AppError } from "../errors";
@@ -28,7 +28,7 @@ interface Entry {
 
 /** One subscription per active query/input pair, scoped to this provider's client. */
 export class QueryStore {
-  readonly state = createStore(new Map<string, QueryState<unknown>>());
+  readonly state = atom(new Map<string, QueryState<unknown>>());
   private readonly entries = new Map<string, Entry>();
   private disposed = false;
   readonly client: Client;
@@ -56,7 +56,7 @@ export class QueryStore {
     current.observers += 1;
     const publish = (state: QueryState<O>) => {
       if (!this.disposed && this.entries.get(key) === current) {
-        this.state.setState((previous) => new Map(previous).set(key, state));
+        this.state.set(new Map(this.state.get()).set(key, state));
       }
     };
     if (first) {
@@ -88,11 +88,9 @@ export class QueryStore {
       if (current.observers === 0 && this.entries.get(key) === current) {
         this.entries.delete(key);
         current.stop?.();
-        this.state.setState((previous) => {
-          const next = new Map(previous);
-          next.delete(key);
-          return next;
-        });
+        const next = new Map(this.state.get());
+        next.delete(key);
+        this.state.set(next);
       }
     };
   }
@@ -105,7 +103,7 @@ export class QueryStore {
       entry.stop?.();
       entry.stop = undefined;
     }
-    this.state.setState(() => new Map());
+    this.state.set(new Map());
     if (this.ownsClient) {
       this.client.close();
     }
