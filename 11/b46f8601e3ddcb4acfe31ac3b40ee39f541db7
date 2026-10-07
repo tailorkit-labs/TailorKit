@@ -1,0 +1,39 @@
+packages/react/src/components/slot.tsx
+  s_e10be7c69bfed0::t_72311dd4f583b2 1,9,53,73,108-110
+  s_e10be7c69bfed0::t_612a60bfd1814c 99
+examples/apps/backend-todo/README.md
+  s_e10be7c69bfed0::t_72311dd4f583b2 9
+packages/react/src/__tests__/use-slot-instances.test.tsx
+  s_e10be7c69bfed0::t_cf14534d62844d 35-43,52,74,95,100,122,126,147,157,176,189,209,230,238,258,271,294,302,316,324,338,347,349,351,353,356-357,360-361,367,373-375,381,388,403,411
+  s_e10be7c69bfed0::t_dd6a2a8a226759 414-599
+  s_e10be7c69bfed0::t_6510b1be1309fd 130
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_e10be7c69bfed0::t_72311dd4f583b2 163,169-173,175
+  s_e10be7c69bfed0::t_1391451ba189ca 5
+examples/tanstack-start/src/components/tailorkit-shell.tsx
+  s_e10be7c69bfed0::t_72311dd4f583b2 135-136
+examples/nextjs/components/tailorkit-shell.tsx
+  s_e10be7c69bfed0::t_72311dd4f583b2 160-161
+packages/react/src/hooks/use-slot-instances.ts
+  s_e10be7c69bfed0::t_72311dd4f583b2 7,11-13,26,29-50,59-60,64-67,75,89-93,97,104,107-110,116-123,135,137-139,143,162,164,167,173,175,177
+  s_e10be7c69bfed0::t_6510b1be1309fd 111-112,133-134,136,146,153
+  s_e10be7c69bfed0::t_cf14534d62844d 68-74,144-145,147-152,154-161,178-185,188-189
+.changeset/all-app-slot-instances.md
+  s_e10be7c69bfed0::t_c5f96e6b34cd90 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "11b46f8601e3ddcb4acfe31ac3b40ee39f541db7",
+  "prompts": {},
+  "sessions": {
+    "s_e10be7c69bfed0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11558-9ca9-7263-b5e6-6c7ee73891f2",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
