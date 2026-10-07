@@ -108,13 +108,17 @@ it("publishes preview source and views together without notifying on subscriptio
   FakeSocket.instances[0]?.open();
   await vi.waitFor(() => expect(previewListener).toHaveBeenCalledOnce());
   expect(appsListener).toHaveBeenCalledOnce();
+  const appsSnapshot = store.getAppsSnapshot();
   const published = { preview: { revision: 1, source }, views };
   expect(previewListener).toHaveLastReturnedWith(published);
   expect(appsListener).toHaveLastReturnedWith(published);
   stopPreview();
-  stopApps();
-  store.setProvidedApps([app]);
+  store.setProvidedApps(appsSnapshot.apps);
   expect(appsListener).toHaveBeenCalledOnce();
+  expect(store.getAppsSnapshot()).toBe(appsSnapshot);
+  store.setProvidedApps([...appsSnapshot.apps]);
+  expect(appsListener).toHaveBeenCalledTimes(2);
+  stopApps();
 });
 
 it("refreshes the viewer token and reconnects when its stream ends", async () => {
