@@ -1,0 +1,23 @@
+packages/client-core/src/store/local/node-store.test.ts
+  s_a48ab343401d93::t_023ac99d2fda28 266-268
+  s_a48ab343401d93::t_e069e693f413cd 14-15,50-52,58-65,68-70,254-265,269-274
+  s_a48ab343401d93::t_0753853fe9942c 275
+packages/client-core/src/store/local/node-store.ts
+  s_a48ab343401d93::t_9d4641540444af 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a12b3bfa938951950ef71ce0e428fb080a2f7ecb",
+  "prompts": {},
+  "sessions": {
+    "s_a48ab343401d93": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11530-4288-71d1-b6e4-ad4f7934580a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
