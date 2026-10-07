@@ -6,14 +6,12 @@ description: "Production best practices for data sharing, validation, authorizat
 Best practices for deploying TailorKit to production, including data sharing,
 input validation, authorization, and UI security.
 
-## Best practices
-
-### Share only the data apps need
+## Share only the data apps need
 
 Apps can read every field you share through `useRegisterView()`. Pass a small view
 model without raw database records, sessions, access tokens, or route-loader objects.
 
-### Validate component fields
+## Validate component fields
 
 Use enums, bounded numbers, booleans, and structured objects. Validate link `href`
 and media `src` values before rendering. Allow only the protocols each component
@@ -66,20 +64,20 @@ const Link = {
 
 </CodeGroup>
 
-### Keep callbacks for UI events
+## Keep callbacks for UI events
 
 Use callbacks such as `onClick`, `onOpenChange`, and `onValueChange` to notify apps
 of UI interactions. Use host-owned server actions for API calls, data changes,
 billing, authentication, invites, role changes, and other side effects.
 
-### Authorize every action
+## Authorize every action
 
 Check identity and permissions on the server using authenticated host `context`,
 regardless of which controls the UI shows. Validate action inputs and outputs,
 scope database queries to the authenticated tenant, and return only the data the
 app needs, without secrets or internal metadata.
 
-### Scope app installations
+## Scope app installations
 
 Define stable `scopes` schemas, such as `user` and `organization`. In `authenticate`,
 return values under the same names from the signed-in session, rather than app
@@ -89,7 +87,7 @@ installations.
 Keep project keys and CLI credentials on the server or developer machine, outside
 browser bundles and app context.
 
-### Keep your design system in control
+## Keep your design system in control
 
 Use TailorKit primitives and theme tokens. Avoid raw class names, HTML, and
 unrestricted `style` objects; constrain every style property and value you expose.
