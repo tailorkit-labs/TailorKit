@@ -1,5 +1,24 @@
 # @tailorkit/cli
 
+## 0.1.0-beta.19
+
+### Minor Changes
+
+- fa05f02: Add colocated `createView` instance resolvers with a validated data schema and automatic, typed access to registered server queries. The app build uses Oxc to extract resolvers and their dependencies into generated server actions through `_tailorkit.instances.resolve`, addressed by slot and view path, keeping their implementations out of browser bundles. Hosts discover instance support through `instances: true` in deployment and preview view manifests.
+- fa05f02: Add client-bound useViews with scopes, appIds, and slot filters. App builds and deployments include view manifests, including preview builds. useApps and useViews share one authenticated app request and filter locally; useApps also accepts appIds. Apps without a view manifest must be redeployed to appear in useViews.
+
+### Patch Changes
+
+- fa05f02: Add client-bound `useSlotInstances({ app, slot })` to fetch instances through the authenticated app action endpoint using the matching view and registered ancestor context. Expose loading, errors, and refetch; clear stale data when context or deployment changes. Preserve disabled view paths in manifests so host matching respects blocked fallback, while keeping them out of `useViews` discovery.
+- Updated dependencies [fa05f02]
+- Updated dependencies [fa05f02]
+- Updated dependencies [fa05f02]
+- Updated dependencies [fa05f02]
+- Updated dependencies [fa05f02]
+  - @tailorkit/app@0.1.0-beta.19
+  - @tailorkit/core@0.1.0-beta.19
+  - @tailorkit/client-platform@0.1.0-beta.19
+
 ## 0.1.0-beta.18
 
 ### Patch Changes
