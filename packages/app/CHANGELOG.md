@@ -1,5 +1,11 @@
 # @tailorkit/app
 
+## 0.1.0-beta.21
+
+### Patch Changes
+
+- 1c52fe8: Add minimal package READMEs with readable names and short descriptions.
+
 ## 0.1.0-beta.20
 
 ### Minor Changes
