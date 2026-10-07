@@ -101,16 +101,3 @@ const Link = {
 ```
 
 </CodeGroup>
-
-## Sandbox and network access
-
-App JavaScript runs in a hidden iframe with an opaque origin and no same-origin
-access. It can run scripts, but cannot directly access your page, app state,
-cookies, or local storage. Your host fetches code, shares context, renders UI,
-and runs exposed actions.
-
-Apps can connect directly without a host bridge. The content security policy
-allows `http:`, `https:`, `ws:`, and `wss:`; use HTTPS and secure WebSockets (`wss:`)
-in production. Services must accept the opaque origin (`Origin: null`), including
-CORS and HTTP preflight. Authenticate and authorize requests independently of
-that origin.
