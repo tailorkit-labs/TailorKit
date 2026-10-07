@@ -1,5 +1,11 @@
 # @tailorkit/core
 
+## 0.1.0-beta.22
+
+### Patch Changes
+
+- @tailorkit/client-platform@0.1.0-beta.22
+
 ## 0.1.0-beta.21
 
 ### Patch Changes

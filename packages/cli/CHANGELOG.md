@@ -1,5 +1,19 @@
 # @tailorkit/cli
 
+## 0.1.0-beta.22
+
+### Minor Changes
+
+- 268df1e: Require Preact 11 for app builds and newly scaffolded apps. Keep provider disposal and pending-call cancellation synchronous during unmount with layout-effect cleanup.
+
+### Patch Changes
+
+- Updated dependencies [c29880d]
+- Updated dependencies [268df1e]
+  - @tailorkit/app@0.1.0-beta.22
+  - @tailorkit/client-platform@0.1.0-beta.22
+  - @tailorkit/core@0.1.0-beta.22
+
 ## 0.1.0-beta.21
 
 ### Patch Changes
