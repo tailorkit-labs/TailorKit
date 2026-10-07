@@ -21,6 +21,8 @@ const server = createTailorKitServer({
   slots: {
     page: { views: ["/", "/customers", "/customers/detail"], multiple: true },
     panel: { views: ["/"], multiple: true },
+    single: { views: ["/", "/customers/detail"], multiple: false },
+    default: { views: ["/"] },
   },
 });
 const client = createTailorKitClient<typeof server>({
@@ -96,7 +98,7 @@ it("fetches the matched view's instances over authenticated HTTP with combined c
   const { result } = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -127,7 +129,7 @@ it("uses the closest supported ancestor and excludes deeper loading context", as
   const { result } = renderHook(
     () => {
       useDetail("loading");
-      return client.useSlotInstances({ slot: "panel" });
+      return client.useSlot({ slot: "panel" });
     },
     { wrapper },
   );
@@ -150,7 +152,7 @@ it("falls back to an enabled ancestor when the supported child is disabled", asy
   const { result } = renderHook(
     () => {
       useDetail("loading");
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -174,7 +176,7 @@ it("waits for every required ancestor before fetching instances", async () => {
       );
       client.useRegisterView("/customers", { context: { canEdit: true } });
       client.useRegisterView("/customers/detail", { context: { customer: { id: "c1" } } });
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper, initialProps: { ready: false } },
   );
@@ -203,7 +205,7 @@ it.each(["missing", "error", "invalid", "duplicate"] as const)(
           context: kind === "duplicate" ? { user: { id: "another" } } : { canEdit: true },
         });
         client.useRegisterView("/customers/detail", { context: { customer: { id: "c1" } } });
-        return client.useSlotInstances({ slot: "page" });
+        return client.useSlot({ slot: "page" });
       },
       { wrapper },
     );
@@ -215,40 +217,14 @@ it.each(["missing", "error", "invalid", "duplicate"] as const)(
   },
 );
 
-it.each([false, undefined] as const)(
-  "rejects discovered instances when the host slot multiple flag is %s",
-  async (multiple) => {
-    const original = vi.mocked(globalThis.fetch).getMockImplementation()!;
-    vi.mocked(globalThis.fetch).mockImplementation(async (input, options) => {
-      if (url(input).pathname.endsWith("/meta")) {
-        const serialized = server.$internal.schema.serialize();
-        serialized.slots.page = {
-          views: serialized.slots.page!.views,
-          ...(multiple === undefined ? {} : { multiple }),
-        };
-        return Response.json({ schema: serialized });
-      }
-      return original(input, options);
-    });
-    const { result } = renderHook(
-      () => {
-        useDetail();
-        return client.useSlotInstances({ slot: "page" });
-      },
-      { wrapper },
-    );
-    await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe('Slot "page" does not support instances.');
-    expect(calls("/backend/session")).toHaveLength(0);
-    expect(calls("/actions")).toHaveLength(0);
-  },
-);
-
-it("stays idle without a registered view and makes no requests", () => {
-  const { result } = renderHook(() => client.useSlotInstances({ slot: "page" }), { wrapper });
-  expect(result.current.status).toBe("idle");
+it("stays idle for multiple slots without a registered view and never calls a resolver", async () => {
+  const { result } = renderHook(() => client.useSlot({ slot: "page" }), { wrapper });
+  await waitFor(() => expect(calls("/meta")).toHaveLength(1));
+  await waitFor(() => expect(result.current.status).toBe("idle"));
   expect(result.current.isPending).toBe(true);
-  expect(globalThis.fetch).not.toHaveBeenCalled();
+  expect(result.current.data).toBeUndefined();
+  expect(calls("/backend/session")).toHaveLength(0);
+  expect(calls("/actions")).toHaveLength(0);
 });
 
 it.each(["static", "disabled", "unsupported", "legacy"] as const)(
@@ -274,7 +250,7 @@ it.each(["static", "disabled", "unsupported", "legacy"] as const)(
     const { result } = renderHook(
       () => {
         useDetail();
-        return client.useSlotInstances({
+        return client.useSlot({
           slot: kind === "unsupported" ? "panel" : "page",
         });
       },
@@ -291,7 +267,7 @@ it("does not refetch for equivalent inline objects and refetch refreshes instanc
   const { result, rerender } = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -319,7 +295,7 @@ it("clears previous data and ignores late responses after context changes", asyn
   const { result, rerender, unmount } = renderHook(
     ({ userId }) => {
       useDetail("ready", userId);
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper, initialProps: { userId: "u1" } },
   );
@@ -355,7 +331,7 @@ it("exposes resolver errors and allows retry through refetch", async () => {
   const { result } = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -377,7 +353,7 @@ it("retries failed metadata without authorizing an app before matching", async (
   const { result } = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -399,7 +375,7 @@ it("exposes session failures without sending an unauthenticated resolver call", 
   const { result } = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -412,7 +388,7 @@ it("reauthorizes when the discovered app or deployment changes", async () => {
   const { result, rerender } = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -442,14 +418,14 @@ it("works in Strict Mode and isolates different roots", async () => {
   const first = renderHook(
     () => {
       useDetail("ready", "u1");
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper: strictWrapper },
   );
   const second = renderHook(
     () => {
       useDetail("ready", "u2");
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper: strictWrapper },
   );
@@ -464,23 +440,23 @@ it("works in Strict Mode and isolates different roots", async () => {
 
 it("rejects a hook used outside Root or under another client", () => {
   vi.spyOn(console, "error").mockImplementation(() => {});
-  expect(() => renderHook(() => client.useSlotInstances({ slot: "page" }))).toThrow(
-    "useSlotInstances must be rendered inside Root",
+  expect(() => renderHook(() => client.useSlot({ slot: "page" }))).toThrow(
+    "useSlot must be rendered inside Root",
   );
   const other = createTailorKitClient({ baseUrl: "https://other.test/api/" });
   const wrongWrapper = ({ children }: { children: ReactNode }) => (
     <Root client={other}>{children}</Root>
   );
   expect(() =>
-    renderHook(() => client.useSlotInstances({ slot: "page" }), { wrapper: wrongWrapper }),
-  ).toThrow("useSlotInstances was created for a different TailorKit client");
+    renderHook(() => client.useSlot({ slot: "page" }), { wrapper: wrongWrapper }),
+  ).toThrow("useSlot was created for a different TailorKit client");
 });
 
 it("shares one resolver across two hooks and retains data across remounts", async () => {
   const first = renderHook(
     () => {
       useDetail();
-      return [client.useSlotInstances({ slot: "page" }), client.useSlotInstances({ slot: "page" })];
+      return [client.useSlot({ slot: "page" }), client.useSlot({ slot: "page" })];
     },
     { wrapper },
   );
@@ -491,7 +467,7 @@ it("shares one resolver across two hooks and retains data across remounts", asyn
   const second = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -504,14 +480,14 @@ it("shares identical instance requests across roots while keeping their registra
   const first = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
   const second = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -537,7 +513,7 @@ it("discovers apps through useApps before resolving their instances", async () =
   const { result } = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -580,7 +556,7 @@ it("aggregates apps in discovery order, resolves in parallel, and preserves dupl
   const { result } = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -603,7 +579,7 @@ it("returns an empty result when there are no discovered apps", async () => {
   const { result } = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -623,7 +599,7 @@ it("exposes app discovery failures and retries them through refetch", async () =
   const { result } = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -652,7 +628,7 @@ it("cancels every app resolver and ignores late results when the app list change
   const { result, rerender, unmount } = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -690,7 +666,7 @@ it("clears the aggregate and cancels remaining resolvers when any app fails", as
   const { result } = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page" });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -708,3 +684,231 @@ it("clears the aggregate and cancels remaining resolvers when any app fails", as
   expect(result.current.data).toBeUndefined();
   expect(pending[1]?.signal?.aborted).toBe(true);
 });
+
+it.each(["single", "default"] as const)(
+  "lists one app per %s slot without registered context or instance requests",
+  async (slot) => {
+    const first: TailorKitApp = {
+      ...app,
+      views: [
+        { slot, path: "/" },
+        { slot, path: "/customers/detail" },
+      ],
+    };
+    const second: TailorKitApp = { id: "app_2", views: [{ slot, path: "/" }] };
+    apps = [
+      first,
+      { id: "disabled", views: [{ slot, path: "/", disabled: true }] },
+      { id: "unsupported", views: [{ slot, path: "/unsupported" }] },
+      { id: "other-slot", views: [{ slot: "page", path: "/" }] },
+      { id: "invalid-instances", views: [{ slot, path: "/", instances: true }] },
+      { id: "legacy" },
+      second,
+    ];
+    const { result } = renderHook(() => client.useSlot({ slot }), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual([{ app: first }, { app: second }]);
+    expect(calls("/meta")).toHaveLength(1);
+    expect(calls("/apps")).toHaveLength(0);
+    expect(calls("/backend/session")).toHaveLength(0);
+    expect(calls("/actions")).toHaveLength(0);
+  },
+);
+
+it.each(["loading", "error"] as const)(
+  "discovers single-slot apps despite %s context on another page",
+  async (status) => {
+    const singleApp: TailorKitApp = { ...app, views: [{ slot: "single", path: "/" }] };
+    apps = [singleApp];
+    const { result } = renderHook(
+      () => {
+        client.useRegisterView("/customers/detail", { status });
+        return client.useSlot({ slot: "single" });
+      },
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.data).toEqual([{ app: singleApp }]));
+    expect(calls("/backend/session")).toHaveLength(0);
+    expect(calls("/actions")).toHaveLength(0);
+  },
+);
+
+it("intersects scope and app filters and updates supplied single-slot apps", async () => {
+  const first: TailorKitApp = {
+    id: "app_1",
+    scope: { name: "user" },
+    views: [{ slot: "single", path: "/" }],
+  };
+  const second: TailorKitApp = { ...first, id: "app_2" };
+  const unscoped: TailorKitApp = { id: "app_3", views: first.views };
+  apps = [first, second, unscoped];
+  const { result, rerender } = renderHook(
+    ({ scopes, appIds }: { scopes?: readonly "user"[]; appIds?: readonly string[] }) =>
+      client.useSlot({ slot: "single", scopes, appIds }),
+    { wrapper, initialProps: { scopes: ["user"], appIds: ["app_1", "app_3"] } },
+  );
+  await waitFor(() => expect(result.current.data).toEqual([{ app: first }]));
+  rerender({ scopes: undefined, appIds: ["app_3"] });
+  await waitFor(() => expect(result.current.data).toEqual([{ app: unscoped }]));
+  rerender({ scopes: [], appIds: undefined });
+  await waitFor(() => expect(result.current.data).toEqual([]));
+  rerender({ scopes: undefined, appIds: [] });
+  await waitFor(() => expect(result.current.data).toEqual([]));
+  apps = [{ ...second, name: "Updated" }];
+  rerender({ scopes: undefined, appIds: undefined });
+  await waitFor(() => expect(result.current.data).toEqual([{ app: apps![0] }]));
+  expect(calls("/apps")).toHaveLength(0);
+  expect(calls("/meta")).toHaveLength(1);
+  expect(calls("/actions")).toHaveLength(0);
+});
+
+it("shares app discovery with useApps and refetch refreshes single-slot entries", async () => {
+  apps = undefined;
+  let discovered: TailorKitApp[] = [{ ...app, views: [{ slot: "single", path: "/" }] }];
+  const original = vi.mocked(globalThis.fetch).getMockImplementation()!;
+  vi.mocked(globalThis.fetch).mockImplementation(async (input, options) =>
+    url(input).pathname.endsWith("/apps") ? Response.json(discovered) : original(input, options),
+  );
+  const { result } = renderHook(
+    () => ({
+      apps: client.useApps(),
+      slot: client.useSlot({ slot: "single" }),
+    }),
+    { wrapper },
+  );
+  await waitFor(() => expect(result.current.slot.data).toEqual([{ app: discovered[0] }]));
+  expect(calls("/apps")).toHaveLength(1);
+  discovered = [{ ...discovered[0]!, id: "new-app" }];
+  await act(() => result.current.slot.refetch());
+  expect(result.current.slot.data).toEqual([{ app: discovered[0] }]);
+  expect(result.current.apps.data).toEqual(discovered);
+  expect(calls("/apps")).toHaveLength(2);
+  expect(calls("/backend/session")).toHaveLength(0);
+  expect(calls("/actions")).toHaveLength(0);
+});
+
+it("filters multiple-slot apps before authorizing and resolving them", async () => {
+  const selected: TailorKitApp = { ...app, scope: { name: "user" } };
+  apps = [selected, { ...app, id: "other" }];
+  const { result } = renderHook(
+    () => {
+      useDetail();
+      return client.useSlot({ slot: "page", scopes: ["user"], appIds: [selected.id] });
+    },
+    { wrapper },
+  );
+  await waitFor(() => expect(result.current.data).toEqual(withApp(instances, selected)));
+  expect(calls("/backend/session")).toHaveLength(1);
+  expect(JSON.parse(String(calls("/backend/session")[0]?.[1]?.body))).toEqual({
+    appId: selected.id,
+  });
+  expect(calls("/actions")).toHaveLength(1);
+});
+
+it("retains single-slot entries when registered context changes", async () => {
+  apps = [{ ...app, views: [{ slot: "single", path: "/" }] }];
+  const { result, rerender } = renderHook(
+    ({ userId }) => {
+      useDetail("ready", userId);
+      return client.useSlot({ slot: "single" });
+    },
+    { wrapper, initialProps: { userId: "u1" } },
+  );
+  await waitFor(() => expect(result.current.isSuccess).toBe(true));
+  const previous = result.current.data;
+  rerender({ userId: "u2" });
+  await act(async () => {});
+  expect(result.current.isSuccess).toBe(true);
+  expect(result.current.data).toBe(previous);
+  expect(calls("/meta")).toHaveLength(1);
+  expect(calls("/actions")).toHaveLength(0);
+});
+
+it("retries failed single-slot metadata without authorizing an app", async () => {
+  apps = [{ ...app, views: [{ slot: "single", path: "/" }] }];
+  let fail = true;
+  const original = vi.mocked(globalThis.fetch).getMockImplementation()!;
+  vi.mocked(globalThis.fetch).mockImplementation(async (input, options) =>
+    fail && url(input).pathname.endsWith("/meta")
+      ? new Response(null, { status: 503 })
+      : original(input, options),
+  );
+  const { result } = renderHook(() => client.useSlot({ slot: "single" }), { wrapper });
+  await waitFor(() => expect(result.current.isError).toBe(true));
+  fail = false;
+  await act(() => result.current.refetch());
+  await waitFor(() => expect(result.current.data).toEqual([{ app: apps![0] }]));
+  expect(calls("/meta")).toHaveLength(2);
+  expect(calls("/backend/session")).toHaveLength(0);
+  expect(calls("/actions")).toHaveLength(0);
+});
+
+it.each(["page", "single"] as const)(
+  "awaits the resulting %s query after retrying app discovery",
+  async (slot) => {
+    apps = undefined;
+    let fail = true;
+    let finishMeta!: (response: Response) => void;
+    let finishInstances!: (response: Response) => void;
+    const discovered: TailorKitApp = {
+      ...app,
+      scope: { name: "user" },
+      views: slot === "page" ? app.views : [{ slot, path: "/" }],
+    };
+    const excluded: TailorKitApp = { ...discovered, id: "excluded" };
+    const original = vi.mocked(globalThis.fetch).getMockImplementation()!;
+    vi.mocked(globalThis.fetch).mockImplementation((input, options) => {
+      const path = url(input).pathname;
+      if (path.endsWith("/apps"))
+        return Promise.resolve(
+          fail ? new Response(null, { status: 503 }) : Response.json([discovered, excluded]),
+        );
+      if (path.endsWith("/meta"))
+        return new Promise((resolve) => {
+          finishMeta = resolve;
+        });
+      if (path.endsWith("/actions"))
+        return new Promise((resolve) => {
+          finishInstances = resolve;
+        });
+      return original(input, options);
+    });
+    const { result } = renderHook(
+      () => {
+        useDetail();
+        return client.useSlot({ slot, scopes: ["user"], appIds: [discovered.id] });
+      },
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    fail = false;
+    let complete = false;
+    let pending!: Promise<void>;
+    act(() => {
+      pending = result.current.refetch().then(() => {
+        complete = true;
+      });
+    });
+    await waitFor(() => expect(calls("/meta")).toHaveLength(1));
+    expect(complete).toBe(false);
+    await act(async () => {
+      finishMeta(Response.json({ schema: server.$internal.schema.serialize() }));
+    });
+    if (slot === "page") {
+      await waitFor(() => expect(calls("/actions")).toHaveLength(1));
+      expect(complete).toBe(false);
+      await act(async () => {
+        finishInstances(Response.json({ json: instances }));
+      });
+    }
+    await act(() => pending);
+    expect(complete).toBe(true);
+    expect(result.current.isSuccess).toBe(true);
+    expect(result.current.isFetching).toBe(false);
+    expect(result.current.data).toEqual(
+      slot === "page" ? withApp(instances, discovered) : [{ app: discovered }],
+    );
+    expect(calls("/apps")).toHaveLength(2);
+    expect(calls("/actions")).toHaveLength(slot === "page" ? 1 : 0);
+  },
+);

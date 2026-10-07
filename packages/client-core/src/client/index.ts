@@ -7,6 +7,6 @@ export type {
   TailorKitCacheOptions,
 } from "./fetch-client";
 export { toBaseUrl } from "./url";
-export { listViews, matchesApp } from "./apps";
+export { matchesApp } from "./apps";
 export { normalizeScopeSelection, appendScopeSelection } from "./scope-query";
 export { resolveSlotView, selectSlotView } from "./slot-view";

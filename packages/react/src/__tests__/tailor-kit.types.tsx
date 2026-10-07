@@ -3,6 +3,7 @@ import type { StandardJSONSchemaV1, StandardSchemaV1 } from "@standard-schema/sp
 import type { ReactNode } from "react";
 import { components, createTailorKitClient } from "../tailorkit";
 import type { TailorKitApp } from "../tailorkit";
+import type { TailorKitInstance } from "../index";
 
 const typedSchema = <TValue,>(): StandardSchemaV1<unknown, TValue> &
   StandardJSONSchemaV1<unknown, TValue> =>
@@ -43,7 +44,7 @@ const server = createTailorKitServer({
 });
 
 const tailor = createTailorKitClient<typeof server>({ baseUrl: "http://runtime.test" });
-const { Slot, useApps, useViews, useSlotInstances, useRegisterView } = tailor;
+const { Slot, useApps, useSlot, useRegisterView } = tailor;
 const app = { clientPath: "/apps/todo.js", id: "todo" };
 
 const childrenServer = createTailorKitServer({
@@ -155,26 +156,69 @@ workspaceClient.useApps({ scopes: ["organization"] });
 // @ts-expect-error The former object-only hook signature is not supported.
 useRegisterView({ view: "/user", context: { userId: "u1" } });
 
-useViews();
-useViews({ scopes: ["organization"], appIds: ["todo"], slot: "panel" });
+useSlot({ scopes: ["organization"], appIds: ["todo"], slot: "panel" });
 // @ts-expect-error scope names must be declared by this server
-useViews({ scopes: ["unknown"] });
-// @ts-expect-error slots must be declared by this server
-useViews({ slot: "missing" });
+useSlot({ scopes: ["unknown"], slot: "panel" });
 
-const instances = useSlotInstances({ slot: "panel" });
+const instances = useSlot({ slot: "page" });
+const requiredKey: string = instances.data![0]!.key;
+const single = useSlot({ slot: "single" });
+// @ts-expect-error explicit single slots have no instance key
+void single.data![0]!.key;
+const defaultSingle = useSlot({ slot: "panel" });
+// @ts-expect-error slots with an omitted multiple flag have no instance key
+void defaultSingle.data![0]!.key;
+const requiredMetadata: Record<string, unknown> = instances.data![0]!.metadata;
+// @ts-expect-error single slots have no instance metadata
+void single.data![0]!.metadata;
+// @ts-expect-error single slots have no instance data
+void single.data![0]!.data;
+const selectedSlot: "page" | "single" = Math.random() > 0.5 ? "page" : "single";
+const selectedItems = useSlot({ slot: selectedSlot });
+// @ts-expect-error a union slot name requires narrowing before reading an instance key
+void selectedItems.data![0]!.key;
+const selectedItem = selectedItems.data![0]!;
+if ("key" in selectedItem) {
+  const narrowedKey: string = selectedItem.key;
+  const narrowedMetadata: Record<string, unknown> = selectedItem.metadata;
+  void narrowedKey;
+  void narrowedMetadata;
+}
+const genericItems = createTailorKitClient({ baseUrl: "http://runtime.test" }).useSlot({
+  slot: "page",
+});
+// @ts-expect-error clients without a typed schema require narrowing before reading an instance key
+void genericItems.data![0]!.key;
+const genericItem = genericItems.data![0]!;
+if ("key" in genericItem) {
+  const narrowedKey: string = genericItem.key;
+  void narrowedKey;
+}
+void requiredKey;
+void requiredMetadata;
+declare const optionalClient: TailorKitInstance<
+  Record<string, never>,
+  { optional: { views: readonly ["/"]; multiple?: true } }
+>;
+const optionalItem = optionalClient.useSlot({ slot: "optional" }).data![0]!;
+// @ts-expect-error an optional multiple flag cannot guarantee an instance key
+void optionalItem.key;
+if ("key" in optionalItem) {
+  const narrowedKey: string = optionalItem.key;
+  void narrowedKey;
+}
 const instanceKey: string | undefined = instances.data?.[0]?.key;
 const instanceData: unknown = instances.data?.[0]?.data;
 void instanceKey;
 void instanceData;
 // @ts-expect-error slots must be declared by this server
-useSlotInstances({ slot: "missing" });
+useSlot({ slot: "missing" });
 const instanceApp: TailorKitApp | undefined = instances.data?.[0]?.app;
 void instanceApp;
 // @ts-expect-error app selection is no longer accepted
-useSlotInstances({ app, slot: "panel" });
+useSlot({ app, slot: "panel" });
 // @ts-expect-error a slot must be supplied
-useSlotInstances({});
+useSlot({});
 
 <Slot app={app} name="panel" />;
 <Slot app={app} name="navbar" />;

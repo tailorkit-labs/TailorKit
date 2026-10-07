@@ -32,6 +32,6 @@ export const tailor = createTailorKitClient<typeof tailorKit>({
   },
 });
 
-export const { Slot, useApps, useRegisterView, useSlotInstances } = tailor;
+export const { Slot, useApps, useRegisterView, useSlot } = tailor;
 
 export default tailor;

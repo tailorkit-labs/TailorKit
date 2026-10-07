@@ -15,11 +15,3 @@ export interface TailorKitApp {
   name?: string;
   preview?: { sessionId: string; expiresAt: string; websocketUrl: string; token: string };
 }
-
-export interface TailorKitView {
-  instances?: true;
-  id: string;
-  app: TailorKitApp;
-  slot: string;
-  path: string;
-}

@@ -60,7 +60,6 @@ describe("client stores", () => {
     await first;
     const ready = store.getAppsSnapshot();
     expect(ready.status).toBe("ready");
-    expect(ready.views[0]?.app).toBe(ready.apps[0]);
     expect(store.fetch.apps.getSnapshot()).toBe(ready);
     expect(listener).toHaveBeenCalledTimes(2);
     stop();
