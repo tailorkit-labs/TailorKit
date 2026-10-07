@@ -1,0 +1,41 @@
+packages/client-core/package.json
+  s_b245a418e94d6e::t_025e5c273001a6 46
+packages/client-core/src/store/fetch/cache.ts
+  s_b245a418e94d6e::t_0c78afb703636a 220
+  s_b245a418e94d6e::t_ae8e1037217c3a 1-2,23,43,81,120,139,145,157-158,162,170,190,196,199-200,204,221,226,237-238,243
+packages/client-core/src/store/fetch/preview-manager.ts
+  s_b245a418e94d6e::t_025e5c273001a6 1-2,25,99,107,148,151,225,245,256
+packages/client-core/src/store/local/view-registry.test.ts
+  s_b245a418e94d6e::t_025e5c273001a6 28
+packages/client-core/src/store/store.test.ts
+  s_b245a418e94d6e::t_025e5c273001a6 155
+packages/client-core/src/store/local/view-registry.ts
+  s_b245a418e94d6e::t_025e5c273001a6 1,15,45,51,53,59-60
+packages/client-core/src/store/local/node-store.ts
+  s_b245a418e94d6e::t_025e5c273001a6 1,39,44,48,72,77,81,85-86,90-91
+packages/client-core/src/store/fetch/preview-manager.test.ts
+  s_b245a418e94d6e::t_362533b65bd324 5-6,48-118
+  s_b245a418e94d6e::t_a63630c0d4e550 119
+.changeset/client-core-nanostores.md
+  s_b245a418e94d6e::t_025e5c273001a6 1-5
+packages/client-core/src/store/fetch/apps.ts
+  s_b245a418e94d6e::t_025e5c273001a6 1,17,56,77,79
+pnpm-lock.yaml
+  s_b245a418e94d6e::t_a1306394f86c81 1253-1255,10142-10145,22112-22113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c29880d01c5f6da3c575cf011a551ca37af8aea1",
+  "prompts": {},
+  "sessions": {
+    "s_b245a418e94d6e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11603-6c8d-7350-b13f-ba7f7d04dc6b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
