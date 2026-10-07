@@ -12,7 +12,7 @@ import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "@ta
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@tailorkit/ui/sidebar";
 import type { TailorKitApp } from "tailorkit/react";
 import { AppSidebar } from "@/components/app-sidebar";
-import tailor, { Slot, useApps, useRegisterView, useSlotInstances } from "@/lib/tailorkit-client";
+import tailor, { Slot, useApps, useRegisterView, useSlot } from "@/lib/tailorkit-client";
 
 type Apps = NonNullable<ReturnType<typeof useApps>["data"]>;
 
@@ -165,7 +165,7 @@ function TailorKitSlotContent({ app }: { app: TailorKitApp }) {
 }
 
 function TailorKitPageInstances({ app }: { app: TailorKitApp }) {
-  const { data: allInstances, isPending, error, refetch } = useSlotInstances({ slot: "page" });
+  const { data: allInstances, isPending, error, refetch } = useSlot({ slot: "page" });
   const instances = allInstances?.filter((instance) => instance.app.id === app.id);
   const [instanceKey, setInstanceKey] = useState<string | null>(null);
   const selected = instances?.find((instance) => instance.key === instanceKey) ?? instances?.[0];

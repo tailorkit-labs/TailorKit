@@ -2,17 +2,10 @@ import { useTailorRootContext } from "../components/context";
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import type { TailorKitApp } from "../tailorkit";
 import { matchesApp } from "@tailorkit/client-core";
-import type {
-  FetchCacheOptions,
-  TailorKitAppsSnapshot,
-  TailorKitStore,
-} from "@tailorkit/client-core";
+import type { TailorKitAppsSnapshot, TailorKitStore } from "@tailorkit/client-core";
 import { normalizeScopeSelection } from "../scope-query";
 
-export interface UseAppsOptions<TScopeNames extends string = string> extends Pick<
-  FetchCacheOptions,
-  "staleTime"
-> {
+export interface UseAppsOptions<TScopeNames extends string = string> {
   scopes?: readonly TScopeNames[];
   appIds?: readonly string[];
 }
@@ -33,7 +26,7 @@ export function useApps(options: UseAppsOptions = {}): UseAppsResult {
   return useAppsStore(useTailorRootContext("useApps").store, options);
 }
 export function useAppsStore(store: TailorKitStore, options: UseAppsOptions = {}): UseAppsResult {
-  const snapshot = useAppsSnapshot(store, options);
+  const snapshot = useAppsSnapshot(store);
   const scopes = normalizeScopeSelection(options.scopes);
   const appIds = normalizeScopeSelection(options.appIds);
   const data = useMemo(
@@ -43,27 +36,21 @@ export function useAppsStore(store: TailorKitStore, options: UseAppsOptions = {}
         : undefined,
     [snapshot, scopes.key, appIds.key],
   );
-  const refetch = useCallback(
-    () => store.fetchApps({ force: true, staleTime: options.staleTime }),
-    [store, options.staleTime],
-  );
+  const refetch = useCallback(() => store.fetchApps({ force: true }), [store]);
   return { ...toUseAppsResult(snapshot, refetch), data };
 }
 
 export { matchesApp } from "@tailorkit/client-core";
 
-export function useAppsSnapshot(
-  store: TailorKitStore,
-  options: Pick<FetchCacheOptions, "staleTime"> = {},
-): TailorKitAppsSnapshot {
+export function useAppsSnapshot(store: TailorKitStore): TailorKitAppsSnapshot {
   const snapshot = useSyncExternalStore(
     store.subscribeApps,
     store.getAppsSnapshot,
     store.getAppsSnapshot,
   );
   useEffect(() => {
-    void store.fetchApps(options);
-  }, [store, options.staleTime]);
+    void store.fetchApps();
+  }, [store]);
   return snapshot;
 }
 

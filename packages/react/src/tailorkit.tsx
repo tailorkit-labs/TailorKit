@@ -19,10 +19,8 @@ import { useRegisterView as useRootRegisterView } from "./hooks/use-register-vie
 import type { UseRegisterView, ViewName, ViewState } from "./hooks/use-register-view";
 import { useApps as useRootApps } from "./hooks/use-apps";
 import type { UseAppsOptions, UseAppsResult } from "./hooks/use-apps";
-import { useViews as useRootViews } from "./hooks/use-views";
-import type { UseViewsOptions, UseViewsResult } from "./hooks/use-views";
-import { useSlotInstances as useRootSlotInstances } from "./hooks/use-slot-instances";
-import type { UseSlotInstancesOptions, UseSlotInstancesResult } from "./hooks/use-slot-instances";
+import { useSlot as useRootSlot } from "./hooks/use-slot";
+import type { UseSlotOptions, UseSlotResult } from "./hooks/use-slot";
 import { Slot as ReactSlot } from "./components/slot";
 import type { ControlledSlotProps, SlotComponent, SlotProps } from "./components/slot";
 
@@ -45,7 +43,7 @@ type CompleteComponentRenderers<TComponents extends Record<string, AnyComponentD
   [TName in keyof TComponents]-?: ComponentRenderer<TComponents[TName]>;
 };
 
-export type { TailorKitApp, TailorKitView } from "@tailorkit/client-core";
+export type { TailorKitApp } from "@tailorkit/client-core";
 
 const componentTagPrefix = "tailorkit-";
 
@@ -71,14 +69,17 @@ export interface TailorKitInstance<
   readonly $views?: TViews;
   readonly Slot: SlotComponent<TViews, TSlots>;
   readonly useApps: (options?: UseAppsOptions<TScopeNames>) => UseAppsResult;
-  readonly useViews: (
-    options?: UseViewsOptions<TScopeNames, keyof TSlots & string>,
-  ) => UseViewsResult;
-  readonly useSlotInstances: (
-    options: UseSlotInstancesOptions<keyof TSlots & string>,
-  ) => UseSlotInstancesResult;
+  readonly useSlot: <TSlot extends keyof TSlots & string>(
+    options: UseSlotOptions<TScopeNames, TSlot>,
+  ) => UseSlotResult<SlotMultiple<TSlots[TSlot]>>;
   readonly useRegisterView: UseRegisterView<TViews>;
 }
+
+type SlotMultiple<TSlot> = TSlot extends { multiple: infer TMultiple extends boolean }
+  ? TMultiple
+  : TSlot extends { multiple?: infer TMultiple extends boolean }
+    ? TMultiple | false
+    : false;
 
 type PrimitiveRenderers = typeof primitives;
 type CustomComponentRenderers<TComponents extends Record<string, AnyComponentDefinition>> = {
@@ -213,13 +214,11 @@ function createReactTailorKitClient<
       useTailorRootContext("useApps", client);
       return useRootApps(options);
     },
-    useViews: function useClientViews(options) {
-      useTailorRootContext("useViews", client);
-      return useRootViews(options);
-    },
-    useSlotInstances: function useClientSlotInstances(options) {
-      useTailorRootContext("useSlotInstances", client);
-      return useRootSlotInstances(options);
+    useSlot: function useClientSlot<TSlot extends keyof TSlots & string>(
+      options: UseSlotOptions<TScopeNames, TSlot>,
+    ) {
+      useTailorRootContext("useSlot", client);
+      return useRootSlot(options) as UseSlotResult<SlotMultiple<TSlots[TSlot]>>;
     },
     useRegisterView: function useClientRegisterView<TView extends ViewName<TViews>>(
       view: TView,

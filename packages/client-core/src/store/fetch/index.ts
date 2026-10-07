@@ -12,9 +12,5 @@ export { createMetadataStore } from "./meta";
 export type { TailorKitMetaSnapshot } from "./meta";
 export { createPreviewManager } from "./preview-manager";
 export type { PreviewSnapshot } from "./preview-manager";
-export { createSlotInstancesStore } from "./slot-instances";
-export type {
-  SlotInstance,
-  SlotInstancesSnapshot,
-  SlotInstancesStoreOptions,
-} from "./slot-instances";
+export { createSlotStore } from "./slot";
+export type { SlotItem, SlotSnapshot, SlotStoreOptions } from "./slot";
