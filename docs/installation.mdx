@@ -613,9 +613,10 @@ slots have a required `key: string`, `metadata`, and `data`; single-view slots
 have only `app`. Accessing `item.key` on a single-view slot is a TypeScript error.
 If the slot mode is only known at runtime, narrow an item with `"key" in item`.
 
-Both modes support `scopes`, `appIds`, `staleTime`, and `gcTime`, and return query
-status, errors, and `refetch()`. For single-view slots, `refetch()` refreshes app
-discovery; for multiple slots, it refreshes the resolved instances.
+Both modes support `scopes` and `appIds`, and return query status, errors, and
+`refetch()`. Cache timings are managed by the client configuration. For
+single-view slots, `refetch()` refreshes app discovery; for multiple slots, it
+refreshes the resolved instances.
 
 <Tabs>
 

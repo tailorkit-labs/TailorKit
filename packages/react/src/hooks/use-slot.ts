@@ -1,5 +1,5 @@
 import { createSlotStore, matchesApp, serializeCacheKey } from "@tailorkit/client-core";
-import type { FetchCacheOptions, TailorKitApp, SlotItem } from "@tailorkit/client-core";
+import type { TailorKitApp, SlotItem } from "@tailorkit/client-core";
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useTailorRootContext } from "../components/context";
 import { useApps } from "./use-apps";
@@ -8,8 +8,10 @@ import { useStableContext } from "./use-stable-context";
 
 export type { SlotItem } from "@tailorkit/client-core";
 
-export interface UseSlotOptions<TScopeNames extends string = string, TSlot extends string = string>
-  extends UseAppsOptions<TScopeNames>, Pick<FetchCacheOptions, "gcTime"> {
+export interface UseSlotOptions<
+  TScopeNames extends string = string,
+  TSlot extends string = string,
+> extends UseAppsOptions<TScopeNames> {
   slot: TSlot;
 }
 
@@ -21,19 +23,10 @@ export interface UseSlotResult<TMultiple extends boolean = boolean> extends Omit
 }
 
 /** List apps for single-view slots or resolve instances for multiple-view slots. */
-export function useSlot({
-  slot,
-  staleTime,
-  gcTime,
-  scopes,
-  appIds,
-}: UseSlotOptions): UseSlotResult {
+export function useSlot({ slot, scopes, appIds }: UseSlotOptions): UseSlotResult {
   const { store } = useTailorRootContext("useSlot");
   const apps = useApps({ scopes, appIds });
-  const items = useResolvedSlot(slot, apps.data, apps.status, apps.error, {
-    staleTime,
-    gcTime,
-  });
+  const items = useResolvedSlot(slot, apps.data, apps.status, apps.error);
   const refetch = useCallback(async () => {
     const multiple = store.client.meta().getSnapshot().data?.schema.slots[slot]?.multiple;
     if (apps.isSuccess && multiple === true) {
@@ -55,15 +48,13 @@ export function useSlot({
           schema === null || schema.slots[slot]?.multiple === true
             ? store.views.getSnapshot()
             : null,
-        staleTime,
-        gcTime,
       };
       const key = serializeCacheKey([options.apps, slot, options.activeView]);
       if (key === previousKey) return;
       previousKey = key;
       await createSlotStore(store.client, options).fetch();
     }
-  }, [store, slot, scopes, appIds, staleTime, gcTime, apps.isSuccess, apps.refetch, items.refetch]);
+  }, [store, slot, scopes, appIds, apps.isSuccess, apps.refetch, items.refetch]);
   return { ...items, isFetching: apps.isFetching || items.isFetching, refetch };
 }
 
@@ -77,7 +68,6 @@ function useResolvedSlot(
   apps: TailorKitApp[] | undefined,
   appsStatus: UseAppsResult["status"],
   appsError: Error | null,
-  { staleTime, gcTime }: FetchCacheOptions = {},
 ): UseSlotResult {
   const { store } = useTailorRootContext("useSlot");
   const activeView = useSyncExternalStore(
@@ -98,10 +88,8 @@ function useResolvedSlot(
         ...options,
         appsStatus,
         appsError,
-        staleTime,
-        gcTime,
       }),
-    [store.client, options, appsStatus, appsError, staleTime, gcTime],
+    [store.client, options, appsStatus, appsError],
   );
   const snapshot = useSyncExternalStore(query.subscribe, query.getSnapshot, query.getSnapshot);
   useEffect(() => {

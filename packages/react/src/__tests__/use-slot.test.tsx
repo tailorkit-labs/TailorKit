@@ -467,7 +467,7 @@ it("shares one resolver across two hooks and retains data across remounts", asyn
   const second = renderHook(
     () => {
       useDetail();
-      return client.useSlot({ slot: "page", staleTime: Infinity });
+      return client.useSlot({ slot: "page" });
     },
     { wrapper },
   );
@@ -497,27 +497,6 @@ it("shares identical instance requests across roots while keeping their registra
   expect(calls("/actions")).toHaveLength(1);
   first.unmount();
   expect(second.result.current.data).toEqual(withApp(instances));
-});
-
-it("honors a zero stale time on remount and an infinite stale time override", async () => {
-  const mount = (staleTime: number) =>
-    renderHook(
-      () => {
-        useDetail();
-        return client.useSlot({ slot: "page", staleTime });
-      },
-      { wrapper },
-    );
-  const first = mount(0);
-  await waitFor(() => expect(first.result.current.isSuccess).toBe(true));
-  first.unmount();
-  const fresh = mount(Infinity);
-  await waitFor(() => expect(fresh.result.current.isSuccess).toBe(true));
-  expect(calls("/actions")).toHaveLength(1);
-  fresh.unmount();
-  const stale = mount(0);
-  await waitFor(() => expect(calls("/actions")).toHaveLength(2));
-  await waitFor(() => expect(stale.result.current.isFetching).toBe(false));
 });
 
 it("discovers apps through useApps before resolving their instances", async () => {
