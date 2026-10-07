@@ -13,10 +13,10 @@ export function selectSlotView(
   const supported = schema.slots[slot]?.views ?? [];
   const path = getViewHierarchy(activePath).find(
     (path) =>
-      supported.includes(path) && views.some((view) => view.slot === slot && view.path === path),
+      supported.includes(path) &&
+      views.some((view) => view.slot === slot && view.path === path && !view.disabled),
   );
-  const view = views.find((view) => view.slot === slot && view.path === path);
-  return !view || view.disabled ? null : view;
+  return views.find((view) => view.slot === slot && view.path === path && !view.disabled) ?? null;
 }
 
 /** Match the same path and compose the same ancestor context as the sandbox renderer. */

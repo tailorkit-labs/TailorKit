@@ -128,6 +128,31 @@ it("uses the closest supported ancestor and excludes deeper loading context", as
   });
 });
 
+it("falls back to an enabled ancestor when the supported child is disabled", async () => {
+  const disabledChildApp: TailorKitApp = {
+    ...app,
+    views: app.views?.map((view) =>
+      view.path === "/customers/detail" ? { ...view, disabled: true } : view,
+    ),
+  };
+  const { result } = renderHook(
+    () => {
+      useDetail("loading");
+      return client.useSlotInstances({ app: disabledChildApp, slot: "page" });
+    },
+    { wrapper },
+  );
+  await waitFor(() => expect(result.current.isSuccess).toBe(true));
+  expect(result.current.data).toEqual(instances);
+  expect(calls("/actions")).toHaveLength(1);
+  expect(JSON.parse(String(calls("/actions")[0]?.[1]?.body))).toEqual({
+    json: {
+      name: "_tailorkit.instances.resolve",
+      args: { slot: "page", path: "/", context: { user: { id: "u1" } } },
+    },
+  });
+});
+
 it("waits for every required ancestor before fetching instances", async () => {
   const { result, rerender } = renderHook(
     ({ ready }) => {
@@ -192,7 +217,12 @@ it.each(["static", "disabled", "unsupported", "legacy"] as const)(
       kind === "legacy"
         ? undefined
         : [
-            { slot: "page", path: "/", instances: true as const },
+            {
+              slot: "page",
+              path: "/",
+              instances: true as const,
+              ...(kind === "disabled" ? { disabled: true as const } : {}),
+            },
             {
               slot: "page",
               path: "/customers/detail",
