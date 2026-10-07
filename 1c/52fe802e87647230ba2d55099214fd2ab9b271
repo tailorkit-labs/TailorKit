@@ -1,0 +1,63 @@
+packages/kv/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/db/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/cli/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/sandbox/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/env/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1,3
+.changeset/basic-package-readmes.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-12
+packages/storage/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1,3
+packages/react/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/client-platform/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/ui/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/asset-delivery/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/api-platform/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/app/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1,3
+packages/api-utils/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/auth/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1,3
+packages/core/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/email/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/api/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/app-agent/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1,3
+packages/client-core/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1,3
+packages/observability/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/tailorkit/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+packages/config/README.md
+  s_be113aa50b0dd6::t_8912a61bf3acce 1-3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1c52fe802e87647230ba2d55099214fd2ab9b271",
+  "prompts": {},
+  "sessions": {
+    "s_be113aa50b0dd6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a115d1-f384-7760-8046-08ab880fe4ec",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
