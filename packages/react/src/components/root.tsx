@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { createTailorKitStore, toBaseUrl } from "../store";
+import { createTailorKitStore, toBaseUrl } from "@tailorkit/client-core";
 import type { TailorKitApp, TailorKitClientConfig } from "../tailorkit";
 import type { ComponentProps } from "./render";
 import { mergeProps, useRender } from "./render";
@@ -15,11 +15,15 @@ export interface RootProps extends ComponentProps<"div"> {
 
 export function Root({ apps: appsProp, children, render, client, ...props }: RootProps): ReactNode {
   const baseUrl = toBaseUrl(client.baseUrl).toString();
-  const [previousStore, setStore] = useState(() => createTailorKitStore(baseUrl, appsProp));
+  const [previous, setStore] = useState(() => ({
+    store: createTailorKitStore(baseUrl, appsProp, client.fetchClient),
+    fetchClient: client.fetchClient,
+  }));
+  const previousStore = previous.store;
   let store = previousStore;
-  if (previousStore.baseUrl.toString() !== baseUrl) {
-    store = createTailorKitStore(baseUrl, appsProp);
-    setStore(store);
+  if (previousStore.baseUrl.toString() !== baseUrl || previous.fetchClient !== client.fetchClient) {
+    store = createTailorKitStore(baseUrl, appsProp, client.fetchClient);
+    setStore({ store, fetchClient: client.fetchClient });
   }
   useEffect(() => {
     store.setProvidedApps(appsProp);

@@ -1,9 +1,9 @@
-import {
-  createPreviewWebSocketClient,
-  previewMetadataSchema,
-} from "@tailorkit/client-platform/preview";
+import { batch, createStore } from "@tanstack/store";
+import type { Store } from "@tanstack/store";
+import { createPreviewWebSocketClient } from "@tailorkit/client-platform/preview";
 import type { PreviewBuildManifest, PreviewEvent } from "@tailorkit/client-platform/preview";
-import type { TailorKitApp } from "./tailorkit";
+import type { TailorKitApp } from "../../types";
+import { createEndpointClient } from "../../client/endpoints";
 
 export interface PreviewSnapshot {
   revision: number;
@@ -21,8 +21,8 @@ interface Entry {
   app: TailorKitApp;
   metadata: NonNullable<TailorKitApp["preview"]> | null;
   candidate: Candidate | null;
-  listeners: Set<() => void>;
-  snapshot: PreviewSnapshot;
+  subscribers: number;
+  state: Store<PreviewSnapshot>;
   socket: WebSocket | null;
   connecting: boolean;
   reconnect: ReturnType<typeof setTimeout> | null;
@@ -79,13 +79,9 @@ export function createPreviewManager(
   baseUrl: URL,
   onEnded: () => void,
   onViews?: (appId: string, views: NonNullable<TailorKitApp["views"]>) => void,
+  refreshMetadata = createEndpointClient({ baseUrl }).previewMetadata,
 ) {
   const entries = new Map<string, Entry>();
-  const notify = (entry: Entry) => {
-    for (const listener of entry.listeners) {
-      listener();
-    }
-  };
   const close = (entry: Entry) => {
     if (entry.reconnect) {
       clearTimeout(entry.reconnect);
@@ -100,8 +96,7 @@ export function createPreviewManager(
   const end = (entry: Entry) => {
     close(entry);
     entry.metadata = null;
-    entry.snapshot = empty;
-    notify(entry);
+    entry.state.setState(() => empty);
     onEnded();
   };
   const handleEvent = async (entry: Entry, event: PreviewEvent) => {
@@ -109,7 +104,7 @@ export function createPreviewManager(
       end(entry);
       return;
     }
-    if (event.revision <= entry.snapshot.revision) {
+    if (event.revision <= entry.state.state.revision) {
       return;
     }
     if (event.type === "begin") {
@@ -150,12 +145,13 @@ export function createPreviewManager(
       if (
         source !== null &&
         entry.candidate === candidate &&
-        candidate.revision > entry.snapshot.revision
+        candidate.revision > entry.state.state.revision
       ) {
-        entry.snapshot = { revision: candidate.revision, source };
-        if (candidate.manifest.views !== undefined)
-          onViews?.(entry.app.id, candidate.manifest.views);
-        notify(entry);
+        batch(() => {
+          entry.state.setState(() => ({ revision: candidate.revision, source }));
+          if (candidate.manifest.views !== undefined)
+            onViews?.(entry.app.id, candidate.manifest.views);
+        });
       }
       if (entry.candidate === candidate) {
         entry.candidate = null;
@@ -163,7 +159,7 @@ export function createPreviewManager(
     }
   };
   const connect = async (entry: Entry) => {
-    if (!entry.listeners.size || !entry.app.preview || entry.socket || entry.connecting) {
+    if (!entry.subscribers || !entry.app.preview || entry.socket || entry.connecting) {
       return;
     }
     entry.connecting = true;
@@ -174,20 +170,18 @@ export function createPreviewManager(
         ? entry.metadata
         : appMetadata;
     try {
-      const refresh = new URL("preview/metadata", baseUrl);
-      refresh.searchParams.set("sessionId", metadata.sessionId);
-      const response = await fetch(refresh, { credentials: "same-origin" });
-      if (response.ok) {
-        metadata = previewMetadataSchema.parse(await response.json());
+      const refreshed = await refreshMetadata(metadata.sessionId);
+      if (refreshed) {
+        metadata = refreshed;
         entry.metadata = metadata;
-      } else if (response.status === 404) {
+      } else {
         end(entry);
         return;
       }
     } catch {
       /* The existing short-lived token may still be valid. */
     }
-    if (!entry.listeners.size) {
+    if (!entry.subscribers) {
       entry.connecting = false;
       return;
     }
@@ -217,7 +211,7 @@ export function createPreviewManager(
       }
       entry.socket = null;
       entry.candidate = null;
-      if (entry.listeners.size) {
+      if (entry.subscribers) {
         entry.reconnect = setTimeout(() => {
           entry.reconnect = null;
           void connect(entry);
@@ -227,7 +221,8 @@ export function createPreviewManager(
     });
   };
   return {
-    getSnapshot: (sessionId: string): PreviewSnapshot => entries.get(sessionId)?.snapshot ?? empty,
+    getSnapshot: (sessionId: string): PreviewSnapshot =>
+      entries.get(sessionId)?.state.state ?? empty,
     updateApp: (app: TailorKitApp): void => {
       const sessionId = app.preview?.sessionId;
       const entry = sessionId && entries.get(sessionId);
@@ -246,8 +241,8 @@ export function createPreviewManager(
           app,
           metadata: null,
           candidate: null,
-          listeners: new Set(),
-          snapshot: empty,
+          subscribers: 0,
+          state: createStore(empty),
           socket: null,
           connecting: false,
           reconnect: null,
@@ -256,18 +251,25 @@ export function createPreviewManager(
         entries.set(sessionId, entry);
       }
       entry.app = app;
-      entry.listeners.add(listener);
+      entry.subscribers += 1;
+      const current = entry;
+      const { unsubscribe } = current.state.subscribe(listener);
       void connect(entry);
+      let active = true;
       return () => {
-        entry?.listeners.delete(listener);
-        if (entry && !entry.listeners.size) {
-          close(entry);
-          entries.delete(sessionId);
+        if (!active) return;
+        active = false;
+        unsubscribe();
+        current.subscribers = Math.max(0, current.subscribers - 1);
+        if (!current.subscribers) {
+          close(current);
+          if (entries.get(sessionId) === current) entries.delete(sessionId);
         }
       };
     },
     dispose: () => {
       for (const entry of entries.values()) {
+        entry.subscribers = 0;
         close(entry);
       }
       entries.clear();

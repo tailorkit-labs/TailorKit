@@ -1,10 +1,18 @@
 import { useTailorRootContext } from "../components/context";
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import type { TailorKitApp } from "../tailorkit";
-import type { TailorKitAppsSnapshot, TailorKitStore } from "../store";
+import { matchesApp } from "@tailorkit/client-core";
+import type {
+  FetchCacheOptions,
+  TailorKitAppsSnapshot,
+  TailorKitStore,
+} from "@tailorkit/client-core";
 import { normalizeScopeSelection } from "../scope-query";
 
-export interface UseAppsOptions<TScopeNames extends string = string> {
+export interface UseAppsOptions<TScopeNames extends string = string> extends Pick<
+  FetchCacheOptions,
+  "staleTime"
+> {
   scopes?: readonly TScopeNames[];
   appIds?: readonly string[];
 }
@@ -12,6 +20,7 @@ export interface UseAppsOptions<TScopeNames extends string = string> {
 export interface UseAppsResult {
   data: TailorKitApp[] | undefined;
   error: Error | null;
+  isFetching: boolean;
   isError: boolean;
   isLoading: boolean;
   isPending: boolean;
@@ -24,7 +33,7 @@ export function useApps(options: UseAppsOptions = {}): UseAppsResult {
   return useAppsStore(useTailorRootContext("useApps").store, options);
 }
 export function useAppsStore(store: TailorKitStore, options: UseAppsOptions = {}): UseAppsResult {
-  const snapshot = useAppsSnapshot(store);
+  const snapshot = useAppsSnapshot(store, options);
   const scopes = normalizeScopeSelection(options.scopes);
   const appIds = normalizeScopeSelection(options.appIds);
   const data = useMemo(
@@ -34,30 +43,27 @@ export function useAppsStore(store: TailorKitStore, options: UseAppsOptions = {}
         : undefined,
     [snapshot, scopes.key, appIds.key],
   );
-  const refetch = useCallback(() => store.fetchApps({ force: true }), [store]);
+  const refetch = useCallback(
+    () => store.fetchApps({ force: true, staleTime: options.staleTime }),
+    [store, options.staleTime],
+  );
   return { ...toUseAppsResult(snapshot, refetch), data };
 }
 
-export function matchesApp(
-  app: TailorKitApp,
-  scopes?: readonly string[],
-  appIds?: readonly string[],
-): boolean {
-  return (
-    (scopes === undefined || (app.scope !== undefined && scopes.includes(app.scope.name))) &&
-    (appIds === undefined || appIds.includes(app.id))
-  );
-}
+export { matchesApp } from "@tailorkit/client-core";
 
-export function useAppsSnapshot(store: TailorKitStore): TailorKitAppsSnapshot {
+export function useAppsSnapshot(
+  store: TailorKitStore,
+  options: Pick<FetchCacheOptions, "staleTime"> = {},
+): TailorKitAppsSnapshot {
   const snapshot = useSyncExternalStore(
     store.subscribeApps,
     store.getAppsSnapshot,
     store.getAppsSnapshot,
   );
   useEffect(() => {
-    void store.fetchApps();
-  }, [store]);
+    void store.fetchApps(options);
+  }, [store, options.staleTime]);
   return snapshot;
 }
 
@@ -68,6 +74,7 @@ export function toUseAppsResult(
   return {
     data: snapshot.status === "ready" ? snapshot.apps : undefined,
     error: snapshot.error,
+    isFetching: snapshot.isFetching,
     isError: snapshot.status === "error",
     isLoading: snapshot.status === "loading",
     isPending: snapshot.status === "idle" || snapshot.status === "loading",

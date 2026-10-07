@@ -1,3 +1,4 @@
+import { createStore } from "@tanstack/store";
 import { getViewDepth, isViewAncestor } from "@tailorkit/core/views";
 import type { ActiveView, ViewStatus } from "@tailorkit/core/views";
 
@@ -11,8 +12,7 @@ export interface ViewEntry {
 
 export function createViewRegistry() {
   const entries = new Map<symbol, ViewEntry>();
-  const listeners = new Set<() => void>();
-  let snapshot: ActiveView | null = null;
+  const state = createStore<ActiveView | null>(null);
   let nextOrder = 0;
   let scheduled = false;
 
@@ -21,7 +21,7 @@ export function createViewRegistry() {
       return;
     }
     scheduled = true;
-    // Registration effects and cleanups from a commit settle before publication.
+    // Registrations and cleanups in the same turn settle before publication.
     queueMicrotask(() => {
       scheduled = false;
       const ordered = [...entries.values()].toSorted(
@@ -39,32 +39,25 @@ export function createViewRegistry() {
               .map((entry) => `"${entry.view}"`)
               .join(
                 ", ",
-              )}. TailorKit selected "${selected.view}" by mount order. Only one route at a hierarchy depth should call useRegisterView.`,
+              )}. TailorKit selected "${selected.view}" by mount order. Only one route at a hierarchy depth should register a view.`,
           );
         }
-        snapshot = {
+        state.setState(() => ({
           view: selected.view,
           layers: ordered
             .filter((entry) => isViewAncestor(entry.view, selected.view))
             .toReversed()
             .map((entry) => ({ path: entry.view, context: entry.context, status: entry.status })),
-        };
+        }));
       } else {
-        snapshot = null;
-      }
-      for (const listener of listeners) {
-        listener();
+        state.setState(() => null);
       }
     });
   };
   return {
-    getSnapshot: () => snapshot,
-    subscribe(listener: () => void) {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
-    },
+    state,
+    getSnapshot: () => state.state,
+    subscribe: (listener: () => void): (() => void) => state.subscribe(listener).unsubscribe,
     register(entry: Omit<ViewEntry, "order">) {
       entries.set(entry.id, { ...entry, order: entries.get(entry.id)?.order ?? nextOrder++ });
       publish();

@@ -1,3 +1,5 @@
+import { createTailorKitFetchClient } from "@tailorkit/client-core";
+import type { TailorKitFetchClient, TailorKitCacheOptions } from "@tailorkit/client-core";
 import { createElement } from "react";
 import type { ReactNode } from "react";
 import type {
@@ -43,31 +45,7 @@ type CompleteComponentRenderers<TComponents extends Record<string, AnyComponentD
   [TName in keyof TComponents]-?: ComponentRenderer<TComponents[TName]>;
 };
 
-export interface TailorKitApp {
-  scope?: { name: string };
-  views?: { slot: string; path: string; instances?: true; disabled?: true }[];
-  clientPath?: string;
-  description?: string;
-  id: string;
-  logoPaths?: {
-    dark?: string;
-    light?: string;
-  };
-  projectId?: string;
-  currentDeployment?: {
-    id: string;
-  } | null;
-  name?: string;
-  preview?: { sessionId: string; expiresAt: string; websocketUrl: string; token: string };
-}
-
-export interface TailorKitView {
-  instances?: true;
-  id: string;
-  app: TailorKitApp;
-  slot: string;
-  path: string;
-}
+export type { TailorKitApp, TailorKitView } from "@tailorkit/client-core";
 
 const componentTagPrefix = "tailorkit-";
 
@@ -79,6 +57,7 @@ const toComponentTagName = (name: string): string =>
 
 export interface TailorKitClientConfig {
   readonly baseUrl: string | URL;
+  readonly fetchClient?: TailorKitFetchClient;
   readonly components: Record<string, unknown>;
   readonly theme: TailorKitTheme;
 }
@@ -159,6 +138,8 @@ export function createTailorKitClient<TTailor extends TailorKitServerShape>(opti
   baseUrl: string | URL;
   components?: CompleteComponentRenderers<ServerComponents<TTailor>>;
   theme?: TailorKitTheme;
+  cache?: TailorKitCacheOptions;
+  fetch?: typeof fetch;
 }): TailorKitInstance<
   ServerViews<TTailor>,
   TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions,
@@ -181,6 +162,8 @@ function createReactTailorKitClient<
   baseUrl: string | URL;
   components?: ComponentRenderers<TComponents>;
   theme?: TailorKitTheme;
+  cache?: TailorKitCacheOptions;
+  fetch?: typeof fetch;
 }): TailorKitInstance<TViews, TSlots, TScopeNames> {
   const wrappedComponents: Record<string, unknown> = {};
 
@@ -204,6 +187,11 @@ function createReactTailorKitClient<
 
   const clientConfig: TailorKitClientConfig = {
     baseUrl: options.baseUrl,
+    fetchClient: createTailorKitFetchClient({
+      baseUrl: options.baseUrl,
+      cache: options.cache,
+      fetch: options.fetch,
+    }),
     components: wrappedComponents,
     theme,
   };

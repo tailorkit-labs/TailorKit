@@ -17,7 +17,7 @@ import {
 import type { ReactNode } from "react";
 import { createIframeUiHost } from "@tailorkit/sandbox/host";
 import type { HostToIframePayload, RemoteElementNode } from "@tailorkit/sandbox/protocol";
-import { NodeStore } from "./node-store";
+import { NodeStore } from "@tailorkit/client-core";
 import { RemoteUIContext } from "./remote-context";
 import type { RemoteViewContext } from "./remote-context";
 

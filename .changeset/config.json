@@ -7,6 +7,7 @@
       "tailorkit",
       "@tailorkit/app",
       "@tailorkit/cli",
+      "@tailorkit/client-core",
       "@tailorkit/client-platform",
       "@tailorkit/core",
       "@tailorkit/react",

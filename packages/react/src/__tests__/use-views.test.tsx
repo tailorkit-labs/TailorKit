@@ -38,7 +38,50 @@ const apps = [
 
 afterEach(() => {
   cleanup();
+  client.fetchClient?.clear();
   vi.restoreAllMocks();
+});
+
+it("shares cached discovery across roots and honors hook stale-time overrides", async () => {
+  const fetch = vi
+    .spyOn(globalThis, "fetch")
+    .mockImplementation(() => Promise.resolve(Response.json(apps)));
+  function Apps({ staleTime = Infinity }: { staleTime?: number }) {
+    const result = client.useApps({ staleTime });
+    return (
+      <span>
+        {result.status}:{result.data?.length}
+      </span>
+    );
+  }
+  const first = render(
+    <Root client={client}>
+      <Apps />
+    </Root>,
+  );
+  await waitFor(() => expect(screen.getByText("ready:3")).toBeTruthy());
+  const second = render(
+    <Root client={client}>
+      <Apps />
+    </Root>,
+  );
+  expect(fetch).toHaveBeenCalledOnce();
+  first.unmount();
+  second.unmount();
+  const fresh = render(
+    <Root client={client}>
+      <Apps />
+    </Root>,
+  );
+  expect(screen.getByText("ready:3")).toBeTruthy();
+  expect(fetch).toHaveBeenCalledOnce();
+  fresh.unmount();
+  render(
+    <Root client={client}>
+      <Apps staleTime={0} />
+    </Root>,
+  );
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
 });
 
 function Views({
@@ -82,7 +125,10 @@ it("shares one request with useApps, intersects local filters, and never refetch
   expect(screen.getByText("ready:")).toBeTruthy();
   view.rerender(content({ appIds: [] }));
   expect(screen.getByText("ready:")).toBeTruthy();
-  expect(fetch).toHaveBeenCalledExactlyOnceWith(new URL("https://host.test/api/tailorkit/apps"));
+  expect(fetch).toHaveBeenCalledExactlyOnceWith(
+    new URL("https://host.test/api/tailorkit/apps"),
+    expect.objectContaining({ signal: expect.any(AbortSignal), credentials: "same-origin" }),
+  );
 });
 
 it("discovers supplied views without fetching and updates them when supplied apps change", async () => {

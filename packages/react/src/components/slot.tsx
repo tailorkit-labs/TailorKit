@@ -1,5 +1,4 @@
 import type { ViewInstance } from "@tailorkit/app/client";
-import { createSessionProvider } from "@tailorkit/app/client";
 import type { SlotDefinitions, ViewDefinition } from "@tailorkit/core/schema";
 import type { ActiveView, ViewStatus } from "@tailorkit/core/views";
 import { useCallback, useEffect, useId, useMemo, useRef, useSyncExternalStore } from "react";
@@ -10,7 +9,7 @@ import { useAppSlotInstances } from "../hooks/use-slot-instances";
 import { resolveSlotView, selectSlotView } from "../slot-view";
 import { buildThemeCss, PrimitiveThemeContext } from "../primitives";
 import { RemoteViewHost } from "../remote-view";
-import { toBaseUrl } from "../store";
+import { toBaseUrl } from "@tailorkit/client-core";
 import type { TailorKitApp } from "../tailorkit";
 import { useTailorRootContext } from "./context";
 
@@ -192,8 +191,8 @@ function SlotRenderer({ app, name, state }: RuntimeSlotProps & { state: SlotStat
   const { store, client } = useTailorRootContext("Slot");
   const reactId = useId();
   const getBackendSession = useMemo(
-    () => createSessionProvider({ baseUrl: store.baseUrl, appId: app.id }),
-    [store.baseUrl, app.id, app.currentDeployment?.id],
+    () => store.client.endpoints.getSessionProvider(app),
+    [store.client, app.id, app.currentDeployment?.id, app.preview?.sessionId],
   );
   const meta = useSyncExternalStore(store.subscribe, store.getMetaSnapshot, store.getMetaSnapshot);
   const previewSessionId = app.preview?.sessionId ?? "";

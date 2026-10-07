@@ -9,8 +9,9 @@ import type { IframeUiHost } from "@tailorkit/sandbox/host";
 import type { HostToIframePayload, RemoteNode } from "@tailorkit/sandbox/protocol";
 import { createTailorKitClient } from "../tailorkit";
 import { RemoteViewHost } from "../remote-view";
-import { createTailorKitStore } from "../store";
+import { createTailorKitStore } from "@tailorkit/client-core";
 import type { TailorKitApp } from "../tailorkit";
+import { useApps } from "../hooks/use-apps";
 
 const hostRecords: {
   appUrl: string;
@@ -277,6 +278,7 @@ describe("tailorKitClient React adapter", () => {
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
     expect(globalThis.fetch).toHaveBeenCalledWith(
       new URL("apps", "http://runtime.test/api/tailorkit/"),
+      expect.objectContaining({ signal: expect.any(AbortSignal), credentials: "same-origin" }),
     );
   });
 
@@ -356,6 +358,7 @@ describe("tailorKitClient React adapter", () => {
     await waitFor(() => expect(testingView.getByText("ready")).toBeTruthy());
     expect(globalThis.fetch).toHaveBeenCalledWith(
       new URL("apps", "http://runtime.test/api/tailorkit/"),
+      expect.objectContaining({ signal: expect.any(AbortSignal), credentials: "same-origin" }),
     );
   });
 
@@ -747,7 +750,7 @@ describe("view registries", () => {
   });
 });
 
-it("replaces the root store only when the normalized endpoint changes", async () => {
+it("isolates a new client cache even when its endpoint is equivalent", async () => {
   const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
     const url = new URL(input.toString());
     return Promise.resolve(
@@ -787,7 +790,7 @@ it("replaces the root store only when the normalized endpoint changes", async ()
       <Contents client={equivalentClient} />
     </Root>,
   );
-  expect(fetchMock.mock.calls).toHaveLength(count);
+  await waitFor(() => expect(fetchMock.mock.calls).toHaveLength(count + 2));
   const secondClient = createClient("http://second.test/api");
   view.rerender(
     <Root client={secondClient}>
@@ -797,6 +800,53 @@ it("replaces the root store only when the normalized endpoint changes", async ()
   await waitFor(() => expect(testingView.getByText("second.test")).toBeTruthy());
   await waitFor(() => expect(hostRecords.at(-1)?.appUrl).toBe("http://second.test/api/client.js"));
   expect(hostRecords.at(-1)?.props?.view).toBe("/user");
+  view.unmount();
+});
+
+it("replaces the root transport when an explicit fetch client is removed or restored", async () => {
+  const explicitFetch = vi
+    .fn()
+    .mockImplementation(() => Promise.resolve(Response.json([{ id: "explicit-user" }])));
+  const fallbackFetch = vi
+    .spyOn(globalThis, "fetch")
+    .mockImplementation(() => Promise.resolve(Response.json([{ id: "fallback-user" }])));
+  const client = createTailorKitClient<typeof server>({
+    baseUrl: "http://runtime.test/api",
+    components,
+    fetch: explicitFetch,
+  });
+  const fallback = { baseUrl: client.baseUrl, components: client.components, theme: client.theme };
+  function Contents() {
+    const { data } = useApps();
+    return <span>{data?.[0]?.id}</span>;
+  }
+  const view = render(
+    <Root client={client}>
+      <Contents />
+    </Root>,
+  );
+  await waitFor(() => expect(testingView.getByText("explicit-user")).toBeTruthy());
+  view.rerender(
+    <Root client={fallback}>
+      <Contents />
+    </Root>,
+  );
+  await waitFor(() => expect(testingView.getByText("fallback-user")).toBeTruthy());
+  view.rerender(
+    <Root client={{ ...fallback }}>
+      <Contents />
+    </Root>,
+  );
+  expect(testingView.getByText("fallback-user")).toBeTruthy();
+  expect(fallbackFetch).toHaveBeenCalledOnce();
+  view.rerender(
+    <Root client={client}>
+      <Contents />
+    </Root>,
+  );
+  await waitFor(() => expect(testingView.getByText("explicit-user")).toBeTruthy());
+  expect(explicitFetch).toHaveBeenCalledOnce();
+  expect(fallbackFetch).toHaveBeenCalledOnce();
   view.unmount();
 });
 

@@ -47,6 +47,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  client.fetchClient?.clear();
   vi.restoreAllMocks();
 });
 

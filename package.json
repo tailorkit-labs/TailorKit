@@ -28,7 +28,7 @@
     "changeset": "vp exec changeset",
     "release:status": "vp exec changeset status --verbose",
     "release:version": "vp exec changeset version",
-    "release:build": "turbo run build --filter=tailorkit --filter=@tailorkit/app --filter=@tailorkit/cli --filter=@tailorkit/client-platform --filter=@tailorkit/core --filter=@tailorkit/react --filter=@tailorkit/sandbox",
+    "release:build": "turbo run build --filter=tailorkit --filter=@tailorkit/app --filter=@tailorkit/cli --filter=@tailorkit/client-core --filter=@tailorkit/client-platform --filter=@tailorkit/core --filter=@tailorkit/react --filter=@tailorkit/sandbox",
     "release:publish": "vp run release:build && node ./scripts/check-prerelease.mjs && vp exec changeset publish",
     "tailorkit": "vp -C packages/cli build && node ./packages/cli/dist/index.js"
   },
