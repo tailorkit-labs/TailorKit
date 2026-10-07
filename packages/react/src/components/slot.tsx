@@ -98,26 +98,33 @@ function InstanceSlot({
   const { store } = useTailorRootContext("Slot");
   const instances = useSlotInstances({ app, slot: name });
   const meta = useSyncExternalStore(store.subscribe, store.getMetaSnapshot, store.getMetaSnapshot);
+  const instance = instances.data?.find((instance) => instance.key === instanceKey);
+  const resolved =
+    instances.isSuccess && instance && meta.schema
+      ? resolveSlotView(app.views ?? [], name, state, meta.schema)
+      : null;
+  const view = resolved?.status === "ready" ? resolved.view : undefined;
+  const stableContext = useStableContext(resolved?.context);
+  const stableInstance = useStableContext(instance);
+  const readyState = useMemo<SlotState | null>(
+    () =>
+      view === undefined || !stableInstance
+        ? null
+        : {
+            controlled: true,
+            view,
+            context: stableContext,
+            status: "ready",
+            instance: stableInstance,
+          },
+    [view, stableContext, stableInstance],
+  );
+
   if (instances.isPending) return <div role="status">Loading view…</div>;
   if (instances.error) return <div role="alert">{instances.error.message}</div>;
-  const instance = instances.data?.find((instance) => instance.key === instanceKey);
   if (!instance) return <div role="alert">View instance "{instanceKey}" is unavailable.</div>;
-  if (!meta.schema) return null;
-  const resolved = resolveSlotView(app.views ?? [], name, state, meta.schema);
-  if (!resolved || resolved.status !== "ready") return null;
-  return (
-    <SlotRenderer
-      app={app}
-      name={name}
-      state={{
-        controlled: true,
-        view: resolved.view,
-        context: resolved.context,
-        status: "ready",
-        instance,
-      }}
-    />
-  );
+  if (!readyState) return null;
+  return <SlotRenderer app={app} name={name} state={readyState} />;
 }
 
 function ControlledSlot({

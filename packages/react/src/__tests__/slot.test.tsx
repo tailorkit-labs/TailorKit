@@ -265,6 +265,9 @@ it("resolves the key and sends a complete controlled instance through the render
     }),
   );
   expect(requests.at(-1)?.props).not.toHaveProperty("layers");
+  const initialProps = requests.at(-1)?.props;
+  view.rerender(content("overview"));
+  expect(requests.at(-1)?.props).toBe(initialProps);
   view.rerender(content("summary"));
   await waitFor(() => expect(requests.at(-1)?.props.instance).toEqual(summary));
   expect(fetch.mock.calls.filter(([input]) => String(input).endsWith("/actions"))).toHaveLength(1);
