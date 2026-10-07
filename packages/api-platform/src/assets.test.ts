@@ -1,3 +1,5 @@
+import { createServer } from "node:http";
+import { gzipSync } from "node:zlib";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Storage } from "@tailorkit/storage";
 import { handleAssetRequest } from "./assets";
@@ -109,4 +111,44 @@ it("maps rejected storage reads to a sanitized service-unavailable response", as
   const response = await handleAssetRequest(new Request(url), backend);
   expect(response.status).toBe(503);
   expect(await response.text()).toBe("");
+});
+
+it("serves Node fetch's decoded gzip body with consistent GET and HEAD metadata", async () => {
+  const bytes = gzipSync(bundle);
+  const origin = createServer((_request, response) => {
+    response.writeHead(200, { "Content-Encoding": "gzip", "Content-Length": bytes.byteLength });
+    response.end(bytes);
+  });
+  await new Promise<void>((resolve, reject) => {
+    origin.once("error", reject);
+    origin.listen(0, "127.0.0.1", resolve);
+  });
+  try {
+    const address = origin.address();
+    if (!address || typeof address === "string") throw new Error("Missing test server address");
+    const backend = storage();
+    vi.mocked(backend.head).mockResolvedValue({
+      key,
+      contentEncoding: "gzip",
+      contentLength: bytes.byteLength,
+      contentType: "application/javascript",
+      etag: '"gzip-etag"',
+    });
+    vi.mocked(backend.createDownloadUrl).mockResolvedValue({
+      key,
+      url: `http://127.0.0.1:${address.port}/file`,
+    });
+    const response = await handleAssetRequest(new Request(url), backend);
+    expect(await response.text()).toBe(bundle);
+    expect(response.headers.get("Content-Encoding")).toBeNull();
+    expect(response.headers.get("Content-Length")).toBeNull();
+    expect(response.headers.get("ETag")).toBe('W/"gzip-etag"');
+    const head = await handleAssetRequest(new Request(url, { method: "HEAD" }), backend);
+    expect([...head.headers]).toEqual([...response.headers]);
+    expect(await head.text()).toBe("");
+  } finally {
+    await new Promise<void>((resolve, reject) =>
+      origin.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
 });

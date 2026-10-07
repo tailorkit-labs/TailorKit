@@ -162,101 +162,127 @@ describe("platform deployment uploads", () => {
     );
   });
 
-  it("uploads client and private server code separately, verifies both, and resolves only published scoped code", async () => {
-    const context = publishContext("https://private.example/server");
-    const uploads = vi.fn(({ key }: { key: string }) =>
-      Promise.resolve({ key, uploadUrl: `https://uploads.example/${key}` }),
-    );
-    context.storage.createUploadUrl = uploads;
-    const currentApp = await db.query.app.findFirst();
-    if (!currentApp) throw new Error("Missing app");
-    const metadata = {
-      checksum: logoChecksum,
-      contentLength: 11,
-      contentType: "application/javascript" as const,
-      encoding: "utf-8" as const,
-    };
-    const created = await call(
-      deploymentRouter.create,
-      {
-        body: {
-          appId: currentApp.id,
-          scope: productionScope,
-          assets: [{ ...metadata, objectKey: "client.js" }],
-          views: [
-            { slot: "page", path: "/", instances: true },
-            { slot: "page", path: "/disabled", disabled: true },
-          ],
-          server: { ...metadata, objectKey: "server.js" },
+  it.each(["utf-8", "gzip"] as const)(
+    "uploads and verifies %s client and private server code",
+    async (encoding) => {
+      const context = publishContext("https://private.example/server");
+      const uploads = vi.fn(({ key }: { key: string }) =>
+        Promise.resolve({ key, uploadUrl: `https://uploads.example/${key}` }),
+      );
+      context.storage.createUploadUrl = uploads;
+      const currentApp = await db.query.app.findFirst();
+      if (!currentApp) throw new Error("Missing app");
+      const metadata = {
+        checksum: logoChecksum,
+        contentLength: 11,
+        contentType: "application/javascript" as const,
+        encoding,
+      };
+      const created = await call(
+        deploymentRouter.create,
+        {
+          body: {
+            appId: currentApp.id,
+            scope: productionScope,
+            assets: [{ ...metadata, objectKey: "client.js" }],
+            views: [
+              { slot: "page", path: "/", instances: true },
+              { slot: "page", path: "/disabled", disabled: true },
+            ],
+            server: { ...metadata, objectKey: "server.js" },
+          },
         },
-      },
-      { context },
-    );
-    expect(created.body.assets[0]?.file.objectKey).toMatch(/\/client\/client\.js$/u);
-    expect(created.body.server?.file.objectKey).toMatch(/\/server\/server\.js$/u);
-    expect(created.body.deployment.views).toEqual([
-      { slot: "page", path: "/", instances: true },
-      { slot: "page", path: "/disabled", disabled: true },
-    ]);
-    expect(uploads).toHaveBeenCalledTimes(2);
-    const lookup = { params: { appId: currentApp.id }, body: { scope: productionScope } };
-    await expect(
-      call(
+        { context },
+      );
+      expect(created.body.assets[0]?.file.objectKey).toMatch(/\/client\/client\.js$/u);
+      expect(created.body.server?.file.objectKey).toMatch(/\/server\/server\.js$/u);
+      expect(created.body.deployment.views).toEqual([
+        { slot: "page", path: "/", instances: true },
+        { slot: "page", path: "/disabled", disabled: true },
+      ]);
+      expect(uploads).toHaveBeenCalledTimes(2);
+      expect(uploads).toHaveBeenCalledWith(
+        expect.objectContaining({ contentEncoding: encoding === "gzip" ? "gzip" : undefined }),
+      );
+      const lookup = { params: { appId: currentApp.id }, body: { scope: productionScope } };
+      await expect(
+        call(
+          deploymentRouter.runtime,
+          { params: lookup.params, body: {} },
+          { context: { ...context, runtimeService: true } },
+        ),
+      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+      expect(context.storage.createDownloadUrl).not.toHaveBeenCalled();
+      context.storage.head = vi.fn().mockResolvedValue({
+        checksumSha256: logoChecksumBase64,
+        contentLength: 11,
+        contentType: "application/javascript",
+        contentEncoding: encoding === "gzip" ? "gzip" : undefined,
+      });
+      if (encoding === "gzip") {
+        vi.mocked(context.storage.head).mockResolvedValueOnce({
+          key: created.body.assets[0]!.file.objectKey,
+          checksumSha256: logoChecksumBase64,
+          contentLength: 11,
+          contentType: "application/javascript",
+        });
+        await expect(
+          call(
+            deploymentRouter.publish,
+            {
+              params: { deploymentId: created.body.deployment.id },
+              body: { scope: productionScope, rollout: true },
+            },
+            { context },
+          ),
+        ).rejects.toThrow("Uploaded file content encoding does not match deployment record.");
+      }
+      await call(
+        deploymentRouter.publish,
+        {
+          params: { deploymentId: created.body.deployment.id },
+          body: { scope: productionScope, rollout: true },
+        },
+        { context },
+      );
+      await expect(
+        call(deploymentRouter.runtime, { params: lookup.params, body: {} }, { context }),
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      const runtime = await call(
         deploymentRouter.runtime,
         { params: lookup.params, body: {} },
         { context: { ...context, runtimeService: true } },
-      ),
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
-    expect(context.storage.createDownloadUrl).not.toHaveBeenCalled();
-    context.storage.head = vi.fn().mockResolvedValue({
-      checksumSha256: logoChecksumBase64,
-      contentLength: 11,
-      contentType: "application/javascript",
-    });
-    await call(
-      deploymentRouter.publish,
-      {
-        params: { deploymentId: created.body.deployment.id },
-        body: { scope: productionScope, rollout: true },
-      },
-      { context },
-    );
-    await expect(
-      call(deploymentRouter.runtime, { params: lookup.params, body: {} }, { context }),
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    const runtime = await call(
-      deploymentRouter.runtime,
-      { params: lookup.params, body: {} },
-      { context: { ...context, runtimeService: true } },
-    );
-    await expect(
-      call(
-        deploymentRouter.runtime,
-        { params: lookup.params, body: {} },
-        {
-          context: {
-            ...context,
-            runtimeService: true,
-            project: { ...context.project, id: "33333333-3333-4333-8333-333333333333" },
+      );
+      await expect(
+        call(
+          deploymentRouter.runtime,
+          { params: lookup.params, body: {} },
+          {
+            context: {
+              ...context,
+              runtimeService: true,
+              project: { ...context.project, id: "33333333-3333-4333-8333-333333333333" },
+            },
           },
-        },
-      ),
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
-    expect(runtime.body).toEqual({
-      projectId: context.project.id,
-      appId: currentApp.id,
-      deploymentId: created.body.deployment.id,
-      objectKey: created.body.server?.file.objectKey,
-      checksum: logoChecksum,
-      contentLength: 11,
-    });
-    expect(context.storage.createDownloadUrl).not.toHaveBeenCalled();
-    const files = await db.query.appDeploymentFile.findMany({
-      where: { appDeploymentId: created.body.deployment.id },
-    });
-    expect(files).toHaveLength(2);
-    expect(files.every((file) => file.status === "verified")).toBe(true);
-  });
+        ),
+      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+      expect(runtime.body).toEqual({
+        projectId: context.project.id,
+        appId: currentApp.id,
+        deploymentId: created.body.deployment.id,
+        objectKey: created.body.server?.file.objectKey,
+        checksum: logoChecksum,
+        contentLength: 11,
+        ...(encoding === "gzip" ? { contentEncoding: "gzip" } : {}),
+      });
+      expect(context.storage.createDownloadUrl).not.toHaveBeenCalled();
+      const files = await db.query.appDeploymentFile.findMany({
+        where: { appDeploymentId: created.body.deployment.id },
+      });
+      expect(files).toHaveLength(2);
+      expect(files.every((file) => file.status === "verified")).toBe(true);
+    },
+  );
 
   it("maps reordered returned files using their generated file IDs", () => {
     const assets = [

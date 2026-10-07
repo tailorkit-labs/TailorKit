@@ -52,7 +52,7 @@ const createDeploymentAssetInput = z.object({
   ...deploymentFileMetadataShape,
   contentLength: z.number().int().min(1),
   contentType: z.literal("application/javascript"),
-  encoding: z.literal("utf-8"),
+  encoding: z.enum(["utf-8", "gzip"]),
   objectKey: z.literal("client.js"),
 });
 
@@ -344,6 +344,7 @@ const createAppDeployment = protectedRouter
           : await context.storage.createUploadUrl({
               checksumSha256: hexToBase64(asset.checksum),
               contentType: asset.contentType,
+              contentEncoding: asset.encoding === "gzip" ? "gzip" : undefined,
               expiresInSeconds: uploadUrlExpiresInSeconds,
               key: objectKey,
               metadata:
@@ -523,6 +524,12 @@ const publishAppDeployment = protectedRouter
           throw new Error("Uploaded file content type does not match deployment record.");
         }
 
+        if (
+          (object.contentEncoding ?? undefined) !== (file.encoding === "gzip" ? "gzip" : undefined)
+        ) {
+          throw new Error("Uploaded file content encoding does not match deployment record.");
+        }
+
         if (!file.checksum || object.checksumSha256 !== hexToBase64(file.checksum)) {
           throw new Error("Uploaded file checksum does not match deployment record.");
         }
@@ -600,6 +607,7 @@ const publishAppDeployment = protectedRouter
             objectKey: server.objectKey,
             checksum: server.checksum,
             contentLength: server.contentLength,
+            contentEncoding: server.encoding === "gzip" ? "gzip" : undefined,
           },
           context.app.publicId,
         );

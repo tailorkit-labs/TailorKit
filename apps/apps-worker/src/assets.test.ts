@@ -1,3 +1,4 @@
+import { gzipSync, gunzipSync } from "node:zlib";
 import { assetHeaders } from "@tailorkit/asset-delivery";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import worker from "./assets";
@@ -203,3 +204,70 @@ it("keeps the response usable when a background cache write fails", async () => 
   expect(await response.text()).toBe(bundle);
   expect(log).toHaveBeenCalledWith(JSON.stringify({ message: "Asset cache write failed" }));
 });
+
+function gzipObject() {
+  const bytes = gzipSync(bundle);
+  return {
+    ...object(),
+    body: new Response(bytes).body,
+    size: bytes.byteLength,
+    httpMetadata: { contentEncoding: "gzip" },
+  };
+}
+
+it("serves stored gzip bytes and caches them without double compression", async () => {
+  const stored = gzipObject();
+  get.mockResolvedValueOnce(stored);
+  const response = await fetchAsset(
+    new Request(url, { headers: { "Accept-Encoding": "br, gzip" } }),
+  );
+  expect(response.headers.get("Content-Encoding")).toBe("gzip");
+  expect(response.headers.get("Content-Length")).toBe(String(stored.size));
+  expect(response.headers.get("Vary")).toBe("Accept-Encoding");
+  expect(gunzipSync(Buffer.from(await response.arrayBuffer())).toString()).toBe(bundle);
+  const cached = put.mock.calls[0]![1];
+  expect(cached.headers.get("Content-Encoding")).toBe("gzip");
+  expect(gunzipSync(Buffer.from(await cached.arrayBuffer())).toString()).toBe(bundle);
+});
+
+it.each([undefined, "identity", "gzip;q=0, *;q=1"])(
+  "decodes a cached gzip bundle for Accept-Encoding %s",
+  async (encoding) => {
+    const stored = gzipObject();
+    match.mockResolvedValueOnce(
+      new Response(stored.body, {
+        headers: assetHeaders({
+          contentLength: stored.size,
+          contentEncoding: "gzip",
+          etag: stored.httpEtag,
+        }),
+      }),
+    );
+    const response = await fetchAsset(
+      new Request(url, { headers: encoding ? { "Accept-Encoding": encoding } : undefined }),
+    );
+    expect(await response.text()).toBe(bundle);
+    expect(response.headers.get("Content-Encoding")).toBeNull();
+    expect(response.headers.get("Content-Length")).toBeNull();
+    expect(response.headers.get("ETag")).toBe('W/"etag"');
+    expect(response.headers.get("Vary")).toBe("Accept-Encoding");
+    expect(get).not.toHaveBeenCalled();
+  },
+);
+
+it.each(["gzip", "identity"])(
+  "serves gzip HEAD metadata for %s without reading the body",
+  async (encoding) => {
+    const stored = gzipObject();
+    head.mockResolvedValueOnce(stored);
+    const response = await fetchAsset(
+      new Request(url, { method: "HEAD", headers: { "Accept-Encoding": encoding } }),
+    );
+    expect(response.headers.get("Content-Encoding")).toBe(encoding === "gzip" ? "gzip" : null);
+    expect(response.headers.get("Content-Length")).toBe(
+      encoding === "gzip" ? String(stored.size) : null,
+    );
+    expect(await response.text()).toBe("");
+    expect(get).not.toHaveBeenCalled();
+  },
+);

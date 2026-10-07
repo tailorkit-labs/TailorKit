@@ -1,0 +1,1 @@
+ALTER TYPE "app_deployment_file_encoding" ADD VALUE 'gzip';

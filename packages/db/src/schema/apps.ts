@@ -129,7 +129,7 @@ export const appDeploymentFileContentType = pgEnum("app_deployment_file_content_
   "image/webp",
 ]);
 
-export const appDeploymentFileEncoding = pgEnum("app_deployment_file_encoding", ["utf-8"]);
+export const appDeploymentFileEncoding = pgEnum("app_deployment_file_encoding", ["utf-8", "gzip"]);
 
 export const appDeploymentFileStatus = pgEnum("app_deployment_file_status", [
   "uploading",

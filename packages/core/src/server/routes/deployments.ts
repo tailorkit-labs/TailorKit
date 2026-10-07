@@ -17,7 +17,7 @@ const clientAssetInput = z.object({
   checksum: z.string(),
   contentLength: z.number().int().min(1),
   contentType: z.literal("application/javascript"),
-  encoding: z.literal("utf-8"),
+  encoding: z.enum(["utf-8", "gzip"]),
   objectKey: z.literal("client.js"),
 });
 

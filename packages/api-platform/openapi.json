@@ -2727,7 +2727,7 @@
                           },
                           "encoding": {
                             "type": "string",
-                            "const": "utf-8"
+                            "enum": ["utf-8", "gzip"]
                           },
                           "objectKey": {
                             "type": "string",
@@ -2765,7 +2765,7 @@
                       },
                       "encoding": {
                         "type": "string",
-                        "const": "utf-8"
+                        "enum": ["utf-8", "gzip"]
                       },
                       "objectKey": {
                         "type": "string",
@@ -2924,7 +2924,7 @@
                                 "anyOf": [
                                   {
                                     "type": "string",
-                                    "enum": ["utf-8"]
+                                    "enum": ["utf-8", "gzip"]
                                   },
                                   {
                                     "type": "null"
@@ -3028,7 +3028,7 @@
                               "anyOf": [
                                 {
                                   "type": "string",
-                                  "enum": ["utf-8"]
+                                  "enum": ["utf-8", "gzip"]
                                 },
                                 {
                                   "type": "null"
@@ -3249,7 +3249,7 @@
                                   "anyOf": [
                                     {
                                       "type": "string",
-                                      "enum": ["utf-8"]
+                                      "enum": ["utf-8", "gzip"]
                                     },
                                     {
                                       "type": "null"
@@ -3347,7 +3347,7 @@
                                   "anyOf": [
                                     {
                                       "type": "string",
-                                      "enum": ["utf-8"]
+                                      "enum": ["utf-8", "gzip"]
                                     },
                                     {
                                       "type": "null"
@@ -3672,6 +3672,10 @@
                       "type": "integer",
                       "exclusiveMinimum": 0,
                       "maximum": 9007199254740991
+                    },
+                    "contentEncoding": {
+                      "type": "string",
+                      "const": "gzip"
                     }
                   },
                   "required": [

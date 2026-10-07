@@ -37,6 +37,12 @@ function loadAsset(request: Request, identity: AssetIdentity, storage: Storage) 
       contentType: identity.contentType,
       etag: object.etag,
     });
+    // Node fetch decodes Content-Encoding automatically. The local adapter serves
+    // that decoded stream; the stored length and strong ETag describe gzip bytes.
+    if (object.contentEncoding === "gzip") {
+      headers.delete("Content-Length");
+      if (object.etag) headers.set("ETag", `W/${object.etag}`);
+    }
     if (request.method === "HEAD") return new Response(null, { headers });
     const download = yield* Effect.tryPromise({
       try: () => storage.createDownloadUrl({ key, expiresInSeconds: 60 }),

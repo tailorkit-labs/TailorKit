@@ -115,6 +115,7 @@ export function assetPreflight(): Response {
 
 export function assetHeaders(input: {
   contentLength: number;
+  contentEncoding?: string;
   contentType?: AssetIdentity["contentType"];
   etag?: string;
 }): Headers {
@@ -131,6 +132,10 @@ export function assetHeaders(input: {
     "Referrer-Policy": "no-referrer",
     "X-Content-Type-Options": "nosniff",
   });
+  if (input.contentEncoding === "gzip") {
+    headers.set("Content-Encoding", "gzip");
+    headers.set("Vary", "Accept-Encoding");
+  }
   if (input.etag) {
     headers.set("ETag", input.etag);
   }
@@ -231,4 +236,19 @@ export function assetResponse(
       }),
     ),
   );
+}
+
+/** An explicit gzip refusal takes precedence over a wildcard. */
+export function acceptsGzip(request: Request): boolean {
+  const encodings = (request.headers.get("Accept-Encoding") ?? "")
+    .toLowerCase()
+    .split(",")
+    .map((entry) => {
+      const [name, ...parameters] = entry.trim().split(";");
+      const quality = parameters.find((parameter) => parameter.trim().startsWith("q="));
+      return { name, quality: quality ? Number(quality.trim().slice(2)) : 1 };
+    });
+  const encoding =
+    encodings.find(({ name }) => name === "gzip") ?? encodings.find(({ name }) => name === "*");
+  return encoding !== undefined && encoding.quality > 0 && encoding.quality <= 1;
 }
