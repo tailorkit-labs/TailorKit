@@ -1,5 +1,17 @@
 # @tailorkit/app
 
+## 0.1.0-beta.22
+
+### Minor Changes
+
+- 268df1e: Require Preact 11 for app builds and newly scaffolded apps. Keep provider disposal and pending-call cancellation synchronous during unmount with layout-effect cleanup.
+
+### Patch Changes
+
+- c29880d: Replace TanStack Store with Nanostores for client fetch caches, preview sessions, view registration, and remote UI node state. Preserve change-only subscriptions, stable snapshots, and batched preview updates. Exposed local `state` stores now use the Nanostores atom API (`get`, `set`, and `listen`).
+
+  Migrate app query, mutation, and action state to Nanostores with its Preact adapter. Preserve shared query subscriptions, selective updates, and protection against stale call results.
+
 ## 0.1.0-beta.21
 
 ### Patch Changes

@@ -1,5 +1,24 @@
 # @tailorkit/client-core
 
+## 0.1.0-beta.22
+
+### Minor Changes
+
+- 382f569: Replace `useSlotInstances` and `useViews` with `useSlot({ slot })`. Single-view slots return one `{ app }` item per app with an enabled, supported view, without requiring registered context or calling instance resolvers. Multiple-view slots retain context-based instance resolution and return `{ app, key, metadata, data }` items. Support app and scope filters, infer result types from the slot's multiple flag, and rename the shared slot store and cache configuration to match. Cache timings remain internal and are not exposed as hook options.
+
+### Patch Changes
+
+- c29880d: Replace TanStack Store with Nanostores for client fetch caches, preview sessions, view registration, and remote UI node state. Preserve change-only subscriptions, stable snapshots, and batched preview updates. Exposed local `state` stores now use the Nanostores atom API (`get`, `set`, and `listen`).
+
+  Migrate app query, mutation, and action state to Nanostores with its Preact adapter. Preserve shared query subscriptions, selective updates, and protection against stale call results.
+
+- Updated dependencies [c29880d]
+- Updated dependencies [268df1e]
+  - @tailorkit/app@0.1.0-beta.22
+  - @tailorkit/sandbox@0.1.0-beta.22
+  - @tailorkit/client-platform@0.1.0-beta.22
+  - @tailorkit/core@0.1.0-beta.22
+
 ## 0.1.0-beta.21
 
 ### Patch Changes
