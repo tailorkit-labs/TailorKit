@@ -1,0 +1,91 @@
+packages/cli/src/deploy.test.ts
+  s_f361c0f47d3bdc::t_72bd417d2ab92b 341-349,352,360-365,367-372,374-376,379-381
+  s_f361c0f47d3bdc::t_cee7d9b9423168 1-2,78,94,98-109,276,340,350-351,354-355,357-359,366,373,377-378,382-384
+  s_f361c0f47d3bdc::t_da1b4d9515fa04 353,356
+  s_f361c0f47d3bdc::t_24eaa7e9269ab7 385
+apps/apps-worker/src/tests/integration.test.mjs
+  s_f361c0f47d3bdc::t_115e4bc85f8cb1 1,587,589,602
+  s_f361c0f47d3bdc::t_72bd417d2ab92b 119-122,128-130,230-233,240-242,581-586,588,591,598-601,603
+  s_f361c0f47d3bdc::t_50066a2e1673d4 590,592-594
+apps/apps-worker/README.md
+  s_f361c0f47d3bdc::t_2267ee64ca9e4c 13,79
+apps/apps-worker/src/assets.ts
+  s_f361c0f47d3bdc::t_789e35cddcce29 4,13,17-26,29,42,55,59,70,74,95
+  s_f361c0f47d3bdc::t_cee7d9b9423168 37-38
+  s_f361c0f47d3bdc::t_37d5b0b9f75fc7 80-86
+  s_f361c0f47d3bdc::t_e2d3790c5bc6a1 78
+packages/asset-delivery/src/index.ts
+  s_f361c0f47d3bdc::t_72bd417d2ab92b 251-252
+  s_f361c0f47d3bdc::t_789e35cddcce29 118,135-138,240-250,253
+  s_f361c0f47d3bdc::t_1167fb4a1d2422 254
+packages/core/src/server/routes/deployments.ts
+  s_f361c0f47d3bdc::t_96dcca145be4cf 20
+apps/apps-worker/src/supervisor/source.ts
+  s_f361c0f47d3bdc::t_789e35cddcce29 1,18,22-47,122,131,148
+  s_f361c0f47d3bdc::t_72bd417d2ab92b 19-21,142-147
+packages/cli/src/deploy.ts
+  s_f361c0f47d3bdc::t_72bd417d2ab92b 303-306,403-405
+  s_f361c0f47d3bdc::t_96dcca145be4cf 281,300-302,307-309,352-353,355,359,361-362,364,435,437
+  s_f361c0f47d3bdc::t_cee7d9b9423168 132,147-148,406
+apps/apps-worker/src/assets.test.ts
+  s_f361c0f47d3bdc::t_72bd417d2ab92b 210-215,221-223,233-256,258-273
+  s_f361c0f47d3bdc::t_da1b4d9515fa04 1,207-209,216-220,224-232,257
+packages/app/README.md
+  s_f361c0f47d3bdc::t_2267ee64ca9e4c 97
+packages/api-platform/src/assets.test.ts
+  s_f361c0f47d3bdc::t_72bd417d2ab92b 1-2,115-121,126-153
+  s_f361c0f47d3bdc::t_624746488569c6 122-125
+  s_f361c0f47d3bdc::t_a722a3c2bc726c 154
+packages/api-platform/src/routes/runtime.ts
+  s_f361c0f47d3bdc::t_96dcca145be4cf 133
+apps/apps-worker/src/supervisor/source.test.ts
+  s_f361c0f47d3bdc::t_72bd417d2ab92b 111-116,123-129,132-143
+  s_f361c0f47d3bdc::t_cee7d9b9423168 1-2,28,108-110,117-122,130-131
+packages/storage/src/types.ts
+  s_f361c0f47d3bdc::t_96dcca145be4cf 27,41
+packages/storage/test/s3.test.mjs
+  s_f361c0f47d3bdc::t_72bd417d2ab92b 63-65
+  s_f361c0f47d3bdc::t_cee7d9b9423168 55-62,66-68
+.changeset/gzip-deployment-artifacts.md
+  s_f361c0f47d3bdc::t_2267ee64ca9e4c 1-7
+packages/api-platform/openapi.json
+  s_f361c0f47d3bdc::t_624746488569c6 2730,2768,2927,3031,3252,3350
+  s_f361c0f47d3bdc::t_6702982ccb4c66 3675-3678
+packages/storage/src/s3.ts
+  s_f361c0f47d3bdc::t_96dcca145be4cf 70,96,117,122
+packages/client-platform/src/client/types.gen.ts
+  s_f361c0f47d3bdc::t_d5e61e04f7181e 716,724,768,786,824,842,928
+packages/api-platform/src/routes/deployments.test.ts
+  s_f361c0f47d3bdc::t_72bd417d2ab92b 165-193,195-221,240-251,255-265,267-275,277-285
+  s_f361c0f47d3bdc::t_2267ee64ca9e4c 222-239
+  s_f361c0f47d3bdc::t_624746488569c6 276
+packages/api-platform/src/assets.ts
+  s_f361c0f47d3bdc::t_789e35cddcce29 40-45
+packages/api-platform/src/routes/deployments.ts
+  s_f361c0f47d3bdc::t_72bd417d2ab92b 527-529
+  s_f361c0f47d3bdc::t_96dcca145be4cf 55,347,530-532,610
+packages/api-utils/src/app-auth/deployments.ts
+  s_f361c0f47d3bdc::t_96dcca145be4cf 11
+packages/db/src/schema/apps.ts
+  s_f361c0f47d3bdc::t_96dcca145be4cf 132
+packages/db/src/migrations/20261007070850_left_maginty/migration.sql
+  s_f361c0f47d3bdc::t_163228130c69bb 1
+packages/db/src/migrations/20261007070850_left_maginty/snapshot.json
+  s_f361c0f47d3bdc::t_5b6bcb5d18fec4 1-3589
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a3c5152b9521f09a66e4815c81a1170add0ad0b8",
+  "prompts": {},
+  "sessions": {
+    "s_f361c0f47d3bdc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1152e-d1bb-7263-941d-8bd66057a2a7",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
