@@ -30,11 +30,13 @@ it("exports the client API and public contract without importing private runtime
         lib: { entry, formats: ["es"] },
       },
     });
-    expect(modules.some((id) => /\/(?:effect|jose)\//u.test(id))).toBe(false);
+    expect(modules.some((id) => /\/node_modules\/(?:effect|jose)\//u.test(id))).toBe(false);
     expect(modules.some((id) => id.includes("@orpc/server"))).toBe(false);
     expect(modules.some((id) => /(?:apps-worker|api-utils|app-platform)/u.test(id))).toBe(false);
     expect(modules.some((id) => /\/(?:auth|runtime)\.js$/u.test(id))).toBe(false);
     expect(modules.some((id) => /\/(?:tokens|verifier)\.[jt]s$/u.test(id))).toBe(false);
+    expect(modules.some((id) => /\/@tanstack\/(?:store|preact-store)\//u.test(id))).toBe(false);
+    expect(modules.some((id) => id.includes("/nanostores/"))).toBe(true);
     const outputs = Array.isArray(result) ? result : [result];
     const browser = outputs
       .flatMap((output) => ("output" in output ? output.output : []))

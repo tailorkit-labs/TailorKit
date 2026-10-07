@@ -1,6 +1,6 @@
 /* oxlint-disable react/immutability -- Preact refs are mutable; the React compiler rule does not recognize preact/hooks.useRef. */
-import { createStore } from "@tanstack/store";
-import { useSelector } from "@tanstack/preact-store";
+import { atom, computed } from "nanostores";
+import { useStore } from "@nanostores/preact";
 import { createContext, h } from "preact";
 import type { ComponentChildren } from "preact";
 import { useCallback, useContext, useEffect, useMemo, useRef } from "preact/hooks";
@@ -34,7 +34,7 @@ export function ClientProvider({ children, client, onError }: ClientProviderProp
   return h(Context.Provider, { value: store }, children);
 }
 
-function useStore() {
+function useQueryStore() {
   const store = useContext(Context);
   if (!store) {
     throw new Error("TailorKit backend hooks require a ClientProvider at the app root.");
@@ -62,17 +62,22 @@ export function useQuery<I, O>(
   ref: Reference<"query", I, O>,
   ...[input, options]: QueryArguments<NoInfer<I>>
 ): QueryResult<O> {
-  const store = useStore();
+  const store = useQueryStore();
   const enabled = options?.enabled ?? true;
   const name = ref.name;
   const serialized = serializeInput(input);
   const key = `${name}\0${serialized}`;
   const stableInput = useMemo(() => (JSON.parse(serialized) as { input: I }).input, [serialized]);
   const stableReference = useMemo(() => reference<"query", I, O>(name, "query"), [name]);
-  const state = useSelector(
-    store.state,
-    (queries) => (enabled ? (queries.get(key) ?? pendingQuery) : pendingQuery) as QueryState<O>,
+  const query = useMemo(
+    () =>
+      computed(
+        store.state,
+        (queries) => (enabled ? (queries.get(key) ?? pendingQuery) : pendingQuery) as QueryState<O>,
+      ),
+    [store, key, enabled],
   );
+  const state = useStore(query);
   useEffect(() => {
     if (enabled) {
       return store.watch(key, stableReference, stableInput);
@@ -109,18 +114,18 @@ function useCall<K extends "mutation" | "action", I, O>(
   ref: Reference<K, I, O>,
   options: CallOptions<I, O>,
 ) {
-  const store = useStore();
+  const store = useQueryStore();
   const name = ref.name;
   const identity = useMemo(
     () => ({
       store,
       name,
       kind,
-      state: createStore<Pick<CallState<O>, "data" | "error" | "status">>(idleCall),
+      state: atom<Pick<CallState<O>, "data" | "error" | "status">>(idleCall),
     }),
     [store, name, kind],
   );
-  const state = useSelector(identity.state);
+  const state = useStore(identity.state);
   const current = useRef({ identity, sequence: 0, mounted: true });
   if (current.current.identity !== identity) {
     current.current = { identity, sequence: current.current.sequence + 1, mounted: true };
@@ -143,7 +148,7 @@ function useCall<K extends "mutation" | "action", I, O>(
         current.current.mounted &&
         current.current.identity === identity &&
         current.current.sequence === sequence;
-      identity.state.setState(() => ({ ...idleCall, status: "pending" }));
+      identity.state.set({ ...idleCall, status: "pending" });
       let data: O;
       try {
         data =
@@ -153,14 +158,14 @@ function useCall<K extends "mutation" | "action", I, O>(
       } catch (error) {
         const failure = appError(error);
         if (isCurrent()) {
-          identity.state.setState(() => ({ data: undefined, error: failure, status: "error" }));
+          identity.state.set({ data: undefined, error: failure, status: "error" });
           settings.onError?.(failure, args);
         }
         store.onError(failure);
         throw failure;
       }
       if (isCurrent()) {
-        identity.state.setState(() => ({ data, error: null, status: "success" }));
+        identity.state.set({ data, error: null, status: "success" });
         settings.onSuccess?.(data, args);
       }
       return data;
@@ -175,7 +180,7 @@ function useCall<K extends "mutation" | "action", I, O>(
   );
   const reset = useCallback(() => {
     current.current.sequence += 1;
-    identity.state.setState(() => idleCall);
+    identity.state.set(idleCall);
   }, [identity]);
   return {
     ...state,

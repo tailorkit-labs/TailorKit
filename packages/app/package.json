@@ -50,12 +50,12 @@
     "test": "vp test run"
   },
   "dependencies": {
+    "@nanostores/preact": "1.1.0",
     "@orpc/client": "catalog:",
     "@orpc/contract": "catalog:",
-    "@tanstack/preact-store": "0.13.4",
-    "@tanstack/store": "0.11.2",
     "cosmiconfig": "^10.0.1",
     "drizzle-orm": "catalog:",
+    "nanostores": "1.5.4",
     "vite": "catalog:",
     "zod": "catalog:"
   },

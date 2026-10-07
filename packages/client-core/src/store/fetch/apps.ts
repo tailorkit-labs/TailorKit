@@ -1,4 +1,4 @@
-import { createStore } from "@tanstack/store";
+import { atom } from "nanostores";
 import type { TailorKitFetchClient } from "../../client/fetch-client";
 import type { TailorKitApp } from "../../types";
 import type { FetchOptions, FetchSnapshot } from "./cache";
@@ -12,7 +12,7 @@ export interface TailorKitAppsSnapshot {
 
 export function createAppsStore(client: TailorKitFetchClient, initialApps?: TailorKitApp[]) {
   const query = client.apps();
-  const provided = createStore(initialApps);
+  const provided = atom(initialApps);
   const suppliedSnapshot = (apps: TailorKitApp[]): TailorKitAppsSnapshot => ({
     apps,
     error: null,
@@ -43,7 +43,7 @@ export function createAppsStore(client: TailorKitFetchClient, initialApps?: Tail
     },
     subscribe(listener: () => void) {
       subscribers += 1;
-      const stopProvided = provided.subscribe(listener).unsubscribe;
+      const stopProvided = provided.listen(listener);
       const stopQuery = query.subscribe(() => {
         if (!supplied) listener();
       });
@@ -64,9 +64,9 @@ export function createAppsStore(client: TailorKitFetchClient, initialApps?: Tail
       return requested ? store.fetch({ force: true }) : Promise.resolve();
     },
     setProvidedApps(apps: TailorKitApp[] | undefined) {
-      if (provided.state === apps) return;
+      if (provided.get() === apps) return;
       supplied = apps === undefined ? null : suppliedSnapshot(apps);
-      provided.setState(() => apps);
+      provided.set(apps);
       if (!supplied && requested && subscribers) void store.fetch({ force: true });
     },
     updateViews(appId: string, appViews: NonNullable<TailorKitApp["views"]>) {

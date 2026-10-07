@@ -1,4 +1,5 @@
-import { createStore } from "@tanstack/store";
+import { atom } from "nanostores";
+import type { WritableAtom } from "nanostores";
 
 export interface FetchCacheOptions {
   /** Milliseconds before a successful response needs refreshing. Infinity keeps it fresh. */
@@ -19,7 +20,7 @@ export interface FetchOptions extends Pick<FetchCacheOptions, "staleTime"> {
   force?: boolean;
 }
 
-/** Framework-neutral contract; adapters need not depend on TanStack Store. */
+/** Framework-neutral contract; adapters need not depend on the state library. */
 export interface FetchStore<T> {
   getSnapshot: () => FetchSnapshot<T>;
   subscribe: (listener: () => void) => () => void;
@@ -39,7 +40,7 @@ const idle = <T>(): FetchSnapshot<T> => ({
 type Fetcher<T> = (signal: AbortSignal) => Promise<T>;
 
 interface Entry {
-  state: ReturnType<typeof createStore<FetchSnapshot<unknown>>>;
+  state: WritableAtom<FetchSnapshot<unknown>>;
   controller: AbortController | null;
   pending: Promise<void> | null;
   observers: number;
@@ -77,7 +78,7 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
     entry.invalidated = false;
     if (entry.timer) clearTimeout(entry.timer);
     entry.timer = null;
-    entry.state.setState(() => idle());
+    entry.state.set(idle());
   };
 
   const scheduleGc = (key: string, entry: Entry) => {
@@ -116,7 +117,7 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
         let entry = entries.get(key);
         if (!entry) {
           entry = {
-            state: createStore(idle<unknown>()),
+            state: atom(idle<unknown>()),
             controller: null,
             pending: null,
             observers: 0,
@@ -135,13 +136,13 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
         return entry;
       };
       const store: FetchStore<T> = {
-        getSnapshot: () => getEntry().state.state as FetchSnapshot<T>,
+        getSnapshot: () => getEntry().state.get() as FetchSnapshot<T>,
         subscribe(listener) {
           const entry = getEntry();
           if (entry.timer) clearTimeout(entry.timer);
           entry.timer = null;
           entry.observers += 1;
-          const { unsubscribe } = entry.state.subscribe(listener);
+          const unsubscribe = entry.state.listen(listener);
           let active = true;
           return () => {
             if (!active) return;
@@ -153,11 +154,12 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
               entry.controller?.abort();
               entry.controller = null;
               entry.pending = null;
-              entry.state.setState((previous) => ({
+              const previous = entry.state.get();
+              entry.state.set({
                 ...previous,
                 status: previous.data === undefined ? "idle" : "ready",
                 isFetching: false,
-              }));
+              });
             }
             scheduleGc(key, entry);
           };
@@ -165,7 +167,7 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
         fetch(settings = {}) {
           const entry = getEntry();
           if (entry.pending && !settings.force) return entry.pending;
-          const snapshot = entry.state.state;
+          const snapshot = entry.state.get();
           const age = Date.now() - snapshot.updatedAt;
           if (
             !settings.force &&
@@ -185,21 +187,21 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
               const data = await fetcher(controller.signal);
               if (entry.generation !== generation) return;
               entry.invalidated = false;
-              entry.state.setState(() => ({
+              entry.state.set({
                 data,
                 error: null,
                 status: "ready",
                 isFetching: false,
                 updatedAt: Date.now(),
-              }));
+              });
             } catch (error) {
               if (entry.generation !== generation) return;
-              entry.state.setState((previous) => ({
-                ...previous,
+              entry.state.set({
+                ...entry.state.get(),
                 error: error instanceof Error ? error : new Error(String(error)),
                 status: "error",
                 isFetching: false,
-              }));
+              });
             } finally {
               if (entry.generation === generation) {
                 entry.controller = null;
@@ -215,12 +217,13 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
             };
           });
           entry.pending = pending;
-          entry.state.setState((previous) => ({
+          const previous = entry.state.get();
+          entry.state.set({
             ...previous,
             error: null,
             status: previous.data === undefined ? "loading" : "ready",
             isFetching: true,
-          }));
+          });
           start();
           return pending;
         },
@@ -231,13 +234,13 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
           entry.controller = null;
           entry.pending = null;
           entry.invalidated = false;
-          entry.state.setState((previous) => ({
-            data: updater(previous.data as T | undefined),
+          entry.state.set({
+            data: updater(entry.state.get().data as T | undefined),
             error: null,
             status: "ready",
             isFetching: false,
             updatedAt: Date.now(),
-          }));
+          });
           scheduleGc(key, entry);
         },
         invalidate() {

@@ -1,4 +1,4 @@
-import { createStore } from "@tanstack/store";
+import { atom, computed } from "nanostores";
 import type { RemoteNode } from "@tailorkit/sandbox/protocol";
 
 type Listener = () => void;
@@ -36,16 +36,16 @@ export interface NodeSnapshot {
 }
 
 export class NodeStore {
-  readonly state = createStore<NodeSnapshot>({ nodes: new Map(), rootId: null });
+  readonly state = atom<NodeSnapshot>({ nodes: new Map(), rootId: null });
   private signatures = new Map<string, string>();
 
   clear(): void {
     this.signatures.clear();
-    this.state.setState(() => ({ nodes: new Map(), rootId: null }));
+    this.state.set({ nodes: new Map(), rootId: null });
   }
 
   setSnapshot(tree: RemoteNode): void {
-    const previous = this.state.state;
+    const previous = this.state.get();
     const next = new Map<string, RemoteNode>();
     flattenTree(tree, next);
     let changed = previous.rootId !== tree.id || previous.nodes.size !== next.size;
@@ -69,25 +69,25 @@ export class NodeStore {
     }
 
     if (changed) {
-      this.state.setState(() => ({ nodes: next, rootId: tree.id }));
+      this.state.set({ nodes: next, rootId: tree.id });
     }
   }
 
   getRootId(): string | null {
-    return this.state.state.rootId;
+    return this.state.get().rootId;
   }
 
   getNode(id: string): RemoteNode | null {
-    return this.state.state.nodes.get(id) ?? null;
+    return this.state.get().nodes.get(id) ?? null;
   }
 
   subscribe(id: string, listener: Listener): () => void {
-    const node = createStore(() => this.getNode(id));
-    return node.subscribe(listener).unsubscribe;
+    const node = computed(this.state, (snapshot) => snapshot.nodes.get(id) ?? null);
+    return node.listen(listener);
   }
 
   subscribeRoot(listener: Listener): () => void {
-    const root = createStore(() => this.getRootId());
-    return root.subscribe(listener).unsubscribe;
+    const root = computed(this.state, (snapshot) => snapshot.rootId);
+    return root.listen(listener);
   }
 }
