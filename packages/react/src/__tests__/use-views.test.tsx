@@ -42,12 +42,12 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-it("shares cached discovery across roots and honors hook stale-time overrides", async () => {
+it("shares cached discovery across roots and refreshes stale data on remount", async () => {
   const fetch = vi
     .spyOn(globalThis, "fetch")
     .mockImplementation(() => Promise.resolve(Response.json(apps)));
-  function Apps({ staleTime = Infinity }: { staleTime?: number }) {
-    const result = client.useApps({ staleTime });
+  function Apps() {
+    const result = client.useApps();
     return (
       <span>
         {result.status}:{result.data?.length}
@@ -76,9 +76,10 @@ it("shares cached discovery across roots and honors hook stale-time overrides", 
   expect(screen.getByText("ready:3")).toBeTruthy();
   expect(fetch).toHaveBeenCalledOnce();
   fresh.unmount();
+  vi.spyOn(Date, "now").mockReturnValue(Date.now() + 30_001);
   render(
     <Root client={client}>
-      <Apps staleTime={0} />
+      <Apps />
     </Root>,
   );
   await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));

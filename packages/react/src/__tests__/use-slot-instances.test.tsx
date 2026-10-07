@@ -491,7 +491,7 @@ it("shares one resolver across two hooks and retains data across remounts", asyn
   const second = renderHook(
     () => {
       useDetail();
-      return client.useSlotInstances({ slot: "page", staleTime: Infinity });
+      return client.useSlotInstances({ slot: "page" });
     },
     { wrapper },
   );
@@ -523,23 +523,24 @@ it("shares identical instance requests across roots while keeping their registra
   expect(second.result.current.data).toEqual(withApp(instances));
 });
 
-it("honors a zero stale time on remount and an infinite stale time override", async () => {
-  const mount = (staleTime: number) =>
+it("reuses fresh instances on remount and refreshes them after the default stale time", async () => {
+  const mount = () =>
     renderHook(
       () => {
         useDetail();
-        return client.useSlotInstances({ slot: "page", staleTime });
+        return client.useSlotInstances({ slot: "page" });
       },
       { wrapper },
     );
-  const first = mount(0);
+  const first = mount();
   await waitFor(() => expect(first.result.current.isSuccess).toBe(true));
   first.unmount();
-  const fresh = mount(Infinity);
+  const fresh = mount();
   await waitFor(() => expect(fresh.result.current.isSuccess).toBe(true));
   expect(calls("/actions")).toHaveLength(1);
   fresh.unmount();
-  const stale = mount(0);
+  vi.spyOn(Date, "now").mockReturnValue(Date.now() + 30_001);
+  const stale = mount();
   await waitFor(() => expect(calls("/actions")).toHaveLength(2));
   await waitFor(() => expect(stale.result.current.isFetching).toBe(false));
 });

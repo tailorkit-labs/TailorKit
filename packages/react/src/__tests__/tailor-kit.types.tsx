@@ -138,6 +138,10 @@ useRegisterView("/user", { status: "loading", context: { userId: "user_1" } });
 
 useApps();
 useApps({ scopes: ["organization", "user"] });
+// @ts-expect-error cache timing is not exposed by hooks
+useApps({ staleTime: 0 });
+// @ts-expect-error cache timing is not exposed by hooks
+useApps({ gcTime: 0 });
 // @ts-expect-error selected scopes must be declared by the server
 useApps({ scopes: ["unknown"] });
 
@@ -157,12 +161,20 @@ useRegisterView({ view: "/user", context: { userId: "u1" } });
 
 useViews();
 useViews({ scopes: ["organization"], appIds: ["todo"], slot: "panel" });
+// @ts-expect-error cache timing is not exposed by hooks
+useViews({ staleTime: 0 });
+// @ts-expect-error cache timing is not exposed by hooks
+useViews({ gcTime: 0 });
 // @ts-expect-error scope names must be declared by this server
 useViews({ scopes: ["unknown"] });
 // @ts-expect-error slots must be declared by this server
 useViews({ slot: "missing" });
 
 const instances = useSlotInstances({ slot: "panel" });
+// @ts-expect-error cache timing is not exposed by hooks
+useSlotInstances({ slot: "panel", staleTime: 0 });
+// @ts-expect-error cache timing is not exposed by hooks
+useSlotInstances({ slot: "panel", gcTime: 0 });
 const instanceKey: string | undefined = instances.data?.[0]?.key;
 const instanceData: unknown = instances.data?.[0]?.data;
 void instanceKey;
