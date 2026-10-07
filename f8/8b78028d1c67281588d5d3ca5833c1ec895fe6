@@ -1,0 +1,43 @@
+apps/apps-worker/src/supervisor/source.test.ts
+  s_f361c0f47d3bdc::t_deeaed1e31ee36 132,144-156
+  s_f361c0f47d3bdc::t_daec846d5d71a9 157-158
+packages/api-platform/src/routes/deployments.test.ts
+  s_f361c0f47d3bdc::t_deeaed1e31ee36 402,521,635,678
+packages/api-platform/openapi.json
+  s_f361c0f47d3bdc::t_7233dc9183d762 2760
+.changeset/gzip-deployment-artifacts.md
+  s_f361c0f47d3bdc::t_deeaed1e31ee36 8-9
+packages/asset-delivery/src/index.test.ts
+  s_f361c0f47d3bdc::t_deeaed1e31ee36 103,105
+apps/apps-worker/src/assets.test.ts
+  s_f361c0f47d3bdc::t_deeaed1e31ee36 179-181,235,262
+packages/cli/src/deploy.test.ts
+  s_f361c0f47d3bdc::t_deeaed1e31ee36 344-347,389-398
+  s_f361c0f47d3bdc::t_01b28057e6eaf7 399
+packages/api-platform/src/assets.test.ts
+  s_f361c0f47d3bdc::t_deeaed1e31ee36 184
+apps/apps-worker/README.md
+  s_f361c0f47d3bdc::t_deeaed1e31ee36 13,79
+packages/cli/src/deploy.ts
+  s_f361c0f47d3bdc::t_deeaed1e31ee36 84
+packages/app/README.md
+  s_f361c0f47d3bdc::t_deeaed1e31ee36 97
+packages/asset-delivery/src/index.ts
+  s_f361c0f47d3bdc::t_deeaed1e31ee36 14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f88b78028d1c67281588d5d3ca5833c1ec895fe6",
+  "prompts": {},
+  "sessions": {
+    "s_f361c0f47d3bdc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1152e-d1bb-7263-941d-8bd66057a2a7",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
