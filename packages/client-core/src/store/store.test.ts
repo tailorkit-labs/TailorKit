@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { createTailorKitStore } from "./store";
 import { toBaseUrl } from "../client/url";
+import { createTailorKitFetchClient } from "../client/fetch-client";
 import type { TailorKitApp } from "../types";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -19,6 +20,31 @@ describe("client stores", () => {
     expect(toBaseUrl(input).href).toBe("https://host.test/api/tailorkit/?token=test");
     expect(input.pathname).toBe("/api/tailorkit");
   });
+
+  it.each([
+    "https://other.test/api",
+    "https://host.test/other",
+    "https://host.test/api?token=other",
+  ])("rejects the mismatched endpoint %s before creating fetch stores", (baseUrl) => {
+    const client = createTailorKitFetchClient({ baseUrl: "https://host.test/api" });
+    const apps = vi.spyOn(client, "apps");
+    const meta = vi.spyOn(client, "meta");
+    expect(() => createTailorKitStore(baseUrl, undefined, client)).toThrow(
+      "createTailorKitStore: baseUrl does not match the supplied fetch client.",
+    );
+    expect(apps).not.toHaveBeenCalled();
+    expect(meta).not.toHaveBeenCalled();
+  });
+
+  it.each(["https://HOST.test:443/api", new URL("https://host.test/api/")])(
+    "accepts the equivalent normalized endpoint %s",
+    (baseUrl) => {
+      const client = createTailorKitFetchClient({ baseUrl: "https://host.test/api/" });
+      const store = createTailorKitStore(baseUrl, undefined, client);
+      expect(store.client).toBe(client);
+      expect(store.baseUrl.href).toBe("https://host.test/api/");
+    },
+  );
 
   it("shares discovery requests and retains snapshots across subscription lifecycles", async () => {
     const response = deferredResponse();

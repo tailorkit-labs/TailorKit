@@ -1,5 +1,6 @@
 import { createTailorKitFetchClient } from "../client/fetch-client";
 import type { TailorKitFetchClient } from "../client/fetch-client";
+import { toBaseUrl } from "../client/url";
 import type { TailorKitApp } from "../types";
 import { createViewRegistry } from "./local/view-registry";
 import { createAppsStore } from "./fetch/apps";
@@ -14,6 +15,9 @@ export function createTailorKitStore(
   initialApps?: TailorKitApp[],
   client: TailorKitFetchClient = createTailorKitFetchClient({ baseUrl }),
 ) {
+  if (toBaseUrl(baseUrl).href !== toBaseUrl(client.baseUrl).href) {
+    throw new Error("createTailorKitStore: baseUrl does not match the supplied fetch client.");
+  }
   const apps = createAppsStore(client, initialApps);
   const meta = createMetadataStore(client);
   return {
