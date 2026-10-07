@@ -3,7 +3,7 @@ import { atom, computed } from "nanostores";
 import { useStore } from "@nanostores/preact";
 import { createContext, h } from "preact";
 import type { ComponentChildren } from "preact";
-import { useCallback, useContext, useEffect, useMemo, useRef } from "preact/hooks";
+import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef } from "preact/hooks";
 import { createClient } from "./client/connection";
 import type { Client } from "./client/connection";
 import { reference } from "./client/reference";
@@ -30,7 +30,7 @@ export function ClientProvider({ children, client, onError }: ClientProviderProp
       new QueryStore(client ?? createClient(), !client, (error) => errorHandler.current?.(error)),
     [client],
   );
-  useEffect(() => () => store.dispose(), [store]);
+  useLayoutEffect(() => () => store.dispose(), [store]);
   return h(Context.Provider, { value: store }, children);
 }
 
@@ -132,7 +132,8 @@ function useCall<K extends "mutation" | "action", I, O>(
   }
   const callbacks = useRef(options);
   callbacks.current = options;
-  useEffect(() => {
+  // Preact 11 defers passive cleanup; invalidate pending calls during unmount itself.
+  useLayoutEffect(() => {
     current.current.mounted = true;
     return () => {
       current.current.mounted = false;
