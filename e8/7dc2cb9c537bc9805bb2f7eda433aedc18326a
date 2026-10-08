@@ -1,0 +1,44 @@
+packages/react/src/hooks/use-views.ts
+  s_71a8fc44a0d57e::t_bf94ac6245b324 3,5-6,13-15,22
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_71a8fc44a0d57e::t_cb2af5e1e258fe 264,307,310,352-353,897,899-900
+  s_71a8fc44a0d57e::t_2dddb9869fb78b 265-269
+packages/react/src/__tests__/use-views.test.tsx
+  s_71a8fc44a0d57e::t_8ac7344e07ae74 149
+  s_71a8fc44a0d57e::t_70cef870aa4113 98-110,112-122,124-148,150-161
+  s_71a8fc44a0d57e::t_2dddb9869fb78b 111,123,498-500,530-532,564-566
+  s_71a8fc44a0d57e::t_cb2af5e1e258fe 170,224,277,288,324,331,339,342,385,404,406,425,428,447,460,464,468,543,592,641,673,688,692,729,764,791,851,868,903,923,925,969,974,993
+  s_71a8fc44a0d57e::t_050a4efd011750 278,652,666,907,992
+packages/react/src/hooks/use-apps.ts
+  s_71a8fc44a0d57e::t_2dddb9869fb78b 3
+  s_71a8fc44a0d57e::t_bf94ac6245b324 5-6,9,18
+examples/nextjs/components/tailorkit-shell.tsx
+  s_71a8fc44a0d57e::t_cb2af5e1e258fe 21,33,168,197
+docs/installation.mdx
+  s_71a8fc44a0d57e::t_2066453c3870d2 620-626
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_71a8fc44a0d57e::t_24baf85c2b7042 17-18
+  s_71a8fc44a0d57e::t_70cef870aa4113 6-16,168-176,200-207
+packages/react/src/hooks/use-query-result.ts
+  s_71a8fc44a0d57e::t_bf94ac6245b324 1-25
+.changeset/simple-react-hook-results.md
+  s_71a8fc44a0d57e::t_2066453c3870d2 1-5
+examples/tanstack-start/src/components/tailorkit-shell.tsx
+  s_71a8fc44a0d57e::t_cb2af5e1e258fe 143,172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e87dc2cb9c537bc9805bb2f7eda433aedc18326a",
+  "prompts": {},
+  "sessions": {
+    "s_71a8fc44a0d57e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11d75-2a29-74b3-9e19-6b1e79837040",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
