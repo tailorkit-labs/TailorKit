@@ -1,0 +1,73 @@
+packages/client-core/src/store/fetch/cache.test.ts
+  s_25fdd02846e4b2::t_a8e9f35f573ae8 1,108,158,223-273
+  s_25fdd02846e4b2::t_f036102da32f9b 274
+.changeset/view-context-query-state.md
+  s_25fdd02846e4b2::t_a808c1ade70ddc 12-13
+  s_25fdd02846e4b2::t_a8e9f35f573ae8 14-15
+packages/client-core/src/store/fetch/cache.ts
+  s_25fdd02846e4b2::t_473f941103c9d9 4,25,27
+  s_25fdd02846e4b2::t_124d2fcde366c3 191-195,220-224
+  s_25fdd02846e4b2::t_3b2cb882111c4d 212-215
+  s_25fdd02846e4b2::t_1fc884bdab0dde 1-2,141,143,170,196-211,216-219,225-227,241,263
+packages/client-core/src/store/fetch/slot.ts
+  s_25fdd02846e4b2::t_1fc884bdab0dde 1,128,148
+packages/client-core/src/store/local/remote-view.ts
+  s_25fdd02846e4b2::t_b5e3308995d1a9 1-132
+packages/react/src/remote-view.tsx
+  s_25fdd02846e4b2::t_a808c1ade70ddc 9,16-20,70,74-75,78-79,81-87,90-96,99,101,105,110,117,133
+  s_25fdd02846e4b2::t_2449a2b21face6 129-130,132
+  s_25fdd02846e4b2::t_1fc884bdab0dde 1,71,100,111,134
+packages/client-core/src/store/fetch/preview-manager.ts
+  s_25fdd02846e4b2::t_1fc884bdab0dde 1,224,279-280
+  s_25fdd02846e4b2::t_d4561c7f6e7a9f 281-290
+  s_25fdd02846e4b2::t_2c924ba544bc87 291
+packages/client-core/src/store/snapshot-store.ts
+  s_25fdd02846e4b2::t_1fc884bdab0dde 1-24
+packages/react/src/components/slot.tsx
+  s_25fdd02846e4b2::t_1fc884bdab0dde 1,98,116,196,204
+  s_25fdd02846e4b2::t_4352209573b884 5,200-201
+packages/react/src/hooks/use-apps.ts
+  s_25fdd02846e4b2::t_1fc884bdab0dde 1,3,44
+packages/react/src/hooks/use-views.ts
+  s_25fdd02846e4b2::t_1fc884bdab0dde 1,4,48-49,65
+packages/client-core/src/store/local/view-context-diagnostics.test.ts
+  s_25fdd02846e4b2::t_a8e9f35f573ae8 164
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_25fdd02846e4b2::t_a8e9f35f573ae8 962-978
+packages/client-core/src/store/local/remote-view.test.ts
+  s_25fdd02846e4b2::t_183decd2d0b663 1-7,13-16,19-24,33-45,50-96,99-113,117-153,164-176
+  s_25fdd02846e4b2::t_8f1311a1eb2019 8-12,17-18,25-32,46-49,97-98,114-116,154-163
+packages/client-core/src/store/store.test.ts
+  s_25fdd02846e4b2::t_4352209573b884 87,125,142,188
+packages/client-core/src/store/local/index.ts
+  s_25fdd02846e4b2::t_a808c1ade70ddc 4-9
+  s_25fdd02846e4b2::t_b5e3308995d1a9 3
+packages/client-core/src/store/local/node-store.ts
+  s_25fdd02846e4b2::t_b5e3308995d1a9 40,85-88,90,95
+packages/client-core/src/store/fetch/apps.ts
+  s_25fdd02846e4b2::t_1fc884bdab0dde 1,87
+packages/client-core/src/store/fetch/meta.ts
+  s_25fdd02846e4b2::t_1fc884bdab0dde 1,18,37
+packages/client-core/package.json
+  s_25fdd02846e4b2::t_e822ce94e3b7d3 42
+packages/react/package.json
+  s_25fdd02846e4b2::t_a62ca5dc5b570c 30,36-37
+pnpm-lock.yaml
+  s_25fdd02846e4b2::t_8d8695f52bb25e 1241-1243,1534-1536,1555-1557,3750-3755,3763-3769,14831-14834,14840-14844
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ea05f980222b29a2a08720b40bba6cb6b7a3edb7",
+  "prompts": {},
+  "sessions": {
+    "s_25fdd02846e4b2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a115f5-4537-7e02-a4fa-b79245294373",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
