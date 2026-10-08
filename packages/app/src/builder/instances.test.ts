@@ -41,6 +41,25 @@ it("extracts resolver dependencies without executing or retaining the component"
   expect(result!.browser).toContain(result!.names[0]!);
 });
 
+it("extracts namespace defineView instances with inferred file routes", async () => {
+  const filename = "/app/src/slots/page/customers.details.view.tsx";
+  const named = source.replace('slot: "page", view: "/",', "");
+  const namespace = named
+    .replace("import { defineView as cv }", "import * as client")
+    .replace("cv({", "client.defineView({");
+  const result = await extractInstances(filename, namespace, "/app");
+  expect(result).toBeDefined();
+  expect(result?.server).toContain("SERVER_ONLY_SECRET");
+  expect(result?.server).not.toContain("tailorkit/client");
+  expect(result?.browser).toContain("client.defineView");
+  expect(result?.browser).toContain('slot: "page"');
+  expect(result?.browser).toContain('view: "/customers/details"');
+  expect(result?.browser).not.toContain("SERVER_ONLY_SECRET");
+  expect(result?.browser).not.toContain("queries.reports.list");
+  const namedResult = await extractInstances(filename, named, "/app");
+  expect(result?.names).toEqual(namedResult?.names);
+});
+
 it("keeps resolver references stable when component code or source positions change", async () => {
   const first = await extractInstances("/app/src/page.tsx", source, "/app");
   const second = await extractInstances(

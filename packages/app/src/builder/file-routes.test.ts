@@ -22,6 +22,33 @@ it("infers dotted paths and literal slot names while preserving explicit overrid
   );
 });
 
+it.each([
+  "tailorkit/client",
+  "tailorkit/app",
+  "tailorkit/app/client",
+  "@tailorkit/app/client",
+  "@tailorkit/app",
+])("infers namespace defineView calls imported from %s", (module) => {
+  const filename = "/app/src/slots/panel/customers.details.view.tsx";
+  for (const call of ["client.defineView", 'client["defineView"]']) {
+    const source = `import * as client from ${JSON.stringify(module)}; export default ${call}({ component: () => null });`;
+    const inferred = inferFileView(source, filename, "/app");
+    expect(inferred).toContain('slot: "panel"');
+    expect(inferred).toContain('view: "/customers/details"');
+    expect(inferFileView(inferred, filename, "/app")).toBe(inferred);
+    const override = source.replace("component:", 'slot: "custom", view: "/", component:');
+    expect(inferFileView(override, filename, "/app")).toBe(override);
+    expect(() =>
+      inferFileView(source.replace("{ component: () => null }", "options"), filename, "/app"),
+    ).toThrow("inline options object");
+  }
+  const unrelated =
+    'import * as client from "./other-client"; export default client.defineView({ component: () => null });';
+  expect(inferFileView(unrelated, filename, "/app")).toBe(unrelated);
+  const otherMethod = `import * as client from ${JSON.stringify(module)}; export default client.defineRoute({ shellComponent: () => null });`;
+  expect(inferFileView(otherMethod, filename, "/app")).toBe(otherMethod);
+});
+
 it("discovers only view and layout files, supports roots, and checks the same sources on deploy", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "tailorkit-file-discovery-"));
   try {
@@ -83,8 +110,8 @@ it("builds file routes with extracted instances and discovers additions, renames
     );
     await writeFile(
       path.join(root, "src/slots/page/home.view.tsx"),
-      `import { defineView } from "tailorkit/client"; import { z } from "zod";
-      export default defineView({ view: "/", component: () => "leaf", instances: { dataSchema: z.object({}), resolve: () => [{ key: "all", metadata: { title: "PRIVATE_RESOLVER" }, data: {} }] } });`,
+      `import * as client from "tailorkit/client"; import { z } from "zod";
+      export default client.defineView({ view: "/", component: () => "leaf", instances: { dataSchema: z.object({}), resolve: () => [{ key: "all", metadata: { title: "PRIVATE_RESOLVER" }, data: {} }] } });`,
     );
     await writeFile(
       path.join(root, "src/slots/page/card.tsx"),
@@ -103,7 +130,7 @@ it("builds file routes with extracted instances and discovers additions, renames
       const next = path.join(root, "src/slots/page/customers.details.view.tsx");
       await writeFile(
         next,
-        'import { defineView } from "tailorkit/client"; import { z } from "zod"; export default defineView({ component: () => "details", instances: { dataSchema: z.object({}), resolve: () => [{ key: "details", metadata: { title: "INFERRED_RESOLVER" }, data: {} }] } });',
+        'import * as client from "tailorkit/client"; import { z } from "zod"; export default client["defineView"]({ component: () => "details", instances: { dataSchema: z.object({}), resolve: () => [{ key: "details", metadata: { title: "INFERRED_RESOLVER" }, data: {} }] } });',
       );
       const paths = async () => {
         const current = await readClientManifest(manifestFile);

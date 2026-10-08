@@ -3,15 +3,9 @@ import { existsSync, watch } from "node:fs";
 import path from "node:path";
 import { parseSync } from "vite";
 import type { ESTree, Plugin } from "vite";
+import { createDefineViewMatcher } from "./define-view";
 
 const clientRuntimeImport = "tailorkit:file-client-runtime";
-const clientImports = new Set([
-  "tailorkit/client",
-  "tailorkit/app",
-  "tailorkit/app/client",
-  "@tailorkit/app/client",
-  "@tailorkit/app",
-]);
 
 export function fileViewLocation(filename: string, root: string) {
   const relative = path.relative(path.join(root, "src/slots"), filename).split(path.sep);
@@ -45,28 +39,10 @@ export function inferFileView(source: string, filename: string, root: string): s
   if (parsed.errors.length) {
     throw new Error(`${filename}: ${parsed.errors[0]?.message}`);
   }
-  const aliases = new Set<string>();
-  for (const node of parsed.program.body) {
-    if (node.type !== "ImportDeclaration" || !clientImports.has(String(node.source.value))) {
-      continue;
-    }
-    for (const specifier of node.specifiers) {
-      if (
-        specifier.type === "ImportSpecifier" &&
-        specifier.imported.type === "Identifier" &&
-        specifier.imported.name === "defineView"
-      ) {
-        aliases.add(specifier.local.name);
-      }
-    }
-  }
+  const isDefineViewCall = createDefineViewMatcher(parsed.program);
   const edits: { position: number; text: string }[] = [];
   function visit(node: ESTree.Node) {
-    if (
-      node.type === "CallExpression" &&
-      node.callee.type === "Identifier" &&
-      aliases.has(node.callee.name)
-    ) {
+    if (isDefineViewCall(node)) {
       const options = node.arguments[0];
       if (options?.type !== "ObjectExpression") {
         throw new Error(

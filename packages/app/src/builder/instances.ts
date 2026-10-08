@@ -4,6 +4,7 @@ import path from "node:path";
 import { parseSync, transformWithOxc } from "vite";
 import type { ESTree, Plugin } from "vite";
 import { inferFileView } from "./file-routes";
+import { createDefineViewMatcher } from "./define-view";
 
 type Node = ESTree.Node;
 type Import = ESTree.ImportDeclaration;
@@ -32,13 +33,6 @@ export interface InstanceRegistration {
   resolver: string;
 }
 const suffix = "?tailorkit-instances";
-const clientImports = new Set([
-  "tailorkit/client",
-  "tailorkit/app",
-  "tailorkit/app/client",
-  "@tailorkit/app/client",
-  "@tailorkit/app",
-]);
 const browserGlobals = new Set([
   "window",
   "document",
@@ -300,30 +294,12 @@ export async function extractInstances(
   });
   source = transformed.code;
   const program = parse(filename.replace(/\.[^.]+$/u, ".js"), source);
-  const aliases = new Set<string>();
-  for (const statement of program.body) {
-    if (
-      statement.type !== "ImportDeclaration" ||
-      !clientImports.has(String(statement.source.value))
-    )
-      continue;
-    for (const s of statement.specifiers) {
-      if (
-        s.type === "ImportSpecifier" &&
-        s.imported.type === "Identifier" &&
-        s.imported.name === "defineView"
-      )
-        aliases.add(s.local.name);
-    }
-  }
+  const isDefineViewCall = createDefineViewMatcher(program);
   let resolvers: Resolver[] = [];
   walk(program, (node, ancestors) => {
-    if (
-      node.type !== "CallExpression" ||
-      node.callee.type !== "Identifier" ||
-      !aliases.has(node.callee.name)
-    )
+    if (!isDefineViewCall(node)) {
       return;
+    }
     const options = node.arguments[0];
     if (options?.type !== "ObjectExpression") return;
     const instances = property(options, "instances");
