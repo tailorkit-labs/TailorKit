@@ -160,6 +160,28 @@ it("reports missing ready context once, then again after recovery", async () => 
   expect(error).toHaveBeenCalledTimes(2);
 });
 
+it.each([{}, { contextOptional: false }])(
+  "allows ready undefined context when the view has no context schema: %j",
+  async (definition) => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { client, store, wrapper } = setup(definition);
+    const { rerender } = renderHook<void, Options>(
+      (options) => client.useViewContext("/", options),
+      {
+        wrapper,
+        initialProps: { context: undefined },
+      },
+    );
+    await waitFor(() =>
+      expect(store.views.getSnapshot()?.layers).toEqual([
+        { path: "/", context: undefined, status: "ready" },
+      ]),
+    );
+    await act(() => rerender({ context: undefined, loading: false }));
+    expect(error).not.toHaveBeenCalled();
+  },
+);
+
 it("allows optional undefined context and skips validation during loading or explicit errors", async () => {
   const error = vi.spyOn(console, "error").mockImplementation(() => {});
   const { client, wrapper } = setup({ ...requiredContext, contextOptional: true });

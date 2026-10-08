@@ -82,7 +82,7 @@ export function useViewContext<
     }
     let diagnostic: { message: string; details?: unknown } | null = null;
     if (contextSnapshot === undefined) {
-      if (!definition.contextOptional) {
+      if (definition.context && !definition.contextOptional) {
         diagnostic = {
           message: `TailorKit useViewContext("${view}") is ready without its required context. Supply context or set loading: true while it is unavailable.`,
         };
