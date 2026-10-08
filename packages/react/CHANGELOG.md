@@ -1,5 +1,19 @@
 # @tailorkit/react
 
+## 0.1.0-beta.23
+
+### Minor Changes
+
+- 754f2d3: Rename `useSlot` to `useViews` and `useRegisterView` to `useViewContext`, along with their exported hook types. Update the demo, host examples, and documentation to use the new names. Preserve typed slot results, context registration, cache behavior, and refetch semantics without compatibility aliases.
+
+### Patch Changes
+
+- @tailorkit/app@0.1.0-beta.23
+  - @tailorkit/client-core@0.1.0-beta.23
+  - @tailorkit/client-platform@0.1.0-beta.23
+  - @tailorkit/core@0.1.0-beta.23
+  - @tailorkit/sandbox@0.1.0-beta.23
+
 ## 0.1.0-beta.22
 
 ### Minor Changes
