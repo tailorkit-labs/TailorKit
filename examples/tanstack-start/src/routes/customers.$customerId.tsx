@@ -25,16 +25,10 @@ function CustomerDetailPage() {
   const { customer } = Route.useLoaderData();
   const session = useAuthSession();
 
-  useViewContext(
-    "/customers/detail",
-    session.data
-      ? {
-          context: { customer },
-        }
-      : {
-          status: "loading",
-        },
-  );
+  useViewContext("/customers/detail", {
+    context: { customer },
+    loading: !session.data,
+  });
 
   return (
     <div className="space-y-6">

@@ -88,10 +88,11 @@ afterEach(() => {
 function useDetail(status: "ready" | "loading" | "error" = "ready", userId = "u1") {
   client.useViewContext("/", { context: { user: { id: userId } } });
   client.useViewContext("/customers", { context: { canEdit: true } });
-  client.useViewContext(
-    "/customers/detail",
-    status === "ready" ? { context: { customer: { id: "c1" } } } : { status },
-  );
+  client.useViewContext("/customers/detail", {
+    context: { customer: { id: "c1" } },
+    loading: status === "loading",
+    error: status === "error" ? new Error("Failed to load context") : null,
+  });
 }
 
 it("fetches the matched view's instances over authenticated HTTP with combined context", async () => {
@@ -170,10 +171,10 @@ it("falls back to an enabled ancestor when the supported child is disabled", asy
 it("waits for every required ancestor before fetching instances", async () => {
   const { result, rerender } = renderHook(
     ({ ready }) => {
-      client.useViewContext(
-        "/",
-        ready ? { context: { user: { id: "u1" } } } : { status: "loading" },
-      );
+      client.useViewContext("/", {
+        context: ready ? { user: { id: "u1" } } : undefined,
+        loading: !ready,
+      });
       client.useViewContext("/customers", { context: { canEdit: true } });
       client.useViewContext("/customers/detail", { context: { customer: { id: "c1" } } });
       return client.useViews({ slot: "page" });
@@ -198,7 +199,7 @@ it.each(["missing", "error", "invalid", "duplicate"] as const)(
           client.useViewContext(
             "/",
             kind === "error"
-              ? { status: "error" }
+              ? { context: undefined, error: new Error("Failed to load context") }
               : { context: kind === "invalid" ? null : { user: { id: "u1" } } },
           );
         client.useViewContext("/customers", {
@@ -722,7 +723,11 @@ it.each(["loading", "error"] as const)(
     apps = [singleApp];
     const { result } = renderHook(
       () => {
-        client.useViewContext("/customers/detail", { status });
+        client.useViewContext("/customers/detail", {
+          context: undefined,
+          loading: status === "loading",
+          error: status === "error" ? new Error("Failed to load context") : null,
+        });
         return client.useViews({ slot: "single" });
       },
       { wrapper },

@@ -12,42 +12,22 @@ export type ViewContext<TView> = TView extends StandardJSONSchemaV1
   ? StandardJSONSchemaV1.InferOutput<TView>
   : Record<string, never>;
 
-interface ReadyViewOptions<
-  TViews extends Record<string, ViewDefinition>,
-  TView extends ViewName<TViews>,
+export interface ViewState<
+  TViews extends Record<string, ViewDefinition> = DefaultViews,
+  TView extends ViewName<TViews> = ViewName<TViews>,
 > {
-  context: ViewContext<TViews[TView]>;
-  view: TView;
-  status?: "ready";
-}
-
-interface LoadingViewOptions<TView extends string> {
-  context?: never;
-  view: TView;
-  status: "loading";
-}
-
-interface ErrorViewOptions<TView extends string> {
-  context?: never;
-  view: TView;
-  status: "error";
+  /** The complete context for this view, or undefined while it is unavailable. */
+  context: ViewContext<TViews[TView]> | undefined;
+  /** Defaults to false. Loading views do not publish context. */
+  loading?: boolean;
+  /** Takes precedence over loading. Error views do not publish context. */
+  error?: Error | null;
 }
 
 export type ViewOptions<
   TViews extends Record<string, ViewDefinition> = DefaultViews,
   TView extends ViewName<TViews> = ViewName<TViews>,
-> =
-  TView extends ViewName<TViews>
-    ? ReadyViewOptions<TViews, TView> | LoadingViewOptions<TView> | ErrorViewOptions<TView>
-    : never;
-
-export type ViewState<
-  TViews extends Record<string, ViewDefinition> = DefaultViews,
-  TView extends ViewName<TViews> = ViewName<TViews>,
-> =
-  | Omit<ReadyViewOptions<TViews, TView>, "view">
-  | Omit<LoadingViewOptions<TView>, "view">
-  | Omit<ErrorViewOptions<TView>, "view">;
+> = TView extends ViewName<TViews> ? ViewState<TViews, TView> & { view: TView } : never;
 
 export type UseViewContext<TViews extends Record<string, ViewDefinition>> = <
   TView extends ViewName<TViews>,
@@ -62,8 +42,8 @@ export function useViewContext<
 >(view: TView, options: ViewState<TViews, NoInfer<TView>>): void {
   const { store } = useTailorRootContext("useViewContext");
   const id = useMemo(() => Symbol("tailorkit-current-view"), []);
-  const status = options.status ?? "ready";
-  const context = "context" in options ? options.context : undefined;
+  const status = options.error != null ? "error" : options.loading ? "loading" : "ready";
+  const context = status === "ready" ? options.context : undefined;
   const contextSnapshot = useStableContext(context);
 
   useEffect(

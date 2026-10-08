@@ -407,7 +407,11 @@ describe("tailorKitClient React adapter", () => {
 
     function Route({ status }: { status: "error" | "loading" }) {
       const { useViewContext } = tailor;
-      useViewContext("/home/detail", { status });
+      useViewContext("/home/detail", {
+        context: undefined,
+        loading: status === "loading",
+        error: status === "error" ? new Error("Failed to load context") : null,
+      });
       return <Slot name="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
     }
 
@@ -681,7 +685,7 @@ describe("view registries", () => {
   }
   function Detail({ client }: { client: ReturnType<typeof createTailorKitClient<typeof server>> }) {
     const { useViewContext } = client;
-    useViewContext("/home/detail", { status: "loading" });
+    useViewContext("/home/detail", { context: undefined, loading: true });
     return null;
   }
 

@@ -603,7 +603,31 @@ Add a page to supply view context and switch between apps available in the `page
 
 `useViewContext(path, state)` registers the host location, context, and readiness
 that app views consume. It updates when those values change and unregisters when
-the component unmounts.
+the component unmounts. Pass the complete context for that view (or `undefined`
+while it is unavailable), optional `loading`, and optional `error: Error | null`.
+Loading defaults to `false`; a non-null error takes precedence over loading.
+Loading and error states do not publish context, even when cached data is present.
+Without either flag, the view is ready; `undefined` does not imply loading, so
+views with an optional context can register as ready without data.
+
+For a query whose data already matches the view's context schema:
+
+```tsx
+useViewContext("/customers/detail", {
+  context: query.data,
+  loading: query.isPending,
+  error: query.error,
+});
+```
+
+TypeScript checks the context against the selected view and requires a complete
+value or `undefined`, rather than a partially populated object. Supply `loading`
+while required context is unavailable. For synchronous data, only `context` is
+needed:
+
+```tsx
+useViewContext("/customers/detail", { context: { customer } });
+```
 
 `useViews({ slot: "page" })` returns one `{ app }` item per app for single-view
 slots (`multiple: false` or omitted). It checks enabled, supported app views
@@ -638,7 +662,10 @@ export default function Page() {
   // Replace this with your own authentication hook.
   const { data: session, isPending: isSessionPending } = useSession();
 
-  useViewContext("/", session ? { context: { user: session.user } } : { status: "loading" });
+  useViewContext("/", {
+    context: session ? { user: session.user } : undefined,
+    loading: !session,
+  });
 
   const selectedView = views?.find((view) => view.app.id === selectedId) ?? views?.[0];
 
@@ -682,7 +709,10 @@ function Page() {
   // Replace this with your own authentication hook.
   const { data: session, isPending: isSessionPending } = useSession();
 
-  useViewContext("/", session ? { context: { user: session.user } } : { status: "loading" });
+  useViewContext("/", {
+    context: session ? { user: session.user } : undefined,
+    loading: !session,
+  });
 
   const selectedView = views?.find((view) => view.app.id === selectedId) ?? views?.[0];
 
@@ -723,7 +753,10 @@ export default function Page() {
   // Replace this with your own authentication hook.
   const { data: session, isPending: isSessionPending } = useSession();
 
-  useViewContext("/", session ? { context: { user: session.user } } : { status: "loading" });
+  useViewContext("/", {
+    context: session ? { user: session.user } : undefined,
+    loading: !session,
+  });
 
   const selectedView = views?.find((view) => view.app.id === selectedId) ?? views?.[0];
 
