@@ -1,5 +1,9 @@
 # @tailorkit/client-platform
 
+## 0.1.0-beta.23
+
+No changes in this release.
+
 ## 0.1.0-beta.22
 
 No changes in this release.
