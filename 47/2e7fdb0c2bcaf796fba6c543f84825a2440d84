@@ -1,0 +1,88 @@
+packages/client-core/src/client/slot-types.ts
+  s_25fdd02846e4b2::t_5f8a3f1060a5eb 69-77
+  s_25fdd02846e4b2::t_6510a122bf13a1 1-68
+packages/react/src/hooks/use-views.ts
+  s_25fdd02846e4b2::t_5f8a3f1060a5eb 2-4,12,14-15,17-19
+packages/client-core/src/client/endpoints.ts
+  s_25fdd02846e4b2::t_e63e1457e176b4 1
+packages/client-core/src/framework-boundary.test.ts
+  s_25fdd02846e4b2::t_0990b3d16266e8 1-30
+packages/client-core/src/client/value-memo.ts
+  s_25fdd02846e4b2::t_f90bc6948f8cc2 1-15
+packages/client-core/src/store/local/slot-runtime.test.ts
+  s_25fdd02846e4b2::t_7ffc80e6900dda 158-188,190-277
+  s_25fdd02846e4b2::t_a15d2906dbcc7f 189
+  s_25fdd02846e4b2::t_f38fef1f03f1eb 1-157
+packages/client-core/src/client/config.test.ts
+  s_25fdd02846e4b2::t_4386d6be504aad 1-20
+packages/react/src/hooks/use-apps.ts
+  s_25fdd02846e4b2::t_5f8a3f1060a5eb 2-9,12-13,19-22
+packages/client-core/src/store/local/index.ts
+  s_25fdd02846e4b2::t_f90bc6948f8cc2 20-21
+packages/sandbox/src/host/index.ts
+  s_25fdd02846e4b2::t_44c6714cf32121 1-2
+packages/client-core/src/store/snapshot-store.ts
+  s_25fdd02846e4b2::t_5f8a3f1060a5eb 44-47
+  s_25fdd02846e4b2::t_f38fef1f03f1eb 1,28
+  s_25fdd02846e4b2::t_16c02ab4c1ba0d 26-27,29-43,48-50
+packages/app/package.json
+  s_25fdd02846e4b2::t_e63e1457e176b4 42-45
+packages/client-core/src/client/primitive-css.ts
+  s_25fdd02846e4b2::t_5f8a3f1060a5eb 38
+  s_25fdd02846e4b2::t_6510a122bf13a1 1-37,39-190
+packages/client-core/src/store/local/slot-runtime.ts
+  s_25fdd02846e4b2::t_5f8a3f1060a5eb 14-24,41-44,54-55,59-64,93-97,99-102,105-108,114-116,120-127,133-134,136-139,145-148,152-153,158-160,162-168,175-186,188,194,201-204,222-227,239-243
+  s_25fdd02846e4b2::t_f90bc6948f8cc2 1-13,25-40,45-53,56-58,65-92,98,103-104,109-113,117-119,128-132,135,140-144,149-151,154-157,161,169-174,187,189-193,195-200,205-221,228-238,244-254
+packages/react/src/primitives.tsx
+  s_25fdd02846e4b2::t_6510a122bf13a1 4-5
+packages/react/src/components/slot.tsx
+  s_25fdd02846e4b2::t_5f8a3f1060a5eb 2-8,10,16,18,26-27,30-31,36-38,40-46,53-56,58
+  s_25fdd02846e4b2::t_6510a122bf13a1 12
+packages/client-core/src/store/query.ts
+  s_25fdd02846e4b2::t_5f8a3f1060a5eb 32-34,70-79,114-120,123-126,131-137,149-152,160-163
+  s_25fdd02846e4b2::t_f38fef1f03f1eb 106-110,138
+  s_25fdd02846e4b2::t_16c02ab4c1ba0d 1-31,35-47,52-69,80-105,111-113,121-122,127-130,139-148,153-159,164-177
+  s_25fdd02846e4b2::t_baf820b1bb4ef4 48-51
+packages/app/tsup.config.ts
+  s_25fdd02846e4b2::t_e63e1457e176b4 18
+packages/client-core/src/store/query.test.ts
+  s_25fdd02846e4b2::t_baf820b1bb4ef4 107,110,112,118-119
+  s_25fdd02846e4b2::t_f38fef1f03f1eb 1-106,108-109,111,113-117,120-139
+packages/client-core/src/client/primitive-css.test.ts
+  s_25fdd02846e4b2::t_baf820b1bb4ef4 1-61
+packages/client-core/src/client/config.ts
+  s_25fdd02846e4b2::t_4386d6be504aad 1-121,125-128,130-135
+  s_25fdd02846e4b2::t_a15d2906dbcc7f 122-124,129
+packages/react/src/tailorkit.tsx
+  s_25fdd02846e4b2::t_4386d6be504aad 1,98-104,106-109
+  s_25fdd02846e4b2::t_6510a122bf13a1 15,67-68,73,81,93
+  s_25fdd02846e4b2::t_5f8a3f1060a5eb 2-14,59-60,77
+  s_25fdd02846e4b2::t_187b8219207c8e 16
+.changeset/view-context-query-state.md
+  s_25fdd02846e4b2::t_e63e1457e176b4 5,18
+  s_25fdd02846e4b2::t_44c6714cf32121 6,19
+packages/client-core/src/store/index.ts
+  s_25fdd02846e4b2::t_16c02ab4c1ba0d 5-6
+packages/client-core/src/client/index.ts
+  s_25fdd02846e4b2::t_6510a122bf13a1 15,17-19
+  s_25fdd02846e4b2::t_f90bc6948f8cc2 20
+  s_25fdd02846e4b2::t_4386d6be504aad 16
+packages/react/src/__tests__/primitives.test.tsx
+  s_25fdd02846e4b2::t_5f8a3f1060a5eb 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "472e7fdb0c2bcaf796fba6c543f84825a2440d84",
+  "prompts": {},
+  "sessions": {
+    "s_25fdd02846e4b2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a115f5-4537-7e02-a4fa-b79245294373",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
