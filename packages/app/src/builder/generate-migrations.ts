@@ -4,6 +4,7 @@ import path from "node:path";
 import { loadTailorKitConfig } from "../config/loader";
 import { drizzleGenerateArguments } from "./drizzle";
 import { checkAppSchema } from "./schema-check";
+import { appDatabasePaths } from "./database-paths";
 
 export interface GenerateAppMigrationsOptions {
   configPath?: string;
@@ -18,13 +19,14 @@ export async function generateAppMigrations(options: GenerateAppMigrationsOption
       "Enable server: {} in tailorkit.config.ts before generating database migrations.",
     );
   }
-  await access(path.join(loaded.root, "src/schema.ts")).catch((error: unknown) => {
+  const paths = appDatabasePaths(loaded.root, loaded.config.server.migrations);
+  await access(paths.schema).catch((error: unknown) => {
     throw new Error(
-      "Define the app database schema in src/schema.ts before generating migrations.",
+      `Define the app database schema in ${path.relative(loaded.root, paths.schema)} before generating migrations.`,
       { cause: error },
     );
   });
-  const directory = path.resolve(loaded.root, loaded.config.server.migrations ?? "./migrations");
+  const directory = paths.migrations;
   const args = await drizzleGenerateArguments(loaded.root, directory, options.name);
   await new Promise<void>((resolve, reject) => {
     // Keep Drizzle's rename prompts available during explicit generation.

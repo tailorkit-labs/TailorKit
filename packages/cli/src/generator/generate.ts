@@ -6,7 +6,7 @@ import { generateTypes, type TailorKitSchemaFile } from "./types";
 import { TEMPLATE_DRIZZLE_VERSION } from "./package-versions";
 
 import {
-  clientTemplate,
+  rootTemplate,
   defaultViewTemplate,
   gitignoreTemplate,
   oxfmtConfigTemplate,
@@ -16,6 +16,8 @@ import {
   tsconfigTemplate,
   serverTemplate,
   schemaTemplate,
+  databaseTemplate,
+  relationsTemplate,
   greetingTemplate,
   logoDarkTemplate,
   logoLightTemplate,
@@ -43,6 +45,25 @@ export interface GenerateAppOptions {
 }
 
 const engine = new Liquid({ strictVariables: true });
+
+// eslint-disable-next-line no-control-regex -- Host-provided file names cannot contain control characters.
+const invalidFilenameCharacters = /[<>:"/\\|?*#\u0000-\u001F]/u;
+const isFilenameSegment = (segment: string) =>
+  segment !== "" && segment !== "." && segment !== ".." && !invalidFilenameCharacters.test(segment);
+
+function getViewModulePath(slotName: string, viewPath: string) {
+  const viewSegments = viewPath === "/" ? ["home"] : viewPath.slice(1).split("/");
+  const routeName = viewSegments.join(".");
+  if (
+    !viewPath.startsWith("/") ||
+    ![slotName, ...viewSegments, ...routeName.split(".")].every(isFilenameSegment)
+  ) {
+    throw new Error(
+      "The selected slot and view must have valid file names with no empty dot-separated route segments to generate src/slots.",
+    );
+  }
+  return ["slots", slotName, routeName].join("/");
+}
 
 const renderTemplate = (template: string, data: Record<string, unknown>): Promise<string> =>
   engine.parseAndRender(template, data);
@@ -84,6 +105,8 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     );
   }
   const slotName = slots.find((slot) => schema.slots?.[slot]?.views.includes(viewPath))!;
+  const viewModulePath = getViewModulePath(slotName, viewPath);
+  const viewFile = path.join("src", `${viewModulePath}.view.tsx`);
   const box = schema.components?.Box;
   // Only use a wrapper that accepts children without requiring host-specific props.
   const useBox = box?.children === true && !box.fields?.required?.length;
@@ -126,8 +149,9 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     drizzleOrmVersion: packageVersions.drizzleOrm ?? TEMPLATE_DRIZZLE_VERSION,
   };
 
-  await ensureDirectory(path.join(targetDirectory, "src", "views"));
+  await ensureDirectory(path.dirname(path.join(targetDirectory, viewFile)));
   await ensureDirectory(path.join(targetDirectory, "src", "functions"));
+  await ensureDirectory(path.join(targetDirectory, "src", "db", "migrations"));
 
   const files: { template: string; dest: string; condition?: boolean }[] = [
     { template: packageJsonTemplate, dest: "package.json" },
@@ -138,10 +162,12 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     { template: gitignoreTemplate, dest: ".gitignore" },
     { template: oxlintConfigTemplate, dest: "oxlint.config.ts", condition: linting },
     { template: oxfmtConfigTemplate, dest: "oxfmt.config.ts", condition: formatting },
-    { template: clientTemplate, dest: path.join("src", "client.ts") },
-    { template: defaultViewTemplate, dest: path.join("src", "views", "default.tsx") },
+    { template: rootTemplate, dest: path.join("src", "root.tsx") },
+    { template: defaultViewTemplate, dest: viewFile },
     { template: serverTemplate, dest: path.join("src", "server.ts") },
-    { template: schemaTemplate, dest: path.join("src", "schema.ts") },
+    { template: schemaTemplate, dest: path.join("src", "db", "schema.ts") },
+    { template: databaseTemplate, dest: path.join("src", "db", "index.ts") },
+    { template: relationsTemplate, dest: path.join("src", "db", "relations.ts") },
     { template: greetingTemplate, dest: path.join("src", "functions", "greeting.ts") },
   ];
 

@@ -1,6 +1,6 @@
 import { AppError, tk } from "tailorkit/server";
 import { z } from "zod";
-import { todoText } from "../schema";
+import { todoText } from "../db";
 import * as todos from "./todos";
 
 export const importTodo = tk.action.functions(todos).handler(async ({ mutations, signal }) => {

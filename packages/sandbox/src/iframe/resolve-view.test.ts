@@ -172,7 +172,7 @@ it("limits matching to supported views while retaining ancestor data", () => {
 it.each([null, undefined, { mount: () => {} }])(
   "rejects a module without a standard client (%j)",
   (client) => {
-    expect(() => assertAppClient(client)).toThrow("defineClient()");
+    expect(() => assertAppClient(client)).toThrow("app builder");
   },
 );
 

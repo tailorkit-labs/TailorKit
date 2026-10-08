@@ -1,6 +1,7 @@
 import { access } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { appDatabasePaths } from "./database-paths";
 
 /** Use the app's Drizzle version with explicit flags; no Drizzle config file is needed. */
 export async function drizzleGenerateArguments(root: string, output: string, name?: string) {
@@ -19,7 +20,7 @@ export async function drizzleGenerateArguments(root: string, output: string, nam
         "--dialect",
         "sqlite",
         "--schema",
-        path.join(root, "src/schema.ts"),
+        appDatabasePaths(root).schema,
         "--out",
         output,
         ...(name === undefined ? [] : ["--name", name]),

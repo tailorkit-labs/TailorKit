@@ -139,6 +139,38 @@ it("restores multiple subscriptions and cancellation after recreation with isola
   expect(test.socket.read()!.subscriptions).toHaveLength(0);
 });
 
+it("refreshes view subscriptions on table writes after recreation without broadening table subscriptions", async () => {
+  const test = setup();
+  test.query.mockImplementation((input, identity) =>
+    Promise.resolve({
+      value: `${identity.userId}:${test.values[input.name as keyof typeof test.values]}`,
+      tables: input.name === "public" ? ["*"] : ["private"],
+    }),
+  );
+  const viewStream = await test.client.subscribe({ name: "public" });
+  const tableStream = await test.client.subscribe({ name: "private" });
+  expect(await viewStream.next()).toMatchObject({ value: "alice:1" });
+  expect(await tableStream.next()).toMatchObject({ value: "alice:2" });
+  await test.flush();
+  test.recreate();
+  test.query.mockClear();
+  await test.refresh([]);
+  expect(test.query).not.toHaveBeenCalled();
+  test.values.public = 3;
+  await test.refresh(["underlying_table"]);
+  expect(test.query.mock.calls.map(([input]) => input.name)).toEqual(["public"]);
+  expect(await viewStream.next()).toMatchObject({ value: "alice:3" });
+  test.query.mockClear();
+  test.values.private = 4;
+  await test.refresh(["private"]);
+  expect(await viewStream.next()).toMatchObject({ value: "alice:3" });
+  expect(await tableStream.next()).toMatchObject({ value: "alice:4" });
+  expect(test.query).toHaveBeenCalledTimes(2);
+  await viewStream.return?.();
+  await tableStream.return?.();
+  await test.flush();
+});
+
 it("delivers typed errors and removes failed subscriptions after recreation", async () => {
   const test = setup();
   const stream = await test.client.subscribe({ name: "public" });

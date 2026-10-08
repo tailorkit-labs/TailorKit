@@ -18,7 +18,7 @@ function persistence() {
     },
   };
 }
-it.each([[], ["database"], ["database", "actions"]])(
+it.each([[], ["database"], ["database", "actions"], ["database", "actions", "database-relations"]])(
   "accepts supported required features %j",
   (...requires: string[]) => {
     const db = persistence();

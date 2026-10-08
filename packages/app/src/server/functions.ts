@@ -1,4 +1,6 @@
 import type { z } from "zod";
+import type { AnyRelations, EmptyRelations } from "drizzle-orm/relations";
+import type { DatabaseDefinition } from "../database/definition";
 import type { QueryDatabase, MutationDatabase } from "../database/types";
 
 export interface Identity {
@@ -48,28 +50,30 @@ export interface FunctionDefinition<
   A extends z.ZodType,
   O,
   F extends Functions = Record<never, never>,
+  D extends AnyRelations = EmptyRelations,
 > {
   readonly kind: K;
   readonly args: A;
+  readonly database?: K extends "action" ? never : DatabaseDefinition<D>;
   readonly result?: z.ZodType<O>;
   readonly handler: (
     context: { args: z.output<A> } & (K extends "action"
       ? ActionContext<F>
-      : { db: K extends "query" ? QueryDatabase : MutationDatabase; identity: Identity }),
+      : { db: K extends "query" ? QueryDatabase<D> : MutationDatabase<D>; identity: Identity }),
   ) => K extends "action" ? O | Promise<O> : O;
 }
 
-export function query<A extends z.ZodType, O>(
-  definition: Omit<FunctionDefinition<"query", A, O>, "kind"> & {
-    handler: FunctionDefinition<"query", A, O>["handler"] &
+export function query<A extends z.ZodType, O, const D extends AnyRelations = EmptyRelations>(
+  definition: Omit<FunctionDefinition<"query", A, O, Record<never, never>, D>, "kind"> & {
+    handler: FunctionDefinition<"query", A, O, Record<never, never>, D>["handler"] &
       ([O] extends [never] ? unknown : O extends PromiseLike<unknown> ? never : unknown);
   },
 ) {
   return Object.freeze({ ...definition, kind: "query" as const });
 }
-export function mutation<A extends z.ZodType, O>(
-  definition: Omit<FunctionDefinition<"mutation", A, O>, "kind"> & {
-    handler: FunctionDefinition<"mutation", A, O>["handler"] &
+export function mutation<A extends z.ZodType, O, const D extends AnyRelations = EmptyRelations>(
+  definition: Omit<FunctionDefinition<"mutation", A, O, Record<never, never>, D>, "kind"> & {
+    handler: FunctionDefinition<"mutation", A, O, Record<never, never>, D>["handler"] &
       ([O] extends [never] ? unknown : O extends PromiseLike<unknown> ? never : unknown);
   },
 ) {
@@ -89,6 +93,7 @@ export type RegisteredFunction = {
   result?: z.ZodType;
   handler: (context: never) => unknown;
   functions?: Functions;
+  database?: DatabaseDefinition;
 };
 export interface Functions {
   readonly [name: string]: RegisteredFunction | Functions;

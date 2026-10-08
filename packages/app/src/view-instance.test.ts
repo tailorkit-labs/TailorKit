@@ -6,7 +6,7 @@ import { act } from "preact/test-utils";
 import { afterEach, expect, it, vi } from "vite-plus/test";
 
 vi.stubGlobal("__PREACT_VERSION__", "11.0.0");
-const { defineView, defineClient } = await import("./views");
+const { defineView } = await import("./views");
 const roots: HTMLElement[] = [];
 afterEach(() => {
   for (const root of roots.splice(0)) render(null, root);
@@ -89,12 +89,4 @@ it("reports missing instances and useInstance outside its view", () => {
     return null;
   }
   expect(() => render(h(Outside, {}), root())).toThrow("View instance is only available");
-});
-
-it("rejects registration under a different slot in JavaScript apps", () => {
-  const view = defineView({ slot: "navbar", view: "/", component: () => null });
-  // @ts-expect-error Exercise runtime validation for untyped registrations.
-  expect(() => defineClient({ slots: { panel: { "/": view } } })).toThrow(
-    'created for slot "navbar", not "panel"',
-  );
 });

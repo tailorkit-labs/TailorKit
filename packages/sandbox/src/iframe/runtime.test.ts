@@ -97,7 +97,7 @@ it("reports a mount-only module instead of bypassing view resolution", async () 
   await vi.waitFor(() =>
     expect(runtime.parentWindow.postMessage).toHaveBeenCalledWith(
       expect.objectContaining({
-        payload: { type: "error", data: { message: expect.stringContaining("defineClient()") } },
+        payload: { type: "error", data: { message: expect.stringContaining("app builder") } },
       }),
       "*",
     ),

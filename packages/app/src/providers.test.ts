@@ -5,7 +5,7 @@ import { act } from "preact/test-utils";
 import { afterEach, expect, it, vi } from "vite-plus/test";
 
 vi.stubGlobal("__PREACT_VERSION__", "11.0.0");
-const { defineClient } = await import("./index");
+const { createFileClient, defineRoute } = await import("./routing");
 afterEach(() => vi.unstubAllGlobals());
 
 it("keeps the app wrapper mounted across view changes and cleans it up on unmount", async () => {
@@ -15,14 +15,21 @@ it("keeps the app wrapper mounted across view changes and cleans it up on unmoun
   const Context = createContext("missing");
   const mount = vi.fn();
   const cleanup = vi.fn();
-  const client = defineClient({
-    slots: {},
-    component: ({ children }) => {
-      useEffect(() => {
-        mount();
-        return cleanup;
-      }, []);
-      return h(Context.Provider, { value: "shared" }, children);
+  const client = createFileClient({
+    roots: [],
+    layouts: [],
+    views: [],
+    root: {
+      filename: "src/root.tsx",
+      definition: defineRoute({
+        shellComponent: ({ children }) => {
+          useEffect(() => {
+            mount();
+            return cleanup;
+          }, []);
+          return h(Context.Provider, { value: "shared" }, children);
+        },
+      }),
     },
   });
   function First() {

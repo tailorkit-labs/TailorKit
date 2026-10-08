@@ -103,7 +103,7 @@ export function assertAppClient(value: unknown): asserts value is AppClient {
     typeof client.$runtime.render !== "function"
   ) {
     throw new TypeError(
-      "TailorKit app must default-export a defineClient() client with slots and its bundled runtime.",
+      "TailorKit app must be built with the app builder and include slots and its bundled runtime.",
     );
   }
 }

@@ -9,6 +9,7 @@ import { assertSupportedPreactVersion } from "../preact-version";
 import { readClientManifest } from "./client-views";
 import { buildServer, validateServerBuildOutput } from "./server";
 import { instanceExtractionPlugin } from "./instances";
+import { createFileRouteEntry, fileRoutesPlugin } from "./file-routes";
 import type { InstanceModule } from "./instances";
 
 import { createTailorKitUploadManifest } from "./upload-manifest";
@@ -23,6 +24,7 @@ const preactPackageJson = "preact/package.json";
 const preactPackageJsonModuleId = "\0tailorkit-preact-package-json";
 
 export { generateAppMigrations, type GenerateAppMigrationsOptions } from "./generate-migrations";
+export { getClientSourceFiles } from "./file-routes";
 
 export interface BuildAppOptions {
   configPath?: string;
@@ -37,7 +39,6 @@ export interface BuildAppOptions {
 export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> => {
   const loaded = await loadTailorKitConfig(options.configPath, options.cwd);
   loaded.root = await realpath(loaded.root);
-  const entry = path.resolve(loaded.root, loaded.config.client?.entry ?? "src/client.ts");
   const serverEntry = path.resolve(loaded.root, loaded.config.server?.entry ?? "src/server.ts");
   const outDir = options.outDir ?? loaded.config.build?.outDir ?? ".tailorkit";
   const preactVersion = getInstalledPreactVersion(loaded.root);
@@ -47,6 +48,8 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
   const resolvedOutDir = path.resolve(loaded.root, outDir);
   validateServerBuildOutput(loaded, resolvedOutDir);
   const clientOutDir = path.join(resolvedOutDir, "client");
+  const fileEntry = await createFileRouteEntry(loaded.root, resolvedOutDir, Boolean(options.watch));
+  const entry = fileEntry.entry;
   const instanceModules = new Map<string, InstanceModule>();
   let serverWatcher: Awaited<ReturnType<typeof buildServer>>;
   const writeBuildExtras = async (): Promise<void> => {
@@ -147,6 +150,7 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
     mode: options.mode,
     oxc: { jsx: { importSource: "preact" } },
     plugins: [
+      fileRoutesPlugin(loaded.root),
       instanceExtractionPlugin(loaded.root, Boolean(loaded.config.server), instanceModules),
       {
         name: "tailorkit-browser-server-boundary",
@@ -202,6 +206,7 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
     ],
     root: loaded.root,
   }).catch(async (error: unknown) => {
+    await fileEntry.close();
     if (serverWatcher && "close" in serverWatcher) await serverWatcher.close();
     throw error;
   });
@@ -224,9 +229,10 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
         await (result as { close(): Promise<void> }).close();
       }
       if (serverWatcher && "close" in serverWatcher) await serverWatcher.close();
+      await fileEntry.close();
       throw error;
     }
-    if (result && "close" in result && serverWatcher && "close" in serverWatcher) {
+    if (result && "close" in result) {
       const clientWatcher = result as {
         close(): Promise<void>;
         on(name: string, listener: (...args: unknown[]) => void): void;
@@ -236,10 +242,13 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
         async close() {
           await clientWatcher.close();
           if (serverWatcher && "close" in serverWatcher) await serverWatcher.close();
+          await fileEntry.close();
         },
       };
     }
   }
+
+  await fileEntry.close();
 
   return result;
 };

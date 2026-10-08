@@ -183,7 +183,8 @@ const typecheckAppEntries = async (
   } catch {
     return;
   }
-  const entryPath = path.resolve(loaded.root, loaded.config.client?.entry ?? "src/client.ts");
+  const { getClientSourceFiles } = await import("@tailorkit/app/builder");
+  const clientFiles = await getClientSourceFiles(loaded.root);
   // Check both application entry points with the project compiler options.
   const temporary = await mkdtemp(path.join(loaded.root, ".tailorkit-typecheck-"));
   try {
@@ -194,7 +195,7 @@ const typecheckAppEntries = async (
         extends: baseTsconfig,
         compilerOptions: { noEmit: true, incremental: false, composite: false },
         files: [
-          entryPath,
+          ...clientFiles,
           ...(loaded.config.server
             ? [path.resolve(loaded.root, loaded.config.server.entry ?? "src/server.ts")]
             : []),
@@ -215,7 +216,7 @@ const typecheckAppEntries = async (
       message?: string;
     };
     return {
-      command: `tsc --noEmit ${path.relative(loaded.root, entryPath)}`,
+      command: `tsc --noEmit ${clientFiles.map((file) => path.relative(loaded.root, file)).join(" ")}`,
       exitCode: typeof failure.code === "number" ? failure.code : null,
       output:
         `${failure.stdout ?? ""}${failure.stderr ?? ""}`.trim() || failure.message || String(error),

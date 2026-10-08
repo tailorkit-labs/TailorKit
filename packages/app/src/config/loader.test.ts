@@ -5,8 +5,8 @@ import { expect, it } from "vite-plus/test";
 import { loadTailorKitConfig } from "./loader";
 import { tailorkitConfigSchema } from "./config";
 
-it.each([{ client: { entry: "./frontend.ts" } }, { server: { entry: "./backend.ts" } }])(
-  "accepts configured entry points: %j",
+it.each([{ server: { entry: "./backend.ts" } }])(
+  "accepts configured server entry points: %j",
   (override) => {
     expect(tailorkitConfigSchema.parse({ host: "https://host.test", ...override })).toEqual({
       host: "https://host.test",
@@ -16,11 +16,8 @@ it.each([{ client: { entry: "./frontend.ts" } }, { server: { entry: "./backend.t
 );
 
 it("defaults entries while preserving backend enablement and migration configuration", () => {
-  expect(
-    tailorkitConfigSchema.parse({ host: "https://host.test", client: {}, server: {} }),
-  ).toEqual({
+  expect(tailorkitConfigSchema.parse({ host: "https://host.test", server: {} })).toEqual({
     host: "https://host.test",
-    client: { entry: "src/client.ts" },
     server: { entry: "src/server.ts" },
   });
   expect(
@@ -34,17 +31,21 @@ it("defaults entries while preserving backend enablement and migration configura
   });
 });
 
-it("rejects legacy storage config instead of silently building a client-only app", async () => {
-  const root = await mkdtemp(path.join(tmpdir(), "tailorkit-legacy-config-"));
+it("rejects unsupported storage configuration", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "tailorkit-invalid-config-"));
   try {
     await writeFile(
       path.join(root, "tailorkit.config.mjs"),
-      'export default { storage: { entry: "./server.ts" } };',
+      'export default { host: "https://host.test", storage: { entry: "./server.ts" } };',
     );
-    await expect(loadTailorKitConfig(undefined, root)).rejects.toThrow(
-      "Use server configuration and @tailorkit/app",
-    );
+    await expect(loadTailorKitConfig(undefined, root)).rejects.toThrow("Unrecognized key");
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+it("rejects manual client entry configuration", () => {
+  expect(() =>
+    tailorkitConfigSchema.parse({ host: "https://host.test", client: { entry: "./frontend.ts" } }),
+  ).toThrow();
 });
