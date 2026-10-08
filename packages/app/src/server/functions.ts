@@ -54,7 +54,7 @@ export interface FunctionDefinition<
 > {
   readonly kind: K;
   readonly args: A;
-  readonly database?: DatabaseDefinition<D>;
+  readonly database?: K extends "action" ? never : DatabaseDefinition<D>;
   readonly result?: z.ZodType<O>;
   readonly handler: (
     context: { args: z.output<A> } & (K extends "action"
