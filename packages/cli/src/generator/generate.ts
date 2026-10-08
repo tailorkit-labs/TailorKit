@@ -47,7 +47,7 @@ export interface GenerateAppOptions {
 const engine = new Liquid({ strictVariables: true });
 
 // eslint-disable-next-line no-control-regex -- Host-provided file names cannot contain control characters.
-const invalidFilenameCharacters = /[<>:"/\\|?*\u0000-\u001F]/u;
+const invalidFilenameCharacters = /[<>:"/\\|?*#\u0000-\u001F]/u;
 const isFilenameSegment = (segment: string) =>
   segment !== "" && segment !== "." && segment !== ".." && !invalidFilenameCharacters.test(segment);
 
