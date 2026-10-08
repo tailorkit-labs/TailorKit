@@ -177,7 +177,7 @@ export function defineView<TPath extends AppViewPath, TSchema extends z.ZodType>
 
     if (instances && !props.instance) {
       throw new Error(
-        `View "${path}" requires a selected instance. Pass instanceKey to Slot or instance to Slot.Controlled.`,
+        `View "${path}" requires a selected instance. Pass instanceKey to RenderSlot or instance to RenderSlot.Controlled.`,
       );
     }
     return h(

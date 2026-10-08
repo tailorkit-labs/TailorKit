@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import type { ViewDefinition } from "@tailorkit/core/schema";
 import type { ViewName, ViewState } from "@tailorkit/client-core";
-import { useTailorRootContext } from "../components/context";
+import { useTailorkitContext } from "../components/context";
 
 export type { ViewName, ViewContext, ViewOptions, ViewState } from "@tailorkit/client-core";
 
@@ -18,7 +18,7 @@ export function useViewContext<
   TViews extends Record<string, ViewDefinition> = DefaultViews,
   TView extends ViewName<TViews> = ViewName<TViews>,
 >(view: TView, options: ViewState<TViews, NoInfer<TView>>): void {
-  const { store } = useTailorRootContext("useViewContext");
+  const { store } = useTailorkitContext("useViewContext");
   const id = useMemo(() => Symbol("tailorkit-current-view"), []);
   const { context, loading, error } = options;
 
