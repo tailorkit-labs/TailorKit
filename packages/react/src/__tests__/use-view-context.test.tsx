@@ -6,7 +6,7 @@ import type { TailorKitSchemaSpecType } from "@tailorkit/core/spec";
 import type { ReactNode } from "react";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
-import { TailorRootContext } from "../components/context";
+import { TailorkitContext } from "../components/context";
 import { createTailorKitClient } from "../tailorkit";
 import type { ViewState } from "../hooks/use-view-context";
 
@@ -46,7 +46,7 @@ function setup(definition?: TailorKitSchemaSpecType["views"][string]) {
   }
   const wrapper = ({ children }: { children: ReactNode }) => (
     <StrictMode>
-      <TailorRootContext.Provider value={{ client, store }}>{children}</TailorRootContext.Provider>
+      <TailorkitContext.Provider value={{ client, store }}>{children}</TailorkitContext.Provider>
     </StrictMode>
   );
   return { client, store, wrapper };

@@ -3,7 +3,7 @@ import { createTailorKitServer } from "@tailorkit/core/server";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { Root, Slot } from "../index";
+import { RenderSlot } from "../index";
 import { createTailorKitClient } from "../tailorkit";
 
 const requests: { appUrl: string; props: Record<string, unknown> }[] = [];
@@ -61,13 +61,13 @@ function Detail() {
   return null;
 }
 
-describe("Slot", () => {
+describe("RenderSlot", () => {
   it("uses the registered hierarchy and removes unmounted contexts", async () => {
     const contents = (detail: boolean) => (
-      <Root client={client}>
+      <client.Provider>
         <Context detail={detail} />
-        <client.Slot app={app} name="panel" />
-      </Root>
+        <client.RenderSlot app={app} slot="panel" />
+      </client.Provider>
     );
     const result = render(contents(true));
     await waitFor(() =>
@@ -96,9 +96,9 @@ describe("Slot", () => {
 
   it("renders nothing and does not fetch before a context is registered", () => {
     const { container } = render(
-      <Root client={client}>
-        <client.Slot app={app} name="panel" />
-      </Root>,
+      <client.Provider>
+        <client.RenderSlot app={app} slot="panel" />
+      </client.Provider>,
     );
     expect(container.childElementCount).toBe(0);
     expect(requests).toHaveLength(0);
@@ -108,14 +108,14 @@ describe("Slot", () => {
   it("shares metadata across slots and isolates roots during Strict Mode", async () => {
     render(
       <StrictMode>
-        <Root client={client}>
+        <client.Provider>
           <Context />
-          <Slot app={app} name="panel" />
-          <Slot app={app} name="navbar" />
-        </Root>
-        <Root client={client}>
-          <Slot app={{ id: "other", clientPath: "/other.js" }} name="panel" />
-        </Root>
+          <RenderSlot app={app} slot="panel" />
+          <RenderSlot app={app} slot="navbar" />
+        </client.Provider>
+        <client.Provider>
+          <RenderSlot app={{ id: "other", clientPath: "/other.js" }} slot="panel" />
+        </client.Provider>
       </StrictMode>,
     );
     await waitFor(() => expect(requests.some(({ props }) => props.slot === "navbar")).toBe(true));
@@ -124,18 +124,18 @@ describe("Slot", () => {
   });
 });
 
-describe("Slot.Controlled", () => {
+describe("RenderSlot.Controlled", () => {
   it("renders supplied combined context without registrations and keeps equivalent context stable", async () => {
     const contents = (id: string) => (
-      <Root client={client}>
-        <client.Slot.Controlled
+      <client.Provider>
+        <client.RenderSlot.Controlled
           app={app}
-          name="panel"
+          slot="panel"
           view="/customers/detail"
           status="ready"
           context={{ user: { id: "explicit" }, canEdit: false, customer: { id } }}
         />
-      </Root>
+      </client.Provider>
     );
     const result = render(contents("c1"));
     await waitFor(() =>
@@ -160,16 +160,16 @@ describe("Slot.Controlled", () => {
 
   it("does not inherit or react to registered context", async () => {
     const contents = (detail: boolean) => (
-      <Root client={client}>
+      <client.Provider>
         <Context detail={detail} />
-        <client.Slot.Controlled
+        <client.RenderSlot.Controlled
           app={app}
-          name="panel"
+          slot="panel"
           view="/customers"
           status="ready"
           context={{ user: { id: "explicit" }, canEdit: false }}
         />
-      </Root>
+      </client.Provider>
     );
     const result = render(contents(true));
     await waitFor(() =>
@@ -182,19 +182,19 @@ describe("Slot.Controlled", () => {
 
   it("drops ready context when explicitly switched to loading or error", async () => {
     const contents = (status: "ready" | "loading" | "error") => (
-      <Root client={client}>
+      <client.Provider>
         {status === "ready" ? (
-          <client.Slot.Controlled
+          <client.RenderSlot.Controlled
             app={app}
-            name="navbar"
+            slot="navbar"
             view="/"
             status="ready"
             context={{ user: { id: "u1" } }}
           />
         ) : (
-          <client.Slot.Controlled app={app} name="navbar" view="/" status={status} />
+          <client.RenderSlot.Controlled app={app} slot="navbar" view="/" status={status} />
         )}
-      </Root>
+      </client.Provider>
     );
     const result = render(contents("ready"));
     await waitFor(() => expect(requests.at(-1)?.props.status).toBe("ready"));
@@ -207,23 +207,31 @@ describe("Slot.Controlled", () => {
   });
 });
 
-it.each(["managed", "controlled"] as const)("rejects a %s Slot under the wrong client", (mode) => {
-  const other = createTailorKitClient<typeof server>({ baseUrl: "https://other.test/api/" });
-  vi.spyOn(console, "error").mockImplementation(() => {});
-  expect(() =>
-    render(
-      <Root client={other}>
-        {mode === "managed" ? (
-          <client.Slot app={app} name="panel" />
-        ) : (
-          <client.Slot.Controlled app={app} name="panel" view="/customers" status="loading" />
-        )}
-      </Root>,
-    ),
-  ).toThrow(
-    `${mode === "managed" ? "Slot" : "Slot.Controlled"} was created for a different TailorKit client`,
-  );
-});
+it.each(["managed", "controlled"] as const)(
+  "rejects a %s RenderSlot under the wrong client",
+  (mode) => {
+    const other = createTailorKitClient<typeof server>({ baseUrl: "https://other.test/api/" });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() =>
+      render(
+        <other.Provider>
+          {mode === "managed" ? (
+            <client.RenderSlot app={app} slot="panel" />
+          ) : (
+            <client.RenderSlot.Controlled
+              app={app}
+              slot="panel"
+              view="/customers"
+              status="loading"
+            />
+          )}
+        </other.Provider>,
+      ),
+    ).toThrow(
+      `${mode === "managed" ? "RenderSlot" : "RenderSlot.Controlled"} was created for a different TailorKit client`,
+    );
+  },
+);
 
 const instanceApp = { ...app, views: [{ slot: "page", path: "/", instances: true as const }] };
 const overview = { key: "overview", metadata: { title: "Overview" }, data: { reportId: "r1" } };
@@ -246,10 +254,10 @@ it("resolves the key and sends a complete controlled instance through the render
     return Response.json({ schema: server.$internal.schema.serialize() });
   });
   const content = (key: string) => (
-    <Root client={client}>
+    <client.Provider>
       <Context detail={false} />
-      <client.Slot app={instanceApp} name="page" instanceKey={key} />
-    </Root>
+      <client.RenderSlot app={instanceApp} slot="page" instanceKey={key} />
+    </client.Provider>
   );
   const view = render(content("overview"));
   await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Loading view…"));
@@ -296,10 +304,10 @@ it("reports resolver failures and missing keys without mounting stale instances"
     return Response.json({ schema: server.$internal.schema.serialize() });
   });
   render(
-    <Root client={client}>
+    <client.Provider>
       <Context />
-      <client.Slot app={instanceApp} name="page" instanceKey="overview" />
-    </Root>,
+      <client.RenderSlot app={instanceApp} slot="page" instanceKey="overview" />
+    </client.Provider>,
   );
   await waitFor(() => expect(screen.getByRole("alert").textContent).toBe("No reports available"));
   expect(requests).toHaveLength(0);
@@ -307,13 +315,13 @@ it("reports resolver failures and missing keys without mounting stale instances"
 
 it("requires a key for a dynamic managed view", async () => {
   render(
-    <Root client={client}>
+    <client.Provider>
       <Context />
-      <Slot app={instanceApp} name="page" />
-    </Root>,
+      <RenderSlot app={instanceApp} slot="page" />
+    </client.Provider>,
   );
   await waitFor(() =>
-    expect(screen.getByRole("alert").textContent).toContain("Pass instanceKey to Slot"),
+    expect(screen.getByRole("alert").textContent).toContain("Pass instanceKey to RenderSlot"),
   );
   expect(requests).toHaveLength(0);
 });
@@ -334,10 +342,10 @@ it.each([false, true])(
       ],
     };
     render(
-      <Root client={client}>
+      <client.Provider>
         <DuplicateContext />
-        <client.Slot app={appWithViews} name="panel" />
-      </Root>,
+        <client.RenderSlot app={appWithViews} slot="panel" />
+      </client.Provider>,
     );
     if (dynamic) {
       await waitFor(() =>
@@ -367,20 +375,20 @@ it.each([false, true])(
 
 it("passes supplied instances without resolving them and clears them while loading", async () => {
   const content = (instance: typeof overview, status: "ready" | "loading") => (
-    <Root client={client}>
+    <client.Provider>
       {status === "ready" ? (
-        <client.Slot.Controlled
+        <client.RenderSlot.Controlled
           app={instanceApp}
-          name="page"
+          slot="page"
           view="/"
           status="ready"
           context={{ user: { id: "explicit" } }}
           instance={instance}
         />
       ) : (
-        <client.Slot.Controlled app={instanceApp} name="page" view="/" status="loading" />
+        <client.RenderSlot.Controlled app={instanceApp} slot="page" view="/" status="loading" />
       )}
-    </Root>
+    </client.Provider>
   );
   const view = render(content(overview, "ready"));
   await waitFor(() => expect(requests.at(-1)?.props.instance).toEqual(overview));
@@ -393,19 +401,19 @@ it("passes supplied instances without resolving them and clears them while loadi
 
 it("reports a missing controlled instance and recovers when one is supplied", async () => {
   const content = (instance?: typeof overview) => (
-    <Root client={client}>
-      <Slot.Controlled
+    <client.Provider>
+      <RenderSlot.Controlled
         app={instanceApp}
-        name="page"
+        slot="page"
         view="/"
         status="ready"
         context={{ user: { id: "explicit" } }}
         instance={instance}
       />
-    </Root>
+    </client.Provider>
   );
   const view = render(content());
-  expect(screen.getByRole("alert").textContent).toContain("Pass instance to Slot.Controlled");
+  expect(screen.getByRole("alert").textContent).toContain("Pass instance to RenderSlot.Controlled");
   expect(requests).toHaveLength(0);
   view.rerender(content(overview));
   await waitFor(() => expect(requests.at(-1)?.props.instance).toEqual(overview));
@@ -414,26 +422,26 @@ it("reports a missing controlled instance and recovers when one is supplied", as
 it("rejects instance keys and controlled instances for single-instance slots at runtime", async () => {
   const singleApp = { ...app, views: [{ slot: "navbar", path: "/", instances: true as const }] };
   const rendered = render(
-    <Root client={client}>
+    <client.Provider>
       <Context />
-      <Slot app={singleApp} name="navbar" instanceKey="overview" />
-    </Root>,
+      <RenderSlot app={singleApp} slot="navbar" instanceKey="overview" />
+    </client.Provider>,
   );
   await waitFor(() =>
     expect(screen.getByRole("alert").textContent).toBe('Slot "navbar" does not support instances.'),
   );
   expect(requests).toHaveLength(0);
   rendered.rerender(
-    <Root client={client}>
-      <Slot.Controlled
+    <client.Provider>
+      <RenderSlot.Controlled
         app={app}
-        name="navbar"
+        slot="navbar"
         view="/"
         status="ready"
         context={{ user: { id: "u1" } }}
         instance={overview}
       />
-    </Root>,
+    </client.Provider>,
   );
   await waitFor(() =>
     expect(screen.getByRole("alert").textContent).toBe('Slot "navbar" does not support instances.'),

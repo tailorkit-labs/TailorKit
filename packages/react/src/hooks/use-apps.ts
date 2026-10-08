@@ -7,13 +7,13 @@ import type {
   TailorKitApp,
   TailorKitStore,
 } from "@tailorkit/client-core";
-import { useTailorRootContext } from "../components/context";
+import { useTailorkitContext } from "../components/context";
 
 export type UseAppsOptions<TScopeNames extends string = string> = AppsQueryOptions<TScopeNames>;
 export type UseAppsResult = QueryResult<TailorKitApp[]>;
 
 export function useApps(options: UseAppsOptions = {}): UseAppsResult {
-  return useAppsStore(useTailorRootContext("useApps").store, options);
+  return useAppsStore(useTailorkitContext("useApps").store, options);
 }
 
 export function useAppsStore(store: TailorKitStore, options: UseAppsOptions = {}): UseAppsResult {

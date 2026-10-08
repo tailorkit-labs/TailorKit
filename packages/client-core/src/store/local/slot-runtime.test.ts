@@ -32,7 +32,7 @@ function setup(multiple = false) {
 it("waits for an active managed view and constructs deployment URL and hierarchy props in core", async () => {
   const { client, store, app, fetch } = setup();
   client.clear();
-  const runtime = createSlotRuntime(store, { mode: "managed", app, name: "page" });
+  const runtime = createSlotRuntime(store, { mode: "managed", app, slot: "page" });
   const stop = runtime.state.listen(vi.fn());
   expect(runtime.state.get().status).toBe("hidden");
   expect(fetch).not.toHaveBeenCalled();
@@ -61,7 +61,7 @@ it("waits for an active managed view and constructs deployment URL and hierarchy
     },
   });
   const stable = runtime.state.get();
-  runtime.setInput({ mode: "managed", app: { ...app }, name: "page" });
+  runtime.setInput({ mode: "managed", app: { ...app }, slot: "page" });
   expect(runtime.state.get()).toBe(stable);
   stop();
   store.views.unregister(id);
@@ -81,7 +81,7 @@ it("selects instances and validates keys without a framework", async () => {
   const options: SlotRuntimeOptions = {
     mode: "managed",
     app,
-    name: "page",
+    slot: "page",
     instanceKey: "overview",
   };
   const runtime = createSlotRuntime(store, options);
@@ -106,7 +106,7 @@ it("keeps controlled state independent and removes stale context and instances w
   const options: SlotRuntimeOptions = {
     mode: "controlled",
     app,
-    name: "page",
+    slot: "page",
     view: "/",
     context: { supplied: true },
     status: "ready",
@@ -140,7 +140,7 @@ it("updates the session provider when deployment changes behind the same custom 
   const options: SlotRuntimeOptions = {
     mode: "controlled",
     app: { ...app, clientPath: "/client.js" },
-    name: "page",
+    slot: "page",
     view: "/",
     status: "ready",
     context: {},
@@ -178,7 +178,7 @@ it("keeps preview subscriptions across context changes and switches sessions wit
   const options: SlotRuntimeOptions = {
     mode: "controlled",
     app,
-    name: "page",
+    slot: "page",
     view: "/",
     context: { customer: "first" },
     status: "ready",
@@ -224,7 +224,7 @@ it("does not repeatedly retry failed metadata as a side effect of state updates"
   const runtime = createSlotRuntime(store, {
     mode: "controlled",
     app,
-    name: "page",
+    slot: "page",
     view: "/",
     status: "ready",
     context: {},
@@ -252,7 +252,7 @@ it("cancels an instance request when switching to a controlled slot", async () =
   const runtime = createSlotRuntime(store, {
     mode: "managed",
     app,
-    name: "page",
+    slot: "page",
     instanceKey: "one",
   });
   const stop = runtime.state.listen(vi.fn());
@@ -260,7 +260,7 @@ it("cancels an instance request when switching to a controlled slot", async () =
   runtime.setInput({
     mode: "controlled",
     app,
-    name: "page",
+    slot: "page",
     view: "/",
     status: "ready",
     context: {},

@@ -469,10 +469,9 @@ Create `tailorkit-client.tsx` in your frontend, wherever you keep client-side ut
 ```tsx src/lib/tailorkit-client.tsx
 "use client";
 
-import type { ReactNode } from "react";
 import { Button } from "@/components/button";
 import type { tailorKit } from "@/lib/tailorkit";
-import { createTailorKitClient, primitives, Root } from "tailorkit/react";
+import { createTailorKitClient, primitives } from "tailorkit/react";
 
 export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
   // Replace this with your host origin and handler path.
@@ -488,19 +487,23 @@ export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
   },
 });
 
-export const { Slot, useApps, useViews, useViewContext } = tailorKitClient;
-
-export function TailorKitProvider({ children }: { children: ReactNode }) {
-  return <Root client={tailorKitClient}>{children}</Root>;
-}
+export const {
+  Provider: TailorKitProvider,
+  RenderSlot,
+  useApps,
+  useViewContext,
+  useViews,
+} = tailorKitClient;
 
 export default tailorKitClient;
 ```
 
 </Step>
-<Step title="Add the Root provider">
+<Step title="Add the provider">
 
 Wrap your pages in the TailorKit provider to use TailorKit hooks and components.
+The provider uses the client that created it and renders no DOM wrapper. It accepts
+`children` and an optional `apps` list; you do not need to pass `client`.
 
 <Tabs>
 
@@ -610,7 +613,7 @@ slots (`multiple: false` or omitted). It checks enabled, supported app views
 without calling an instance resolver or requiring registered page context. For
 `multiple: true` slots, it resolves instances using the registered context and
 returns `{ app, key, metadata, data }` items. Render those with
-`<Slot app={item.app} name="page" instanceKey={item.key} />`.
+`<RenderSlot app={item.app} slot="page" instanceKey={item.key} />`.
 
 The returned `data` items are typed from your server slot definition: instance
 slots have a required `key: string`, `metadata`, and `data`; single-view slots
@@ -630,7 +633,7 @@ refreshes the resolved instances.
 "use client";
 
 import { useState } from "react";
-import { Slot, useViews, useViewContext } from "@/lib/tailorkit-client";
+import { RenderSlot, useViews, useViewContext } from "@/lib/tailorkit-client";
 
 export default function Page() {
   const [selectedId, setSelectedId] = useState("");
@@ -659,7 +662,7 @@ export default function Page() {
         </select>
       </label>
 
-      <Slot key={selectedView.app.id} app={selectedView.app} name="page" />
+      <RenderSlot key={selectedView.app.id} app={selectedView.app} slot="page" />
     </>
   );
 }
@@ -672,7 +675,7 @@ export default function Page() {
 ```tsx src/routes/app-views.tsx
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Slot, useViews, useViewContext } from "@/lib/tailorkit-client";
+import { RenderSlot, useViews, useViewContext } from "@/lib/tailorkit-client";
 
 export const Route = createFileRoute("/app-views")({ component: Page });
 
@@ -703,7 +706,7 @@ function Page() {
         </select>
       </label>
 
-      <Slot key={selectedView.app.id} app={selectedView.app} name="page" />
+      <RenderSlot key={selectedView.app.id} app={selectedView.app} slot="page" />
     </>
   );
 }
@@ -715,7 +718,7 @@ function Page() {
 
 ```tsx app/routes/app-views.tsx
 import { useState } from "react";
-import { Slot, useViews, useViewContext } from "@/lib/tailorkit-client";
+import { RenderSlot, useViews, useViewContext } from "@/lib/tailorkit-client";
 
 export default function Page() {
   const [selectedId, setSelectedId] = useState("");
@@ -744,7 +747,7 @@ export default function Page() {
         </select>
       </label>
 
-      <Slot key={selectedView.app.id} app={selectedView.app} name="page" />
+      <RenderSlot key={selectedView.app.id} app={selectedView.app} slot="page" />
     </>
   );
 }

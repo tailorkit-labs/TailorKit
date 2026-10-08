@@ -3,7 +3,7 @@ import { createTailorKitServer } from "@tailorkit/core/server";
 import type { ReactNode } from "react";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
-import { Root, createTailorKitClient } from "../index";
+import { createTailorKitClient } from "../index";
 import type { TailorKitApp } from "../index";
 
 const schema = {
@@ -39,9 +39,7 @@ const app: TailorKitApp = {
 const instances = [{ key: "overview", metadata: { title: "Overview" }, data: { reportId: "r1" } }];
 let apps: TailorKitApp[] | undefined;
 const wrapper = ({ children }: { children: ReactNode }) => (
-  <Root client={client} apps={apps}>
-    {children}
-  </Root>
+  <client.Provider apps={apps}>{children}</client.Provider>
 );
 function withApp(instances: { key: string; metadata: object; data: object }[], source = app) {
   return instances.map((instance) => ({ ...instance, app: source }));
@@ -411,9 +409,7 @@ it("reauthorizes when the discovered app or deployment changes", async () => {
 it("works in Strict Mode and isolates different roots", async () => {
   const strictWrapper = ({ children }: { children: ReactNode }) => (
     <StrictMode>
-      <Root client={client} apps={apps}>
-        {children}
-      </Root>
+      <client.Provider apps={apps}>{children}</client.Provider>
     </StrictMode>
   );
   const first = renderHook(
@@ -439,14 +435,14 @@ it("works in Strict Mode and isolates different roots", async () => {
   expect(users).toEqual(["u1", "u2"]);
 });
 
-it("rejects a hook used outside Root or under another client", () => {
+it("rejects a hook used outside a Provider or under another client", () => {
   vi.spyOn(console, "error").mockImplementation(() => {});
   expect(() => renderHook(() => client.useViews({ slot: "page" }))).toThrow(
-    "useViews must be rendered inside Root",
+    "useViews must be rendered inside a TailorKit Provider",
   );
   const other = createTailorKitClient({ baseUrl: "https://other.test/api/" });
   const wrongWrapper = ({ children }: { children: ReactNode }) => (
-    <Root client={other}>{children}</Root>
+    <other.Provider>{children}</other.Provider>
   );
   expect(() =>
     renderHook(() => client.useViews({ slot: "page" }), { wrapper: wrongWrapper }),

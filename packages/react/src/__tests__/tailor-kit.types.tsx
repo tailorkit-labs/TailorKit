@@ -44,8 +44,21 @@ const server = createTailorKitServer({
 });
 
 const tailor = createTailorKitClient<typeof server>({ baseUrl: "http://runtime.test" });
-const { Slot, useApps, useViews, useViewContext } = tailor;
+const { Provider: TailorKitProvider, RenderSlot, useApps, useViews, useViewContext } = tailor;
 const app = { clientPath: "/apps/todo.js", id: "todo" };
+
+<TailorKitProvider>
+  <span>Content</span>
+</TailorKitProvider>;
+<TailorKitProvider apps={[app]} />;
+// @ts-expect-error the provider captures its client internally
+<TailorKitProvider client={tailor} />;
+// @ts-expect-error the provider only accepts children and apps
+<TailorKitProvider className="wrapper" />;
+// @ts-expect-error the provider does not support a render prop
+<TailorKitProvider render={<div />} />;
+// @ts-expect-error provided apps must have a string id
+<TailorKitProvider apps={[{ id: 123 }]} />;
 
 const childrenServer = createTailorKitServer({
   scopes: { user: typedSchema<{ userId: string }>() },
@@ -236,73 +249,77 @@ useViews({ app, slot: "panel" });
 // @ts-expect-error a slot must be supplied
 useViews({});
 
-<Slot app={app} name="panel" />;
-<Slot app={app} name="navbar" />;
+<RenderSlot app={app} slot="panel" />;
+<RenderSlot app={app} slot="navbar" />;
+// @ts-expect-error use slot instead of the removed name prop
+<RenderSlot app={app} name="panel" />;
+// @ts-expect-error controlled rendering also requires slot instead of name
+<RenderSlot.Controlled app={app} name="panel" view="/user" status="loading" />;
 // @ts-expect-error slots must be declared by the host
-<Slot app={app} name="missing" />;
+<RenderSlot app={app} slot="missing" />;
 // @ts-expect-error managed slots do not accept an explicit view
-<Slot app={app} name="panel" view="/home" />;
+<RenderSlot app={app} slot="panel" view="/home" />;
 // @ts-expect-error managed slots do not expose a fallback prop
-<Slot app={app} name="panel" fallback={null} />;
+<RenderSlot app={app} slot="panel" fallback={null} />;
 
-<Slot.Controlled
+<RenderSlot.Controlled
   app={app}
-  name="panel"
+  slot="panel"
   view="/home"
   status="ready"
   context={{ user: { id: "u1" }, page: { title: "Home" } }}
 />;
-<Slot.Controlled
+<RenderSlot.Controlled
   app={app}
-  name="panel"
+  slot="panel"
   view="/home/detail"
   status="ready"
   context={{ user: { id: "u1" }, page: { title: "Home" }, detail: { id: "d1" } }}
 />;
-<Slot.Controlled
+<RenderSlot.Controlled
   app={app}
-  name="navbar"
+  slot="navbar"
   view="/"
   status="ready"
   context={{ user: { id: "u1" } }}
 />;
-<Slot.Controlled app={app} name="panel" view="/user" status="loading" />;
-<Slot.Controlled app={app} name="panel" view="/user" status="error" />;
+<RenderSlot.Controlled app={app} slot="panel" view="/user" status="loading" />;
+<RenderSlot.Controlled app={app} slot="panel" view="/user" status="error" />;
 
 // @ts-expect-error controlled slots require an explicit view and status
-<Slot.Controlled app={app} name="panel" />;
+<RenderSlot.Controlled app={app} slot="panel" />;
 // @ts-expect-error controlled slots require status even with ready context
-<Slot.Controlled app={app} name="panel" view="/" context={{ user: { id: "u1" } }} />;
+<RenderSlot.Controlled app={app} slot="panel" view="/" context={{ user: { id: "u1" } }} />;
 // @ts-expect-error ready controlled slots require context
-<Slot.Controlled app={app} name="panel" view="/home" status="ready" />;
-<Slot.Controlled
+<RenderSlot.Controlled app={app} slot="panel" view="/home" status="ready" />;
+<RenderSlot.Controlled
   app={app}
-  name="panel"
+  slot="panel"
   view="/home"
   status="ready"
   // @ts-expect-error controlled slots require ancestor context as well as their own fields
   context={{ page: { title: "Home" } }}
 />;
-<Slot.Controlled
+<RenderSlot.Controlled
   app={app}
-  name="panel"
+  slot="panel"
   view="/user"
   status="ready"
   // @ts-expect-error combined context must have the correct field types
   context={{ user: { id: "u1" }, userId: 1 }}
 />;
 // @ts-expect-error loading controlled slots cannot expose partial context
-<Slot.Controlled
+<RenderSlot.Controlled
   app={app}
-  name="panel"
+  slot="panel"
   view="/user"
   status="loading"
   context={{ user: { id: "u1" }, userId: "u1" }}
 />;
 // @ts-expect-error the navbar only supports root
-<Slot.Controlled app={app} name="navbar" view="/user" status="loading" />;
+<RenderSlot.Controlled app={app} slot="navbar" view="/user" status="loading" />;
 // @ts-expect-error unknown views cannot be rendered
-<Slot.Controlled app={app} name="panel" view="/missing" status="loading" />;
+<RenderSlot.Controlled app={app} slot="panel" view="/missing" status="loading" />;
 
 const optionalContextServer = createTailorKitServer({
   components: {},
@@ -318,17 +335,17 @@ const optionalContextClient = createTailorKitClient<typeof optionalContextServer
 });
 optionalContextClient.useViewContext("/", { context: undefined });
 optionalContextClient.useViewContext("/", { context: { workspaceId: "w1" } });
-const OptionalSlot = optionalContextClient.Slot;
+const OptionalSlot = optionalContextClient.RenderSlot;
 <OptionalSlot.Controlled
   app={app}
-  name="panel"
+  slot="panel"
   view="/detail"
   status="ready"
   context={{ detailId: "d1" }}
 />;
 <OptionalSlot.Controlled
   app={app}
-  name="panel"
+  slot="panel"
   view="/detail"
   status="ready"
   context={{ workspaceId: "w1", detailId: "d1" }}
@@ -345,47 +362,53 @@ const unionContextServer = createTailorKitServer({
 });
 const UnionSlot = createTailorKitClient<typeof unionContextServer>({
   baseUrl: "http://runtime.test",
-}).Slot;
+}).RenderSlot;
 <UnionSlot.Controlled
   app={app}
-  name="panel"
+  slot="panel"
   view="/detail"
   status="ready"
   context={{ kind: "user", userId: "u1", detailId: "d1" }}
 />;
 <UnionSlot.Controlled
   app={app}
-  name="panel"
+  slot="panel"
   view="/detail"
   status="ready"
   context={{ kind: "organization", orgId: "o1", detailId: "d1" }}
 />;
 
-<Slot app={app} name="page" instanceKey="overview" />;
+<RenderSlot app={app} slot="page" instanceKey="overview" />;
 // @ts-expect-error Multi-instance slots require a key.
-<Slot app={app} name="page" />;
+<RenderSlot app={app} slot="page" />;
 // @ts-expect-error Single-instance slots reject a key (omitted flag).
-<Slot app={app} name="panel" instanceKey="overview" />;
+<RenderSlot app={app} slot="panel" instanceKey="overview" />;
 // @ts-expect-error Single-instance slots reject a key (explicit false).
-<Slot app={app} name="single" instanceKey="overview" />;
+<RenderSlot app={app} slot="single" instanceKey="overview" />;
 const suppliedInstance = {
   key: "overview",
   metadata: { title: "Overview" },
   data: { reportId: "r1" },
 };
-<Slot.Controlled
+<RenderSlot.Controlled
   app={app}
-  name="page"
+  slot="page"
   view="/"
   status="ready"
   context={{ user: { id: "u1" } }}
   instance={suppliedInstance}
 />;
 // @ts-expect-error loading slots cannot expose stale instance data
-<Slot.Controlled app={app} name="page" view="/" status="loading" instance={suppliedInstance} />;
-<Slot.Controlled
+<RenderSlot.Controlled
   app={app}
-  name="page"
+  slot="page"
+  view="/"
+  status="loading"
+  instance={suppliedInstance}
+/>;
+<RenderSlot.Controlled
+  app={app}
+  slot="page"
   view="/"
   status="ready"
   context={{ user: { id: "u1" } }}
@@ -393,30 +416,36 @@ const suppliedInstance = {
   instanceKey="overview"
 />;
 // @ts-expect-error instance keys are strings
-<Slot app={app} name="page" instanceKey={123} />;
+<RenderSlot app={app} slot="page" instanceKey={123} />;
 
 // @ts-expect-error Ready multi-instance controlled slots require an instance.
-<Slot.Controlled app={app} name="page" view="/" status="ready" context={{ user: { id: "u1" } }} />;
-// @ts-expect-error Ready single-instance slots reject an instance.
-<Slot.Controlled
+<RenderSlot.Controlled
   app={app}
-  name="navbar"
+  slot="page"
+  view="/"
+  status="ready"
+  context={{ user: { id: "u1" } }}
+/>;
+// @ts-expect-error Ready single-instance slots reject an instance.
+<RenderSlot.Controlled
+  app={app}
+  slot="navbar"
   view="/"
   status="ready"
   context={{ user: { id: "u1" } }}
   instance={suppliedInstance}
 />;
 // @ts-expect-error Explicit false also rejects an instance.
-<Slot.Controlled
+<RenderSlot.Controlled
   app={app}
-  name="single"
+  slot="single"
   view="/"
   status="ready"
   context={{ user: { id: "u1" } }}
   instance={suppliedInstance}
 />;
-<Slot.Controlled app={app} name="page" view="/" status="loading" />;
-<Slot.Controlled app={app} name="page" view="/" status="error" />;
+<RenderSlot.Controlled app={app} slot="page" view="/" status="loading" />;
+<RenderSlot.Controlled app={app} slot="page" view="/" status="error" />;
 const slotName: "page" | "navbar" = Math.random() > 0.5 ? "page" : "navbar";
 // @ts-expect-error A union slot name cannot bypass the key requirement.
-<Slot app={app} name={slotName} />;
+<RenderSlot app={app} slot={slotName} />;

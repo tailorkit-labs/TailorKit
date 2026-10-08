@@ -5,10 +5,15 @@ import { SidebarInset, SidebarProvider } from "@tailorkit/ui/sidebar";
 import { XIcon } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { Root } from "tailorkit/react";
 import type { TailorKitApp } from "tailorkit/react";
 import { AppSidebar } from "#components/app-sidebar";
-import tailor, { Slot, useApps, useViewContext, useViews } from "#lib/tailorkit-client";
+import {
+  TailorKitProvider,
+  RenderSlot,
+  useApps,
+  useViewContext,
+  useViews,
+} from "#lib/tailorkit-client";
 
 type Apps = NonNullable<ReturnType<typeof useApps>["data"]>;
 
@@ -135,7 +140,7 @@ function TailorKitSlotContent({ app }: { app: TailorKitApp }) {
   return app.views?.some((view) => view.slot === "page" && !view.disabled) ? (
     <TailorKitPageInstances app={app} />
   ) : (
-    <Slot name="panel" app={app} />
+    <RenderSlot slot="panel" app={app} />
   );
 }
 
@@ -174,15 +179,15 @@ function TailorKitPageInstances({ app }: { app: TailorKitApp }) {
           </Button>
         </div>
       )}
-      <Slot name="page" app={app} instanceKey={selected.key} />
+      <RenderSlot slot="page" app={app} instanceKey={selected.key} />
     </>
   );
 }
 
 export function TailorKitShell(props: Parameters<typeof TailorKitShellWithApps>[0]) {
   return (
-    <Root client={tailor}>
+    <TailorKitProvider>
       <TailorKitShellWithApps {...props} />
-    </Root>
+    </TailorKitProvider>
   );
 }

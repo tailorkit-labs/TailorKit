@@ -1,2 +1,1 @@
-export { Root } from "./root";
-export { Slot } from "./slot";
+export { RenderSlot } from "./render-slot";

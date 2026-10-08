@@ -1,9 +1,9 @@
 import { useStore } from "@nanostores/react";
 import { createSlotRuntime, buildThemeCss } from "@tailorkit/client-core";
 import type {
-  ControlledSlotProps,
-  SlotProps,
-  RuntimeSlotProps,
+  ControlledRenderSlotProps,
+  RenderSlotProps,
+  RuntimeRenderSlotProps,
   SlotRuntimeOptions,
 } from "@tailorkit/client-core";
 import type { SlotDefinitions, ViewDefinition } from "@tailorkit/core/schema";
@@ -11,31 +11,37 @@ import { useEffect, useId, useMemo } from "react";
 import type { ReactNode } from "react";
 import { PrimitiveThemeContext } from "../primitives";
 import { RemoteViewHost } from "../remote-view";
-import { useTailorRootContext } from "./context";
+import { useTailorkitContext } from "./context";
 
-export type { ControlledSlotProps, SlotProps, SlotContext } from "@tailorkit/client-core";
+export type {
+  ControlledRenderSlotProps,
+  RenderSlotProps,
+  RenderSlotContext,
+} from "@tailorkit/client-core";
 
 type DefaultViews = Record<`/${string}`, ViewDefinition>;
-export type SlotComponent<
+export type RenderSlotComponent<
   TViews extends Record<string, ViewDefinition> = DefaultViews,
   TSlots extends SlotDefinitions = SlotDefinitions,
-> = ((props: SlotProps<TSlots>) => ReactNode) & {
-  Controlled: (props: ControlledSlotProps<TViews, TSlots>) => ReactNode;
+> = ((props: RenderSlotProps<TSlots>) => ReactNode) & {
+  Controlled: (props: ControlledRenderSlotProps<TViews, TSlots>) => ReactNode;
 };
 
-function ManagedSlot(props: RuntimeSlotProps): ReactNode {
+function ManagedRenderSlot(props: RuntimeRenderSlotProps): ReactNode {
   return <SlotRenderer mode="managed" {...props} />;
 }
 
-function ControlledSlot(props: ControlledSlotProps): ReactNode {
+function ControlledRenderSlot(props: ControlledRenderSlotProps): ReactNode {
   return <SlotRenderer mode="controlled" {...props} />;
 }
 
-export const Slot: SlotComponent = Object.assign(ManagedSlot, { Controlled: ControlledSlot });
+export const RenderSlot: RenderSlotComponent = Object.assign(ManagedRenderSlot, {
+  Controlled: ControlledRenderSlot,
+});
 
 function SlotRenderer(options: SlotRuntimeOptions): ReactNode {
-  const { store, client } = useTailorRootContext(
-    options.mode === "managed" ? "Slot" : "Slot.Controlled",
+  const { store, client } = useTailorkitContext(
+    options.mode === "managed" ? "RenderSlot" : "RenderSlot.Controlled",
   );
   const reactId = useId();
   const runtime = useMemo(() => createSlotRuntime(store, options), [store]);

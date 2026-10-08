@@ -3,24 +3,24 @@ import { createContext, useContext } from "react";
 
 import type { TailorKitClientConfig } from "../tailorkit";
 
-export interface TailorRootContextValue {
+export interface TailorkitContextValue {
   store: TailorKitStore;
   client: TailorKitClientConfig;
 }
 
-export const TailorRootContext = createContext<TailorRootContextValue | null>(null);
+export const TailorkitContext = createContext<TailorkitContextValue | null>(null);
 
-export function useTailorRootContext(
+export function useTailorkitContext(
   component: string,
   expectedClient?: TailorKitClientConfig,
-): TailorRootContextValue {
-  const context = useContext(TailorRootContext);
+): TailorkitContextValue {
+  const context = useContext(TailorkitContext);
   if (!context) {
-    throw new Error(`${component} must be rendered inside Root.`);
+    throw new Error(`${component} must be rendered inside a TailorKit Provider.`);
   }
   if (expectedClient && context.client !== expectedClient) {
     throw new Error(
-      `${component} was created for a different TailorKit client than the one passed to Root.`,
+      `${component} was created for a different TailorKit client than the surrounding Provider.`,
     );
   }
   return context;

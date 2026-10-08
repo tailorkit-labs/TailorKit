@@ -1,4 +1,4 @@
-import { Root, Slot } from "../index";
+import { RenderSlot } from "../index";
 import { act, cleanup, render, screen as testingView, waitFor } from "@testing-library/react";
 import { createElement, StrictMode } from "react";
 import type { ReactNode } from "react";
@@ -120,7 +120,7 @@ function CurrentViewRoute({
         },
   );
 
-  return <Slot name="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
+  return <RenderSlot slot="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
 }
 
 function CurrentViewHost({
@@ -131,9 +131,9 @@ function CurrentViewHost({
   tailor: ReturnType<typeof createTailorKitClient<typeof server>>;
 }) {
   return (
-    <Root client={tailor} apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
+    <tailor.Provider apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
       <CurrentViewRoute nested={nested} tailor={tailor} />
-    </Root>
+    </tailor.Provider>
   );
 }
 
@@ -146,7 +146,7 @@ function HomeSlot({
 }) {
   const { useViewContext } = tailor;
   useViewContext("/home", { context: { page: { title: "home" } } });
-  return <Slot name="panel" app={app} />;
+  return <RenderSlot slot="panel" app={app} />;
 }
 
 describe("tailorKitClient React adapter", () => {
@@ -216,7 +216,7 @@ describe("tailorKitClient React adapter", () => {
     });
     const suppliedApps: TailorKitApp[] = [];
     const content = (token: string) => (
-      <Root client={tailor} apps={suppliedApps}>
+      <tailor.Provider apps={suppliedApps}>
         <HomeSlot
           tailor={tailor}
           app={{
@@ -230,7 +230,7 @@ describe("tailorKitClient React adapter", () => {
             },
           }}
         />
-      </Root>
+      </tailor.Provider>
     );
     const view = render(content("initial-token"));
     await waitFor(() => expect(PreviewSocket.instances).toHaveLength(1));
@@ -266,10 +266,10 @@ describe("tailorKitClient React adapter", () => {
     }
 
     render(
-      <Root client={tailor}>
+      <tailor.Provider>
         <AppList />
         <AppList />
-      </Root>,
+      </tailor.Provider>,
     );
 
     await waitFor(() => {
@@ -308,12 +308,12 @@ describe("tailorKitClient React adapter", () => {
       );
     }
     render(
-      <Root client={tailor}>
+      <tailor.Provider>
         <AppList label="org" scopes={["organization"]} />
         <AppList label="user" scopes={["user"]} />
         <AppList label="all" />
         <AppList label="empty" scopes={[]} />
-      </Root>,
+      </tailor.Provider>,
     );
     await waitFor(() => expect(testingView.getByText("all:ready:organization,user")).toBeTruthy());
     expect(testingView.getByText("org:ready:organization")).toBeTruthy();
@@ -350,9 +350,9 @@ describe("tailorKitClient React adapter", () => {
     }
 
     render(
-      <Root client={tailor}>
+      <tailor.Provider>
         <AppList />
-      </Root>,
+      </tailor.Provider>,
     );
 
     await waitFor(() => expect(testingView.getByText("ready")).toBeTruthy());
@@ -412,13 +412,13 @@ describe("tailorKitClient React adapter", () => {
         loading: status === "loading",
         error: status === "error" ? new Error("Failed to load context") : null,
       });
-      return <Slot name="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
+      return <RenderSlot slot="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
     }
 
     const view = render(
-      <Root client={tailor} apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
+      <tailor.Provider apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
         <Route status="loading" />
-      </Root>,
+      </tailor.Provider>,
     );
 
     await waitFor(() => {
@@ -428,9 +428,9 @@ describe("tailorKitClient React adapter", () => {
     });
 
     view.rerender(
-      <Root client={tailor} apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
+      <tailor.Provider apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
         <Route status="error" />
-      </Root>,
+      </tailor.Provider>,
     );
 
     await waitFor(() => {
@@ -452,9 +452,9 @@ describe("tailorKitClient React adapter", () => {
       useViewContext("/home", { context: { page: { title: "home" } } });
       return (
         <>
-          <Slot name="panel" app={{ clientPath: "/apps/b.js", id: "b" }} />
-          <Slot
-            name="panel"
+          <RenderSlot slot="panel" app={{ clientPath: "/apps/b.js", id: "b" }} />
+          <RenderSlot
+            slot="panel"
             app={{
               currentDeployment: { id: "deployment_1" },
               id: "a",
@@ -466,8 +466,7 @@ describe("tailorKitClient React adapter", () => {
     }
 
     render(
-      <Root
-        client={tailor}
+      <tailor.Provider
         apps={[
           { clientPath: "/apps/b.js", id: "b" },
           {
@@ -478,7 +477,7 @@ describe("tailorKitClient React adapter", () => {
         ]}
       >
         <Route />
-      </Root>,
+      </tailor.Provider>,
     );
 
     await waitFor(() => {
@@ -499,18 +498,18 @@ describe("tailorKitClient React adapter", () => {
       baseUrl: "http://runtime.test",
       components,
     });
-    const { Slot: ClientSlot } = tailor;
+    const { RenderSlot: ClientRenderSlot } = tailor;
 
     render(
-      <Root client={tailor}>
-        <ClientSlot.Controlled
-          name="panel"
+      <tailor.Provider>
+        <ClientRenderSlot.Controlled
+          slot="panel"
           app={{ clientPath: "/apps/todo.js", id: "todo" }}
           context={{ userId: "user_1" }}
           view="/user"
           status="ready"
         />
-      </Root>,
+      </tailor.Provider>,
     );
 
     await waitFor(() => {
@@ -523,7 +522,7 @@ describe("tailorKitClient React adapter", () => {
     });
   });
 
-  it("rejects a client Slot rendered under a different Root client", () => {
+  it("rejects a client RenderSlot rendered under a different client Provider", () => {
     const tailor = createTailorKitClient<typeof server>({
       baseUrl: "http://runtime.test",
       components,
@@ -532,16 +531,18 @@ describe("tailorKitClient React adapter", () => {
       baseUrl: "http://other-runtime.test",
       components,
     });
-    const { Slot: ClientSlot } = tailor;
+    const { RenderSlot: ClientRenderSlot } = tailor;
     vi.spyOn(console, "error").mockImplementation(() => {});
 
     expect(() =>
       render(
-        <Root client={otherTailor}>
-          <ClientSlot name="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />
-        </Root>,
+        <otherTailor.Provider>
+          <ClientRenderSlot slot="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />
+        </otherTailor.Provider>,
       ),
-    ).toThrow("Slot was created for a different TailorKit client than the one passed to Root.");
+    ).toThrow(
+      "RenderSlot was created for a different TailorKit client than the surrounding Provider.",
+    );
   });
 
   it("warns when multiple hooks register views at the same hierarchy depth", async () => {
@@ -560,14 +561,14 @@ describe("tailorKitClient React adapter", () => {
     function UserRoute() {
       const { useViewContext } = tailor;
       useViewContext("/user", { context: { userId: "user_1" } });
-      return <Slot name="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
+      return <RenderSlot slot="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
     }
 
     render(
-      <Root client={tailor} apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
+      <tailor.Provider apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
         <HomeRoute />
         <UserRoute />
-      </Root>,
+      </tailor.Provider>,
     );
 
     await waitFor(() => {
@@ -589,9 +590,9 @@ describe("tailorKitClient React adapter", () => {
     });
 
     render(
-      <Root client={tailor} apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
+      <tailor.Provider apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
         <HomeSlot app={{ clientPath: "/apps/todo.js", id: "todo" }} tailor={tailor} />
-      </Root>,
+      </tailor.Provider>,
     );
 
     await waitFor(() => {
@@ -609,9 +610,9 @@ describe("tailorKitClient React adapter", () => {
     });
 
     render(
-      <Root client={tailor} apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
+      <tailor.Provider apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
         <HomeSlot app={{ clientPath: "/apps/todo.js", id: "todo" }} tailor={tailor} />
-      </Root>,
+      </tailor.Provider>,
     );
 
     await waitFor(() => {
@@ -628,9 +629,9 @@ describe("tailorKitClient React adapter", () => {
     });
 
     const view = render(
-      <Root client={tailor} apps={[{ clientPath: "/apps/missing-component.js", id: "bad" }]}>
+      <tailor.Provider apps={[{ clientPath: "/apps/missing-component.js", id: "bad" }]}>
         <HomeSlot app={{ clientPath: "/apps/missing-component.js", id: "bad" }} tailor={tailor} />
-      </Root>,
+      </tailor.Provider>,
     );
 
     await waitFor(() => {
@@ -641,9 +642,9 @@ describe("tailorKitClient React adapter", () => {
 
     await act(() => {
       view.rerender(
-        <Root client={tailor} apps={[{ clientPath: "/apps/email.js", id: "email" }]}>
+        <tailor.Provider apps={[{ clientPath: "/apps/email.js", id: "email" }]}>
           <HomeSlot app={{ clientPath: "/apps/email.js", id: "email" }} tailor={tailor} />
-        </Root>,
+        </tailor.Provider>,
       );
     });
 
@@ -678,8 +679,8 @@ describe("view registries", () => {
     return (
       <>
         {detail ? <Detail client={client} /> : null}
-        <Slot name="navbar" app={{ id: "nav", clientPath: "/nav.js" }} />
-        <Slot name="panel" app={{ id: "panel", clientPath: "/panel.js" }} />
+        <RenderSlot slot="navbar" app={{ id: "nav", clientPath: "/nav.js" }} />
+        <RenderSlot slot="panel" app={{ id: "panel", clientPath: "/panel.js" }} />
       </>
     );
   }
@@ -695,9 +696,9 @@ describe("view registries", () => {
       components,
     });
     const view = render(
-      <Root client={client}>
+      <client.Provider>
         <Layers client={client} />
-      </Root>,
+      </client.Provider>,
     );
     await waitFor(() => expect(hostRecords).toHaveLength(2));
     expect(hostRecords.map((record) => record.props?.slot)).toEqual(["navbar", "panel"]);
@@ -710,9 +711,9 @@ describe("view registries", () => {
       ],
     });
     view.rerender(
-      <Root client={client}>
+      <client.Provider>
         <Layers client={client} detail={false} />
-      </Root>,
+      </client.Provider>,
     );
     await waitFor(() => expect(hostRecords.at(-1)?.props?.view).toBe("/home"));
     expect(hostRecords.at(-1)?.props?.layers).toHaveLength(2);
@@ -727,16 +728,16 @@ describe("view registries", () => {
     function OtherRoute() {
       const { useViewContext } = client;
       useViewContext("/user", { context: { userId: "other" } });
-      return <Slot name="panel" app={{ id: "other", clientPath: "/other.js" }} />;
+      return <RenderSlot slot="panel" app={{ id: "other", clientPath: "/other.js" }} />;
     }
     render(
       <StrictMode>
-        <Root client={client}>
+        <client.Provider>
           <Layers client={client} />
-        </Root>
-        <Root client={client}>
+        </client.Provider>
+        <client.Provider>
           <OtherRoute />
-        </Root>
+        </client.Provider>
       </StrictMode>,
     );
     await waitFor(() =>
@@ -774,7 +775,7 @@ it("isolates a new client cache even when its endpoint is equivalent", async () 
     return (
       <>
         <span>{data?.[0]?.id}</span>
-        <Slot name="panel" app={{ id: "test", clientPath: "client.js" }} />
+        <RenderSlot slot="panel" app={{ id: "test", clientPath: "client.js" }} />
       </>
     );
   }
@@ -782,24 +783,24 @@ it("isolates a new client cache even when its endpoint is equivalent", async () 
     createTailorKitClient<typeof server>({ baseUrl, components });
   const firstClient = createClient("http://first.test/api");
   const view = render(
-    <Root client={firstClient}>
+    <firstClient.Provider>
       <Contents client={firstClient} />
-    </Root>,
+    </firstClient.Provider>,
   );
   await waitFor(() => expect(testingView.getByText("first.test")).toBeTruthy());
   const count = fetchMock.mock.calls.length;
   const equivalentClient = createClient(new URL("http://first.test/api/"));
   view.rerender(
-    <Root client={equivalentClient}>
+    <equivalentClient.Provider>
       <Contents client={equivalentClient} />
-    </Root>,
+    </equivalentClient.Provider>,
   );
   await waitFor(() => expect(fetchMock.mock.calls).toHaveLength(count + 2));
   const secondClient = createClient("http://second.test/api");
   view.rerender(
-    <Root client={secondClient}>
+    <secondClient.Provider>
       <Contents client={secondClient} />
-    </Root>,
+    </secondClient.Provider>,
   );
   await waitFor(() => expect(testingView.getByText("second.test")).toBeTruthy());
   await waitFor(() => expect(hostRecords.at(-1)?.appUrl).toBe("http://second.test/api/client.js"));
@@ -807,7 +808,7 @@ it("isolates a new client cache even when its endpoint is equivalent", async () 
   view.unmount();
 });
 
-it("replaces the root transport when an explicit fetch client is removed or restored", async () => {
+it("keeps each provider bound to its client's fetch transport", async () => {
   const explicitFetch = vi
     .fn()
     .mockImplementation(() => Promise.resolve(Response.json([{ id: "explicit-user" }])));
@@ -819,34 +820,34 @@ it("replaces the root transport when an explicit fetch client is removed or rest
     components,
     fetch: explicitFetch,
   });
-  const fallback = { baseUrl: client.baseUrl, components: client.components, theme: client.theme };
+  const fallback = createTailorKitClient<typeof server>({ baseUrl: client.baseUrl, components });
   function Contents() {
     const { data } = useApps();
     return <span>{data?.[0]?.id}</span>;
   }
   const view = render(
-    <Root client={client}>
+    <client.Provider>
       <Contents />
-    </Root>,
+    </client.Provider>,
   );
   await waitFor(() => expect(testingView.getByText("explicit-user")).toBeTruthy());
   view.rerender(
-    <Root client={fallback}>
+    <fallback.Provider>
       <Contents />
-    </Root>,
+    </fallback.Provider>,
   );
   await waitFor(() => expect(testingView.getByText("fallback-user")).toBeTruthy());
   view.rerender(
-    <Root client={{ ...fallback }}>
+    <fallback.Provider>
       <Contents />
-    </Root>,
+    </fallback.Provider>,
   );
   expect(testingView.getByText("fallback-user")).toBeTruthy();
   expect(fallbackFetch).toHaveBeenCalledOnce();
   view.rerender(
-    <Root client={client}>
+    <client.Provider>
       <Contents />
-    </Root>,
+    </client.Provider>,
   );
   await waitFor(() => expect(testingView.getByText("explicit-user")).toBeTruthy());
   expect(explicitFetch).toHaveBeenCalledOnce();
@@ -863,15 +864,15 @@ it("retains equivalent explicit context identity and publishes changed values", 
     components,
   });
   const content = (userId: string) => (
-    <Root client={client}>
-      <Slot.Controlled
-        name="panel"
+    <client.Provider>
+      <RenderSlot.Controlled
+        slot="panel"
         view="/user"
         context={{ userId }}
         app={{ id: "test", clientPath: "/client.js" }}
         status="ready"
       />
-    </Root>
+    </client.Provider>
   );
   const view = render(content("u1"));
   await waitFor(() => expect(hostRecords.at(-1)?.props?.view).toBe("/user"));
@@ -902,22 +903,24 @@ describe("supplied app discovery", () => {
   it("uses supplied apps for discovery, including updates and empty lists, without fetching", async () => {
     const fetch = vi.spyOn(globalThis, "fetch");
     const view = render(
-      <Root client={client} apps={[{ id: "first" }]}>
+      <client.Provider apps={[{ id: "first" }]}>
         <Apps />
-      </Root>,
+      </client.Provider>,
     );
     expect(testingView.getByText("ready:first")).toBeTruthy();
+    expect(view.container.childElementCount).toBe(1);
+    expect(view.container.firstElementChild).toBe(testingView.getByRole("button"));
     await act(() => testingView.getByRole("button").click());
     view.rerender(
-      <Root client={client} apps={[{ id: "second" }]}>
+      <client.Provider apps={[{ id: "second" }]}>
         <Apps />
-      </Root>,
+      </client.Provider>,
     );
     await waitFor(() => expect(testingView.getByText("ready:second")).toBeTruthy());
     view.rerender(
-      <Root client={client} apps={[]}>
+      <client.Provider apps={[]}>
         <Apps />
-      </Root>,
+      </client.Provider>,
     );
     await waitFor(() => expect(testingView.getByText("ready:")).toBeTruthy());
     expect(fetch).not.toHaveBeenCalled();
@@ -935,15 +938,15 @@ describe("supplied app discovery", () => {
       )
       .mockResolvedValue(Response.json([{ id: "fresh" }]));
     const view = render(
-      <Root client={client}>
+      <client.Provider>
         <Apps />
-      </Root>,
+      </client.Provider>,
     );
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
     view.rerender(
-      <Root client={client} apps={[{ id: "provided" }]}>
+      <client.Provider apps={[{ id: "provided" }]}>
         <Apps />
-      </Root>,
+      </client.Provider>,
     );
     await waitFor(() => expect(testingView.getByText("ready:provided")).toBeTruthy());
     await act(() => {
@@ -951,9 +954,9 @@ describe("supplied app discovery", () => {
     });
     expect(testingView.getByText("ready:provided")).toBeTruthy();
     view.rerender(
-      <Root client={client}>
+      <client.Provider>
         <Apps />
-      </Root>,
+      </client.Provider>,
     );
     await waitFor(() => expect(testingView.getByText("ready:fresh")).toBeTruthy());
     expect(fetch).toHaveBeenCalledTimes(2);
