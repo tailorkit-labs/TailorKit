@@ -304,6 +304,10 @@ describe("generateApp", () => {
     { slot: "panel", view: "/../db" },
     { slot: "panel", view: "/customers//details" },
     { slot: "panel", view: "customers" },
+    { slot: "panel", view: "/.well-known" },
+    { slot: "panel", view: "/customers/.details" },
+    { slot: "panel", view: "/customers..details" },
+    { slot: "panel", view: "/customers." },
   ])("rejects invalid view file paths before writing files: %j", async ({ slot, view }) => {
     const targetDirectory = await createTempDir();
     await expect(

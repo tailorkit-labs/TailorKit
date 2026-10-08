@@ -49,6 +49,43 @@ it.each([
   expect(inferFileView(otherMethod, filename, "/app")).toBe(otherMethod);
 });
 
+it.each([
+  ["parameter", "function unrelated($name) { return $call(options); }"],
+  ["destructured parameter", "function unrelated({ $name }) { return $call(options); }"],
+  ["arrow parameter", "const unrelated = ($name) => $call(options);"],
+  ["block", "function unrelated() { { const $name = other; return $call(options); } }"],
+  ["hoisted var", "function unrelated() { $call(options); if (true) { var $name = other; } }"],
+  ["hoisted function", "function unrelated() { $call(options); function $name() {} }"],
+  ["catch", "try { other(); } catch ($name) { $call(options); }"],
+  ["loop", "for (const $name of others) { $call(options); }"],
+  ["switch", "switch (choice) { case 1: $call(options); break; case 2: const $name = other; }"],
+  ["function name", "const unrelated = function $name() { return $call(options); };"],
+  ["class name", "const unrelated = class $name { static run() { return $call(options); } };"],
+])("ignores imported defineView names shadowed by a %s", (_scope, body) => {
+  const filename = "/app/src/slots/panel/home.view.tsx";
+  for (const [imports, name, call] of [
+    ['import { defineView as view } from "tailorkit/client";', "view", "view"],
+    ['import * as client from "tailorkit/client";', "client", "client.defineView"],
+  ] as const) {
+    const unrelated = body.replaceAll("$name", name).replaceAll("$call", call);
+    const source = `${imports}\n${unrelated}\nexport default ${call}({ component: () => null });`;
+    const inferred = inferFileView(source, filename, "/app");
+    expect(inferred).toContain(unrelated);
+    expect(inferred.match(/slot:/gu)).toHaveLength(1);
+    expect(inferred).toContain('slot: "panel"');
+    expect(inferred).toContain('view: "/home"');
+  }
+});
+
+it("keeps SDK references in closures and parameter defaults outside body declarations", () => {
+  const source = `import * as client from "tailorkit/client";
+    function helper(options = client.defineView({ component: () => null })) { var client = other; }
+    const view = () => client.defineView({ component: () => null });
+    export default view();`;
+  const inferred = inferFileView(source, "/app/src/slots/panel/home.view.tsx", "/app");
+  expect(inferred.match(/slot:/gu)).toHaveLength(2);
+});
+
 it("discovers only view and layout files, supports roots, and checks the same sources on deploy", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "tailorkit-file-discovery-"));
   try {

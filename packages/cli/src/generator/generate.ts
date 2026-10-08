@@ -53,10 +53,16 @@ const isFilenameSegment = (segment: string) =>
 
 function getViewModulePath(slotName: string, viewPath: string) {
   const viewSegments = viewPath === "/" ? ["home"] : viewPath.slice(1).split("/");
-  if (!viewPath.startsWith("/") || ![slotName, ...viewSegments].every(isFilenameSegment)) {
-    throw new Error("The selected slot and view must have valid file names to generate src/slots.");
+  const routeName = viewSegments.join(".");
+  if (
+    !viewPath.startsWith("/") ||
+    ![slotName, ...viewSegments, ...routeName.split(".")].every(isFilenameSegment)
+  ) {
+    throw new Error(
+      "The selected slot and view must have valid file names with no empty dot-separated route segments to generate src/slots.",
+    );
   }
-  return ["slots", slotName, viewSegments.join(".")].join("/");
+  return ["slots", slotName, routeName].join("/");
 }
 
 const renderTemplate = (template: string, data: Record<string, unknown>): Promise<string> =>

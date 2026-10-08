@@ -60,6 +60,16 @@ it("extracts namespace defineView instances with inferred file routes", async ()
   expect(result?.names).toEqual(namedResult?.names);
 });
 
+it("ignores instances in calls shadowing the SDK import", async () => {
+  const unrelated = `function helper(cv) {
+    return cv({ instances: { dataSchema: {}, resolve: () => [] }, component: () => null });
+  }`;
+  const result = await extractInstances("/app/src/page.tsx", `${source}\n${unrelated}`, "/app");
+  expect(result?.names).toHaveLength(1);
+  expect(result?.server).not.toContain("function helper");
+  expect(result?.browser).toContain("function helper");
+});
+
 it("keeps resolver references stable when component code or source positions change", async () => {
   const first = await extractInstances("/app/src/page.tsx", source, "/app");
   const second = await extractInstances(

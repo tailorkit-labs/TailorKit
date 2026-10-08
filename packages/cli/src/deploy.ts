@@ -7,7 +7,6 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { gzip } from "node:zlib";
 import type { TailorKitUploadManifest } from "@tailorkit/app/builder";
-import { getClientSourceFiles } from "@tailorkit/app/builder";
 import type { LoadedTailorKitConfig } from "@tailorkit/app/config/loader";
 import { loadTailorKitConfig } from "@tailorkit/app/config/loader";
 import { createTailorKitClient } from "@tailorkit/core/server";
@@ -184,6 +183,7 @@ const typecheckAppEntries = async (
   } catch {
     return;
   }
+  const { getClientSourceFiles } = await import("@tailorkit/app/builder");
   const clientFiles = await getClientSourceFiles(loaded.root);
   // Check both application entry points with the project compiler options.
   const temporary = await mkdtemp(path.join(loaded.root, ".tailorkit-typecheck-"));
