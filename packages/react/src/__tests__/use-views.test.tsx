@@ -575,7 +575,15 @@ it("aggregates apps in discovery order, resolves in parallel, and preserves dupl
   expect(calls("/meta")).toHaveLength(1);
 });
 
-it("returns an empty result when there are no discovered apps", async () => {
+it("returns an empty result without requests when there are no apps or registered context", async () => {
+  apps = [];
+  const { result } = renderHook(() => client.useViews({ slot: "page" }), { wrapper });
+  await waitFor(() => expect(result.current.data).toEqual([]));
+  expect(result.current.isSuccess).toBe(true);
+  expect(globalThis.fetch).not.toHaveBeenCalled();
+});
+
+it("returns an empty result with no app requests when only context diagnostics need metadata", async () => {
   apps = [];
   const { result } = renderHook(
     () => {
@@ -586,7 +594,10 @@ it("returns an empty result when there are no discovered apps", async () => {
   );
   await waitFor(() => expect(result.current.data).toEqual([]));
   expect(result.current.isSuccess).toBe(true);
-  expect(globalThis.fetch).not.toHaveBeenCalled();
+  expect(calls("/meta")).toHaveLength(1);
+  expect(calls("/apps")).toHaveLength(0);
+  expect(calls("/backend/session")).toHaveLength(0);
+  expect(calls("/actions")).toHaveLength(0);
 });
 
 it("exposes app discovery failures and retries them through refetch", async () => {

@@ -610,6 +610,12 @@ Loading and error states do not publish context, even when cached data is presen
 Without either flag, the view is ready; `undefined` does not imply loading, so
 views with an optional context can register as ready without data.
 
+Once server metadata is available, the hook logs a `console.error` if a ready
+view is missing required context or its context does not match the serialized
+JSON Schema. The message includes the view path and schema issues where available.
+Loading and error states skip these checks; optional context can remain `undefined`.
+These diagnostics do not change the registered state or transform your context.
+
 For a query whose data already matches the view's context schema:
 
 ```tsx
