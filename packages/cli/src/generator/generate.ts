@@ -46,6 +46,19 @@ export interface GenerateAppOptions {
 
 const engine = new Liquid({ strictVariables: true });
 
+// eslint-disable-next-line no-control-regex -- Host-provided file names cannot contain control characters.
+const invalidFilenameCharacters = /[<>:"/\\|?*\u0000-\u001F]/u;
+const isFilenameSegment = (segment: string) =>
+  segment !== "" && segment !== "." && segment !== ".." && !invalidFilenameCharacters.test(segment);
+
+function getViewModulePath(slotName: string, viewPath: string) {
+  const viewSegments = viewPath === "/" ? ["index"] : viewPath.slice(1).split("/");
+  if (!viewPath.startsWith("/") || ![slotName, ...viewSegments].every(isFilenameSegment)) {
+    throw new Error("The selected slot and view must have valid file names to generate src/slots.");
+  }
+  return ["slots", slotName, ...viewSegments].join("/");
+}
+
 const renderTemplate = (template: string, data: Record<string, unknown>): Promise<string> =>
   engine.parseAndRender(template, data);
 
@@ -86,6 +99,8 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     );
   }
   const slotName = slots.find((slot) => schema.slots?.[slot]?.views.includes(viewPath))!;
+  const viewModulePath = getViewModulePath(slotName, viewPath);
+  const viewFile = path.join("src", `${viewModulePath}.tsx`);
   const box = schema.components?.Box;
   // Only use a wrapper that accepts children without requiring host-specific props.
   const useBox = box?.children === true && !box.fields?.required?.length;
@@ -109,6 +124,7 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
 
   const templateData = {
     viewPath: JSON.stringify(viewPath),
+    viewImport: JSON.stringify(`./${viewModulePath}`),
     slotName: JSON.stringify(slotName),
     multiple: schema.slots?.[slotName]?.multiple === true,
     useBox,
@@ -128,7 +144,7 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     drizzleOrmVersion: packageVersions.drizzleOrm ?? TEMPLATE_DRIZZLE_VERSION,
   };
 
-  await ensureDirectory(path.join(targetDirectory, "src", "views"));
+  await ensureDirectory(path.dirname(path.join(targetDirectory, viewFile)));
   await ensureDirectory(path.join(targetDirectory, "src", "functions"));
   await ensureDirectory(path.join(targetDirectory, "src", "db", "migrations"));
 
@@ -142,7 +158,7 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     { template: oxlintConfigTemplate, dest: "oxlint.config.ts", condition: linting },
     { template: oxfmtConfigTemplate, dest: "oxfmt.config.ts", condition: formatting },
     { template: clientTemplate, dest: path.join("src", "client.ts") },
-    { template: defaultViewTemplate, dest: path.join("src", "views", "default.tsx") },
+    { template: defaultViewTemplate, dest: viewFile },
     { template: serverTemplate, dest: path.join("src", "server.ts") },
     { template: schemaTemplate, dest: path.join("src", "db", "schema.ts") },
     { template: databaseTemplate, dest: path.join("src", "db", "index.ts") },

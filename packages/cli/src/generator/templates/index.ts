@@ -5,7 +5,7 @@ import gitignoreTemplate from "./.gitignore.liquid";
 import oxlintConfigTemplate from "./oxlint.config.ts.liquid";
 import oxfmtConfigTemplate from "./oxfmt.config.ts.liquid";
 import clientTemplate from "./src/client.ts.liquid";
-import defaultViewTemplate from "./src/views/default.tsx.liquid";
+import defaultViewTemplate from "./src/slots/view.tsx.liquid";
 import serverTemplate from "./src/server.ts.liquid";
 import schemaTemplate from "./src/db/schema.ts.liquid";
 import databaseTemplate from "./src/db/index.ts.liquid";
