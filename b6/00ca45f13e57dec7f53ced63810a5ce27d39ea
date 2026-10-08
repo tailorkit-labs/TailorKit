@@ -1,0 +1,19 @@
+packages/cli/src/deploy.test.ts
+  s_9fc3fb004a5389::t_2a79bee6cd02e6 239,242-246,249-251
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b600ca45f13e57dec7f53ced63810a5ce27d39ea",
+  "prompts": {},
+  "sessions": {
+    "s_9fc3fb004a5389": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11d78-c7f2-7830-9f4a-d301189e6f57",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
