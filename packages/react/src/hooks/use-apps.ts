@@ -1,9 +1,8 @@
 import { useTailorRootContext } from "../components/context";
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import type { TailorKitApp } from "../tailorkit";
-import { matchesApp } from "@tailorkit/client-core";
+import { matchesApp, normalizeScopeSelection } from "@tailorkit/client-core";
 import type { TailorKitAppsSnapshot, TailorKitStore } from "@tailorkit/client-core";
-import { normalizeScopeSelection } from "../scope-query";
 
 export interface UseAppsOptions<TScopeNames extends string = string> {
   scopes?: readonly TScopeNames[];
@@ -39,8 +38,6 @@ export function useAppsStore(store: TailorKitStore, options: UseAppsOptions = {}
   const refetch = useCallback(() => store.fetchApps({ force: true }), [store]);
   return { ...toUseAppsResult(snapshot, refetch), data };
 }
-
-export { matchesApp } from "@tailorkit/client-core";
 
 export function useAppsSnapshot(store: TailorKitStore): TailorKitAppsSnapshot {
   const snapshot = useSyncExternalStore(
