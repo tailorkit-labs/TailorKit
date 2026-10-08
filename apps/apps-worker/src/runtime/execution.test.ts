@@ -1,3 +1,5 @@
+import { defineRelations } from "drizzle-orm";
+import { databaseScope } from "./database/driver";
 import { Effect } from "effect";
 import { DatabaseSync } from "node:sqlite";
 import { afterEach, expect, it, vi } from "vite-plus/test";
@@ -8,6 +10,7 @@ import {
   boolean,
   eq,
   defineServer,
+  defineDatabase,
   query,
   mutation,
   tk,
@@ -360,4 +363,73 @@ it("runs action database calls locally and notifies only committed writes before
     committed: false,
   });
   expect(notify).toHaveBeenCalledOnce();
+});
+
+it("runs nested relational queries and preserves scope, permissions and invalidation", () => {
+  const { sqlite, persistence } = fixture();
+  const relations = defineRelations({ users, todos }, (r) => ({
+    users: { todos: r.many.todos({ from: r.users.id, to: r.todos.id }) },
+    todos: { user: r.one.users({ from: r.todos.id, to: r.users.id }) },
+  }));
+  const database = defineDatabase({ relations });
+  const app = defineServer({
+    list: tk.query
+      .database(database)
+      .handler(({ db }) =>
+        db.query.users.findMany({ with: { todos: true }, orderBy: { id: "asc" } }).sync(),
+      ),
+    first: query({
+      database,
+      args: z.undefined(),
+      handler: ({ db }) =>
+        db.query.todos.findFirst({ where: { id: "one" }, with: { user: true } }).sync() ?? null,
+    }),
+    absent: tk.query
+      .database(database)
+      .handler(({ db }) => db.query.todos.findFirst({ where: { id: "missing" } }).sync() ?? null),
+    insert: tk.mutation
+      .database(database)
+      .input(z.string())
+      .handler(({ db, input }) => {
+        db.insert(todos).values({ id: input, title: "Nested todo", done: true }).run();
+        return db.query.todos.findFirst({ where: { id: input }, with: { user: true } }).sync();
+      }),
+    writeInQuery: tk.query.database(database).handler(({ db }) => {
+      // @ts-expect-error Verify runtime enforcement even if a caller bypasses the type restriction.
+      db.insert(todos).values({ id: "forbidden", title: "No" }).run();
+      return null;
+    }),
+  });
+  const execution = createExecution(app, persistence);
+  expect(execution.query({ name: "list" }, identity)).toEqual({
+    value: [],
+    tables: ["users", "todos"],
+  });
+  sqlite.exec("INSERT INTO users VALUES ('one', 'Author')");
+  const inserted = execution.mutate(
+    { name: "insert", args: "one", requestId: crypto.randomUUID() },
+    identity,
+  );
+  const todo = {
+    id: "one",
+    title: "Nested todo",
+    done: true,
+    user: { id: "one", title: "Author" },
+  };
+  expect(inserted.value).toEqual(todo);
+  expect(inserted.tables).toEqual(["todos"]);
+  expect(execution.query({ name: "first" }, identity).value).toEqual(todo);
+  expect(execution.query({ name: "list" }, identity).value).toEqual([
+    { id: "one", title: "Author", todos: [{ id: "one", title: "Nested todo", done: true }] },
+  ]);
+  expect(execution.query({ name: "absent" }, identity).value).toBeNull();
+  expect(() => execution.query({ name: "writeInQuery" }, identity)).toThrow("Queries cannot write");
+  const scope = databaseScope(persistence, false, relations);
+  const usersQuery = scope.db.query.users;
+  if (!usersQuery) {
+    throw new Error("Missing users query");
+  }
+  const prepared = usersQuery.findMany().prepare();
+  scope.close();
+  expect(() => prepared.all()).toThrow("Database scope has ended");
 });

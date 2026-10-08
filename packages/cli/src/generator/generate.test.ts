@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
@@ -61,13 +61,32 @@ describe("generateApp", () => {
       path.join("src", "views", "default.tsx"),
       path.join("src", "tailorkit.gen.ts"),
       path.join("src", "server.ts"),
-      path.join("src", "schema.ts"),
+      path.join("src", "db", "schema.ts"),
+      path.join("src", "db", "index.ts"),
+      path.join("src", "db", "relations.ts"),
       path.join("src", "functions", "greeting.ts"),
     ];
 
     for (const file of files) {
       await expect(readFile(path.join(targetDirectory, file), "utf-8")).resolves.toBeDefined();
     }
+  });
+
+  it("wires the database and relations without a duplicate schema import", async () => {
+    const targetDirectory = await createTempDir();
+    await generateApp({ ...defaultOptions, targetDirectory });
+    const database = await readFile(path.join(targetDirectory, "src/db/index.ts"), "utf-8");
+    expect(database).toContain("defineDatabase({ relations })");
+    expect(database).toContain('export * from "./schema"');
+    expect(database).not.toContain("import * as schema");
+    expect(await readFile(path.join(targetDirectory, "src/db/relations.ts"), "utf-8")).toContain(
+      "defineRelations(schema)",
+    );
+    expect(
+      await readFile(path.join(targetDirectory, "src/functions/greeting.ts"), "utf-8"),
+    ).toContain(".database(db)");
+    expect(await readdir(path.join(targetDirectory, "src/db/migrations"))).toEqual([]);
+    await expect(readFile(path.join(targetDirectory, "src/schema.ts"))).rejects.toThrow();
   });
 
   it("does not generate linting or formatting configs when disabled", async () => {

@@ -5,6 +5,7 @@ import type { LoadedTailorKitConfig } from "../config/loader";
 import { readAppMigrations } from "./migrations";
 import { runtimeManifest } from "../server/bundle";
 import { checkAppSchema } from "./schema-check";
+import { appDatabasePaths } from "./database-paths";
 import { instanceServerBindings, instanceServerImports, instanceServerPlugin } from "./instances";
 import type { InstanceModule, InstanceRegistration } from "./instances";
 
@@ -23,7 +24,7 @@ export async function buildServer(
   const output =
     buildOutDir ?? path.resolve(loaded.root, loaded.config.build?.outDir ?? ".tailorkit");
   const directory = path.join(output, "server");
-  const migrationsDirectory = path.resolve(loaded.root, config.migrations ?? "./migrations");
+  const migrationsDirectory = appDatabasePaths(loaded.root, config.migrations).migrations;
   const migrationsOutput = path.join(output, "migrations");
   const temporaryRoot = path.join(output, "tmp");
   validateServerBuildOutput(loaded, output);
@@ -73,7 +74,7 @@ export const runtimeManifest = ${JSON.stringify(runtimeManifest)};
               config.migrations === undefined,
             );
             await checkAppSchema(loaded.root, migrationsDirectory);
-            this.addWatchFile(path.join(loaded.root, "src/schema.ts"));
+            this.addWatchFile(appDatabasePaths(loaded.root).schema);
             for (const file of files) {
               this.addWatchFile(file);
             }
@@ -139,10 +140,10 @@ export const runtimeManifest = ${JSON.stringify(runtimeManifest)};
 /** Check before either build can empty an output directory. */
 export function validateServerBuildOutput(loaded: LoadedTailorKitConfig, output: string) {
   if (!loaded.config.server) return;
-  const migrationsDirectory = path.resolve(
+  const migrationsDirectory = appDatabasePaths(
     loaded.root,
-    loaded.config.server.migrations ?? "./migrations",
-  );
+    loaded.config.server.migrations,
+  ).migrations;
   for (const name of ["server", "client", "migrations", "tmp"]) {
     if (overlaps(migrationsDirectory, path.join(output, name))) {
       throw new Error("App build output must not overlap migration source");

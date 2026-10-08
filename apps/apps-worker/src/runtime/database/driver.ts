@@ -7,7 +7,8 @@ import {
 import type { PreparedQueryConfig, SQLiteExecuteMethod } from "drizzle-orm/sqlite-core";
 import type { SelectedFieldsOrdered } from "drizzle-orm/sqlite-core/query-builders/select.types";
 import type { Query } from "drizzle-orm";
-import { fillPlaceholders } from "drizzle-orm";
+import { fillPlaceholders, getTableName, getViewName, isView, isTable } from "drizzle-orm";
+import type { AnyRelations } from "drizzle-orm/relations";
 import { makeDefaultQueryMapper } from "drizzle-orm/utils";
 import { AppError } from "../errors";
 import type { MutationDatabase } from "@tailorkit/app/server";
@@ -23,19 +24,26 @@ export interface Persistence {
 }
 type Metadata = { type: "select" | "insert" | "update" | "delete"; tables: string[] };
 
-export function databaseScope(driver: Persistence, writable: boolean) {
+export function databaseScope(
+  driver: Persistence,
+  writable: boolean,
+  relations: AnyRelations = {},
+) {
   const reads = new Set<string>();
   const writes = new Set<string>();
   let active = true;
   class Prepared extends SQLitePreparedQuery<PreparedQueryConfig & { type: "sync" }> {
+    private readonly relationalMapper: ((rows: Record<string, unknown>[]) => unknown) | undefined;
     constructor(
       query: Query,
       private fields: SelectedFieldsOrdered | undefined,
       method: SQLiteExecuteMethod,
       private mapper: ((rows: unknown[][]) => unknown) | undefined,
       private metadata: Metadata | undefined,
+      relationalMapper?: (rows: Record<string, unknown>[]) => unknown,
     ) {
       super("sync", method, query);
+      this.relationalMapper = relationalMapper;
     }
     private executeSql(values: Record<string, unknown> = {}) {
       if (!active) throw new AppError("BAD_REQUEST", "Database scope has ended");
@@ -58,6 +66,13 @@ export function databaseScope(driver: Persistence, writable: boolean) {
     }
     all(values?: Record<string, unknown>) {
       const result = this.executeSql(values);
+      if (this.relationalMapper) {
+        return this.relationalMapper(
+          result.rows.map((row) =>
+            Object.fromEntries(result.columns.map((name, index) => [name, row[index]])),
+          ),
+        );
+      }
       if (this.mapper) return this.mapper(result.rows);
       if (this.fields)
         return makeDefaultQueryMapper<unknown[]>(
@@ -70,7 +85,8 @@ export function databaseScope(driver: Persistence, writable: boolean) {
       );
     }
     get(values?: Record<string, unknown>) {
-      return (this.all(values) as unknown[])[0];
+      const result = this.all(values);
+      return this.relationalMapper ? result : (result as unknown[])[0];
     }
   }
   class Session extends SQLiteSession<"sync", { changes: number }> {
@@ -83,22 +99,38 @@ export function databaseScope(driver: Persistence, writable: boolean) {
     ) {
       return new Prepared(query, fields, method, mapper, metadata);
     }
-    prepareRelationalQuery(): never {
-      throw new AppError("BAD_REQUEST", "Relational query configuration is not supported");
+    prepareRelationalQuery(
+      query: Query,
+      fields: SelectedFieldsOrdered | undefined,
+      method: SQLiteExecuteMethod,
+      mapper: (rows: Record<string, unknown>[]) => unknown,
+    ) {
+      // RQB does not expose query metadata. Track all configured tables so nested
+      // selections and relation filters invalidate subscriptions when their data changes.
+      const tables = Object.values(relations).map(({ table }) => {
+        if (isTable(table)) {
+          return getTableName(table);
+        }
+        if (isView(table)) {
+          return getViewName(table);
+        }
+        throw new AppError("BAD_REQUEST", "Invalid relational table");
+      });
+      return new Prepared(query, fields, method, undefined, { type: "select", tables }, mapper);
     }
     transaction(): never {
       throw new AppError("BAD_REQUEST", "Mutations already run in an atomic transaction");
     }
   }
   const dialect = new SQLiteSyncDialect();
-  const underlying = new BaseSQLiteDatabase<"sync", { changes: number }>(
+  const underlying = new BaseSQLiteDatabase<
     "sync",
-    dialect,
-    new Session(dialect),
-    {},
-    undefined,
-  );
-  const db: MutationDatabase = {
+    { changes: number },
+    Record<string, never>,
+    AnyRelations
+  >("sync", dialect, new Session(dialect), relations, undefined, false, true);
+  const db: MutationDatabase<AnyRelations> = {
+    query: underlying.query,
     select: underlying.select.bind(underlying),
     selectDistinct: underlying.selectDistinct.bind(underlying),
     insert: underlying.insert.bind(underlying),

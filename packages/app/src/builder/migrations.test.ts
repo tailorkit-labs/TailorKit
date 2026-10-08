@@ -7,7 +7,7 @@ import { readAppMigrations } from "./migrations";
 
 const example = path.resolve(
   import.meta.dirname,
-  "../../../../examples/apps/backend-todo/migrations",
+  "../../../../examples/apps/backend-todo/src/db/migrations",
 );
 
 it("packages generated SQL with stable checksums and tracks the source files", async () => {

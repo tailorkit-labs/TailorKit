@@ -43,7 +43,7 @@ export function createExecution(
     tables?: Set<string>,
   ): ExecutionResult {
     const { fn, args } = prepareFunction(app, input, identity, kind);
-    const scope = databaseScope(persistence, kind === "mutation");
+    const scope = databaseScope(persistence, kind === "mutation", fn.database?.relations);
     try {
       const value = inExecutionContext({ kind, active: true }, () =>
         fn.handler({ args, db: scope.db, identity } as never),

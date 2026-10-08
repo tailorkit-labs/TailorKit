@@ -16,6 +16,8 @@ import {
   tsconfigTemplate,
   serverTemplate,
   schemaTemplate,
+  databaseTemplate,
+  relationsTemplate,
   greetingTemplate,
   logoDarkTemplate,
   logoLightTemplate,
@@ -128,6 +130,7 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
 
   await ensureDirectory(path.join(targetDirectory, "src", "views"));
   await ensureDirectory(path.join(targetDirectory, "src", "functions"));
+  await ensureDirectory(path.join(targetDirectory, "src", "db", "migrations"));
 
   const files: { template: string; dest: string; condition?: boolean }[] = [
     { template: packageJsonTemplate, dest: "package.json" },
@@ -141,7 +144,9 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     { template: clientTemplate, dest: path.join("src", "client.ts") },
     { template: defaultViewTemplate, dest: path.join("src", "views", "default.tsx") },
     { template: serverTemplate, dest: path.join("src", "server.ts") },
-    { template: schemaTemplate, dest: path.join("src", "schema.ts") },
+    { template: schemaTemplate, dest: path.join("src", "db", "schema.ts") },
+    { template: databaseTemplate, dest: path.join("src", "db", "index.ts") },
+    { template: relationsTemplate, dest: path.join("src", "db", "relations.ts") },
     { template: greetingTemplate, dest: path.join("src", "functions", "greeting.ts") },
   ];
 

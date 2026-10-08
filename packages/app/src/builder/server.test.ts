@@ -102,13 +102,13 @@ it("builds separate artifacts and rejects accidental imports of server code", as
       JSON.parse(await readFile(path.join(root, ".tailorkit/tailorkit-upload.json"), "utf-8"))
         .assets,
     ).toEqual({ client: "client/client.js", server: "server/server.js" });
-    const migrationFiles = await readdir(path.join(root, "migrations"), { recursive: true });
+    const migrationFiles = await readdir(path.join(root, "src/db/migrations"), { recursive: true });
     expect(await readdir(path.join(root, ".tailorkit/migrations"), { recursive: true })).toEqual(
       migrationFiles,
     );
     for (const file of migrationFiles.filter((filename) => filename.endsWith("migration.sql"))) {
       expect(await readFile(path.join(root, ".tailorkit/migrations", file), "utf-8")).toBe(
-        await readFile(path.join(root, "migrations", file), "utf-8"),
+        await readFile(path.join(root, "src/db/migrations", file), "utf-8"),
       );
     }
     await buildApp({ cwd: root, outDir: ".tailorkit/custom" });
@@ -132,7 +132,7 @@ it("builds separate artifacts and rejects accidental imports of server code", as
     await expect(buildApp({ cwd: root })).rejects.toThrow(
       "cannot be imported into a browser bundle",
     );
-    await expect(buildApp({ cwd: root, outDir: "migrations" })).rejects.toThrow(
+    await expect(buildApp({ cwd: root, outDir: "src/db/migrations" })).rejects.toThrow(
       "must not overlap migration source",
     );
     await writeFile(path.join(root, "src/client.ts"), `import "effect";\n${client}`);

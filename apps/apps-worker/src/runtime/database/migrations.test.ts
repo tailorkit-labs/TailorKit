@@ -19,7 +19,7 @@ function migration(id: string, file: string): AppMigration {
 }
 const initial = migration(
   "20261001000000_init",
-  "../../../../../examples/apps/backend-todo/migrations/20261001062220_init/migration.sql",
+  "../../../../../examples/apps/backend-todo/src/db/migrations/20261001062220_init/migration.sql",
 );
 const priority = migration("20261001000001_priority", "../../tests/fixtures/todos-priority.sql");
 const required = migration("20261001000002_required", "../../tests/fixtures/todos-required.sql");

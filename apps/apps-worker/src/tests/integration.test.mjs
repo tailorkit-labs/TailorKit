@@ -174,7 +174,7 @@ export default { functions: { probe: {
   async function checkRpc() {
     const repo = path.resolve(import.meta.dirname, "../../../..");
     const { migrations } = await readAppMigrations(
-      path.join(repo, "examples/apps/backend-todo/migrations"),
+      path.join(repo, "examples/apps/backend-todo/src/db/migrations"),
     );
 
     const entry = path.join(state, "fixture.ts");

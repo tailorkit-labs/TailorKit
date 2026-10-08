@@ -94,9 +94,10 @@ export interface TailorKitConfig extends z.input<typeof tailorkitConfigSchema> {
     entry?: string;
     /**
      * Directory containing Drizzle migrations, used for generation and bundling.
-     * When omitted, uses `./migrations` and allows that directory to be absent.
+     * When omitted, uses `./src/db/migrations` and allows that directory to be absent.
+     * Existing apps with `src/schema.ts` continue to use `./migrations`.
      * An explicitly configured directory must exist when building the backend.
-     * @default "./migrations"
+     * @default "./src/db/migrations"
      */
     migrations?: string;
   };
