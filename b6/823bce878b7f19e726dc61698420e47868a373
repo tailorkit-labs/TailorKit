@@ -1,0 +1,22 @@
+packages/react/src/__tests__/use-view-context.test.tsx
+  s_25fdd02846e4b2::t_333fc04f13d14f 163-167,175-184
+  s_25fdd02846e4b2::t_e484b6e2e9351c 168-174
+packages/react/src/hooks/use-view-context.ts
+  s_25fdd02846e4b2::t_333fc04f13d14f 85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b6823bce878b7f19e726dc61698420e47868a373",
+  "prompts": {},
+  "sessions": {
+    "s_25fdd02846e4b2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a115f5-4537-7e02-a4fa-b79245294373",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
