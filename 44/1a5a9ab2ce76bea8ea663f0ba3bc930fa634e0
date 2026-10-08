@@ -1,0 +1,104 @@
+examples/tanstack-start/src/lib/tailorkit-client.tsx
+  s_9fc3fb004a5389::t_75017e402c1fb3 35-41
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_9fc3fb004a5389::t_423af6273701f0 50-52
+  s_9fc3fb004a5389::t_fcc83b0aac6340 47,53-61
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 252-253,259,261,263,265,267,272,274,279,281,286-287,290,292,294-295,297,303,305,312,314,320,322,338,341,348,365,368,375,381,383,385,387,393,395,402-404,419,430,432,439,441,447-448,451
+  s_9fc3fb004a5389::t_32a9e987de3854 254-257
+  s_9fc3fb004a5389::t_51b4666d8a1acf 405-409,411,422-428
+  s_9fc3fb004a5389::t_d5de4d2f1ba6c9 62
+examples/nextjs/components/tailorkit-shell.tsx
+  s_9fc3fb004a5389::t_75017e402c1fb3 214,216
+  s_9fc3fb004a5389::t_423af6273701f0 14-20
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 168,207
+apps/demo/src/routes/embed-panel.tsx
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 124
+  s_9fc3fb004a5389::t_75017e402c1fb3 67,85,132
+packages/react/src/__tests__/use-view-context.test.tsx
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 9,49
+packages/react/src/__tests__/use-views.test.tsx
+  s_9fc3fb004a5389::t_fcc83b0aac6340 438
+  s_9fc3fb004a5389::t_423af6273701f0 42,412,445
+  s_9fc3fb004a5389::t_1f49383c0bf4d2 6,441
+packages/react/src/components/render-slot.tsx
+  s_9fc3fb004a5389::t_51b4666d8a1acf 16-20,38-40
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 1-2,4-15,21-27,30-31,34-35,41-68
+.changeset/rename-render-slot-provider.md
+  s_9fc3fb004a5389::t_1f49383c0bf4d2 10
+  s_9fc3fb004a5389::t_32a9e987de3854 1-9
+examples/apps/backend-todo/README.md
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 9,11
+examples/nextjs/README.md
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 41
+packages/react/src/components/index.ts
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 1
+packages/react/src/hooks/use-apps.ts
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 10,16
+examples/nextjs/lib/tailorkit-client.tsx
+  s_9fc3fb004a5389::t_75017e402c1fb3 37-43
+packages/react/src/tailorkit.tsx
+  s_9fc3fb004a5389::t_1f49383c0bf4d2 12,51
+  s_9fc3fb004a5389::t_51b4666d8a1acf 42-46,144-146,148-151
+  s_9fc3fb004a5389::t_7221269ff888ac 62,137
+  s_9fc3fb004a5389::t_423af6273701f0 1-5,128-130
+  s_9fc3fb004a5389::t_fa243c31cd02f8 22,34,50,52-54,127,131-136
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 41,63,138-141,147,156,162,169
+README.md
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 42
+packages/app/src/views.ts
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 180
+packages/react/src/__tests__/render-slot.test.tsx
+  s_9fc3fb004a5389::t_51b4666d8a1acf 210-216,218-227,229-234
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 1-5,7-66,68-69,71-98,100,102-110,112-114,117,119-129,131-137,139-162,164-171,173-184,186-196,198-209,235-256,258-259,261-306,308-309,311-317,319-320,322-344,346-347,349-377,379-390,392-403,405-412,414-424,426-427,429-434,436-443,445-450
+  s_9fc3fb004a5389::t_423af6273701f0 67,99,111,116,130,163,185,217,257,307,318,345,378,404,425,435
+  s_9fc3fb004a5389::t_1f49383c0bf4d2 6,70,101,115,118,138,172,197,228,260,310,321,348,391,413,428,444
+packages/client-core/src/client/slot-types.ts
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 16,25,28,41-42,49,56,59
+packages/react/src/hooks/use-views.ts
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 5,16
+packages/client-core/src/store/local/slot-runtime.ts
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 4,14,65,68,82,93-94,101,125,128,143,146,148,151,153,166,168
+  s_9fc3fb004a5389::t_51b4666d8a1acf 154-155
+packages/react/src/hooks/use-view-context.ts
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 4,21
+packages/client-core/src/store/local/slot-runtime.test.ts
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 35,64,84,109,143,181,227,255,263
+packages/react/src/components/context.ts
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 6,11,13,16-17
+  s_9fc3fb004a5389::t_fa243c31cd02f8 19,23
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_9fc3fb004a5389::t_1f49383c0bf4d2 1,136,233,272,316,355,421,433,469,480,512,525,541,544,571,595,615,634,647,701,716,737,740,788,796,803,811,823,831,837,843,850,875,908,917,923,943,949,959
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 123,149,415,455-457,501,505-506,534,540,564,682-683,731,778,868-869
+  s_9fc3fb004a5389::t_51b4666d8a1acf 543,545
+  s_9fc3fb004a5389::t_fcc83b0aac6340 911-912
+  s_9fc3fb004a5389::t_423af6273701f0 134,219,269,311,353,419,431,504,539,568,593,613,632,645,699,714,735,738,786,794,801,829,835,841,848,867,906,915,921,941,947,957
+examples/tanstack-start/src/components/tailorkit-shell.tsx
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 143,182
+  s_9fc3fb004a5389::t_423af6273701f0 10-16
+  s_9fc3fb004a5389::t_75017e402c1fb3 189,191
+packages/react/src/index.ts
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 1
+  s_9fc3fb004a5389::t_51b4666d8a1acf 2-7
+  s_9fc3fb004a5389::t_423af6273701f0 9-14
+docs/installation.mdx
+  s_9fc3fb004a5389::t_189e8b8aa85ea9 616,636,665,678,709,721,750
+  s_9fc3fb004a5389::t_75902baee38853 502
+  s_9fc3fb004a5389::t_fcc83b0aac6340 505-506
+  s_9fc3fb004a5389::t_75017e402c1fb3 474,490-496
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "441a5a9ab2ce76bea8ea663f0ba3bc930fa634e0",
+  "prompts": {},
+  "sessions": {
+    "s_9fc3fb004a5389": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11d78-c7f2-7830-9f4a-d301189e6f57",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
