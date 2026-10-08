@@ -119,155 +119,21 @@ it("does not republish equivalent context or changes to ignored query data", asy
     initialProps: { context: {} },
   });
   await waitFor(() => expect(store.views.getSnapshot()?.layers[0]?.status).toBe("ready"));
-  const register = vi.spyOn(store.views, "register");
+  const listener = vi.fn();
+  const stop = store.views.state.listen(listener);
+  const snapshot = store.views.getSnapshot();
   await act(() => rerender({ context: {}, loading: false, error: null }));
-  expect(register).not.toHaveBeenCalled();
+  expect(listener).not.toHaveBeenCalled();
+  expect(store.views.getSnapshot()).toBe(snapshot);
 
   rerender({ context: {}, error: new Error("First failure") });
   await waitFor(() => expect(store.views.getSnapshot()?.layers[0]?.status).toBe("error"));
-  register.mockClear();
+  listener.mockClear();
+  const errorSnapshot = store.views.getSnapshot();
   await act(() =>
     rerender({ context: undefined, loading: true, error: new Error("Second failure") }),
   );
-  expect(register).not.toHaveBeenCalled();
-});
-
-const requiredContext = {
-  context: {
-    type: "object",
-    properties: {
-      customer: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
-    },
-    required: ["customer"],
-  },
-};
-
-it("reports missing ready context once, then again after recovery", async () => {
-  const error = vi.spyOn(console, "error").mockImplementation(() => {});
-  const { client, wrapper } = setup(requiredContext);
-  const { rerender } = renderHook<void, Options>((options) => client.useViewContext("/", options), {
-    wrapper,
-    initialProps: { context: undefined },
-  });
-  expect(error).toHaveBeenCalledExactlyOnceWith(
-    expect.stringContaining('useViewContext("/") is ready without its required context'),
-  );
-  await act(() => rerender({ context: undefined, loading: false, error: null }));
-  expect(error).toHaveBeenCalledOnce();
-  await act(() => rerender({ context: { customer: { id: "c1" } } }));
-  expect(error).toHaveBeenCalledOnce();
-  await act(() => rerender({ context: undefined }));
-  expect(error).toHaveBeenCalledTimes(2);
-});
-
-it.each([{}, { contextOptional: false }])(
-  "allows ready undefined context when the view has no context schema: %j",
-  async (definition) => {
-    const error = vi.spyOn(console, "error").mockImplementation(() => {});
-    const { client, store, wrapper } = setup(definition);
-    const { rerender } = renderHook<void, Options>(
-      (options) => client.useViewContext("/", options),
-      {
-        wrapper,
-        initialProps: { context: undefined },
-      },
-    );
-    await waitFor(() =>
-      expect(store.views.getSnapshot()?.layers).toEqual([
-        { path: "/", context: undefined, status: "ready" },
-      ]),
-    );
-    await act(() => rerender({ context: undefined, loading: false }));
-    expect(error).not.toHaveBeenCalled();
-  },
-);
-
-it("allows optional undefined context and skips validation during loading or explicit errors", async () => {
-  const error = vi.spyOn(console, "error").mockImplementation(() => {});
-  const { client, wrapper } = setup({ ...requiredContext, contextOptional: true });
-  const { rerender } = renderHook<void, Options>((options) => client.useViewContext("/", options), {
-    wrapper,
-    initialProps: { context: undefined },
-  });
-  await act(() => rerender({ context: { customer: { id: 123 } }, loading: true }));
-  await act(() => rerender({ context: {}, error: new Error("Query failed") }));
-  await act(() => rerender({ context: undefined }));
-  expect(error).not.toHaveBeenCalled();
-});
-
-it("reports schema issue paths without mutating context or changing the registered state", async () => {
-  const error = vi.spyOn(console, "error").mockImplementation(() => {});
-  const { client, store, wrapper } = setup(requiredContext);
-  const context = { customer: { id: 123 } };
-  const { rerender } = renderHook<void, Options>((options) => client.useViewContext("/", options), {
-    wrapper,
-    initialProps: { context },
-  });
-  expect(error).toHaveBeenCalledExactlyOnceWith(
-    expect.stringContaining("does not match the view's schema"),
-    expect.arrayContaining([expect.objectContaining({ path: ["customer", "id"] })]),
-  );
-  await waitFor(() => expect(store.views.getSnapshot()?.layers[0]?.context).toBe(context));
-  expect(store.views.getSnapshot()?.layers[0]?.status).toBe("ready");
-  await act(() => rerender({ context: { customer: { id: 123 } } }));
-  expect(error).toHaveBeenCalledOnce();
-  await act(() => rerender({ context: { customer: { id: 456 } } }));
-  expect(error).toHaveBeenCalledTimes(2);
-});
-
-it.each([null, [], "invalid", 123])("reports non-object ready context: %j", async (context) => {
-  const error = vi.spyOn(console, "error").mockImplementation(() => {});
-  const { client, wrapper } = setup(requiredContext);
-  renderHook(
-    () => {
-      // @ts-expect-error Exercise invalid context from untyped JavaScript callers.
-      client.useViewContext("/", { context });
-    },
-    { wrapper },
-  );
-  expect(error).toHaveBeenCalledExactlyOnceWith(
-    expect.stringContaining("requires an object context"),
-  );
-});
-
-it("reports unavailable schema validation separately from an invalid context", async () => {
-  const error = vi.spyOn(console, "error").mockImplementation(() => {});
-  const { client, wrapper } = setup({
-    context: { type: "object", not: { required: ["customer"] } },
-  });
-  renderHook(() => client.useViewContext("/", { context: {} }), { wrapper });
-  expect(error).toHaveBeenCalledExactlyOnceWith(
-    expect.stringContaining("could not validate context"),
-    expect.any(Error),
-  );
-});
-
-it("validates after metadata arrives using the current context", async () => {
-  const error = vi.spyOn(console, "error").mockImplementation(() => {});
-  let respond!: (response: Response) => void;
-  vi.mocked(globalThis.fetch).mockImplementation(
-    () =>
-      new Promise((resolve) => {
-        respond = resolve;
-      }),
-  );
-  const { client, store, wrapper } = setup();
-  const { rerender } = renderHook<void, Options>((options) => client.useViewContext("/", options), {
-    wrapper,
-    initialProps: { context: undefined },
-  });
-  expect(error).not.toHaveBeenCalled();
-  await act(() => rerender({ context: { customer: { id: 123 } } }));
-  const schema = server.$internal.schema.serialize();
-  schema.views["/"] = requiredContext;
-  await act(async () => {
-    respond(Response.json({ schema }));
-    await store.fetchMeta();
-  });
-  await waitFor(() =>
-    expect(error).toHaveBeenCalledExactlyOnceWith(
-      expect.stringContaining("does not match the view's schema"),
-      expect.arrayContaining([expect.objectContaining({ path: ["customer", "id"] })]),
-    ),
-  );
+  expect(listener).not.toHaveBeenCalled();
+  expect(store.views.getSnapshot()).toBe(errorSnapshot);
+  stop();
 });

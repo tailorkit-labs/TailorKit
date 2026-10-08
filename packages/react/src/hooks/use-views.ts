@@ -1,19 +1,17 @@
-import { createSlotStore, matchesApp, serializeCacheKey } from "@tailorkit/client-core";
-import type { TailorKitApp, SlotItem } from "@tailorkit/client-core";
+import { createSlotStore, refetchViews } from "@tailorkit/client-core";
+import type { TailorKitApp, SlotItem, ViewsQueryOptions } from "@tailorkit/client-core";
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useTailorRootContext } from "../components/context";
 import { useApps } from "./use-apps";
-import type { UseAppsOptions, UseAppsResult } from "./use-apps";
+import type { UseAppsResult } from "./use-apps";
 import { useStableContext } from "./use-stable-context";
 
 export type { SlotItem } from "@tailorkit/client-core";
 
-export interface UseViewsOptions<
+export type UseViewsOptions<
   TScopeNames extends string = string,
   TSlot extends string = string,
-> extends UseAppsOptions<TScopeNames> {
-  slot: TSlot;
-}
+> = ViewsQueryOptions<TScopeNames, TSlot>;
 
 export interface UseViewsResult<TMultiple extends boolean = boolean> extends Omit<
   UseAppsResult,
@@ -27,34 +25,10 @@ export function useViews({ slot, scopes, appIds }: UseViewsOptions): UseViewsRes
   const { store } = useTailorRootContext("useViews");
   const apps = useApps({ scopes, appIds });
   const items = useResolvedSlot(slot, apps.data, apps.status, apps.error);
-  const refetch = useCallback(async () => {
-    const multiple = store.client.meta().getSnapshot().data?.schema.slots[slot]?.multiple;
-    if (apps.isSuccess && multiple === true) {
-      await items.refetch();
-      return;
-    }
-    await apps.refetch();
-    let previousKey: string | undefined;
-    // Read live store state: React may not have rendered the discovery result yet.
-    // Join the new query, including a key change when metadata identifies a single slot.
-    while (true) {
-      const discovery = store.getAppsSnapshot();
-      if (discovery.status !== "ready") return;
-      const schema = store.getMetaSnapshot().schema;
-      const options = {
-        apps: discovery.apps.filter((app) => matchesApp(app, scopes, appIds)),
-        slot,
-        activeView:
-          schema === null || schema.slots[slot]?.multiple === true
-            ? store.views.getSnapshot()
-            : null,
-      };
-      const key = serializeCacheKey([options.apps, slot, options.activeView]);
-      if (key === previousKey) return;
-      previousKey = key;
-      await createSlotStore(store.client, options).fetch();
-    }
-  }, [store, slot, scopes, appIds, apps.isSuccess, apps.refetch, items.refetch]);
+  const refetch = useCallback(
+    () => refetchViews(store, { slot, scopes, appIds }),
+    [store, slot, scopes, appIds],
+  );
   return { ...items, isFetching: apps.isFetching || items.isFetching, refetch };
 }
 

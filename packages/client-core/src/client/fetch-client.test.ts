@@ -9,7 +9,11 @@ afterEach(() => {
 });
 
 it("shares endpoint responses across roots without sharing local view registrations", async () => {
-  const fetchMock = vi.fn().mockResolvedValue(Response.json([{ id: "app" }]));
+  const fetchMock = vi.fn((input) =>
+    Promise.resolve(
+      Response.json(String(input).endsWith("/apps") ? [{ id: "app" }] : { schema: { views: {} } }),
+    ),
+  );
   const client = createTailorKitFetchClient({ baseUrl: "https://host.test/api", fetch: fetchMock });
   const first = createTailorKitStore(client.baseUrl, undefined, client);
   const second = createTailorKitStore(client.baseUrl, undefined, client);
@@ -17,7 +21,7 @@ it("shares endpoint responses across roots without sharing local view registrati
   await Promise.all([first.fetchApps(), second.fetchApps()]);
   expect(fetchMock).toHaveBeenCalledOnce();
   expect(second.getAppsSnapshot().apps).toBe(first.getAppsSnapshot().apps);
-  first.views.register({ id: Symbol(), view: "/", context: {}, status: "ready" });
+  first.views.register({ id: Symbol(), view: "/", context: {} });
   await Promise.resolve();
   expect(second.views.getSnapshot()).toBeNull();
   stop();

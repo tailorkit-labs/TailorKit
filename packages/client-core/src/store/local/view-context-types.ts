@@ -1,0 +1,33 @@
+import type { ViewDefinition } from "@tailorkit/core/schema";
+
+type DefaultViews = Record<`/${string}`, ViewDefinition>;
+
+export type ViewName<TViews extends Record<string, ViewDefinition>> = keyof TViews & string;
+
+export type ViewContext<TView> = TView extends ViewDefinition
+  ? NonNullable<TView["~standard"]["types"]>["output"]
+  : Record<string, never>;
+
+export interface ViewContextState<TContext = unknown> {
+  /** The complete context for this view, or undefined while it is unavailable. */
+  context: TContext | undefined;
+  /** Defaults to false. Loading views do not publish context. */
+  loading?: boolean;
+  /** Takes precedence over loading. Error views do not publish context. */
+  error?: Error | null;
+}
+
+export type ViewState<
+  TViews extends Record<string, ViewDefinition> = DefaultViews,
+  TView extends ViewName<TViews> = ViewName<TViews>,
+> = ViewContextState<ViewContext<TViews[TView]>>;
+
+export type ViewOptions<
+  TViews extends Record<string, ViewDefinition> = DefaultViews,
+  TView extends ViewName<TViews> = ViewName<TViews>,
+> = TView extends ViewName<TViews> ? ViewState<TViews, TView> & { view: TView } : never;
+
+export interface ViewContextRegistration<TContext = unknown> extends ViewContextState<TContext> {
+  id: symbol;
+  view: string;
+}
