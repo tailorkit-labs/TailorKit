@@ -56,6 +56,8 @@ work.
   first TailorKit app.
 - [Writing apps](https://tailorkit.dev/docs/writing-apps) covers the app-side
   runtime and generated bindings.
+- [App file routing](./packages/app/README.md) explains view filenames, root
+  shells, and shared slot layouts.
 
 ## Contributing
 

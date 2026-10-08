@@ -15,6 +15,7 @@ import path from "node:path";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 import { NotLoggedInError } from "./auth";
 import { tailorkitUploadManifestSchema } from "../../app/src/builder/upload-manifest";
+import { getClientSourceFiles } from "../../app/src/builder/file-routes";
 
 const mocks = vi.hoisted(() => ({
   load: vi.fn(),
@@ -26,7 +27,11 @@ const mocks = vi.hoisted(() => ({
   publish: vi.fn(),
 }));
 vi.mock("@tailorkit/app/config/loader", () => ({ loadTailorKitConfig: mocks.load }));
-vi.mock("@tailorkit/app/builder", () => ({ buildApp: mocks.build, tailorkitUploadManifestSchema }));
+vi.mock("@tailorkit/app/builder", () => ({
+  buildApp: mocks.build,
+  tailorkitUploadManifestSchema,
+  getClientSourceFiles,
+}));
 vi.mock("@tailorkit/core/server", () => ({ createTailorKitClient: mocks.client }));
 vi.mock("./auth", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./auth")>()),
@@ -244,6 +249,51 @@ it("typechecks the server entry even when the client does not import it", async 
   await expect(runDeploy({ cwd: root, onTypecheckFailed })).rejects.toThrow("type check failed");
   expect(onTypecheckFailed.mock.calls[0]?.[0].output).toContain("src/server.ts");
   expect(mocks.publish).not.toHaveBeenCalled();
+});
+
+it("typechecks file route roots, layouts and views without a manual client entry", async () => {
+  await symlink(
+    path.resolve(import.meta.dirname, "../../../examples/apps/backend-todo/node_modules"),
+    path.join(root, "node_modules"),
+    "dir",
+  );
+  await mkdir(path.join(root, "src/slots/panel"), { recursive: true });
+  await writeFile(path.join(root, "src/server.ts"), "export default {};\n");
+  const sources = [
+    "src/root.tsx",
+    "src/slots/panel/root.tsx",
+    "src/slots/panel/layout.tsx",
+    "src/slots/panel/home.view.tsx",
+  ];
+  for (const file of sources) {
+    await writeFile(path.join(root, file), "export default null;\n");
+  }
+  await writeFile(
+    path.join(root, "tsconfig.json"),
+    JSON.stringify({
+      compilerOptions: {
+        strict: true,
+        target: "ESNext",
+        module: "ESNext",
+        moduleResolution: "Bundler",
+        types: [],
+        jsx: "react-jsx",
+        jsxImportSource: "preact",
+      },
+    }),
+  );
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
+  await runDeploy({ cwd: root });
+  expect(mocks.publish).toHaveBeenCalledOnce();
+  mocks.publish.mockClear();
+  for (const file of sources) {
+    await writeFile(path.join(root, file), "const label: string = 42; export default label;\n");
+    const onTypecheckFailed = vi.fn().mockResolvedValue(false);
+    await expect(runDeploy({ cwd: root, onTypecheckFailed })).rejects.toThrow("type check failed");
+    expect(onTypecheckFailed.mock.calls[0]?.[0].output).toContain(file);
+    expect(mocks.publish).not.toHaveBeenCalled();
+    await writeFile(path.join(root, file), "export default null;\n");
+  }
 });
 
 it("does not publish when the server upload fails", async () => {

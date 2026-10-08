@@ -55,7 +55,7 @@ export async function readClientManifest(filename: string) {
     return { views, instanceResolvers: manifest.instanceResolvers as InstanceRegistration[] };
   } catch (error) {
     throw new Error(
-      "Unable to read app views during the build. Keep browser-only side effects inside components or effects, and default-export defineClient(...).",
+      "Unable to read app views during the build. Keep browser-only side effects inside components or effects. Check the default exports of your file routes (or defineClient for a legacy client entry).",
       { cause: error },
     );
   }

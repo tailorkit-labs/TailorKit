@@ -4,7 +4,6 @@ import { api{% if useBox %}, Box{% endif %} } from "#tailorkit";
 {% endif %}
 
 const view = defineView({
-  slot: {{ slotName }},
   view: {{ viewPath }},
 {% if multiple %}  instances: {
     dataSchema: z.object({}),

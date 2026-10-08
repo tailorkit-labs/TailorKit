@@ -169,13 +169,35 @@ type ViewOptions<TPath extends AppViewPath, TSlot extends SlotName, TSchema exte
       : { instances?: never });
 }[TSlot];
 
-export const defineView = <
+/** In .view.tsx files, the builder supplies the slot and filename-derived path.
+ * Keep an explicit view for a custom path and precise host context typing. */
+export function defineView<
+  const TPath extends AppViewPath = AppViewPath,
+  TSchema extends z.ZodType = z.ZodType,
+>(options: {
+  slot?: never;
+  view?: TPath;
+  component: View<Record<string, never>>;
+  instances?: ViewInstances<TPath, TSchema>;
+}): ViewDefinition<TPath, z.output<TSchema>>;
+export function defineView<
   const TPath extends AppViewPath,
   const TSlot extends SlotName,
   TSchema extends z.ZodType,
 >(
   options: ViewOptions<TPath, TSlot, TSchema>,
-): ViewDefinition<TPath, z.output<TSchema>, TSlot> & SlotInstanceDefinition<TSlot> => {
+): ViewDefinition<TPath, z.output<TSchema>, TSlot> & SlotInstanceDefinition<TSlot>;
+export function defineView<TPath extends AppViewPath, TSchema extends z.ZodType>(options: {
+  slot?: SlotName;
+  view?: TPath;
+  component: View<Record<string, never>>;
+  instances?: ViewInstances<TPath, TSchema>;
+}): ViewDefinition<TPath, z.output<TSchema>> {
+  if (!options.slot || !options.view) {
+    throw new Error(
+      "Views without a slot or path must be compiled from a .view.tsx file by the TailorKit app build.",
+    );
+  }
   const path = options.view;
   const Context = createContext<{ context: ViewContext<TPath>; instance?: ViewInstance } | null>(
     null,
@@ -224,8 +246,8 @@ export const defineView = <
         );
       return value.instance as ViewInstance<z.output<TSchema>>;
     },
-  } as ViewDefinition<TPath, z.output<TSchema>, TSlot> & SlotInstanceDefinition<TSlot>;
-};
+  } as ViewDefinition<TPath, z.output<TSchema>>;
+}
 
 export const defineClient = <const TSlots extends SlotDefinitions>(
   client: TailorKitClient<TSlots> & {

@@ -4,7 +4,6 @@ import { api, Box, Button, Flex } from "#tailorkit";
 import { z } from "zod";
 
 const view = defineView({
-  slot: "page",
   view: "/",
   instances: {
     dataSchema: z.object({ todoId: z.string().nullable() }),

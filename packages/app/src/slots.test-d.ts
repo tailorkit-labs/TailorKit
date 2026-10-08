@@ -73,7 +73,7 @@ defineClient({ slots: { panel: { "/": root } } });
 const slotName: "page" | "navbar" = Math.random() > 0.5 ? "page" : "navbar";
 // @ts-expect-error A union slot cannot bypass the instances requirement.
 defineView({ slot: slotName, view: "/", component: () => null });
-// @ts-expect-error Views must select a slot to enforce the host's multiplicity.
+// File routes infer the slot from the containing directory.
 defineView({ view: "/", component: () => null });
 
 // @ts-expect-error Views must select a host context path.
@@ -98,3 +98,5 @@ defineClient({ slots: { navbar: { "/": { ...page, slot: "navbar" } } } });
 const { instances: _resolver, ...pageWithoutResolver } = page;
 // @ts-expect-error Multi-instance registrations cannot omit their resolver.
 defineClient({ slots: { page: { "/": pageWithoutResolver } } });
+
+defineView({ component: () => null });

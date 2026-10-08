@@ -49,12 +49,13 @@ export interface TailorKitConfig extends z.input<typeof tailorkitConfigSchema> {
     outDir?: string;
   };
   /**
-   * Browser client build settings. Omit to use the default client entry point.
+   * Browser client build settings. Omit to discover src/root.tsx and src/slots.
+   * Existing apps with src/client.ts continue to use that entry.
    * @default undefined
    */
   client?: {
     /**
-     * Source entry point for the app's browser bundle.
+     * Explicit legacy source entry point instead of file-based routing.
      * @default "src/client.ts"
      */
     entry?: string;

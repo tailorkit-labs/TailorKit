@@ -7,6 +7,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { gzip } from "node:zlib";
 import type { TailorKitUploadManifest } from "@tailorkit/app/builder";
+import { getClientSourceFiles } from "@tailorkit/app/builder";
 import type { LoadedTailorKitConfig } from "@tailorkit/app/config/loader";
 import { loadTailorKitConfig } from "@tailorkit/app/config/loader";
 import { createTailorKitClient } from "@tailorkit/core/server";
@@ -183,7 +184,7 @@ const typecheckAppEntries = async (
   } catch {
     return;
   }
-  const entryPath = path.resolve(loaded.root, loaded.config.client?.entry ?? "src/client.ts");
+  const clientFiles = await getClientSourceFiles(loaded.root, loaded.config.client?.entry);
   // Check both application entry points with the project compiler options.
   const temporary = await mkdtemp(path.join(loaded.root, ".tailorkit-typecheck-"));
   try {
@@ -194,7 +195,7 @@ const typecheckAppEntries = async (
         extends: baseTsconfig,
         compilerOptions: { noEmit: true, incremental: false, composite: false },
         files: [
-          entryPath,
+          ...clientFiles,
           ...(loaded.config.server
             ? [path.resolve(loaded.root, loaded.config.server.entry ?? "src/server.ts")]
             : []),
@@ -215,7 +216,7 @@ const typecheckAppEntries = async (
       message?: string;
     };
     return {
-      command: `tsc --noEmit ${path.relative(loaded.root, entryPath)}`,
+      command: `tsc --noEmit ${clientFiles.map((file) => path.relative(loaded.root, file)).join(" ")}`,
       exitCode: typeof failure.code === "number" ? failure.code : null,
       output:
         `${failure.stdout ?? ""}${failure.stderr ?? ""}`.trim() || failure.message || String(error),

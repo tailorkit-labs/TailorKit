@@ -6,7 +6,7 @@ import { generateTypes, type TailorKitSchemaFile } from "./types";
 import { TEMPLATE_DRIZZLE_VERSION } from "./package-versions";
 
 import {
-  clientTemplate,
+  rootTemplate,
   defaultViewTemplate,
   gitignoreTemplate,
   oxfmtConfigTemplate,
@@ -52,11 +52,11 @@ const isFilenameSegment = (segment: string) =>
   segment !== "" && segment !== "." && segment !== ".." && !invalidFilenameCharacters.test(segment);
 
 function getViewModulePath(slotName: string, viewPath: string) {
-  const viewSegments = viewPath === "/" ? ["index"] : viewPath.slice(1).split("/");
+  const viewSegments = viewPath === "/" ? ["home"] : viewPath.slice(1).split("/");
   if (!viewPath.startsWith("/") || ![slotName, ...viewSegments].every(isFilenameSegment)) {
     throw new Error("The selected slot and view must have valid file names to generate src/slots.");
   }
-  return ["slots", slotName, ...viewSegments].join("/");
+  return ["slots", slotName, viewSegments.join(".")].join("/");
 }
 
 const renderTemplate = (template: string, data: Record<string, unknown>): Promise<string> =>
@@ -100,7 +100,7 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
   }
   const slotName = slots.find((slot) => schema.slots?.[slot]?.views.includes(viewPath))!;
   const viewModulePath = getViewModulePath(slotName, viewPath);
-  const viewFile = path.join("src", `${viewModulePath}.tsx`);
+  const viewFile = path.join("src", `${viewModulePath}.view.tsx`);
   const box = schema.components?.Box;
   // Only use a wrapper that accepts children without requiring host-specific props.
   const useBox = box?.children === true && !box.fields?.required?.length;
@@ -124,7 +124,6 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
 
   const templateData = {
     viewPath: JSON.stringify(viewPath),
-    viewImport: JSON.stringify(`./${viewModulePath}`),
     slotName: JSON.stringify(slotName),
     multiple: schema.slots?.[slotName]?.multiple === true,
     useBox,
@@ -157,7 +156,7 @@ export const generateApp = async (options: GenerateAppOptions): Promise<void> =>
     { template: gitignoreTemplate, dest: ".gitignore" },
     { template: oxlintConfigTemplate, dest: "oxlint.config.ts", condition: linting },
     { template: oxfmtConfigTemplate, dest: "oxfmt.config.ts", condition: formatting },
-    { template: clientTemplate, dest: path.join("src", "client.ts") },
+    { template: rootTemplate, dest: path.join("src", "root.tsx") },
     { template: defaultViewTemplate, dest: viewFile },
     { template: serverTemplate, dest: path.join("src", "server.ts") },
     { template: schemaTemplate, dest: path.join("src", "db", "schema.ts") },

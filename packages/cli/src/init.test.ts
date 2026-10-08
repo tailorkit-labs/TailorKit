@@ -58,11 +58,11 @@ it("fetches the host schema and generates real bindings even when installation i
   expect(bindings).toContain('"sidebar": { views: "/people"; multiple: false }');
   expect(bindings).toContain("customer?: string");
   expect(bindings).not.toContain("Card");
-  expect(await readFile(path.join(directory, "src/slots/sidebar/people.tsx"), "utf-8")).toContain(
-    "<Box>",
-  );
-  expect(await readFile(path.join(directory, "src/client.ts"), "utf-8")).toContain(
-    '"sidebar": { "/people": defaultView }',
+  expect(
+    await readFile(path.join(directory, "src/slots/sidebar/people.view.tsx"), "utf-8"),
+  ).toContain("<Box>");
+  expect(await readFile(path.join(directory, "src/root.tsx"), "utf-8")).toContain(
+    "shellComponent: Shell",
   );
 });
 

@@ -2,9 +2,9 @@
 
 A small app using `tailorkit/server`: SQLite tables, typed queries/mutations/actions, and direct WebSocket subscriptions supplied with JWTs by the host bridge. Its UI reuses TailorKit's existing remote `Box`, `Flex` and `Button` components.
 
-Backend functions live in `src/functions/` and use the chained `tk` API. `src/db/schema.ts` defines tables, `src/server.ts` registers functions, and `src/slots/` uses `useQuery`, `useMutation` and `useAction`. The client root installs `ClientProvider`, which owns the connection and cleans up subscriptions automatically.
+Backend functions live in `src/functions/` and use the chained `tk` API. `src/db/schema.ts` defines tables, `src/server.ts` registers functions, and `src/slots/` uses `useQuery`, `useMutation` and `useAction`. `src/root.tsx` installs `ClientProvider`, which owns the connection and cleans up subscriptions automatically.
 
-`src/slots/page/index.tsx` declares `slot: "page"` in `defineView` and also defines an `instances` resolver. It runs on the server, calls the registered `list` query, and returns an “All todos” instance plus each todo's stable key, title metadata, and validated `{ todoId }` data. The view reads `view.useInstance()` to display all todos or the selected task.
+`src/slots/page/home.view.tsx` infers the `page` slot from its directory and also defines an `instances` resolver. It runs on the server, calls the registered `list` query, and returns an “All todos” instance plus each todo's stable key, title metadata, and validated `{ todoId }` data. The view reads `view.useInstance()` to display all todos or the selected task.
 
 The Next.js and TanStack Start hosts use `useSlot({ slot: "page" })` to discover instances across all apps, filter by `instance.app.id` to populate an app’s instance picker, then render `<Slot app={app} name="page" instanceKey={selected.key} />`. Refresh the picker after adding or removing tasks. The hosts declare `page: { views: ["/"], multiple: true }`. Multi-instance slots require an instance key; the single-instance `panel` slot renders without one.
 

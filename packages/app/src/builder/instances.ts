@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parseSync, transformWithOxc } from "vite";
 import type { ESTree, Plugin } from "vite";
+import { inferFileView } from "./file-routes";
 
 type Node = ESTree.Node;
 type Import = ESTree.ImportDeclaration;
@@ -33,8 +34,10 @@ export interface InstanceRegistration {
 const suffix = "?tailorkit-instances";
 const clientImports = new Set([
   "tailorkit/client",
+  "tailorkit/app",
   "tailorkit/app/client",
   "@tailorkit/app/client",
+  "@tailorkit/app",
 ]);
 const browserGlobals = new Set([
   "window",
@@ -290,6 +293,7 @@ export async function extractInstances(
   root: string,
   includedNames?: string[],
 ) {
+  source = inferFileView(source, filename, root);
   const transformed = await transformWithOxc(source, filename, {
     jsx: { importSource: "preact" },
     sourcemap: false,

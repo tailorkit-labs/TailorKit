@@ -76,7 +76,7 @@ it("builds configured entries and blocks the configured server from the browser"
 
 it("builds separate artifacts and rejects accidental imports of server code", async () => {
   const root = path.resolve(import.meta.dirname, "../../../../examples/apps/backend-todo");
-  const client = await readFile(path.join(root, "src/client.ts"), "utf-8");
+  const client = await readFile(path.join(root, "src/root.tsx"), "utf-8");
   const sourceFiles = await readdir(path.join(root, "src"), { recursive: true });
   try {
     await buildApp({ cwd: root });
@@ -124,23 +124,23 @@ it("builds separate artifacts and rejects accidental imports of server code", as
     expect(
       await readdir(path.join(root, ".tailorkit/custom/migrations"), { recursive: true }),
     ).toEqual(migrationFiles);
-    await writeFile(path.join(root, "src/client.ts"), `import "./server";\n${client}`);
+    await writeFile(path.join(root, "src/root.tsx"), `import "./server";\n${client}`);
     await expect(buildApp({ cwd: root })).rejects.toThrow(
       "cannot be imported into a browser bundle",
     );
-    await writeFile(path.join(root, "src/client.ts"), `import "tailorkit/server";\n${client}`);
+    await writeFile(path.join(root, "src/root.tsx"), `import "tailorkit/server";\n${client}`);
     await expect(buildApp({ cwd: root })).rejects.toThrow(
       "cannot be imported into a browser bundle",
     );
     await expect(buildApp({ cwd: root, outDir: "src/db/migrations" })).rejects.toThrow(
       "must not overlap migration source",
     );
-    await writeFile(path.join(root, "src/client.ts"), `import "effect";\n${client}`);
+    await writeFile(path.join(root, "src/root.tsx"), `import "effect";\n${client}`);
     await expect(buildApp({ cwd: root })).rejects.toThrow(
       "cannot be imported into a browser bundle",
     );
   } finally {
-    await writeFile(path.join(root, "src/client.ts"), client);
+    await writeFile(path.join(root, "src/root.tsx"), client);
     await rm(path.join(root, ".tailorkit"), { recursive: true, force: true });
   }
 }, 60_000);
