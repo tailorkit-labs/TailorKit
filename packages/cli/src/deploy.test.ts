@@ -236,16 +236,19 @@ it("typechecks file route roots, layouts and views without a manual client entry
   await runDeploy({ cwd: root });
   expect(mocks.publish).toHaveBeenCalledOnce();
   mocks.publish.mockClear();
+  // Collect diagnostics for every entry in one compiler run.
   for (const file of sources) {
     await writeFile(path.join(root, file), "const label: string = 42; export default label;\n");
-    const onTypecheckFailed = vi.fn().mockResolvedValue(false);
-    await expect(runDeploy({ cwd: root, onTypecheckFailed })).rejects.toThrow("type check failed");
-    expect(onTypecheckFailed.mock.calls[0]?.[0].output).toContain(file);
-    expect(mocks.publish).not.toHaveBeenCalled();
-    const files = await readdir(root);
-    expect(files.filter((name) => name.startsWith(".tailorkit-typecheck-"))).toEqual([]);
-    await writeFile(path.join(root, file), "export default null;\n");
   }
+  const onTypecheckFailed = vi.fn().mockResolvedValue(false);
+  await expect(runDeploy({ cwd: root, onTypecheckFailed })).rejects.toThrow("type check failed");
+  expect(onTypecheckFailed).toHaveBeenCalledOnce();
+  for (const file of sources) {
+    expect(onTypecheckFailed.mock.calls[0]?.[0].output).toContain(file);
+  }
+  expect(mocks.publish).not.toHaveBeenCalled();
+  const files = await readdir(root);
+  expect(files.filter((name) => name.startsWith(".tailorkit-typecheck-"))).toEqual([]);
 });
 
 it("does not publish when the server upload fails", async () => {
