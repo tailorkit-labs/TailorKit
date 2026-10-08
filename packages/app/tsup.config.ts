@@ -15,6 +15,7 @@ export default defineConfig({
     "config-loader": "src/config/loader.ts",
     index: "src/index.ts",
     client: "src/client.ts",
+    "client-connection": "src/client/connection.ts",
     server: "src/server.ts",
     protocol: "src/protocol.ts",
   },

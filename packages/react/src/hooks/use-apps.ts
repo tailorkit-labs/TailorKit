@@ -1,66 +1,23 @@
 import { useStore } from "@nanostores/react";
+import { useMemo } from "react";
+import { appsQueryKey, createAppsQuery } from "@tailorkit/client-core";
+import type {
+  AppsQueryOptions,
+  QueryResult,
+  TailorKitApp,
+  TailorKitStore,
+} from "@tailorkit/client-core";
 import { useTailorRootContext } from "../components/context";
-import { useCallback, useEffect, useMemo } from "react";
-import type { TailorKitApp } from "../tailorkit";
-import { matchesApp, normalizeScopeSelection } from "@tailorkit/client-core";
-import type { TailorKitAppsSnapshot, TailorKitStore } from "@tailorkit/client-core";
 
-export interface UseAppsOptions<TScopeNames extends string = string> {
-  scopes?: readonly TScopeNames[];
-  appIds?: readonly string[];
-}
-
-export interface UseAppsResult {
-  data: TailorKitApp[] | undefined;
-  error: Error | null;
-  isFetching: boolean;
-  isError: boolean;
-  isLoading: boolean;
-  isPending: boolean;
-  isSuccess: boolean;
-  refetch: () => Promise<void>;
-  status: "error" | "idle" | "loading" | "ready";
-}
+export type UseAppsOptions<TScopeNames extends string = string> = AppsQueryOptions<TScopeNames>;
+export type UseAppsResult = QueryResult<TailorKitApp[]>;
 
 export function useApps(options: UseAppsOptions = {}): UseAppsResult {
   return useAppsStore(useTailorRootContext("useApps").store, options);
 }
+
 export function useAppsStore(store: TailorKitStore, options: UseAppsOptions = {}): UseAppsResult {
-  const snapshot = useAppsSnapshot(store);
-  const scopes = normalizeScopeSelection(options.scopes);
-  const appIds = normalizeScopeSelection(options.appIds);
-  const data = useMemo(
-    () =>
-      snapshot.status === "ready"
-        ? snapshot.apps.filter((app) => matchesApp(app, scopes.scopes, appIds.scopes))
-        : undefined,
-    [snapshot, scopes.key, appIds.key],
-  );
-  const refetch = useCallback(() => store.fetchApps({ force: true }), [store]);
-  return { ...toUseAppsResult(snapshot, refetch), data };
-}
-
-export function useAppsSnapshot(store: TailorKitStore): TailorKitAppsSnapshot {
-  const snapshot = useStore(store.fetch.apps.state);
-  useEffect(() => {
-    void store.fetchApps();
-  }, [store]);
-  return snapshot;
-}
-
-export function toUseAppsResult(
-  snapshot: TailorKitAppsSnapshot,
-  refetch: () => Promise<void>,
-): UseAppsResult {
-  return {
-    data: snapshot.status === "ready" ? snapshot.apps : undefined,
-    error: snapshot.error,
-    isFetching: snapshot.isFetching,
-    isError: snapshot.status === "error",
-    isLoading: snapshot.status === "loading",
-    isPending: snapshot.status === "idle" || snapshot.status === "loading",
-    isSuccess: snapshot.status === "ready",
-    refetch,
-    status: snapshot.status,
-  };
+  const key = appsQueryKey(options);
+  const query = useMemo(() => createAppsQuery(store, options), [store, key]);
+  return useStore(query.state);
 }

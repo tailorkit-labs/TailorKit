@@ -17,3 +17,5 @@ export type {
   ViewOptions,
   ViewState,
 } from "./view-context-types";
+export { createSlotRuntime } from "./slot-runtime";
+export type { SlotRuntimeOptions, SlotRuntimeSnapshot } from "./slot-runtime";
