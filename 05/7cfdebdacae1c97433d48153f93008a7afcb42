@@ -1,0 +1,135 @@
+packages/app/src/builder/database-paths.test.ts
+  s_d657c413e53ecd::t_ce7c5eceda5b68 1-19
+  s_d657c413e53ecd::t_bcf3f468287e77 20-28
+examples/apps/todo/tailorkit.config.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 5
+packages/app/src/builder/server.test.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 105,111,135
+apps/apps-worker/src/runtime/execution.test.ts
+  s_d657c413e53ecd::t_ce7c5eceda5b68 1-2,13,367-375,386,397-403,408,419-421,425-427,433-434
+  s_d657c413e53ecd::t_b145b248588d95 376-385,387-396,404-407,409-418,422-424,428-432
+  s_d657c413e53ecd::t_3f41a0adc7c891 435
+packages/cli/src/generator/generate.ts
+  s_d657c413e53ecd::t_b2077469195654 19-20,133,147-149
+packages/cli/src/generator/templates/index.ts
+  s_d657c413e53ecd::t_b2077469195654 10-12,28-29
+examples/apps/todo/src/db/schema.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 1-14
+packages/app/src/builder/schema-check.test.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 15,17
+  s_d657c413e53ecd::t_ce7c5eceda5b68 10,12,16,27,31,42,46,49
+packages/app/src/server.ts
+  s_d657c413e53ecd::t_b2077469195654 2-3
+apps/apps-worker/src/runtime/database/driver.ts
+  s_d657c413e53ecd::t_3d37f530d5f98c 27-31,70-74,126,128-131
+  s_d657c413e53ecd::t_642eec5fbe928a 11,69,75,88-89,102-109,119,132-133
+  s_d657c413e53ecd::t_9f04b11b08d715 10,110,117-118
+  s_d657c413e53ecd::t_b145b248588d95 36,43,46,111-116
+apps/apps-worker/src/tests/integration.test.mjs
+  s_d657c413e53ecd::t_642eec5fbe928a 177
+examples/apps/backend-todo/src/db/schema.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 1-7
+packages/cli/src/generator/templates/src/functions/greeting.ts.liquid
+  s_d657c413e53ecd::t_b2077469195654 2,6
+packages/cli/src/generator/templates/src/db/index.ts.liquid
+  s_d657c413e53ecd::t_b2077469195654 1-6
+examples/apps/todo/src/db/index.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 1-6
+examples/apps/todo/src/db/relations.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 1-4
+packages/app/src/database/types.ts
+  s_d657c413e53ecd::t_b2077469195654 1,4-6
+  s_d657c413e53ecd::t_9ceee272b04eae 7-15
+packages/app/src/database/definition.test-d.ts
+  s_d657c413e53ecd::t_ce7c5eceda5b68 1-37
+  s_d657c413e53ecd::t_facccbaf5c840f 38-60
+examples/apps/todo/src/functions/import-todo.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 3
+packages/app/src/builder/generate-migrations.test.ts
+  s_d657c413e53ecd::t_b213c830d1f3bd 27-28
+  s_d657c413e53ecd::t_6dc50def8e9cb9 1-26,29-37
+packages/app/src/server/functions.ts
+  s_d657c413e53ecd::t_b2077469195654 2-3,53,57,62,66-68,74-76,96
+examples/apps/todo/src/functions/todos.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 3,5-7,9-19
+  s_d657c413e53ecd::t_38ec0d58295a99 20,23,36-44,46-52
+packages/cli/src/generator/templates/src/db/schema.ts.liquid
+  s_d657c413e53ecd::t_b2077469195654 1-3
+.changeset/fresh-database-layout.md
+  s_d657c413e53ecd::t_ce7c5eceda5b68 1-7
+packages/cli/src/generator/templates/src/db/relations.ts.liquid
+  s_d657c413e53ecd::t_b2077469195654 1-4
+packages/app/src/builder/generate-migrations.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 7,22-23,25,29
+apps/apps-worker/src/runtime/database/migrations.test.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 22
+examples/apps/backend-todo/src/functions/todos.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 3,5-7,9,22-27,31
+  s_d657c413e53ecd::t_b20181c28cb263 28-30,32-39
+examples/apps/backend-todo/src/db/relations.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 1-4
+apps/apps-worker/src/runtime/execution.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 46
+examples/apps/backend-todo/src/db/index.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 1-6
+examples/apps/todo/README.md
+  s_d657c413e53ecd::t_642eec5fbe928a 5,13,15,17
+  s_d657c413e53ecd::t_ce7c5eceda5b68 18-21
+packages/app/src/builder/migrations.test.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 10
+examples/apps/backend-todo/tailorkit.config.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 6
+packages/app/src/server/bundle.ts
+  s_d657c413e53ecd::t_ce7c5eceda5b68 18
+packages/app/src/builder/schema-check.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 7,51,71,78,86
+packages/cli/src/generator/generate.test.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 64-66
+  s_d657c413e53ecd::t_b145b248588d95 78,81-87
+  s_d657c413e53ecd::t_ce7c5eceda5b68 1,75-77,79-80,88-89
+  s_d657c413e53ecd::t_c71a54f709e6d9 90-91
+packages/app/src/server/builder.ts
+  s_d657c413e53ecd::t_b145b248588d95 84-90
+  s_d657c413e53ecd::t_b2077469195654 2-3,16,33,35,46,52,54,59,63,67-70,80,82-83,94-95,99,102-104
+  s_d657c413e53ecd::t_c6c081717976ef 81
+  s_d657c413e53ecd::t_70a5c7fe7d8324 7-12,23-30,71-77
+examples/apps/todo/src/views/default.tsx
+  s_d657c413e53ecd::t_642eec5fbe928a 5
+packages/app/src/database/definition.ts
+  s_d657c413e53ecd::t_b2077469195654 1-10
+packages/app/src/builder/drizzle.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 4,23
+packages/app/src/builder/server.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 8,27,77,143
+  s_d657c413e53ecd::t_352ef2b8b656c0 145-146
+packages/app/src/builder/database-paths.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 1-10
+  s_d657c413e53ecd::t_d08fbf008d381d 11-12
+packages/app/src/config/config.ts
+  s_d657c413e53ecd::t_642eec5fbe928a 97-98,100
+apps/apps-worker/src/runtime/bundle.ts
+  s_d657c413e53ecd::t_ce7c5eceda5b68 22
+examples/apps/backend-todo/README.md
+  s_d657c413e53ecd::t_ce7c5eceda5b68 34-37
+  s_d657c413e53ecd::t_642eec5fbe928a 5,25,31,33
+apps/apps-worker/README.md
+  s_d657c413e53ecd::t_6a1ca0183f4cf1 103
+apps/apps-worker/src/runtime/bundle.test.ts
+  s_d657c413e53ecd::t_25a352f1cac721 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "057cfdebdacae1c97433d48153f93008a7afcb42",
+  "prompts": {},
+  "sessions": {
+    "s_d657c413e53ecd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a118d6-7e78-7820-bbc8-65a630cd230d",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
