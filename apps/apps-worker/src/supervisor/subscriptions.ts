@@ -4,6 +4,7 @@ import type { Identity } from "@tailorkit/app/server";
 import { subscriptionStream, deliverSubscription, createSubscriptionHandler } from "../transport";
 import { AppError } from "@tailorkit/app/server";
 import type { Invocation } from "@tailorkit/app/protocol";
+import { ALL_DATABASE_TABLES } from "../runtime/database/dependencies";
 
 export interface SubscriptionSession {
   identity: Identity;
@@ -201,10 +202,17 @@ export function createSubscriptions(
       queue.withPermits(1)(remove(connection, id)),
     /** External mutations and local action notifications serialize subscriber refreshes. */
     refresh(tables: string[], execute = query) {
+      if (!tables.length) {
+        return Effect.void;
+      }
       return Effect.gen(function* refresh() {
         for (const connection of connections()) {
           for (const subscription of connection.read()?.subscriptions ?? []) {
-            if (subscription.tables.some((table) => tables.includes(table))) {
+            if (
+              subscription.tables.some(
+                (table) => table === ALL_DATABASE_TABLES || tables.includes(table),
+              )
+            ) {
               yield* deliver(connection, subscription.id, execute);
             }
           }

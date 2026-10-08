@@ -7,11 +7,12 @@ import {
 import type { PreparedQueryConfig, SQLiteExecuteMethod } from "drizzle-orm/sqlite-core";
 import type { SelectedFieldsOrdered } from "drizzle-orm/sqlite-core/query-builders/select.types";
 import type { Query } from "drizzle-orm";
-import { fillPlaceholders, getTableName, getViewName, isView, isTable } from "drizzle-orm";
+import { fillPlaceholders, getTableName, isView, isTable } from "drizzle-orm";
 import type { AnyRelations } from "drizzle-orm/relations";
 import { makeDefaultQueryMapper } from "drizzle-orm/utils";
 import { AppError } from "../errors";
 import type { MutationDatabase } from "@tailorkit/app/server";
+import { ALL_DATABASE_TABLES } from "./dependencies";
 
 export interface SqlResult {
   columns: string[];
@@ -112,7 +113,9 @@ export function databaseScope(
           return getTableName(table);
         }
         if (isView(table)) {
-          return getViewName(table);
+          // Existing and raw-SQL views need not expose their base tables. Refresh
+          // these subscriptions on any table write rather than risk stale results.
+          return ALL_DATABASE_TABLES;
         }
         throw new AppError("BAD_REQUEST", "Invalid relational table");
       });

@@ -1,4 +1,5 @@
-import { defineRelations } from "drizzle-orm";
+import { defineRelations, sql } from "drizzle-orm";
+import { sqliteView } from "drizzle-orm/sqlite-core";
 import { databaseScope } from "./database/driver";
 import { Effect } from "effect";
 import { DatabaseSync } from "node:sqlite";
@@ -25,6 +26,11 @@ const todos = table("todos", {
   done: boolean().notNull().default(false),
 });
 const users = table("users", { id: text().primaryKey(), title: text().notNull() });
+const viewColumns = () => ({
+  id: text().primaryKey(),
+  title: text().notNull(),
+  done: boolean().notNull(),
+});
 const identity = {
   userId: "user",
   projectId: "project",
@@ -151,6 +157,47 @@ it("executes typed Drizzle operations and tracks read tables including empty joi
     value: [{ id: "1", title: "hello", done: false }],
   });
   expect(execution.query({ name: "list", args: {} }, identity).value).toEqual(accepted.value);
+});
+it.each([
+  { name: "query builder", view: sqliteView("todo_view").as((qb) => qb.select().from(todos)) },
+  { name: "raw SQL", view: sqliteView("todo_view", viewColumns()).as(sql`SELECT * FROM todos`) },
+  { name: "existing", view: sqliteView("todo_view", viewColumns()).existing() },
+])("tracks any table write for $name relational views without their base table", ({ view }) => {
+  const { persistence, sqlite, execution: mutations } = fixture();
+  sqlite.exec(
+    "CREATE VIEW todo_view AS SELECT * FROM todos; INSERT INTO users VALUES ('1', 'Author')",
+  );
+  const directDatabase = defineDatabase({ relations: defineRelations({ view }) });
+  const nestedDatabase = defineDatabase({
+    relations: defineRelations({ users, view }, (r) => ({
+      users: { todos: r.many.view({ from: r.users.id, to: r.view.id }) },
+    })),
+  });
+  const execution = createExecution(
+    defineServer({
+      direct: tk.query
+        .database(directDatabase)
+        .handler(({ db }) => db.query.view.findMany().sync()),
+      nested: tk.query
+        .database(nestedDatabase)
+        .handler(({ db }) => db.query.users.findMany({ with: { todos: true } }).sync()),
+    }),
+    persistence,
+  );
+  expect(execution.query({ name: "direct" }, identity)).toEqual({ value: [], tables: ["*"] });
+  expect(execution.query({ name: "nested" }, identity)).toEqual({
+    value: [{ id: "1", title: "Author", todos: [] }],
+    tables: ["users", "*"],
+  });
+  const inserted = mutations.mutate(
+    { name: "add", args: { id: "1", title: "hello" }, requestId: crypto.randomUUID() },
+    identity,
+  );
+  expect(inserted.tables).toEqual(["todos"]);
+  expect(execution.query({ name: "direct" }, identity).value).toEqual(inserted.value);
+  expect(execution.query({ name: "nested" }, identity).value).toEqual([
+    { id: "1", title: "Author", todos: inserted.value },
+  ]);
 });
 it("rolls back all writes and receipts when handlers or result validation fail", () => {
   const { execution, sqlite } = fixture();
