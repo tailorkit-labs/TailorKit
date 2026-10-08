@@ -1,6 +1,6 @@
 {
   "name": "@tailorkit/react",
-  "version": "0.1.0-beta.22",
+  "version": "0.1.0-beta.23",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -27,12 +27,14 @@
   },
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.9",
+    "@nanostores/react": "2.0.1",
     "@standard-schema/spec": "^1.1.0",
     "@tailorkit/app": "workspace:*",
     "@tailorkit/client-core": "workspace:*",
     "@tailorkit/client-platform": "workspace:*",
     "@tailorkit/core": "workspace:*",
-    "@tailorkit/sandbox": "workspace:*"
+    "@tailorkit/sandbox": "workspace:*",
+    "nanostores": "1.5.4"
   },
   "devDependencies": {
     "@tailorkit/config": "workspace:*",

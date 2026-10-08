@@ -1,3 +1,4 @@
+import { allTasks } from "nanostores";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { createFetchCache, serializeCacheKey } from "./cache";
 
@@ -104,6 +105,7 @@ describe("fetch cache", () => {
     const stopFirst = store.subscribe(vi.fn());
     const stopLast = store.subscribe(vi.fn());
     const pending = store.fetch();
+    await Promise.resolve();
     stopFirst();
     stopFirst();
     expect(signal.aborted).toBe(false);
@@ -153,6 +155,7 @@ describe("fetch cache", () => {
     const fetcher = vi.fn().mockReturnValueOnce(old.promise).mockReturnValueOnce(fresh.promise);
     const store = createFetchCache({ gcTime: Infinity }).getStore(["apps"], fetcher);
     const first = store.fetch();
+    await Promise.resolve();
     const second = store.fetch({ force: true });
     expect(fetcher.mock.calls[0]?.[0].aborted).toBe(true);
     fresh.resolve("fresh");
@@ -214,6 +217,58 @@ describe("fetch cache", () => {
     await pending;
     expect(store.getSnapshot().status).toBe("idle");
     expect(other.getSnapshot().status).toBe("idle");
+    stop();
+  });
+
+  it("tracks fetch settlement through Nano Stores tasks and publishes to framework readers", async () => {
+    const response = deferred<string>();
+    const store = createFetchCache({ gcTime: Infinity }).getStore(
+      ["tasks"],
+      () => response.promise,
+    );
+    const listener = vi.fn();
+    const stop = store.state.listen(listener);
+    void store.fetch();
+    expect(store.state.get().isFetching).toBe(true);
+    let settled = false;
+    const tasks = allTasks().then(() => {
+      settled = true;
+    });
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    response.resolve("loaded");
+    await tasks;
+    expect(store.state.get()).toMatchObject({ data: "loaded", status: "ready" });
+    expect(listener).toHaveBeenCalledTimes(2);
+    stop();
+  });
+
+  it("aborts when the last Nano Store reader leaves before a request starts", async () => {
+    const fetcher = vi.fn().mockResolvedValue("unused");
+    const store = createFetchCache({ gcTime: Infinity }).getStore(["cancel"], fetcher, {
+      abortOnUnsubscribe: true,
+    });
+    const stop = store.state.listen(vi.fn());
+    const pending = store.fetch();
+    stop();
+    await pending;
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(store.state.get()).toMatchObject({ status: "idle", isFetching: false });
+  });
+
+  it("does not clear a request started by a settlement listener", async () => {
+    const response = deferred<string>();
+    const fetcher = vi.fn().mockResolvedValueOnce("first").mockReturnValueOnce(response.promise);
+    const store = createFetchCache({ gcTime: Infinity }).getStore(["reentrant"], fetcher);
+    let second: Promise<void> | undefined;
+    const stop = store.state.listen((snapshot) => {
+      if (snapshot.data === "first" && !snapshot.isFetching) second = store.fetch({ force: true });
+    });
+    await store.fetch();
+    expect(store.fetch()).toBe(second);
+    response.resolve("second");
+    await second;
+    expect(store.state.get().data).toBe("second");
     stop();
   });
 

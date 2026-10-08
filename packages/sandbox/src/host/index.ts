@@ -1,5 +1,5 @@
-import { AppError } from "@tailorkit/app/client";
-import type { Session } from "@tailorkit/app/client";
+import { AppError } from "@tailorkit/app/client/connection";
+import type { Session } from "@tailorkit/app/client/connection";
 import { HostToIframePayload, IframeToHostPayload } from "../protocol.js";
 import type { HostToIframePayload as HostToIframePayloadType } from "../protocol.js";
 import { createRemoteUiStore } from "./store.js";

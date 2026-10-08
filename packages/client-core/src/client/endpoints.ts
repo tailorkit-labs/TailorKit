@@ -1,4 +1,4 @@
-import { createClient, createSessionProvider, reference } from "@tailorkit/app/client";
+import { createClient, createSessionProvider, reference } from "@tailorkit/app/client/connection";
 import type { ViewInstance } from "@tailorkit/app/client";
 import { previewMetadataSchema } from "@tailorkit/client-platform/preview";
 import type { TailorKitSchemaSpecType } from "@tailorkit/core/spec";

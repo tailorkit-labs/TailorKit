@@ -44,7 +44,7 @@ const server = createTailorKitServer({
 });
 
 const tailor = createTailorKitClient<typeof server>({ baseUrl: "http://runtime.test" });
-const { Slot, useApps, useSlot, useRegisterView } = tailor;
+const { Slot, useApps, useViews, useViewContext } = tailor;
 const app = { clientPath: "/apps/todo.js", id: "todo" };
 
 const childrenServer = createTailorKitServer({
@@ -117,25 +117,41 @@ components(callbackServer.$internal.schema, {
   },
 });
 
-useRegisterView("/home", {
+useViewContext("/home", {
   context: { page: { title: "Home" } },
 });
 
-useRegisterView("/user", { status: "loading" });
+useViewContext("/user", { context: undefined, loading: true });
+useViewContext("/user", { context: { userId: "u1" }, loading: true });
+declare const queryContext: { userId: string } | undefined;
+declare const queryLoading: boolean;
+declare const queryError: Error | null;
+useViewContext("/user", { context: queryContext, loading: queryLoading, error: queryError });
 
-useRegisterView("/user", { status: "error" });
+useViewContext("/user", { context: undefined, error: new Error("Failed") });
+useViewContext("/user", { context: { userId: "u1" }, loading: false, error: null });
 
 // @ts-expect-error invalid view name
-useRegisterView("missing", { context: {} });
+useViewContext("missing", { context: {} });
 
 // @ts-expect-error invalid context shape for selected view
-useRegisterView("/user", { context: { page: { title: "Home" } } });
+useViewContext("/user", { context: { page: { title: "Home" } } });
 
-// @ts-expect-error ready matches require context
-useRegisterView("/home", {});
+// @ts-expect-error the context property is required
+useViewContext("/home", {});
 
-// @ts-expect-error loading views cannot expose partial context
-useRegisterView("/user", { status: "loading", context: { userId: "user_1" } });
+// @ts-expect-error loading still requires a complete context shape or undefined
+useViewContext("/home", { loading: true, context: { page: {} } });
+// @ts-expect-error errors still require a complete context shape or undefined
+useViewContext("/home", { error: new Error("Failed"), context: { page: {} } });
+// @ts-expect-error the context shape belongs to the selected view even while loading
+useViewContext("/user", { loading: true, context: { page: { title: "Home" } } });
+// @ts-expect-error loading must be a boolean
+useViewContext("/user", { context: undefined, loading: "loading" });
+// @ts-expect-error error must be an Error or null
+useViewContext("/user", { context: undefined, error: "Failed" });
+// @ts-expect-error the former status API has been removed
+useViewContext("/user", { context: undefined, status: "loading" });
 
 useApps();
 useApps({ scopes: ["organization", "user"] });
@@ -154,18 +170,18 @@ workspaceClient.useApps({ scopes: ["workspace"] });
 workspaceClient.useApps({ scopes: ["organization"] });
 
 // @ts-expect-error The former object-only hook signature is not supported.
-useRegisterView({ view: "/user", context: { userId: "u1" } });
+useViewContext({ view: "/user", context: { userId: "u1" } });
 
-useSlot({ scopes: ["organization"], appIds: ["todo"], slot: "panel" });
+useViews({ scopes: ["organization"], appIds: ["todo"], slot: "panel" });
 // @ts-expect-error scope names must be declared by this server
-useSlot({ scopes: ["unknown"], slot: "panel" });
+useViews({ scopes: ["unknown"], slot: "panel" });
 
-const instances = useSlot({ slot: "page" });
+const instances = useViews({ slot: "page" });
 const requiredKey: string = instances.data![0]!.key;
-const single = useSlot({ slot: "single" });
+const single = useViews({ slot: "single" });
 // @ts-expect-error explicit single slots have no instance key
 void single.data![0]!.key;
-const defaultSingle = useSlot({ slot: "panel" });
+const defaultSingle = useViews({ slot: "panel" });
 // @ts-expect-error slots with an omitted multiple flag have no instance key
 void defaultSingle.data![0]!.key;
 const requiredMetadata: Record<string, unknown> = instances.data![0]!.metadata;
@@ -174,7 +190,7 @@ void single.data![0]!.metadata;
 // @ts-expect-error single slots have no instance data
 void single.data![0]!.data;
 const selectedSlot: "page" | "single" = Math.random() > 0.5 ? "page" : "single";
-const selectedItems = useSlot({ slot: selectedSlot });
+const selectedItems = useViews({ slot: selectedSlot });
 // @ts-expect-error a union slot name requires narrowing before reading an instance key
 void selectedItems.data![0]!.key;
 const selectedItem = selectedItems.data![0]!;
@@ -184,7 +200,7 @@ if ("key" in selectedItem) {
   void narrowedKey;
   void narrowedMetadata;
 }
-const genericItems = createTailorKitClient({ baseUrl: "http://runtime.test" }).useSlot({
+const genericItems = createTailorKitClient({ baseUrl: "http://runtime.test" }).useViews({
   slot: "page",
 });
 // @ts-expect-error clients without a typed schema require narrowing before reading an instance key
@@ -200,7 +216,7 @@ declare const optionalClient: TailorKitInstance<
   Record<string, never>,
   { optional: { views: readonly ["/"]; multiple?: true } }
 >;
-const optionalItem = optionalClient.useSlot({ slot: "optional" }).data![0]!;
+const optionalItem = optionalClient.useViews({ slot: "optional" }).data![0]!;
 // @ts-expect-error an optional multiple flag cannot guarantee an instance key
 void optionalItem.key;
 if ("key" in optionalItem) {
@@ -212,13 +228,13 @@ const instanceData: unknown = instances.data?.[0]?.data;
 void instanceKey;
 void instanceData;
 // @ts-expect-error slots must be declared by this server
-useSlot({ slot: "missing" });
+useViews({ slot: "missing" });
 const instanceApp: TailorKitApp | undefined = instances.data?.[0]?.app;
 void instanceApp;
 // @ts-expect-error app selection is no longer accepted
-useSlot({ app, slot: "panel" });
+useViews({ app, slot: "panel" });
 // @ts-expect-error a slot must be supplied
-useSlot({});
+useViews({});
 
 <Slot app={app} name="panel" />;
 <Slot app={app} name="navbar" />;
@@ -297,9 +313,12 @@ const optionalContextServer = createTailorKitServer({
     "/detail": typedSchema<{ detailId: string }>(),
   },
 });
-const OptionalSlot = createTailorKitClient<typeof optionalContextServer>({
+const optionalContextClient = createTailorKitClient<typeof optionalContextServer>({
   baseUrl: "http://runtime.test",
-}).Slot;
+});
+optionalContextClient.useViewContext("/", { context: undefined });
+optionalContextClient.useViewContext("/", { context: { workspaceId: "w1" } });
+const OptionalSlot = optionalContextClient.Slot;
 <OptionalSlot.Controlled
   app={app}
   name="panel"

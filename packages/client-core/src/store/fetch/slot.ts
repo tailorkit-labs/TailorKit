@@ -1,3 +1,4 @@
+import { createSnapshotStore } from "../snapshot-store";
 import type { ViewInstance } from "@tailorkit/app/client";
 import type { ActiveView } from "@tailorkit/core/views";
 import type { TailorKitFetchClient } from "../../client/fetch-client";
@@ -124,7 +125,7 @@ export function createSlotStore(client: TailorKitFetchClient, options: SlotStore
   );
   let last: FetchSnapshot<Result> | undefined;
   let snapshot: SlotSnapshot;
-  return {
+  const store = {
     getSnapshot(): SlotSnapshot {
       if (!enabled) return waiting;
       const current = query.getSnapshot();
@@ -144,4 +145,5 @@ export function createSlotStore(client: TailorKitFetchClient, options: SlotStore
       enabled ? query.fetch(fetchOptions) : Promise.resolve(),
     invalidate: () => (enabled ? query.invalidate() : Promise.resolve()),
   };
+  return { ...store, state: createSnapshotStore(store.getSnapshot, store.subscribe) };
 }

@@ -52,12 +52,12 @@ afterEach(() => {
 });
 
 function Context({ detail = true }: { detail?: boolean }) {
-  client.useRegisterView("/", { context: { user: { id: "registered" } } });
-  client.useRegisterView("/customers", { context: { canEdit: true } });
+  client.useViewContext("/", { context: { user: { id: "registered" } } });
+  client.useViewContext("/customers", { context: { canEdit: true } });
   return detail ? <Detail /> : null;
 }
 function Detail() {
-  client.useRegisterView("/customers/detail", { status: "loading" });
+  client.useViewContext("/customers/detail", { context: undefined, loading: true });
   return null;
 }
 
@@ -322,9 +322,9 @@ it.each([false, true])(
   "checks instance support without composing invalid context (dynamic: %s)",
   async (dynamic) => {
     function DuplicateContext() {
-      client.useRegisterView("/", { context: { user: { id: "registered" } } });
+      client.useViewContext("/", { context: { user: { id: "registered" } } });
       const context = { canEdit: true, user: { id: "duplicate" } };
-      client.useRegisterView("/customers", { context });
+      client.useViewContext("/customers", { context });
       return null;
     }
     const appWithViews = {

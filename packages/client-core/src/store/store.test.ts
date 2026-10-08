@@ -84,6 +84,7 @@ describe("client stores", () => {
     );
     const store = createTailorKitStore("https://host.test/");
     const first = store.fetchApps();
+    await Promise.resolve();
     const second = store.fetchApps({ force: true });
     current.resolve(Response.json([{ id: "current" }]));
     await second;
@@ -121,6 +122,7 @@ describe("client stores", () => {
     firstStop();
     firstStop();
     store.setProvidedApps(undefined);
+    await Promise.resolve();
     expect(fetchMock).toHaveBeenCalledOnce();
     await store.fetchApps();
     expect(store.getAppsSnapshot().apps).toEqual([{ id: "remote" }]);
@@ -137,6 +139,7 @@ describe("client stores", () => {
     store.fetch.apps.updateViews("app", views);
     expect(store.getAppsSnapshot().status).toBe("idle");
     const pending = store.fetchApps();
+    await Promise.resolve();
     const signal = fetchMock.mock.calls[0]?.[1]?.signal;
     store.fetch.apps.updateViews("app", views);
     expect(store.getAppsSnapshot().status).toBe("loading");
@@ -182,6 +185,7 @@ describe("client stores", () => {
     const store = createTailorKitStore("https://host.test/");
     const first = store.fetchMeta();
     expect(store.fetchMeta()).toBe(first);
+    await Promise.resolve();
     const second = store.fetchMeta({ force: true });
     current.resolve(Response.json({ assetsBaseUrl: "https://current.test/", schema: {} }));
     await second;

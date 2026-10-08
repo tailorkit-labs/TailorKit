@@ -6,7 +6,7 @@ import { ArrowLeft, Mail, Phone } from "lucide-react";
 import { DetailCard } from "#components/crm-ui";
 import { getCustomer } from "#lib/crm-data";
 import { useAuthSession } from "#lib/auth-client";
-import { useRegisterView } from "#lib/tailorkit-client";
+import { useViewContext } from "#lib/tailorkit-client";
 
 export const Route = createFileRoute("/customers/$customerId")({
   component: CustomerDetailPage,
@@ -25,16 +25,10 @@ function CustomerDetailPage() {
   const { customer } = Route.useLoaderData();
   const session = useAuthSession();
 
-  useRegisterView(
-    "/customers/detail",
-    session.data
-      ? {
-          context: { customer },
-        }
-      : {
-          status: "loading",
-        },
-  );
+  useViewContext("/customers/detail", {
+    context: { customer },
+    loading: !session.data,
+  });
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,6 @@
 {
   "name": "@tailorkit/app",
-  "version": "0.1.0-beta.22",
+  "version": "0.1.0-beta.23",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -39,6 +39,10 @@
     "./protocol": {
       "types": "./dist/protocol.d.ts",
       "import": "./dist/protocol.js"
+    },
+    "./client/connection": {
+      "types": "./dist/client/connection.d.ts",
+      "import": "./dist/client-connection.js"
     }
   },
   "publishConfig": {

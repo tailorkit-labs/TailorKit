@@ -1,3 +1,4 @@
+import { createSnapshotStore } from "../snapshot-store";
 import { atom } from "nanostores";
 import type { TailorKitFetchClient } from "../../client/fetch-client";
 import type { TailorKitApp } from "../../types";
@@ -83,5 +84,5 @@ export function createAppsStore(client: TailorKitFetchClient, initialApps?: Tail
     },
     invalidate: () => (supplied ? Promise.resolve() : query.invalidate()),
   };
-  return store;
+  return { ...store, state: createSnapshotStore(store.getSnapshot, store.subscribe) };
 }

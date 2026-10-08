@@ -1,5 +1,13 @@
 # @tailorkit/cli
 
+## 0.1.0-beta.23
+
+### Patch Changes
+
+- @tailorkit/app@0.1.0-beta.23
+  - @tailorkit/client-platform@0.1.0-beta.23
+  - @tailorkit/core@0.1.0-beta.23
+
 ## 0.1.0-beta.22
 
 ### Minor Changes

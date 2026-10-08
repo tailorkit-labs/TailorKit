@@ -2,7 +2,7 @@ import { createTailorKitFetchClient } from "../client/fetch-client";
 import type { TailorKitFetchClient } from "../client/fetch-client";
 import { toBaseUrl } from "../client/url";
 import type { TailorKitApp } from "../types";
-import { createViewRegistry } from "./local/view-registry";
+import { createViewContextStore } from "./local/view-context";
 import { createAppsStore } from "./fetch/apps";
 import { createMetadataStore } from "./fetch/meta";
 import { createPreviewManager } from "./fetch/preview-manager";
@@ -24,7 +24,7 @@ export function createTailorKitStore(
     baseUrl: client.baseUrl,
     client,
     fetch: { apps, meta },
-    views: createViewRegistry(),
+    views: createViewContextStore(client),
     setProvidedApps: apps.setProvidedApps,
     fetchApps: apps.fetch,
     fetchMeta: meta.fetch,
