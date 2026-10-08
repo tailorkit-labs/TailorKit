@@ -1,0 +1,25 @@
+packages/client-core/src/client/scope-query.test.ts
+  s_25fdd02846e4b2::t_0ccd8f8edf8a8f 2
+.changeset/view-context-query-state.md
+  s_25fdd02846e4b2::t_62c5af397798a9 11
+packages/react/src/components/slot.tsx
+  s_25fdd02846e4b2::t_0ccd8f8edf8a8f 11
+packages/react/src/hooks/use-apps.ts
+  s_25fdd02846e4b2::t_0ccd8f8edf8a8f 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fdfa8bfd6c889d5fea2777217f93ccce4d5743e1",
+  "prompts": {},
+  "sessions": {
+    "s_25fdd02846e4b2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a115f5-4537-7e02-a4fa-b79245294373",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
