@@ -1,0 +1,21 @@
+docs/installation.mdx
+  s_25fdd02846e4b2::t_4f92baeadcf5c9 606,641,685,726
+.changeset/view-context-query-state.md
+  s_25fdd02846e4b2::t_e3e7a62bb88e41 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "10e774edbf83d756908236f2dba0423ec12df1a1",
+  "prompts": {},
+  "sessions": {
+    "s_25fdd02846e4b2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a115f5-4537-7e02-a4fa-b79245294373",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
