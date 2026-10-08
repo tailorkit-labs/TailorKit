@@ -1,0 +1,44 @@
+packages/cli/src/generator/generate.test.ts
+  s_d657c413e53ecd::t_a579e51c7e3574 279-319
+  s_d657c413e53ecd::t_14f15d12dcde4c 61,268,330-333,349,400-404,423-426
+.changeset/fresh-database-layout.md
+  s_d657c413e53ecd::t_6ac566ae5ffa98 8-9
+examples/apps/backend-todo/README.md
+  s_d657c413e53ecd::t_a635177781a583 5,7
+examples/apps/email/src/client.ts
+  s_d657c413e53ecd::t_60bcec6c4c8198 2-3
+examples/apps/notes/src/client.ts
+  s_d657c413e53ecd::t_7058f88f4da65f 2
+examples/apps/todo/README.md
+  s_d657c413e53ecd::t_3c98c50342d636 5
+examples/apps/todo/src/client.ts
+  s_d657c413e53ecd::t_d2e42c5bdd0f51 2
+examples/apps/todo/src/slots/panel/index.tsx
+  s_d657c413e53ecd::t_226af068aa66cf 5
+packages/cli/src/generator/generate.ts
+  s_d657c413e53ecd::t_0d489ffb089e4f 49-61,102-103,127,147,161
+packages/cli/src/generator/templates/index.ts
+  s_d657c413e53ecd::t_6d9b78d1c91b76 8
+packages/cli/src/generator/templates/src/client.ts.liquid
+  s_d657c413e53ecd::t_c2f749e0f4b808 2
+packages/cli/src/init.test.ts
+  s_d657c413e53ecd::t_89bf798ea0ac9e 61-63
+examples/apps/backend-todo/src/client.ts
+  s_d657c413e53ecd::t_5e98f959d957a8 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4d2ba997578054a1b0aa23a9cff53d48a27a8b4f",
+  "prompts": {},
+  "sessions": {
+    "s_d657c413e53ecd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a118d6-7e78-7820-bbc8-65a630cd230d",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
