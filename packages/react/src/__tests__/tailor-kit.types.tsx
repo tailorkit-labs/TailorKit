@@ -3,7 +3,19 @@ import type { StandardJSONSchemaV1, StandardSchemaV1 } from "@standard-schema/sp
 import type { ReactNode } from "react";
 import { components, createTailorKitClient } from "../tailorkit";
 import type { TailorKitApp } from "../tailorkit";
-import type { TailorKitInstance } from "../index";
+import type { TailorKitInstance, UseAppsResult, UseViewsResult } from "../index";
+
+type ExpectedResultKeys = "data" | "isPending" | "error" | "isRefetching" | "fetch";
+type Assert<T extends true> = T;
+type HasExactResultKeys<T> = [keyof T] extends [ExpectedResultKeys]
+  ? [ExpectedResultKeys] extends [keyof T]
+    ? true
+    : false
+  : false;
+type AppsResultKeys = Assert<HasExactResultKeys<UseAppsResult>>;
+type ViewsResultKeys = Assert<HasExactResultKeys<UseViewsResult>>;
+const resultKeys: [AppsResultKeys, ViewsResultKeys] = [true, true];
+void resultKeys;
 
 const typedSchema = <TValue,>(): StandardSchemaV1<unknown, TValue> &
   StandardJSONSchemaV1<unknown, TValue> =>
@@ -153,7 +165,15 @@ useViewContext("/user", { context: undefined, error: "Failed" });
 // @ts-expect-error the former status API has been removed
 useViewContext("/user", { context: undefined, status: "loading" });
 
-useApps();
+const appsResult = useApps();
+const appsPending: boolean = appsResult.isPending;
+const appsError: Error | null = appsResult.error;
+const appsRefetching: boolean = appsResult.isRefetching;
+const appsFetch: () => Promise<void> = appsResult.fetch;
+void appsPending;
+void appsError;
+void appsRefetching;
+void appsFetch;
 useApps({ scopes: ["organization", "user"] });
 // @ts-expect-error selected scopes must be declared by the server
 useApps({ scopes: ["unknown"] });
@@ -177,6 +197,14 @@ useViews({ scopes: ["organization"], appIds: ["todo"], slot: "panel" });
 useViews({ scopes: ["unknown"], slot: "panel" });
 
 const instances = useViews({ slot: "page" });
+const viewsPending: boolean = instances.isPending;
+const viewsError: Error | null = instances.error;
+const viewsRefetching: boolean = instances.isRefetching;
+const viewsFetch: () => Promise<void> = instances.fetch;
+void viewsPending;
+void viewsError;
+void viewsRefetching;
+void viewsFetch;
 const requiredKey: string = instances.data![0]!.key;
 const single = useViews({ slot: "single" });
 // @ts-expect-error explicit single slots have no instance key

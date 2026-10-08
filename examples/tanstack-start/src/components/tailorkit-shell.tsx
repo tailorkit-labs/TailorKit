@@ -140,7 +140,7 @@ function TailorKitSlotContent({ app }: { app: TailorKitApp }) {
 }
 
 function TailorKitPageInstances({ app }: { app: TailorKitApp }) {
-  const { data: allInstances, isPending, error, refetch } = useViews({ slot: "page" });
+  const { data: allInstances, isPending, error, fetch } = useViews({ slot: "page" });
   const instances = allInstances?.filter((instance) => instance.app.id === app.id);
   const [instanceKey, setInstanceKey] = useState<string | null>(null);
   const selected = instances?.find((instance) => instance.key === instanceKey) ?? instances?.[0];
@@ -169,7 +169,7 @@ function TailorKitPageInstances({ app }: { app: TailorKitApp }) {
               ))}
             </SelectPopup>
           </Select>
-          <Button type="button" variant="outline" onClick={() => void refetch()}>
+          <Button type="button" variant="outline" onClick={() => void fetch()}>
             Refresh
           </Button>
         </div>

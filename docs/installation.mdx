@@ -617,10 +617,13 @@ slots have a required `key: string`, `metadata`, and `data`; single-view slots
 have only `app`. Accessing `item.key` on a single-view slot is a TypeScript error.
 If the slot mode is only known at runtime, narrow an item with `"key" in item`.
 
-Both modes support `scopes` and `appIds`, and return query status, errors, and
-`refetch()`. Cache timings are managed by the client configuration. For
-single-view slots, `refetch()` refreshes app discovery; for multiple slots, it
-refreshes the resolved instances.
+Both modes support `scopes` and `appIds`. React's `useApps` and `useViews` return
+only `data`, `isPending`, `error`, `isRefetching`, and `fetch()`. `isPending` is
+true while the query is waiting for initial data or required context.
+`isRefetching` is true during a background refresh after the initial pending
+state. Call `fetch()` to request fresh data or retry an error. Cache timings are
+managed by the client configuration. For single-view slots, `fetch()` refreshes
+app discovery; for multiple slots, it refreshes the resolved instances.
 
 <Tabs>
 
