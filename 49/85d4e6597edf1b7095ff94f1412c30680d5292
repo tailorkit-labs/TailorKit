@@ -1,0 +1,39 @@
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_25fdd02846e4b2::t_4a20d47936caa9 410-414,688
+packages/react/src/__tests__/use-view-context.test.tsx
+  s_25fdd02846e4b2::t_4a20d47936caa9 52-66,71-73,104-106
+  s_25fdd02846e4b2::t_8ea7d27ba2726f 22
+  s_25fdd02846e4b2::t_a0ac137e937c5c 3-4,12-21,23-27,31,70,103
+  s_25fdd02846e4b2::t_c0b04c4c25c5e0 1-2,5-11,28-30,32-51,67-69,74-102,107-119
+examples/tanstack-start/src/routes/customers.$customerId.tsx
+  s_25fdd02846e4b2::t_8ea7d27ba2726f 28-31
+packages/react/src/hooks/use-view-context.ts
+  s_25fdd02846e4b2::t_4a20d47936caa9 30
+  s_25fdd02846e4b2::t_5eac83a0a9935f 15-17,19-24,45-46
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_25fdd02846e4b2::t_1495d2b54fdc16 124-129,131-132,140,143-154,316,318-321
+packages/react/src/__tests__/use-views.test.tsx
+  s_25fdd02846e4b2::t_4a20d47936caa9 91-95,174-177,202,726-730
+.changeset/view-context-query-state.md
+  s_25fdd02846e4b2::t_cb23824ed2f0d1 1-5
+docs/installation.mdx
+  s_25fdd02846e4b2::t_c95bd7c23e5787 606-630,665-668,712-715,756-759
+packages/react/src/__tests__/slot.test.tsx
+  s_25fdd02846e4b2::t_78bd916679a64c 60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4985d4e6597edf1b7095ff94f1412c30680d5292",
+  "prompts": {},
+  "sessions": {
+    "s_25fdd02846e4b2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a115f5-4537-7e02-a4fa-b79245294373",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
