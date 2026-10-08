@@ -1,5 +1,23 @@
 # @tailorkit/react
 
+## 0.1.0-beta.25
+
+### Minor Changes
+
+- 441a5a9: Rename `Slot` to `RenderSlot` (including client-bound `RenderSlot.Controlled`) and replace its `name` prop with `slot`. Rename the public types to `RenderSlotProps`, `ControlledRenderSlotProps`, `RuntimeRenderSlotProps`, `RenderSlotContext`, and `RenderSlotComponent`.
+
+  Remove the standalone `Root` provider and its DOM/render props. Return a client-bound `Provider` from `createTailorKitClient`, accepting only `children` and `apps`, with the client supplied internally. Export it as `Provider: TailorKitProvider` alongside the hooks and `RenderSlot`, and wrap host components in `<TailorKitProvider>`. Export `TailorKitProviderProps` for the bound provider.
+
+### Patch Changes
+
+- e87dc2c: Simplify React's useApps and useViews results to data, isPending, error, isRefetching, and fetch. Rename refetch to fetch and remove status, isFetching, isLoading, isSuccess, and isError. Background refreshes set isRefetching while retaining the available data.
+- Updated dependencies [441a5a9]
+  - @tailorkit/client-core@0.1.0-beta.25
+  - @tailorkit/app@0.1.0-beta.25
+  - @tailorkit/sandbox@0.1.0-beta.25
+  - @tailorkit/client-platform@0.1.0-beta.25
+  - @tailorkit/core@0.1.0-beta.25
+
 ## 0.1.0-beta.24
 
 ### Minor Changes
