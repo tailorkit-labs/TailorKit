@@ -488,7 +488,7 @@ export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
   },
 });
 
-export const { Slot, useApps, useSlot, useRegisterView } = tailorKitClient;
+export const { Slot, useApps, useViews, useViewContext } = tailorKitClient;
 
 export function TailorKitProvider({ children }: { children: ReactNode }) {
   return <Root client={tailorKitClient}>{children}</Root>;
@@ -599,9 +599,13 @@ export default function App() {
 </Step>
 <Step title="Render a view">
 
-Add a page to register context and switch between apps available in the `page` slot.
+Add a page to supply view context and switch between apps available in the `page` slot.
 
-`useSlot({ slot: "page" })` returns one `{ app }` item per app for single-view
+`useViewContext(path, state)` registers the host location, context, and readiness
+that app views consume. It updates when those values change and unregisters when
+the component unmounts.
+
+`useViews({ slot: "page" })` returns one `{ app }` item per app for single-view
 slots (`multiple: false` or omitted). It checks enabled, supported app views
 without calling an instance resolver or requiring registered page context. For
 `multiple: true` slots, it resolves instances using the registered context and
@@ -626,15 +630,15 @@ refreshes the resolved instances.
 "use client";
 
 import { useState } from "react";
-import { Slot, useSlot, useRegisterView } from "@/lib/tailorkit-client";
+import { Slot, useViews, useViewContext } from "@/lib/tailorkit-client";
 
 export default function Page() {
   const [selectedId, setSelectedId] = useState("");
-  const { data: views, isPending, error } = useSlot({ slot: "page" });
+  const { data: views, isPending, error } = useViews({ slot: "page" });
   // Replace this with your own authentication hook.
   const { data: session, isPending: isSessionPending } = useSession();
 
-  useRegisterView("/", session ? { context: { user: session.user } } : { status: "loading" });
+  useViewContext("/", session ? { context: { user: session.user } } : { status: "loading" });
 
   const selectedView = views?.find((view) => view.app.id === selectedId) ?? views?.[0];
 
@@ -668,17 +672,17 @@ export default function Page() {
 ```tsx src/routes/app-views.tsx
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Slot, useSlot, useRegisterView } from "@/lib/tailorkit-client";
+import { Slot, useViews, useViewContext } from "@/lib/tailorkit-client";
 
 export const Route = createFileRoute("/app-views")({ component: Page });
 
 function Page() {
   const [selectedId, setSelectedId] = useState("");
-  const { data: views, isPending, error } = useSlot({ slot: "page" });
+  const { data: views, isPending, error } = useViews({ slot: "page" });
   // Replace this with your own authentication hook.
   const { data: session, isPending: isSessionPending } = useSession();
 
-  useRegisterView("/", session ? { context: { user: session.user } } : { status: "loading" });
+  useViewContext("/", session ? { context: { user: session.user } } : { status: "loading" });
 
   const selectedView = views?.find((view) => view.app.id === selectedId) ?? views?.[0];
 
@@ -711,15 +715,15 @@ function Page() {
 
 ```tsx app/routes/app-views.tsx
 import { useState } from "react";
-import { Slot, useSlot, useRegisterView } from "@/lib/tailorkit-client";
+import { Slot, useViews, useViewContext } from "@/lib/tailorkit-client";
 
 export default function Page() {
   const [selectedId, setSelectedId] = useState("");
-  const { data: views, isPending, error } = useSlot({ slot: "page" });
+  const { data: views, isPending, error } = useViews({ slot: "page" });
   // Replace this with your own authentication hook.
   const { data: session, isPending: isSessionPending } = useSession();
 
-  useRegisterView("/", session ? { context: { user: session.user } } : { status: "loading" });
+  useViewContext("/", session ? { context: { user: session.user } } : { status: "loading" });
 
   const selectedView = views?.find((view) => view.app.id === selectedId) ?? views?.[0];
 

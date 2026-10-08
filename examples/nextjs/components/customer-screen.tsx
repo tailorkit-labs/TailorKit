@@ -1,6 +1,6 @@
 "use client";
 
-import { useRegisterView } from "@/lib/tailorkit-client";
+import { useViewContext } from "@/lib/tailorkit-client";
 import type { Customer } from "@/lib/crm-data";
 
 interface CustomerListContext {
@@ -8,11 +8,11 @@ interface CustomerListContext {
 }
 
 export function CustomerListView({ context }: { context: CustomerListContext }) {
-  useRegisterView("/customers", { context });
+  useViewContext("/customers", { context });
   return null;
 }
 
 export function CustomerDetailView({ context }: { context: { customer: Customer } }) {
-  useRegisterView("/customers/detail", { context });
+  useViewContext("/customers/detail", { context });
   return null;
 }

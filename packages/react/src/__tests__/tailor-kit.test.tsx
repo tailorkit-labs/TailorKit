@@ -108,8 +108,8 @@ function CurrentViewRoute({
   nested: boolean;
   tailor: ReturnType<typeof createTailorKitClient<typeof server>>;
 }) {
-  const { useRegisterView } = tailor;
-  useRegisterView(
+  const { useViewContext } = tailor;
+  useViewContext(
     nested ? "/home/detail" : "/home",
     nested
       ? {
@@ -144,8 +144,8 @@ function HomeSlot({
   app: TailorKitApp;
   tailor: ReturnType<typeof createTailorKitClient<typeof server>>;
 }) {
-  const { useRegisterView } = tailor;
-  useRegisterView("/home", { context: { page: { title: "home" } } });
+  const { useViewContext } = tailor;
+  useViewContext("/home", { context: { page: { title: "home" } } });
   return <Slot name="panel" app={app} />;
 }
 
@@ -406,8 +406,8 @@ describe("tailorKitClient React adapter", () => {
     });
 
     function Route({ status }: { status: "error" | "loading" }) {
-      const { useRegisterView } = tailor;
-      useRegisterView("/home/detail", { status });
+      const { useViewContext } = tailor;
+      useViewContext("/home/detail", { status });
       return <Slot name="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
     }
 
@@ -444,8 +444,8 @@ describe("tailorKitClient React adapter", () => {
     });
 
     function Route() {
-      const { useRegisterView } = tailor;
-      useRegisterView("/home", { context: { page: { title: "home" } } });
+      const { useViewContext } = tailor;
+      useViewContext("/home", { context: { page: { title: "home" } } });
       return (
         <>
           <Slot name="panel" app={{ clientPath: "/apps/b.js", id: "b" }} />
@@ -548,14 +548,14 @@ describe("tailorKitClient React adapter", () => {
     });
 
     function HomeRoute() {
-      const { useRegisterView } = tailor;
-      useRegisterView("/home", { context: { page: { title: "home" } } });
+      const { useViewContext } = tailor;
+      useViewContext("/home", { context: { page: { title: "home" } } });
       return null;
     }
 
     function UserRoute() {
-      const { useRegisterView } = tailor;
-      useRegisterView("/user", { context: { userId: "user_1" } });
+      const { useViewContext } = tailor;
+      useViewContext("/user", { context: { userId: "user_1" } });
       return <Slot name="panel" app={{ clientPath: "/apps/todo.js", id: "todo" }} />;
     }
 
@@ -668,9 +668,9 @@ describe("view registries", () => {
     client: ReturnType<typeof createTailorKitClient<typeof server>>;
     detail?: boolean;
   }) {
-    const { useRegisterView } = client;
-    useRegisterView("/", { context: { user: { id: "u1" } } });
-    useRegisterView("/home", { context: { page: { title: "Home" } } });
+    const { useViewContext } = client;
+    useViewContext("/", { context: { user: { id: "u1" } } });
+    useViewContext("/home", { context: { page: { title: "Home" } } });
     return (
       <>
         {detail ? <Detail client={client} /> : null}
@@ -680,8 +680,8 @@ describe("view registries", () => {
     );
   }
   function Detail({ client }: { client: ReturnType<typeof createTailorKitClient<typeof server>> }) {
-    const { useRegisterView } = client;
-    useRegisterView("/home/detail", { status: "loading" });
+    const { useViewContext } = client;
+    useViewContext("/home/detail", { status: "loading" });
     return null;
   }
 
@@ -721,8 +721,8 @@ describe("view registries", () => {
       components,
     });
     function OtherRoute() {
-      const { useRegisterView } = client;
-      useRegisterView("/user", { context: { userId: "other" } });
+      const { useViewContext } = client;
+      useViewContext("/user", { context: { userId: "other" } });
       return <Slot name="panel" app={{ id: "other", clientPath: "/other.js" }} />;
     }
     render(
@@ -764,9 +764,9 @@ it("isolates a new client cache even when its endpoint is equivalent", async () 
   }: {
     client: ReturnType<typeof createTailorKitClient<typeof server>>;
   }) {
-    const { useApps, useRegisterView } = client;
+    const { useApps, useViewContext } = client;
     const { data } = useApps();
-    useRegisterView("/user", { context: { userId: "u1" } });
+    useViewContext("/user", { context: { userId: "u1" } });
     return (
       <>
         <span>{data?.[0]?.id}</span>
