@@ -57,7 +57,7 @@ function Context({ detail = true }: { detail?: boolean }) {
   return detail ? <Detail /> : null;
 }
 function Detail() {
-  client.useViewContext("/customers/detail", { status: "loading" });
+  client.useViewContext("/customers/detail", { context: undefined, loading: true });
   return null;
 }
 

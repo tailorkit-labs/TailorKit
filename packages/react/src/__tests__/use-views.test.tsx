@@ -88,10 +88,11 @@ afterEach(() => {
 function useDetail(status: "ready" | "loading" | "error" = "ready", userId = "u1") {
   client.useViewContext("/", { context: { user: { id: userId } } });
   client.useViewContext("/customers", { context: { canEdit: true } });
-  client.useViewContext(
-    "/customers/detail",
-    status === "ready" ? { context: { customer: { id: "c1" } } } : { status },
-  );
+  client.useViewContext("/customers/detail", {
+    context: { customer: { id: "c1" } },
+    loading: status === "loading",
+    error: status === "error" ? new Error("Failed to load context") : null,
+  });
 }
 
 it("fetches the matched view's instances over authenticated HTTP with combined context", async () => {
@@ -170,10 +171,10 @@ it("falls back to an enabled ancestor when the supported child is disabled", asy
 it("waits for every required ancestor before fetching instances", async () => {
   const { result, rerender } = renderHook(
     ({ ready }) => {
-      client.useViewContext(
-        "/",
-        ready ? { context: { user: { id: "u1" } } } : { status: "loading" },
-      );
+      client.useViewContext("/", {
+        context: ready ? { user: { id: "u1" } } : undefined,
+        loading: !ready,
+      });
       client.useViewContext("/customers", { context: { canEdit: true } });
       client.useViewContext("/customers/detail", { context: { customer: { id: "c1" } } });
       return client.useViews({ slot: "page" });
@@ -198,7 +199,7 @@ it.each(["missing", "error", "invalid", "duplicate"] as const)(
           client.useViewContext(
             "/",
             kind === "error"
-              ? { status: "error" }
+              ? { context: undefined, error: new Error("Failed to load context") }
               : { context: kind === "invalid" ? null : { user: { id: "u1" } } },
           );
         client.useViewContext("/customers", {
@@ -574,7 +575,15 @@ it("aggregates apps in discovery order, resolves in parallel, and preserves dupl
   expect(calls("/meta")).toHaveLength(1);
 });
 
-it("returns an empty result when there are no discovered apps", async () => {
+it("returns an empty result without requests when there are no apps or registered context", async () => {
+  apps = [];
+  const { result } = renderHook(() => client.useViews({ slot: "page" }), { wrapper });
+  await waitFor(() => expect(result.current.data).toEqual([]));
+  expect(result.current.isSuccess).toBe(true);
+  expect(globalThis.fetch).not.toHaveBeenCalled();
+});
+
+it("returns an empty result with no app requests when only context diagnostics need metadata", async () => {
   apps = [];
   const { result } = renderHook(
     () => {
@@ -585,7 +594,10 @@ it("returns an empty result when there are no discovered apps", async () => {
   );
   await waitFor(() => expect(result.current.data).toEqual([]));
   expect(result.current.isSuccess).toBe(true);
-  expect(globalThis.fetch).not.toHaveBeenCalled();
+  expect(calls("/meta")).toHaveLength(1);
+  expect(calls("/apps")).toHaveLength(0);
+  expect(calls("/backend/session")).toHaveLength(0);
+  expect(calls("/actions")).toHaveLength(0);
 });
 
 it("exposes app discovery failures and retries them through refetch", async () => {
@@ -722,7 +734,11 @@ it.each(["loading", "error"] as const)(
     apps = [singleApp];
     const { result } = renderHook(
       () => {
-        client.useViewContext("/customers/detail", { status });
+        client.useViewContext("/customers/detail", {
+          context: undefined,
+          loading: status === "loading",
+          error: status === "error" ? new Error("Failed to load context") : null,
+        });
         return client.useViews({ slot: "single" });
       },
       { wrapper },

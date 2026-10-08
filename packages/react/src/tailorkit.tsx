@@ -1,13 +1,25 @@
-import { createTailorKitFetchClient } from "@tailorkit/client-core";
-import type { TailorKitFetchClient, TailorKitCacheOptions } from "@tailorkit/client-core";
+import { createTailorKitClientConfig, createComponentRegistry } from "@tailorkit/client-core";
+import type {
+  AnyComponentDefinition,
+  ComponentRenderer,
+  ComponentRenderers,
+  CompleteComponentRenderers,
+  TailorKitClientConfig,
+  TailorKitServerShape,
+  ServerComponents,
+  ServerViews,
+  ServerSlots,
+  ServerScopeNames,
+  SlotMultiple,
+} from "@tailorkit/client-core";
+export type { TailorKitClientConfig } from "@tailorkit/client-core";
+import type { TailorKitCacheOptions } from "@tailorkit/client-core";
 import { createElement } from "react";
 import type { ReactNode } from "react";
 import type {
   TailorKitTheme,
-  CallbackMap,
   ComponentDefinition,
   ComponentProps,
-  Schema,
   ViewDefinition,
   SlotDefinitions,
   TailorKitSchema,
@@ -24,41 +36,7 @@ import type { UseViewsOptions, UseViewsResult } from "./hooks/use-views";
 import { Slot as ReactSlot } from "./components/slot";
 import type { ControlledSlotProps, SlotComponent, SlotProps } from "./components/slot";
 
-type AnyComponentDefinition = ComponentDefinition<
-  Schema | undefined,
-  CallbackMap,
-  boolean | undefined
->;
-
-type ComponentRenderer<TComponent extends AnyComponentDefinition> = (args: {
-  props: ComponentProps<TComponent>;
-  children?: TComponent extends { children: true } ? ReactNode : never;
-}) => ReactNode;
-
-type ComponentRenderers<TComponents extends Record<string, AnyComponentDefinition>> = {
-  [TName in keyof TComponents]?: ComponentRenderer<TComponents[TName]>;
-};
-
-type CompleteComponentRenderers<TComponents extends Record<string, AnyComponentDefinition>> = {
-  [TName in keyof TComponents]-?: ComponentRenderer<TComponents[TName]>;
-};
-
 export type { TailorKitApp } from "@tailorkit/client-core";
-
-const componentTagPrefix = "tailorkit-";
-
-const toComponentTagName = (name: string): string =>
-  `${componentTagPrefix}${name
-    .replaceAll(/([a-z0-9])([A-Z])/gu, "$1-$2")
-    .replaceAll(/[\s_]+/gu, "-")
-    .toLowerCase()}`;
-
-export interface TailorKitClientConfig {
-  readonly baseUrl: string | URL;
-  readonly fetchClient?: TailorKitFetchClient;
-  readonly components: Record<string, unknown>;
-  readonly theme: TailorKitTheme;
-}
 
 export interface TailorKitInstance<
   TViews extends Record<string, ViewDefinition> = Record<string, ViewDefinition>,
@@ -75,81 +53,32 @@ export interface TailorKitInstance<
   readonly useViewContext: UseViewContext<TViews>;
 }
 
-type SlotMultiple<TSlot> = TSlot extends { multiple: infer TMultiple extends boolean }
-  ? TMultiple
-  : TSlot extends { multiple?: infer TMultiple extends boolean }
-    ? TMultiple | false
-    : false;
-
 type PrimitiveRenderers = typeof primitives;
 type CustomComponentRenderers<TComponents extends Record<string, AnyComponentDefinition>> = {
   [TName in Exclude<keyof TComponents, keyof PrimitiveRenderers>]?: ComponentRenderer<
-    TComponents[TName]
+    TComponents[TName],
+    ReactNode
   >;
 };
 
 export function components<TComponents extends Record<string, AnyComponentDefinition>>(
   _schema: TailorKitSchema<TComponents, Record<string, ViewDefinition>>,
   customComponents: CustomComponentRenderers<TComponents>,
-): ComponentRenderers<TComponents> {
-  return customComponents as ComponentRenderers<TComponents>;
+): ComponentRenderers<TComponents, ReactNode> {
+  return customComponents as ComponentRenderers<TComponents, ReactNode>;
 }
-
-interface TailorKitServerShape {
-  $internal: {
-    schema: {
-      components: Record<string, unknown>;
-      views: Record<string, unknown>;
-    };
-  };
-}
-
-type ServerComponentMap<TTailor extends TailorKitServerShape> =
-  TTailor["$internal"]["schema"]["components"];
-
-type ServerComponents<TTailor extends TailorKitServerShape> = {
-  [
-    TName in keyof ServerComponentMap<TTailor>
-  ]: ServerComponentMap<TTailor>[TName] extends AnyComponentDefinition
-    ? ServerComponentMap<TTailor>[TName]
-    : never;
-};
-
-type ServerViewMap<TTailor extends TailorKitServerShape> = TTailor["$internal"]["schema"]["views"];
-
-type ServerScopeNames<TTailor extends TailorKitServerShape> = TTailor extends {
-  handler: (request: Request, options: infer TOptions) => unknown;
-}
-  ? TOptions extends { authenticate: infer TAuthenticate }
-    ? TAuthenticate extends (...args: infer _TArgs) => infer TResult
-      ? Extract<Awaited<TResult>, { scopes: unknown }> extends { scopes: infer TScopes }
-        ? keyof TScopes & string
-        : never
-      : never
-    : never
-  : never;
-
-type ServerViews<TTailor extends TailorKitServerShape> = {
-  [TName in keyof ServerViewMap<TTailor>]: ServerViewMap<TTailor>[TName] extends ViewDefinition
-    ? ServerViewMap<TTailor>[TName]
-    : never;
-};
 
 export function createTailorKitClient<TTailor extends TailorKitServerShape>(options: {
   baseUrl: string | URL;
-  components?: CompleteComponentRenderers<ServerComponents<TTailor>>;
+  components?: CompleteComponentRenderers<ServerComponents<TTailor>, ReactNode>;
   theme?: TailorKitTheme;
   cache?: TailorKitCacheOptions;
   fetch?: typeof fetch;
-}): TailorKitInstance<
-  ServerViews<TTailor>,
-  TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions,
-  ServerScopeNames<TTailor>
-> {
+}): TailorKitInstance<ServerViews<TTailor>, ServerSlots<TTailor>, ServerScopeNames<TTailor>> {
   return createReactTailorKitClient<
     ServerComponents<TTailor>,
     ServerViews<TTailor>,
-    TTailor extends { readonly $slots?: infer V extends SlotDefinitions } ? V : SlotDefinitions,
+    ServerSlots<TTailor>,
     ServerScopeNames<TTailor>
   >(options);
 }
@@ -161,41 +90,23 @@ function createReactTailorKitClient<
   TScopeNames extends string = string,
 >(options: {
   baseUrl: string | URL;
-  components?: ComponentRenderers<TComponents>;
+  components?: ComponentRenderers<TComponents, ReactNode>;
   theme?: TailorKitTheme;
   cache?: TailorKitCacheOptions;
   fetch?: typeof fetch;
 }): TailorKitInstance<TViews, TSlots, TScopeNames> {
-  const wrappedComponents: Record<string, unknown> = {};
-
-  const theme = options.theme ?? {};
-
-  for (const [name, renderer] of Object.entries(options.components ?? {})) {
-    if (renderer) {
-      const TailorKitComponent = function TailorKitComponent({
+  const wrappedComponents = createComponentRegistry(options.components ?? {}, (renderer) => {
+    return function TailorKitComponent({
+      children,
+      ...props
+    }: Record<string, unknown> & { children?: ReactNode }) {
+      return (renderer as ComponentRenderer<ComponentDefinition & { children: true }, ReactNode>)({
+        props: props as ComponentProps<ComponentDefinition>,
         children,
-        ...props
-      }: Record<string, unknown> & { children?: ReactNode }) {
-        return (renderer as ComponentRenderer<ComponentDefinition & { children: true }>)({
-          props: props as ComponentProps<ComponentDefinition>,
-          children,
-        });
-      };
-      wrappedComponents[name] = TailorKitComponent;
-      wrappedComponents[toComponentTagName(name)] = TailorKitComponent;
-    }
-  }
-
-  const clientConfig: TailorKitClientConfig = {
-    baseUrl: options.baseUrl,
-    fetchClient: createTailorKitFetchClient({
-      baseUrl: options.baseUrl,
-      cache: options.cache,
-      fetch: options.fetch,
-    }),
-    components: wrappedComponents,
-    theme,
-  };
+      });
+    };
+  });
+  const clientConfig = createTailorKitClientConfig({ ...options, components: wrappedComponents });
   const client: TailorKitInstance<TViews, TSlots, TScopeNames> = {
     ...clientConfig,
     Slot: Object.assign(

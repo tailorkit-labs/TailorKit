@@ -121,9 +121,15 @@ useViewContext("/home", {
   context: { page: { title: "Home" } },
 });
 
-useViewContext("/user", { status: "loading" });
+useViewContext("/user", { context: undefined, loading: true });
+useViewContext("/user", { context: { userId: "u1" }, loading: true });
+declare const queryContext: { userId: string } | undefined;
+declare const queryLoading: boolean;
+declare const queryError: Error | null;
+useViewContext("/user", { context: queryContext, loading: queryLoading, error: queryError });
 
-useViewContext("/user", { status: "error" });
+useViewContext("/user", { context: undefined, error: new Error("Failed") });
+useViewContext("/user", { context: { userId: "u1" }, loading: false, error: null });
 
 // @ts-expect-error invalid view name
 useViewContext("missing", { context: {} });
@@ -131,11 +137,21 @@ useViewContext("missing", { context: {} });
 // @ts-expect-error invalid context shape for selected view
 useViewContext("/user", { context: { page: { title: "Home" } } });
 
-// @ts-expect-error ready matches require context
+// @ts-expect-error the context property is required
 useViewContext("/home", {});
 
-// @ts-expect-error loading views cannot expose partial context
-useViewContext("/user", { status: "loading", context: { userId: "user_1" } });
+// @ts-expect-error loading still requires a complete context shape or undefined
+useViewContext("/home", { loading: true, context: { page: {} } });
+// @ts-expect-error errors still require a complete context shape or undefined
+useViewContext("/home", { error: new Error("Failed"), context: { page: {} } });
+// @ts-expect-error the context shape belongs to the selected view even while loading
+useViewContext("/user", { loading: true, context: { page: { title: "Home" } } });
+// @ts-expect-error loading must be a boolean
+useViewContext("/user", { context: undefined, loading: "loading" });
+// @ts-expect-error error must be an Error or null
+useViewContext("/user", { context: undefined, error: "Failed" });
+// @ts-expect-error the former status API has been removed
+useViewContext("/user", { context: undefined, status: "loading" });
 
 useApps();
 useApps({ scopes: ["organization", "user"] });
@@ -297,9 +313,12 @@ const optionalContextServer = createTailorKitServer({
     "/detail": typedSchema<{ detailId: string }>(),
   },
 });
-const OptionalSlot = createTailorKitClient<typeof optionalContextServer>({
+const optionalContextClient = createTailorKitClient<typeof optionalContextServer>({
   baseUrl: "http://runtime.test",
-}).Slot;
+});
+optionalContextClient.useViewContext("/", { context: undefined });
+optionalContextClient.useViewContext("/", { context: { workspaceId: "w1" } });
+const OptionalSlot = optionalContextClient.Slot;
 <OptionalSlot.Controlled
   app={app}
   name="panel"

@@ -1,3 +1,4 @@
+import { createSnapshotStore } from "../snapshot-store";
 import { atom, batch } from "nanostores";
 import type { WritableAtom } from "nanostores";
 import { createPreviewWebSocketClient } from "@tailorkit/client-platform/preview";
@@ -220,7 +221,7 @@ export function createPreviewManager(
       }
     });
   };
-  return {
+  const manager = {
     getSnapshot: (sessionId: string): PreviewSnapshot =>
       entries.get(sessionId)?.state.get() ?? empty,
     updateApp: (app: TailorKitApp): void => {
@@ -273,6 +274,19 @@ export function createPreviewManager(
         close(entry);
       }
       entries.clear();
+    },
+  };
+  return {
+    ...manager,
+    getStore(getApp: () => TailorKitApp) {
+      const sessionId = getApp().preview?.sessionId ?? "";
+      return createSnapshotStore(
+        () => manager.getSnapshot(sessionId),
+        (listener) => {
+          const app = getApp();
+          return app.preview?.sessionId === sessionId ? manager.subscribe(app, listener) : () => {};
+        },
+      );
     },
   };
 }

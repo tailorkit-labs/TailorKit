@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { createElement } from "react";
 import { describe, expect, it } from "vite-plus/test";
-import { buildThemeCss, PrimitiveThemeContext, primitives } from "../primitives";
+import { PrimitiveThemeContext, primitives } from "../primitives";
 
 const theme = {
   breakpoints: {
@@ -31,15 +31,6 @@ const theme = {
 };
 
 describe("react primitives", () => {
-  it("builds view-scoped theme variables", () => {
-    const css = buildThemeCss("screen-1", theme);
-    expect(css).toContain('[data-tailorkit-view="screen-1"]');
-    expect(css).toContain("--tailorkit-border-solid: solid;");
-    expect(css).toContain("--tailorkit-space-md: 8px;");
-    expect(css).toContain("--tailorkit-background-surface: var(--background);");
-    expect(css).toContain("--tailorkit-textColor-muted: var(--muted-foreground);");
-  });
-
   it("renders a scoped primitive style with responsive rules", () => {
     render(
       <PrimitiveThemeContext.Provider value={{ viewId: "screen-1", theme }}>

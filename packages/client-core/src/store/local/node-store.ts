@@ -37,6 +37,7 @@ export interface NodeSnapshot {
 
 export class NodeStore {
   readonly state = atom<NodeSnapshot>({ nodes: new Map(), rootId: null });
+  readonly root = computed(this.state, (snapshot) => snapshot.rootId);
   private signatures = new Map<string, string>();
 
   clear(): void {
@@ -81,13 +82,16 @@ export class NodeStore {
     return this.state.get().nodes.get(id) ?? null;
   }
 
+  selectNode(id: string) {
+    return computed(this.state, (snapshot) => snapshot.nodes.get(id) ?? null);
+  }
+
   subscribe(id: string, listener: Listener): () => void {
-    const node = computed(this.state, (snapshot) => snapshot.nodes.get(id) ?? null);
+    const node = this.selectNode(id);
     return node.listen(listener);
   }
 
   subscribeRoot(listener: Listener): () => void {
-    const root = computed(this.state, (snapshot) => snapshot.rootId);
-    return root.listen(listener);
+    return this.root.listen(listener);
   }
 }
