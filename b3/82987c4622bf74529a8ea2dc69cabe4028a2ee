@@ -1,0 +1,43 @@
+packages/app/src/builder/file-routes.test.ts
+  s_d657c413e53ecd::t_aa544269f1e862 69
+  s_d657c413e53ecd::t_5b32d8e138e7b1 52-54,56-57,59-68,70-77,87-88
+  s_d657c413e53ecd::t_96dfefa18c6084 55,58,78-86
+packages/app/src/builder/define-view.ts
+  s_d657c413e53ecd::t_95e674f94489da 11-16,19-28,30,33,36,39,42-44,47,50,52-60,70-108,139-141,143-144,146,148-152,154-157,159-160,162-164,167-172,174-176,178-179,181,183-184,186,188-189,192,195-197,199-205,211,213,218
+  s_d657c413e53ecd::t_aa544269f1e862 110-138,147,153
+  s_d657c413e53ecd::t_b3a716c1deaf65 18,61-69,109,158
+  s_d657c413e53ecd::t_063ba353f3862c 17
+  s_d657c413e53ecd::t_87f525a0a85119 29,31-32,35,37-38,40-41,45-46,48-49,51,142,145,161,165-166,173,177,180,182,185,187,190-191
+packages/cli/src/generator/generate.test.ts
+  s_d657c413e53ecd::t_d6bbbefff02d7f 307-310
+packages/cli/src/deploy.test.ts
+  s_d657c413e53ecd::t_0c292f91b62edf 3-12
+  s_d657c413e53ecd::t_f4aa9a59f24eef 245-246
+packages/cli/src/generator/generate.ts
+  s_d657c413e53ecd::t_96dfefa18c6084 61-63
+  s_d657c413e53ecd::t_d6bbbefff02d7f 56-60,65
+examples/apps/todo/README.md
+  s_d657c413e53ecd::t_d6bbbefff02d7f 5
+.changeset/fresh-database-layout.md
+  s_d657c413e53ecd::t_d6bbbefff02d7f 8,10,12
+packages/cli/src/deploy.ts
+  s_d657c413e53ecd::t_d6bbbefff02d7f 186
+packages/app/src/builder/instances.test.ts
+  s_d657c413e53ecd::t_5b32d8e138e7b1 63-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b382987c4622bf74529a8ea2dc69cabe4028a2ee",
+  "prompts": {},
+  "sessions": {
+    "s_d657c413e53ecd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a118d6-7e78-7820-bbc8-65a630cd230d",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
