@@ -1,6 +1,7 @@
+import { useStore } from "@nanostores/react";
 import { createSlotStore, refetchViews } from "@tailorkit/client-core";
 import type { TailorKitApp, SlotItem, ViewsQueryOptions } from "@tailorkit/client-core";
-import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useTailorRootContext } from "../components/context";
 import { useApps } from "./use-apps";
 import type { UseAppsResult } from "./use-apps";
@@ -44,12 +45,8 @@ function useResolvedSlot(
   appsError: Error | null,
 ): UseViewsResult {
   const { store } = useTailorRootContext("useViews");
-  const activeView = useSyncExternalStore(
-    store.views.subscribe,
-    store.views.getSnapshot,
-    store.views.getSnapshot,
-  );
-  const meta = useSyncExternalStore(store.subscribe, store.getMetaSnapshot, store.getMetaSnapshot);
+  const activeView = useStore(store.views.state);
+  const meta = useStore(store.fetch.meta.state);
   const options = useStableContext({
     apps: apps ?? [],
     slot,
@@ -65,7 +62,7 @@ function useResolvedSlot(
       }),
     [store.client, options, appsStatus, appsError],
   );
-  const snapshot = useSyncExternalStore(query.subscribe, query.getSnapshot, query.getSnapshot);
+  const snapshot = useStore(query.state);
   useEffect(() => {
     void query.fetch();
   }, [query]);

@@ -1,5 +1,7 @@
+import { computedAsync } from "@nanostores/async";
+import { createSnapshotStore } from "../snapshot-store";
 import { atom } from "nanostores";
-import type { WritableAtom } from "nanostores";
+import type { ReadableAtom, WritableAtom } from "nanostores";
 
 export interface FetchCacheOptions {
   /** Milliseconds before a successful response needs refreshing. Infinity keeps it fresh. */
@@ -20,8 +22,9 @@ export interface FetchOptions extends Pick<FetchCacheOptions, "staleTime"> {
   force?: boolean;
 }
 
-/** Framework-neutral contract; adapters need not depend on the state library. */
+/** A cached request and readable state shared across framework adapters. */
 export interface FetchStore<T> {
+  state: ReadableAtom<FetchSnapshot<T>>;
   getSnapshot: () => FetchSnapshot<T>;
   subscribe: (listener: () => void) => () => void;
   fetch: (options?: FetchOptions) => Promise<void>;
@@ -135,9 +138,9 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
         }
         return entry;
       };
-      const store: FetchStore<T> = {
+      const store = {
         getSnapshot: () => getEntry().state.get() as FetchSnapshot<T>,
-        subscribe(listener) {
+        subscribe(listener: () => void) {
           const entry = getEntry();
           if (entry.timer) clearTimeout(entry.timer);
           entry.timer = null;
@@ -164,7 +167,7 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
             scheduleGc(key, entry);
           };
         },
-        fetch(settings = {}) {
+        fetch(settings: FetchOptions = {}) {
           const entry = getEntry();
           if (entry.pending && !settings.force) return entry.pending;
           const snapshot = entry.state.get();
@@ -182,38 +185,46 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
           const controller = new AbortController();
           entry.controller = controller;
           const generation = ++entry.generation;
-          const run = async () => {
-            try {
-              const data = await fetcher(controller.signal);
-              if (entry.generation !== generation) return;
-              entry.invalidated = false;
-              entry.state.set({
-                data,
-                error: null,
-                status: "ready",
-                isFetching: false,
-                updatedAt: Date.now(),
-              });
-            } catch (error) {
-              if (entry.generation !== generation) return;
-              entry.state.set({
-                ...entry.state.get(),
-                error: error instanceof Error ? error : new Error(String(error)),
-                status: "error",
-                isFetching: false,
-              });
-            } finally {
-              if (entry.generation === generation) {
-                entry.controller = null;
-                entry.pending = null;
-                scheduleGc(key, entry);
-              }
-            }
-          };
           let start!: () => void;
           const pending = new Promise<void>((resolve) => {
             start = () => {
-              void run().then(resolve);
+              // Async owns fetching, settlement, and Nano Stores task tracking.
+              const request = computedAsync(atom(controller.signal), (signal) => {
+                signal.throwIfAborted();
+                return fetcher(signal);
+              });
+              const stop = request.listen((result) => {
+                if (result.state === "loading") return;
+                stop();
+                if (entry.generation === generation) {
+                  if (result.state === "ready") {
+                    entry.invalidated = false;
+                    entry.state.set({
+                      data: result.value,
+                      error: null,
+                      status: "ready",
+                      isFetching: false,
+                      updatedAt: Date.now(),
+                    });
+                  } else {
+                    entry.state.set({
+                      ...entry.state.get(),
+                      error:
+                        result.error instanceof Error
+                          ? result.error
+                          : new Error(String(result.error)),
+                      status: "error",
+                      isFetching: false,
+                    });
+                  }
+                  if (entry.generation === generation) {
+                    entry.controller = null;
+                    entry.pending = null;
+                    scheduleGc(key, entry);
+                  }
+                }
+                resolve();
+              });
             };
           });
           entry.pending = pending;
@@ -227,7 +238,7 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
           start();
           return pending;
         },
-        setData(updater) {
+        setData(updater: (previous: T | undefined) => T) {
           const entry = getEntry();
           entry.generation += 1;
           entry.controller?.abort();
@@ -249,7 +260,7 @@ export function createFetchCache(defaults: FetchCacheOptions = {}) {
           return entry.observers ? store.fetch({ force: true }) : Promise.resolve();
         },
       };
-      return store;
+      return { ...store, state: createSnapshotStore(store.getSnapshot, store.subscribe) };
     },
     clear() {
       for (const [key, entry] of entries) {

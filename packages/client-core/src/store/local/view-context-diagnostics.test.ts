@@ -161,6 +161,7 @@ it("validates the latest registrations when delayed metadata arrives", async () 
   await Promise.resolve();
   store.register({ id, view: "/", context: { customer: { id: 123 } } });
   expect(error).not.toHaveBeenCalled();
+  await vi.waitFor(() => expect(respond).toBeTypeOf("function"));
   respond(Response.json({ schema }));
   await client.meta().fetch();
   expect(error).toHaveBeenCalledExactlyOnceWith(

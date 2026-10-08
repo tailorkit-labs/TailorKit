@@ -39,6 +39,7 @@
     "test": "vp test run"
   },
   "dependencies": {
+    "@nanostores/async": "0.1.0",
     "@tailorkit/app": "workspace:*",
     "@tailorkit/client-platform": "workspace:*",
     "@tailorkit/core": "workspace:*",

@@ -1,7 +1,8 @@
+import { useStore } from "@nanostores/react";
 import type { ViewInstance } from "@tailorkit/app/client";
 import type { SlotDefinitions, ViewDefinition } from "@tailorkit/core/schema";
 import type { ActiveView, ViewStatus } from "@tailorkit/core/views";
-import { useCallback, useEffect, useId, useMemo, useRef, useSyncExternalStore } from "react";
+import { useEffect, useId, useMemo, useRef } from "react";
 import type { ReactNode } from "react";
 import type { ViewContext, ViewName } from "../hooks/use-view-context";
 import { useStableContext } from "../hooks/use-stable-context";
@@ -94,11 +95,7 @@ type SlotState =
 
 function ManagedSlot({ app, name, instanceKey }: RuntimeSlotProps): ReactNode {
   const { store } = useTailorRootContext("Slot");
-  const state = useSyncExternalStore(
-    store.views.subscribe,
-    store.views.getSnapshot,
-    store.views.getSnapshot,
-  );
+  const state = useStore(store.views.state);
 
   if (state === null) return null;
   return instanceKey === undefined ? (
@@ -116,7 +113,7 @@ function InstanceSlot({
 }: RuntimeSlotProps & { instanceKey: string; state: ActiveView }): ReactNode {
   const { store } = useTailorRootContext("Slot");
   const instances = useAppSlot(app, name);
-  const meta = useSyncExternalStore(store.subscribe, store.getMetaSnapshot, store.getMetaSnapshot);
+  const meta = useStore(store.fetch.meta.state);
   const instance = instances.data?.find(
     (item): item is SlotItem<true> => "key" in item && item.key === instanceKey,
   );
@@ -196,24 +193,15 @@ function SlotRenderer({ app, name, state }: RuntimeSlotProps & { state: SlotStat
     () => store.client.endpoints.getSessionProvider(app),
     [store.client, app.id, app.currentDeployment?.id, app.preview?.sessionId],
   );
-  const meta = useSyncExternalStore(store.subscribe, store.getMetaSnapshot, store.getMetaSnapshot);
+  const meta = useStore(store.fetch.meta.state);
   const previewSessionId = app.preview?.sessionId ?? "";
   const appRef = useRef(app);
   appRef.current = app;
-  const subscribePreview = useCallback(
-    (listener: () => void) => {
-      const currentApp = appRef.current;
-      return currentApp.preview?.sessionId === previewSessionId
-        ? store.previews.subscribe(currentApp, listener)
-        : () => {};
-    },
+  const previewStore = useMemo(
+    () => store.previews.getStore(() => appRef.current),
     [store, previewSessionId],
   );
-  const getPreviewSnapshot = useCallback(
-    () => store.previews.getSnapshot(previewSessionId),
-    [store, previewSessionId],
-  );
-  const preview = useSyncExternalStore(subscribePreview, getPreviewSnapshot, getPreviewSnapshot);
+  const preview = useStore(previewStore);
   const props = useMemo(
     () => ({
       ...state,

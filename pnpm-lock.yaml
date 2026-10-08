@@ -1238,6 +1238,9 @@ importers:
 
   packages/client-core:
     dependencies:
+      '@nanostores/async':
+        specifier: 0.1.0
+        version: 0.1.0(nanostores@1.5.4)
       '@tailorkit/app':
         specifier: workspace:*
         version: link:../app
@@ -1528,6 +1531,9 @@ importers:
       '@floating-ui/react-dom':
         specifier: ^2.1.9
         version: 2.1.9(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@nanostores/react':
+        specifier: 2.0.1
+        version: 2.0.1(nanostores@1.5.4)(react@19.3.0)
       '@standard-schema/spec':
         specifier: ^1.1.0
         version: 1.1.0
@@ -1546,6 +1552,9 @@ importers:
       '@tailorkit/sandbox':
         specifier: workspace:*
         version: link:../sandbox
+      nanostores:
+        specifier: 1.5.4
+        version: 1.5.4
     devDependencies:
       '@tailorkit/config':
         specifier: workspace:*
@@ -3738,12 +3747,25 @@ packages:
     resolution: {integrity: sha512-a9ELYNIflEQP38tSu6gnUgSAWgXjuhMvC52868K5sWgyRmYsjiJMWTUmm8iy7hZT5EN2ZKVydMTFP2q3/+6ccg==}
     engines: {node: '>=22.0.0'}
 
+  '@nanostores/async@0.1.0':
+    resolution: {integrity: sha512-sFz5p7L+O7EXkAah65wAIxFs8UW/fHCnqmA5IMXW+ocGqiBY+GvTXyUvGu48qjEaqI886sQSImctmu9L2m5jzw==}
+    engines: {node: ^20.0.0 || >=22.0.0}
+    peerDependencies:
+      nanostores: ^1
+
   '@nanostores/preact@1.1.0':
     resolution: {integrity: sha512-oiu9z85AiZlBTKJ8YsfAs8TALpDij70LmmKuRkeF22rS9zUBhVtYDWXEvV1qUUStNNwSFdhTMkwzOYL/IsA+UA==}
     engines: {node: ^20.0.0 || >=22.0.0}
     peerDependencies:
       nanostores: ^1.2.0
       preact: '>=10.0.0'
+
+  '@nanostores/react@2.0.1':
+    resolution: {integrity: sha512-txbZTd+7/hnO7FhtF8Pmr+cu0ThdCuCnOyEEh0DsEM2Hp9PfOa5EY4uj3wpZpypSzp5BuqDgf2AxVAKoUIWOFQ==}
+    engines: {node: ^22.0.0 || ^24.0.0 || >=26.0.0}
+    peerDependencies:
+      nanostores: ^1.2.0
+      react: '>=18.0.0'
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     resolution: {integrity: sha512-oTXEIha4SsuXdTA4Iyskj0kpdx2yVXdhd75c2v3xGrHFfVMsbhTPZU/nMPL4sWKo4pBHm3aucLaqGlF696dTyQ==}
@@ -14806,10 +14828,19 @@ snapshots:
       chevrotain: 12.0.0
       lilconfig: 2.1.0
 
+  '@nanostores/async@0.1.0(nanostores@1.5.4)':
+    dependencies:
+      nanostores: 1.5.4
+
   '@nanostores/preact@1.1.0(nanostores@1.5.4)(preact@11.0.0)':
     dependencies:
       nanostores: 1.5.4
       preact: 11.0.0
+
+  '@nanostores/react@2.0.1(nanostores@1.5.4)(react@19.3.0)':
+    dependencies:
+      nanostores: 1.5.4
+      react: 19.3.0
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     optional: true

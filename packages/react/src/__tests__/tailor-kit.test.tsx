@@ -959,3 +959,20 @@ describe("supplied app discovery", () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 });
+
+it("updates component renderers without recreating the remote sandbox", async () => {
+  const appUrl = "https://apps.example/client.js";
+  const props = { example: true };
+  const { rerender } = render(
+    <RemoteViewHost appUrl={appUrl} components={components} props={props} />,
+  );
+  await waitFor(() => expect(testingView.getByRole("button").textContent).toBe(appUrl));
+  const mounted = hostRecords.length;
+  const replacement = {
+    Button: ({ children }: { children?: ReactNode }) => createElement("a", { href: "/" }, children),
+  };
+  rerender(<RemoteViewHost appUrl={appUrl} components={replacement} props={props} />);
+  await waitFor(() => expect(testingView.getByRole("link").textContent).toBe(appUrl));
+  expect(hostRecords).toHaveLength(mounted);
+  expect(testingView.queryByRole("button")).toBeNull();
+});

@@ -1,5 +1,6 @@
+import { useStore } from "@nanostores/react";
 import { useTailorRootContext } from "../components/context";
-import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import type { TailorKitApp } from "../tailorkit";
 import { matchesApp, normalizeScopeSelection } from "@tailorkit/client-core";
 import type { TailorKitAppsSnapshot, TailorKitStore } from "@tailorkit/client-core";
@@ -40,11 +41,7 @@ export function useAppsStore(store: TailorKitStore, options: UseAppsOptions = {}
 }
 
 export function useAppsSnapshot(store: TailorKitStore): TailorKitAppsSnapshot {
-  const snapshot = useSyncExternalStore(
-    store.subscribeApps,
-    store.getAppsSnapshot,
-    store.getAppsSnapshot,
-  );
+  const snapshot = useStore(store.fetch.apps.state);
   useEffect(() => {
     void store.fetchApps();
   }, [store]);

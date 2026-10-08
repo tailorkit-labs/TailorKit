@@ -1,3 +1,4 @@
+import { createSnapshotStore } from "../snapshot-store";
 import type { TailorKitFetchClient } from "../../client/fetch-client";
 import type { TailorKitMetadata } from "../../client/endpoints";
 import type { FetchSnapshot } from "./cache";
@@ -14,7 +15,7 @@ export function createMetadataStore(client: TailorKitFetchClient) {
   const query = client.meta();
   let last: FetchSnapshot<TailorKitMetadata> | undefined;
   let snapshot: TailorKitMetaSnapshot;
-  return {
+  const store = {
     getSnapshot(): TailorKitMetaSnapshot {
       const current = query.getSnapshot();
       if (current !== last) {
@@ -33,4 +34,5 @@ export function createMetadataStore(client: TailorKitFetchClient) {
     fetch: query.fetch,
     invalidate: query.invalidate,
   };
+  return { ...store, state: createSnapshotStore(store.getSnapshot, store.subscribe) };
 }
