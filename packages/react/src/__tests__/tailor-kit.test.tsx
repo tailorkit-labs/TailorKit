@@ -261,8 +261,12 @@ describe("tailorKitClient React adapter", () => {
     });
 
     function AppList() {
-      const { data, status } = tailor.useApps({ scopes: ["organization", "user"] });
-      return createElement("p", null, `${status}:${(data ?? []).map((app) => app.id).join(",")}`);
+      const { data, isPending } = tailor.useApps({ scopes: ["organization", "user"] });
+      return createElement(
+        "p",
+        null,
+        `${isPending ? "pending" : "ready"}:${(data ?? []).map((app) => app.id).join(",")}`,
+      );
     }
 
     render(
@@ -300,10 +304,10 @@ describe("tailorKitClient React adapter", () => {
       label: string;
       scopes?: readonly ("organization" | "user")[];
     }) {
-      const { data, status } = tailor.useApps({ scopes });
+      const { data, isPending } = tailor.useApps({ scopes });
       return (
         <p>
-          {label}:{status}:{data?.map((app) => app.id).join(",")}
+          {label}:{isPending ? "pending" : "ready"}:{data?.map((app) => app.id).join(",")}
         </p>
       );
     }
@@ -345,8 +349,8 @@ describe("tailorKitClient React adapter", () => {
     });
 
     function AppList() {
-      const { status } = tailor.useApps();
-      return createElement("p", null, status);
+      const { isPending } = tailor.useApps();
+      return createElement("p", null, isPending ? "pending" : "ready");
     }
 
     render(
@@ -891,10 +895,10 @@ describe("supplied app discovery", () => {
     vi.restoreAllMocks();
   });
   function Apps() {
-    const { data, status, refetch } = client.useApps();
+    const { data, isPending, fetch } = client.useApps();
     return (
-      <button onClick={() => void refetch()}>
-        {status}:{data?.map((app) => app.id).join(",")}
+      <button onClick={() => void fetch()}>
+        {isPending ? "pending" : "ready"}:{data?.map((app) => app.id).join(",")}
       </button>
     );
   }
