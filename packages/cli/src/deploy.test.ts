@@ -1,15 +1,6 @@
 import { createHash } from "node:crypto";
 import { gunzipSync } from "node:zlib";
-import {
-  mkdir,
-  mkdtemp,
-  rm,
-  writeFile,
-  rename,
-  symlink,
-  readdir,
-  readFile,
-} from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile, rename, symlink, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
@@ -182,56 +173,6 @@ it("preserves client-only deployment uploads", async () => {
   expect(fetch).toHaveBeenCalledOnce();
 });
 
-it("typechecks the configured client entry before uploading", async () => {
-  await symlink(
-    path.resolve(import.meta.dirname, "../../../examples/apps/backend-todo/node_modules"),
-    path.join(root, "node_modules"),
-    "dir",
-  );
-  await mkdir(path.join(root, "ui"));
-  await mkdir(path.join(root, "src"));
-  await writeFile(path.join(root, "src/server.ts"), "export default {};\n");
-  await writeFile(path.join(root, "ui/browser.ts"), "export default {};\n");
-  await writeFile(
-    path.join(root, "tsconfig.json"),
-    JSON.stringify({
-      compilerOptions: {
-        strict: true,
-        target: "ESNext",
-        module: "ESNext",
-        moduleResolution: "Bundler",
-        types: [],
-      },
-    }),
-  );
-  mocks.load.mockResolvedValue({
-    root,
-    filepath: path.join(root, "tailorkit.config.ts"),
-    config: { appId: "app-one", server: {}, client: { entry: "./ui/browser.ts" } },
-  });
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
-  await runDeploy({ cwd: root });
-  expect(mocks.publish).toHaveBeenCalledOnce();
-  mocks.publish.mockClear();
-  await writeFile(
-    path.join(root, "ui/browser.ts"),
-    "const label: string = 42;\nexport default label;\n",
-  );
-  const onTypecheckFailed = vi.fn().mockResolvedValue(false);
-  await expect(runDeploy({ cwd: root, onTypecheckFailed })).rejects.toThrow("type check failed");
-  expect(onTypecheckFailed).toHaveBeenCalledWith(
-    expect.objectContaining({
-      command: "tsc --noEmit ui/browser.ts",
-      exitCode: expect.any(Number),
-      output: expect.stringContaining("ui/browser.ts"),
-    }),
-  );
-  expect(mocks.publish).not.toHaveBeenCalled();
-  expect((await readdir(root)).some((file) => file.startsWith(".tailorkit-typecheck-"))).toBe(
-    false,
-  );
-});
-
 it("typechecks the server entry even when the client does not import it", async () => {
   await symlink(
     path.resolve(import.meta.dirname, "../../../examples/apps/backend-todo/node_modules"),
@@ -239,7 +180,7 @@ it("typechecks the server entry even when the client does not import it", async 
     "dir",
   );
   await mkdir(path.join(root, "src"));
-  await writeFile(path.join(root, "src/client.ts"), "export default {};\n");
+  await writeFile(path.join(root, "src/root.tsx"), "export default {};\n");
   await writeFile(path.join(root, "src/server.ts"), 'export const invalid: number = "string";');
   await writeFile(
     path.join(root, "tsconfig.json"),

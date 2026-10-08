@@ -4,7 +4,7 @@ import path from "node:path";
 import { expect, it } from "vite-plus/test";
 import { appDatabasePaths } from "./database-paths";
 
-it("uses the new layout, honors custom migrations and keeps legacy apps working", async () => {
+it("uses src/db regardless of files at old locations and honors custom migrations", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "tailorkit-db-paths-"));
   try {
     expect(appDatabasePaths(root)).toEqual({
@@ -14,8 +14,8 @@ it("uses the new layout, honors custom migrations and keeps legacy apps working"
     await mkdir(path.join(root, "src/db"), { recursive: true });
     await writeFile(path.join(root, "src/schema.ts"), "export {};\n");
     expect(appDatabasePaths(root)).toEqual({
-      schema: path.join(root, "src/schema.ts"),
-      migrations: path.join(root, "migrations"),
+      schema: path.join(root, "src/db/schema.ts"),
+      migrations: path.join(root, "src/db/migrations"),
     });
     await writeFile(path.join(root, "src/db/schema.ts"), "export {};\n");
     expect(appDatabasePaths(root, "custom/history")).toEqual({

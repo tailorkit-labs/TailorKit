@@ -1,6 +1,5 @@
 import path from "node:path";
 import { createRequire } from "node:module";
-import { existsSync } from "node:fs";
 import { readFile, realpath, writeFile } from "node:fs/promises";
 import { validateLogoAsset } from "@tailorkit/asset-delivery/logo-validation";
 import type { LogoContentType } from "@tailorkit/asset-delivery/logo-validation";
@@ -40,7 +39,6 @@ export interface BuildAppOptions {
 export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> => {
   const loaded = await loadTailorKitConfig(options.configPath, options.cwd);
   loaded.root = await realpath(loaded.root);
-  const legacyEntry = path.resolve(loaded.root, loaded.config.client?.entry ?? "src/client.ts");
   const serverEntry = path.resolve(loaded.root, loaded.config.server?.entry ?? "src/server.ts");
   const outDir = options.outDir ?? loaded.config.build?.outDir ?? ".tailorkit";
   const preactVersion = getInstalledPreactVersion(loaded.root);
@@ -50,11 +48,8 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
   const resolvedOutDir = path.resolve(loaded.root, outDir);
   validateServerBuildOutput(loaded, resolvedOutDir);
   const clientOutDir = path.join(resolvedOutDir, "client");
-  const fileEntry =
-    loaded.config.client || existsSync(legacyEntry)
-      ? undefined
-      : await createFileRouteEntry(loaded.root, resolvedOutDir, Boolean(options.watch));
-  const entry = fileEntry?.entry ?? legacyEntry;
+  const fileEntry = await createFileRouteEntry(loaded.root, resolvedOutDir, Boolean(options.watch));
+  const entry = fileEntry.entry;
   const instanceModules = new Map<string, InstanceModule>();
   let serverWatcher: Awaited<ReturnType<typeof buildServer>>;
   const writeBuildExtras = async (): Promise<void> => {
@@ -211,7 +206,7 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
     ],
     root: loaded.root,
   }).catch(async (error: unknown) => {
-    await fileEntry?.close();
+    await fileEntry.close();
     if (serverWatcher && "close" in serverWatcher) await serverWatcher.close();
     throw error;
   });
@@ -234,7 +229,7 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
         await (result as { close(): Promise<void> }).close();
       }
       if (serverWatcher && "close" in serverWatcher) await serverWatcher.close();
-      await fileEntry?.close();
+      await fileEntry.close();
       throw error;
     }
     if (result && "close" in result) {
@@ -247,13 +242,13 @@ export const buildApp = async (options: BuildAppOptions = {}): Promise<unknown> 
         async close() {
           await clientWatcher.close();
           if (serverWatcher && "close" in serverWatcher) await serverWatcher.close();
-          await fileEntry?.close();
+          await fileEntry.close();
         },
       };
     }
   }
 
-  await fileEntry?.close();
+  await fileEntry.close();
 
   return result;
 };

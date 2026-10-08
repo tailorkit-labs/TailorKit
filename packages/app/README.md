@@ -108,12 +108,9 @@ Each mounted slot instance has its own shell, provider, and layout state. Two
 separate host mounts do not share provider state. A provider is disposed when
 its slot mount is removed.
 
-## Existing client entries
+## Build and preview
 
-Apps with `src/client.ts` keep their manual `defineClient` registration. A
-configured `client.entry` also selects manual registration. To adopt file
-routing, remove the manual client entry and omit `client.entry`; move provider
-composition into `src/root.tsx` and default-export views from `.view.tsx` files.
-Build and deploy discover the same files. Preview watches route additions,
-renames, removals, and source edits. Generated entries live only in the build
-output and are cleaned up after builds or when the watcher closes.
+File routing is the app client entry point. Build and deploy discover the same
+roots, layouts, and views. Preview watches route additions, renames, removals,
+and source edits. Generated entries live only in the build output and are
+cleaned up after builds or when the watcher closes.

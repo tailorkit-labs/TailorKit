@@ -1,5 +1,11 @@
 {
-  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts", "clients/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vite.config.ts",
+    "clients/**/*.ts",
+    "clients/**/*.tsx"
+  ],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",

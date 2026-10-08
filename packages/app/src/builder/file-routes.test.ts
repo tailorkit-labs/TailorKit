@@ -44,7 +44,8 @@ it("discovers only view and layout files, supports roots, and checks the same so
     expect(discovered.roots.map(({ slot }) => slot)).toEqual(["panel.links"]);
     expect(await getClientSourceFiles(root)).toHaveLength(5);
     await writeFile(path.join(root, "src/client.ts"), "export default {};");
-    expect(await getClientSourceFiles(root)).toEqual([path.join(root, "src/client.ts")]);
+    expect(await getClientSourceFiles(root)).toHaveLength(5);
+    expect(await getClientSourceFiles(root)).not.toContain(path.join(root, "src/client.ts"));
   } finally {
     await rm(root, { recursive: true, force: true });
   }

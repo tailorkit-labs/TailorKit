@@ -1,8 +1,9 @@
-import { createContext, h } from "preact";
+import { createContext, h, render } from "preact";
 import type { ComponentChildren, ComponentType } from "preact";
 import { useContext } from "preact/hooks";
-import { defineClient } from "./views";
 import type { TailorKitClientWithMeta, ViewInstance } from "./views";
+
+declare const __PREACT_VERSION__: string;
 
 export interface ShellProps {
   children?: ComponentChildren;
@@ -165,7 +166,12 @@ export function createFileClient(options: {
   // Filesystem slots cannot be represented by a source-level generic. The
   // deployment manifest is checked against the host's supported slots/views.
   return {
-    ...defineClient({ slots: {}, component: Root }),
+    $meta: { preactVersion: __PREACT_VERSION__ },
+    $runtime: {
+      h,
+      render: (vnode, parent) =>
+        render(vnode && Root ? h(Root, { children: vnode }) : vnode, parent),
+    },
     slots: slots as TailorKitClientWithMeta["slots"],
   };
 }

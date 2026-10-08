@@ -12,7 +12,6 @@ const logosConfigSchema = z.object({
 const tailorkitConfigSchema = z.strictObject({
   appId: z.string().min(1).optional(),
   build: buildConfigSchema.optional(),
-  client: z.strictObject({ entry: z.string().min(1).default("src/client.ts") }).optional(),
   host: z.string().url(),
   logos: logosConfigSchema.optional(),
   server: z
@@ -47,18 +46,6 @@ export interface TailorKitConfig extends z.input<typeof tailorkitConfigSchema> {
      * @default ".tailorkit"
      */
     outDir?: string;
-  };
-  /**
-   * Browser client build settings. Omit to discover src/root.tsx and src/slots.
-   * Existing apps with src/client.ts continue to use that entry.
-   * @default undefined
-   */
-  client?: {
-    /**
-     * Explicit legacy source entry point instead of file-based routing.
-     * @default "src/client.ts"
-     */
-    entry?: string;
   };
   /**
    * URL of the TailorKit host used for authentication, deployment, remote preview,
@@ -96,7 +83,6 @@ export interface TailorKitConfig extends z.input<typeof tailorkitConfigSchema> {
     /**
      * Directory containing Drizzle migrations, used for generation and bundling.
      * When omitted, uses `./src/db/migrations` and allows that directory to be absent.
-     * Existing apps with `src/schema.ts` continue to use `./migrations`.
      * An explicitly configured directory must exist when building the backend.
      * @default "./src/db/migrations"
      */

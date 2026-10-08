@@ -1,7 +1,7 @@
 import { h } from "preact";
 import { useState } from "preact/hooks";
-import { defineView, defineClient } from "tailorkit/app";
-import { Box, Button, Flex } from "./components";
+import { defineView } from "tailorkit/app";
+import { Box, Button, Flex } from "../../../../components";
 
 const view = defineView({ slot: "panel", view: "/", component: Content });
 function Content() {
@@ -13,4 +13,4 @@ function Content() {
     h(Button, { onClick: () => setDone(true) }, done ? "Task added ✓" : "Add task"),
   );
 }
-export default defineClient({ slots: { panel: { "/": view } } });
+export default view;

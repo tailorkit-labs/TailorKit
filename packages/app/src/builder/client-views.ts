@@ -8,7 +8,7 @@ const inspectClient = `
 import { readFile } from "node:fs/promises";
 const source = await readFile(process.argv[1], "utf8");
 const { default: client } = await import("data:text/javascript;base64," + Buffer.from(source).toString("base64"));
-if (!client?.slots || typeof client.slots !== "object") throw new Error("Client must default-export defineClient(...)");
+if (!client?.slots || typeof client.slots !== "object") throw new Error("Invalid generated app client: missing slots");
 const instanceResolvers = [];
 const views = Object.entries(client.slots).flatMap(([slot, definitions]) =>
   Object.entries(definitions).flatMap(([path, view]) => {
@@ -55,7 +55,7 @@ export async function readClientManifest(filename: string) {
     return { views, instanceResolvers: manifest.instanceResolvers as InstanceRegistration[] };
   } catch (error) {
     throw new Error(
-      "Unable to read app views during the build. Keep browser-only side effects inside components or effects. Check the default exports of your file routes (or defineClient for a legacy client entry).",
+      "Unable to read app views during the build. Keep browser-only side effects inside components or effects. Check the default exports of your roots, layouts and .view.tsx files.",
       { cause: error },
     );
   }

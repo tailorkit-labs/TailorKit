@@ -184,7 +184,7 @@ const typecheckAppEntries = async (
   } catch {
     return;
   }
-  const clientFiles = await getClientSourceFiles(loaded.root, loaded.config.client?.entry);
+  const clientFiles = await getClientSourceFiles(loaded.root);
   // Check both application entry points with the project compiler options.
   const temporary = await mkdtemp(path.join(loaded.root, ".tailorkit-typecheck-"));
   try {

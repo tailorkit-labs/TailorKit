@@ -156,12 +156,8 @@ export async function discoverFileRoutes(root: string) {
   };
 }
 
-/** Source files to check when there is no handwritten browser entry. */
-export async function getClientSourceFiles(root: string, entry?: string) {
-  const legacyEntry = path.resolve(root, entry ?? "src/client.ts");
-  if (entry || existsSync(legacyEntry)) {
-    return [legacyEntry];
-  }
+/** Root, layout, view and binding sources to check before deployment. */
+export async function getClientSourceFiles(root: string) {
   const discovered = await discoverFileRoutes(root);
   const bindings = path.join(root, "src/tailorkit.gen.ts");
   return [
@@ -256,16 +252,16 @@ export function fileRoutesPlugin(root: string): Plugin {
   return {
     name: "tailorkit-file-routes",
     enforce: "pre",
-    resolveId(id) {
+    async resolveId(id) {
       if (id !== clientRuntimeImport) {
         return;
       }
       // Resolve from the app even when its build output is outside the project.
       const importer = path.join(root, "src/root.tsx");
-      const sdk = existsSync(path.join(root, "node_modules/tailorkit"))
-        ? "tailorkit/client"
-        : "@tailorkit/app/client";
-      return this.resolve(sdk, importer, { skipSelf: true });
+      return (
+        (await this.resolve("tailorkit/client", importer, { skipSelf: true })) ??
+        this.resolve("@tailorkit/app/client", importer, { skipSelf: true })
+      );
     },
     transform(source, filename) {
       if (!filename.endsWith(".view.tsx")) {

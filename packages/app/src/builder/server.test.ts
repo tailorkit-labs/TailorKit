@@ -11,7 +11,7 @@ import type { VNode } from "preact";
 import { buildApp } from "./index";
 import { readClientManifest } from "./client-views";
 
-it("builds configured entries and blocks the configured server from the browser", async () => {
+it("builds file routes with a configured server and blocks server imports from the browser", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "tailorkit-custom-entries-"));
   try {
     await symlink(
@@ -22,14 +22,14 @@ it("builds configured entries and blocks the configured server from the browser"
     await writeFile(path.join(root, "package.json"), '{"type":"module"}');
     await writeFile(
       path.join(root, "tailorkit.config.mjs"),
-      'export default { host: "https://host.example.com", client: { entry: "./ui/browser.ts" }, server: { entry: "./backend/api.ts" } };',
+      'export default { host: "https://host.example.com", server: { entry: "./backend/api.ts" } };',
     );
-    for (const directory of ["src", "ui", "backend"]) await mkdir(path.join(root, directory));
+    for (const directory of ["src", "backend"]) await mkdir(path.join(root, directory));
     await writeFile(path.join(root, "src/client.ts"), 'throw new Error("Unused default client");');
     await writeFile(path.join(root, "src/server.ts"), 'throw new Error("Unused default server");');
     const client =
-      'import { defineClient } from "tailorkit/client";\nexport const marker = "Configured client loaded";\nexport default defineClient({ slots: {} });';
-    await writeFile(path.join(root, "ui/browser.ts"), client);
+      'import { defineRoute } from "tailorkit/client"; export default defineRoute({ shellComponent: () => "Configured client loaded" });';
+    await writeFile(path.join(root, "src/root.tsx"), client);
     await writeFile(
       path.join(root, "backend/api.ts"),
       'import { defineServer, tk } from "tailorkit/server";\nconst app = defineServer({ configured: tk.query.handler(() => "Configured server loaded") });\nexport default app;',
@@ -61,11 +61,11 @@ it("builds configured entries and blocks the configured server from the browser"
     expect(browser).not.toContain("Unused default client");
     expect(server).not.toContain("Unused default server");
     await writeFile(
-      path.join(root, "ui/browser.ts"),
+      path.join(root, "src/root.tsx"),
       'import type app from "../backend/api";\n' + client,
     );
     await expect(buildApp({ cwd: root })).resolves.toBeDefined();
-    await writeFile(path.join(root, "ui/browser.ts"), 'import "../backend/api";\n' + client);
+    await writeFile(path.join(root, "src/root.tsx"), 'import "../backend/api";\n' + client);
     await expect(buildApp({ cwd: root })).rejects.toThrow(
       "cannot be imported into a browser bundle",
     );
@@ -153,7 +153,8 @@ it("builds colocated instance resolvers as query-only server actions", async () 
       path.join(root, "node_modules"),
       "dir",
     );
-    await mkdir(path.join(root, "src"));
+    await mkdir(path.join(root, "src/slots/page"), { recursive: true });
+    await mkdir(path.join(root, "src/slots/panel.links"), { recursive: true });
     await writeFile(path.join(root, "package.json"), '{"type":"module"}');
     await writeFile(
       path.join(root, "tailorkit.config.mjs"),
@@ -174,10 +175,10 @@ it("builds colocated instance resolvers as query-only server actions", async () 
       path.join(root, "src/private.ts"),
       'export function title(id: string) { return "PRIVATE_SERVER_ONLY:" + id; }',
     );
-    const clientSource = `
-      import { defineView, defineClient } from "tailorkit/client";
+    const viewSource = `
+      import { defineView } from "tailorkit/client";
       import { z } from "zod";
-      import { title } from "./private";
+      import { title } from "../../private";
       const privatePrefix = (() => "PRIVATE_INITIALIZER")();
       const view = defineView({ slot: "page", view: "/",
         instances: {
@@ -191,9 +192,13 @@ it("builds colocated instance resolvers as query-only server actions", async () 
         },
         component: () => "BROWSER_COMPONENT_MUST_NOT_RUN:" + view.useInstance().data.id,
       });
-      export default defineClient({ slots: { page: { "/": view }, "panel.links": { "/": { ...view, slot: "panel.links" } } } });
+      export default view;
     `;
-    await writeFile(path.join(root, "src/client.ts"), clientSource);
+    await writeFile(path.join(root, "src/slots/page/home.view.tsx"), viewSource);
+    await writeFile(
+      path.join(root, "src/slots/panel.links/home.view.tsx"),
+      'import view from "../page/home.view"; export default { ...view, slot: "panel.links" };',
+    );
     await buildApp({ cwd: root });
     const browser = await readFile(path.join(root, ".tailorkit/client/client.js"), "utf8");
     const server = await readFile(path.join(root, ".tailorkit/server/server.js"), "utf8");
@@ -315,8 +320,8 @@ it("builds colocated instance resolvers as query-only server actions", async () 
         })
         .toBe(true);
       await writeFile(
-        path.join(root, "src/client.ts"),
-        clientSource.replace("PRIVATE_INITIALIZER", "RESOLVER_UPDATED"),
+        path.join(root, "src/slots/page/home.view.tsx"),
+        viewSource.replace("PRIVATE_INITIALIZER", "RESOLVER_UPDATED"),
       );
       await expect
         .poll(
@@ -328,10 +333,8 @@ it("builds colocated instance resolvers as query-only server actions", async () 
       expect(
         await readFile(path.join(root, ".tailorkit/watched/client/client.js"), "utf8"),
       ).toContain(names[0]!);
-      await writeFile(
-        path.join(root, "src/client.ts"),
-        'import { defineClient } from "tailorkit/client"; export default defineClient({ slots: {} });',
-      );
+      await rm(path.join(root, "src/slots/page/home.view.tsx"));
+      await rm(path.join(root, "src/slots/panel.links/home.view.tsx"));
       await expect
         .poll(
           async () => {
@@ -348,7 +351,7 @@ it("builds colocated instance resolvers as query-only server actions", async () 
     } finally {
       await watcher.close();
     }
-    await writeFile(path.join(root, "src/client.ts"), clientSource);
+    await writeFile(path.join(root, "src/slots/page/home.view.tsx"), viewSource);
     await writeFile(
       path.join(root, "no-server.config.mjs"),
       'export default { host: "https://host.example.com" };',
