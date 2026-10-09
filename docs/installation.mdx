@@ -7,14 +7,6 @@ description: "Install TailorKit, expose your host API, and render installed apps
   You'll need a TailorKit account to get started. [Sign up](https://tailorkit.dev/signup).
 </Note>
 
-Keep your setup in three files:
-
-| File                   | Purpose                                                    | Imported by         |
-| ---------------------- | ---------------------------------------------------------- | ------------------- |
-| `tailorkit.ts`         | Schemas and public capability declarations                 | Server and frontend |
-| `tailorkit-server.ts`  | Action handlers, authentication, and project configuration | Server              |
-| `tailorkit-client.tsx` | React renderers, provider, and hooks                       | Frontend            |
-
 <Steps titleSize="h2">
 <Step title="Install TailorKit">
 
@@ -101,22 +93,8 @@ bun add tailorkit@beta valibot @valibot/to-json-schema
 </Step>
 <Step title="Define the shared contract">
 
-This file is the contract between installed apps and your platform.
-It defines components, views, slots, scopes, and action inputs and outputs. Keep this file
-browser-safe: both your server and frontend import it. Action handlers, database imports,
-authentication, and secrets belong in the server file.
-
-Import `action` and `defineContract` from `tailorkit`, server setup from `tailorkit/server`,
-and React setup from `tailorkit/react`. The contract file must not import the server file.
-
-Omit `.input(...)` when an action takes no input; its handler receives `input: undefined`.
-Omit `.output(...)` when it returns no result; its return type is `void`, or `Promise<void>`
-for an async handler. Declare an output schema whenever apps need a returned value.
-
-<Tip>
-  Removing or changing a capability can break apps that rely on it. For example, removing a
-  component makes it unavailable to every app using it.
-</Tip>
+Define the components, views, slots, scopes, and actions apps can use. Your server and
+frontend import this contract, so keep handlers and secrets in the server file.
 
 <Tabs>
 
@@ -179,8 +157,7 @@ export const contract = defineContract({
 
 <Tab title="ArkType">
 
-For the scope entry, expose ArkType's `~standard` property in an object, as shown below.
-This lets the current server use the scope validator while preserving its inferred types.
+Wrap ArkType scope validators in an object exposing `~standard`.
 
 ```ts src/lib/tailorkit.ts
 import { action, defineContract } from "tailorkit";
@@ -241,8 +218,7 @@ export const contract = defineContract({
 
 <Tab title="Valibot">
 
-Use native Valibot schemas in the contract. The server example in the next step converts
-these schemas to JSON Schema for app type generation.
+Use native Valibot schemas here; JSON Schema conversion belongs in the server.
 
 ```ts src/lib/tailorkit.ts
 import { action, defineContract } from "tailorkit";
