@@ -1,0 +1,26 @@
+packages/core/src/schema/contract.test-d.ts
+  s_d625adf058cbe1::t_1a41767f859c4c 4-5,58-69,76-99
+  s_d625adf058cbe1::t_ffab9d69795ba6 70-75
+packages/core/src/server/contract.ts
+  s_d625adf058cbe1::t_1a41767f859c4c 3-8,24,32
+.changeset/shared-host-contract.md
+  s_d625adf058cbe1::t_94f69cb071d4a3 13-14
+packages/core/src/schema/actions.ts
+  s_d625adf058cbe1::t_1a41767f859c4c 106,108-112,133,135-139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dcdb74fb85c354c0ffb7a0aa98e3c6fe16886b7b",
+  "prompts": {},
+  "sessions": {
+    "s_d625adf058cbe1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11dc5-d127-77e0-9b78-07a98652692f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
