@@ -1,0 +1,221 @@
+packages/client-core/src/store/local/slot-runtime.test.ts
+  s_d625adf058cbe1::t_115571d60f9de0 13-17,19
+  s_d625adf058cbe1::t_3540a8659cc44f 1
+packages/client-core/src/client/fetch-client.test.ts
+  s_d625adf058cbe1::t_115571d60f9de0 19-30,44-55
+  s_d625adf058cbe1::t_3540a8659cc44f 1,63,73,78,80,122,131-132,140
+packages/client-core/src/store/local/view-context.ts
+  s_d625adf058cbe1::t_4a36366888d45e 4,6-7,18,26-31,33-39,42,44,50,55-59,61-63,136
+  s_d625adf058cbe1::t_115571d60f9de0 45-48,51-54,101-105
+packages/core/src/schema/schema.ts
+  s_d625adf058cbe1::t_115571d60f9de0 136-145
+  s_d625adf058cbe1::t_45bfdb9bdff1ff 58
+packages/core/src/schema/contract.test-d.ts
+  s_d625adf058cbe1::t_4b9a07720f2701 1-3,5-10,16-19,31-33
+  s_d625adf058cbe1::t_115571d60f9de0 11-15,21,23-30,34-53
+  s_d625adf058cbe1::t_d9be76cd9c91ed 4,54-56
+  s_d625adf058cbe1::t_c1b95f21f43945 22
+  s_d625adf058cbe1::t_b24653e891fdae 20
+examples/tanstack-start/src/routes/api/tailorkit.$.ts
+  s_d625adf058cbe1::t_212b20e03fd118 1,4,7
+apps/demo/src/lib/tailorkit-client.tsx
+  s_d625adf058cbe1::t_3ae01f296a897f 1-2,25,28,30-31
+packages/react/src/__tests__/use-view-context.test.tsx
+  s_d625adf058cbe1::t_8d7e289c4a0d42 18,36
+  s_d625adf058cbe1::t_115571d60f9de0 29,38-43
+  s_d625adf058cbe1::t_a51936b436b007 21,37
+  s_d625adf058cbe1::t_dedcdaa157be1f 3,9
+apps/demo/src/routes/embed-panel.tsx
+  s_d625adf058cbe1::t_3ae01f296a897f 11-12
+packages/client-core/src/client/config.test.ts
+  s_d625adf058cbe1::t_115571d60f9de0 16-20
+  s_d625adf058cbe1::t_45bfdb9bdff1ff 1
+packages/client-core/src/store/fetch/preview-manager.test.ts
+  s_d625adf058cbe1::t_115571d60f9de0 97-101
+  s_d625adf058cbe1::t_3540a8659cc44f 1
+apps/demo/src/lib/tailorkit.ts
+  s_d625adf058cbe1::t_3ae01f296a897f 1-153
+packages/core/src/schema/contract.ts
+  s_d625adf058cbe1::t_115571d60f9de0 21-24
+  s_d625adf058cbe1::t_c83fa0b92518ce 1-20,25-83
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_d625adf058cbe1::t_115571d60f9de0 86-87,105-106,200-201,356-357,387-388
+  s_d625adf058cbe1::t_d9be76cd9c91ed 20-21,32,477-492
+  s_d625adf058cbe1::t_4eca7778a764cb 247-248
+  s_d625adf058cbe1::t_a51936b436b007 34,58,75,84,97,108,124,137,193,196,212,266,347,378
+  s_d625adf058cbe1::t_8da121cc35cd36 1,4
+apps/demo/src/lib/tailorkit-server.ts
+  s_d625adf058cbe1::t_3ae01f296a897f 1-12
+packages/client-core/src/store/query.ts
+  s_d625adf058cbe1::t_115571d60f9de0 111-163
+  s_d625adf058cbe1::t_e501d56d5f86fb 92
+packages/client-core/package.json
+  s_d625adf058cbe1::t_3540a8659cc44f 53-54
+examples/shared/src/index.ts
+  s_d625adf058cbe1::t_212b20e03fd118 1
+packages/react/src/tailorkit.tsx
+  s_d625adf058cbe1::t_115571d60f9de0 91-94,104-105,128-134
+  s_d625adf058cbe1::t_82599cc89987e3 25,75,81-82,84-85,89
+packages/tailorkit/src/index.ts
+  s_d625adf058cbe1::t_9992bace4f0275 1
+  s_d625adf058cbe1::t_115571d60f9de0 2-8
+packages/react/src/__tests__/render-slot.test.tsx
+  s_d625adf058cbe1::t_a51936b436b007 25,39,211
+  s_d625adf058cbe1::t_115571d60f9de0 44
+  s_d625adf058cbe1::t_8d7e289c4a0d42 92,106,121,156,252,302,397
+  s_d625adf058cbe1::t_58bc7467c7c9f1 2,7
+packages/core/src/schema/shared.ts
+  s_d625adf058cbe1::t_115571d60f9de0 16-17,19-21
+  s_d625adf058cbe1::t_45bfdb9bdff1ff 3,15,18,22-24
+apps/demo/src/routes/api/tailorkit.$.ts
+  s_d625adf058cbe1::t_3ae01f296a897f 2,8,12
+.changeset/shared-host-contract.md
+  s_d625adf058cbe1::t_ea67f4a28ab278 1-12
+packages/react/src/__tests__/use-views.test.tsx
+  s_d625adf058cbe1::t_46b6afd98c2644 183
+  s_d625adf058cbe1::t_8d7e289c4a0d42 166,242,281,340,515,615,626,637,763,817,879,924
+  s_d625adf058cbe1::t_115571d60f9de0 28
+  s_d625adf058cbe1::t_4eca7778a764cb 14
+  s_d625adf058cbe1::t_a51936b436b007 17,483
+  s_d625adf058cbe1::t_f2ea66b5e4c22d 2,6
+packages/tailorkit/src/server.ts
+  s_d625adf058cbe1::t_9992bace4f0275 1-2
+packages/client-core/src/framework-boundary.test.ts
+  s_d625adf058cbe1::t_a51936b436b007 27-28
+packages/client-core/src/client/config.ts
+  s_d625adf058cbe1::t_e501d56d5f86fb 7,47-48,62-63,72-73
+packages/core/src/server/handler.ts
+  s_d625adf058cbe1::t_45bfdb9bdff1ff 79,142,148
+packages/client-core/src/client/index.ts
+  s_d625adf058cbe1::t_8d7e289c4a0d42 2
+examples/nextjs/lib/tailorkit-client.tsx
+  s_d625adf058cbe1::t_212b20e03fd118 3,9,11-12
+examples/tanstack-start/src/lib/tailorkit-server.ts
+  s_d625adf058cbe1::t_212b20e03fd118 1-5,11-17,19-22
+  s_d625adf058cbe1::t_4192fc210f9bab 7-8
+  s_d625adf058cbe1::t_49e27e8195323a 6,9-10,18
+packages/core/src/server/types.ts
+  s_d625adf058cbe1::t_45bfdb9bdff1ff 14,38-39
+examples/nextjs/app/api/tailorkit/[[...path]]/route.ts
+  s_d625adf058cbe1::t_212b20e03fd118 1,3
+packages/tailorkit/package.json
+  s_d625adf058cbe1::t_115571d60f9de0 19
+examples/tanstack-start/src/lib/tailorkit.ts
+  s_d625adf058cbe1::t_212b20e03fd118 1
+examples/nextjs/lib/tailorkit-server.ts
+  s_d625adf058cbe1::t_49e27e8195323a 6,9-10,18
+  s_d625adf058cbe1::t_4192fc210f9bab 7-8
+  s_d625adf058cbe1::t_212b20e03fd118 1-5,11-17,19-22
+packages/client-core/src/store/store.test.ts
+  s_d625adf058cbe1::t_3540a8659cc44f 1,92,111,147,174
+  s_d625adf058cbe1::t_115571d60f9de0 32-34,42-47,57-60,125-129,175-178
+packages/client-core/src/store/store.ts
+  s_d625adf058cbe1::t_e501d56d5f86fb 4,13-21,28-29,31-32
+packages/core/src/server/contract.ts
+  s_d625adf058cbe1::t_9992bace4f0275 1-4,6,12-32,45,48-51,54-58,61-75,85,97-102,104-106,114,120-122
+  s_d625adf058cbe1::t_b24653e891fdae 33-39,76,80-83,88,110
+  s_d625adf058cbe1::t_5b0036d9705722 95
+  s_d625adf058cbe1::t_730f04ce55083b 103
+  s_d625adf058cbe1::t_115571d60f9de0 7-11,40-44,46-47,52-53,59-60,77-79,84,86-87,89-94,107-109,111-113,115-119
+  s_d625adf058cbe1::t_9c801c57d23ff7 5,96
+packages/client-core/src/client/views.test.ts
+  s_d625adf058cbe1::t_45bfdb9bdff1ff 16,18,20-21,23,26
+  s_d625adf058cbe1::t_115571d60f9de0 28-31,38-43
+  s_d625adf058cbe1::t_3540a8659cc44f 1
+packages/core/src/server/index.ts
+  s_d625adf058cbe1::t_9992bace4f0275 3-4
+packages/client-core/src/store/local/slot-runtime.ts
+  s_d625adf058cbe1::t_e501d56d5f86fb 92-93,130,134,137,140
+  s_d625adf058cbe1::t_115571d60f9de0 99-101
+packages/client-core/src/store/local/index.ts
+  s_d625adf058cbe1::t_d9be76cd9c91ed 14
+examples/shared/src/tailorkit.ts
+  s_d625adf058cbe1::t_212b20e03fd118 1-130
+packages/client-core/src/store/local/view-context-diagnostics.test.ts
+  s_d625adf058cbe1::t_115571d60f9de0 96-104,106,126-138
+  s_d625adf058cbe1::t_46b6afd98c2644 95,105
+  s_d625adf058cbe1::t_bef6b597cb8f05 2-3,6-7,11,13-15,17-21,24-26,28,31,33-37,39-40,44,46-49,51-52,54-58,61-63,65,68,70-72,74-78,81,83-84,87,90,93-94,107-109,111-121,124-125,139-143
+  s_d625adf058cbe1::t_45bfdb9bdff1ff 8
+packages/core/src/server/contract.test.ts
+  s_d625adf058cbe1::t_115571d60f9de0 11-17,21-26,34-39,41-44,46-48,52-58,66-82,86-94
+  s_d625adf058cbe1::t_5b0036d9705722 100-103,123-124
+  s_d625adf058cbe1::t_4b9a07720f2701 1-2,4-10,18-20,27-32,40,45,49-51,59-65,83-84,95,125
+  s_d625adf058cbe1::t_4eca7778a764cb 33,85
+  s_d625adf058cbe1::t_d9be76cd9c91ed 3,96-99,104-107,113,122
+  s_d625adf058cbe1::t_3ef672a2260515 108-112,114-121
+packages/react/src/hooks/use-view-context.ts
+  s_d625adf058cbe1::t_3ef672a2260515 6-12
+packages/react/src/__tests__/tailor-kit.test.tsx
+  s_d625adf058cbe1::t_46b6afd98c2644 810,818,824-825,892
+  s_d625adf058cbe1::t_8d7e289c4a0d42 176,191,692,887
+  s_d625adf058cbe1::t_115571d60f9de0 211-212,257-258,296-297,332-335,351-352,375-376,378,414-415,417,458-459,461,512-513,515,543-544,546,549-550,570-571,573,602-603,605,632-633,635,652-653,655,722-723,725,754-755,757,794,797,844-845,889-890
+  s_d625adf058cbe1::t_a51936b436b007 77,107,129,143,701,715,809,850,930
+  s_d625adf058cbe1::t_4eca7778a764cb 808
+  s_d625adf058cbe1::t_0b9133ef26dde4 7,10
+packages/client-core/src/store/query.test.ts
+  s_d625adf058cbe1::t_3540a8659cc44f 1
+  s_d625adf058cbe1::t_115571d60f9de0 12-17,140-142,158-166
+  s_d625adf058cbe1::t_a51936b436b007 136-139,143-157,167-171
+packages/core/src/schema/index.ts
+  s_d625adf058cbe1::t_9992bace4f0275 48-49
+packages/client-core/src/store/local/view-context-types.ts
+  s_d625adf058cbe1::t_d9be76cd9c91ed 11-14,27
+examples/tanstack-start/src/lib/tailorkit-client.tsx
+  s_d625adf058cbe1::t_212b20e03fd118 1,3,9-10
+examples/nextjs/lib/tailorkit.ts
+  s_d625adf058cbe1::t_212b20e03fd118 1
+packages/client-core/src/client/slot-view.ts
+  s_d625adf058cbe1::t_e501d56d5f86fb 3,11,27
+packages/client-core/src/client/views.ts
+  s_d625adf058cbe1::t_2dae3f9e3fcd90 32
+  s_d625adf058cbe1::t_e501d56d5f86fb 20,28,33
+  s_d625adf058cbe1::t_115571d60f9de0 24,27
+docs/installation.mdx
+  s_d625adf058cbe1::t_5b0036d9705722 226-228,327-330
+  s_d625adf058cbe1::t_115571d60f9de0 253-255
+  s_d625adf058cbe1::t_ea67f4a28ab278 93,96-98,110,125,129-130,167,182,185,188,231,249,251-252,306-326,331,347,375,410,444,472,504-510,518-519,521-522
+  s_d625adf058cbe1::t_397ac0697e1276 189
+packages/core/src/schema/actions.ts
+  s_d625adf058cbe1::t_3ef672a2260515 131-132
+  s_d625adf058cbe1::t_d9be76cd9c91ed 128,130
+packages/client-core/src/store/local/view-context.test.ts
+  s_d625adf058cbe1::t_115571d60f9de0 6-13
+  s_d625adf058cbe1::t_3540a8659cc44f 2
+packages/client-core/src/store/fetch/slot.ts
+  s_d625adf058cbe1::t_e501d56d5f86fb 3,79
+  s_d625adf058cbe1::t_4a36366888d45e 10-12,56-60,73
+  s_d625adf058cbe1::t_115571d60f9de0 42-46
+packages/core/src/schema/contract.test.ts
+  s_d625adf058cbe1::t_4eca7778a764cb 47
+  s_d625adf058cbe1::t_4b9a07720f2701 3-6,8-15,18,28,35-46,48-50
+  s_d625adf058cbe1::t_115571d60f9de0 19-25,29-34,59-66,69-72
+  s_d625adf058cbe1::t_a51936b436b007 51-58,67-68,73-76
+packages/core/src/spec/spec.ts
+  s_d625adf058cbe1::t_45bfdb9bdff1ff 28
+packages/client-core/src/store/local/view-context-diagnostics.ts
+  s_d625adf058cbe1::t_115571d60f9de0 20-26,28-30,34
+  s_d625adf058cbe1::t_4a36366888d45e 4,8,10-12,14-19,27,31-32,36-39,41-42
+  s_d625adf058cbe1::t_9c801c57d23ff7 1,13
+packages/client-core/src/test-contract.ts
+  s_d625adf058cbe1::t_3540a8659cc44f 1,4-8
+packages/react/src/index.ts
+  s_d625adf058cbe1::t_87343a9e818efa 8
+pnpm-lock.yaml
+  s_d625adf058cbe1::t_17e95e20d52791 1272-1274
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3fa95bcc8c760f8ac1eb71657a403ceadf499ffc",
+  "prompts": {},
+  "sessions": {
+    "s_d625adf058cbe1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11dc5-d127-77e0-9b78-07a98652692f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
