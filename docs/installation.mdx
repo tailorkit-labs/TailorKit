@@ -10,9 +10,8 @@ description: "Install TailorKit, expose your host API, and render installed apps
 <Steps titleSize="h2">
 <Step title="Install TailorKit">
 
-Choose a Standard Schema validation library: Zod, ArkType, or Valibot. The shared
-contract imports this library in both your server and browser. Then add TailorKit
-and your chosen library to your project:
+Choose a validation library to use with TailorKit. If you’re unsure, use Zod.
+Then add TailorKit and your chosen library to your project:
 
 <Tabs>
 
@@ -93,10 +92,15 @@ bun add tailorkit@beta valibot @valibot/to-json-schema
 </Step>
 <Step title="Define the shared contract">
 
-Define the components, views, slots, scopes, and actions apps can use. Your server and
-frontend import this contract, so keep handlers and secrets in the server file.
+This file is the contract between installed apps and your platform.
+It defines components, views, slots, scopes, and action inputs and outputs. Keep this file
+browser-safe: both your server and frontend import it. Action handlers and secrets belong
+in the server file.
 
-<Tip>Changing or removing capabilities can break apps that use them.</Tip>
+<Tip>
+  Removing or changing a capability can break apps that rely on it. For example, removing a
+  component makes it unavailable to every app using it.
+</Tip>
 
 <Tabs>
 
@@ -178,7 +182,7 @@ const Button = {
 export const contract = defineContract({
   // Values form the installation key: userId + teamId scopes installs per user per team.
   scopes: {
-    user: { "~standard": type({ userId: "string > 0" })["~standard"] },
+    user: type({ userId: "string > 0" }),
   },
 
   actions: { echo: action().input(type("string")).output(type("string")) },
@@ -218,15 +222,24 @@ export const contract = defineContract({
 
 <Tab title="Valibot">
 
+Use `toStandardJsonSchema` to give Valibot schemas the JSON Schema conversion
+TailorKit uses to publish your host contract. Alternatively, keep native Valibot schemas
+in the contract and pass a `schemaSerializer` to `createServer`, importing the JSON Schema
+converter only in the server file. The browser only requires Standard Schema validation.
+
 ```ts src/lib/tailorkit.ts
 import { action, defineContract } from "tailorkit";
 import { primitives } from "tailorkit/valibot";
 import * as v from "valibot";
+import { toStandardJsonSchema } from "@valibot/to-json-schema";
 
+// Define the components you want apps to use
 const Button = {
-  fields: v.object({
-    variant: v.picklist(["default", "secondary"]),
-  }),
+  fields: toStandardJsonSchema(
+    v.object({
+      variant: v.picklist(["default", "secondary"]),
+    }),
+  ),
   callbacks: {
     onClick: {},
   },
@@ -234,26 +247,52 @@ const Button = {
 };
 
 export const contract = defineContract({
-  scopes: { user: v.object({ userId: v.pipe(v.string(), v.minLength(1)) }) },
+  // Values form the installation key: userId + teamId scopes installs per user per team.
+  scopes: { user: toStandardJsonSchema(v.object({ userId: v.pipe(v.string(), v.minLength(1)) })) },
 
-  actions: { echo: action().input(v.string()).output(v.string()) },
+  actions: {
+    echo: action().input(toStandardJsonSchema(v.string())).output(toStandardJsonSchema(v.string())),
+  },
 
   components: {
-    ...primitives({
-      tokens: {
-        borderColor: { default: "var(--border)" },
-        textColor: { default: "var(--text)" },
-      },
-    }),
+    // These give apps basic layout and styling components; we strongly recommend including them.
+    ...Object.fromEntries(
+      Object.entries(
+        primitives({
+          tokens: {
+            borderColor: {
+              default: "var(--border)",
+            },
+            textColor: {
+              default: "var(--text)",
+            },
+          },
+        }),
+      ).map(([name, component]) => [
+        name,
+        {
+          ...component,
+          fields: toStandardJsonSchema(
+            component.fields as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
+          ),
+        },
+      ]),
+    ),
     Button,
   },
 
+  // Views are URL-like paths for your product's context; apps can provide UI for each.
+  // TailorKit shows the closest match, checking parent paths up to "/".
   views: {
-    "/": v.object({
-      user: v.object({ id: v.string(), name: v.string() }),
-    }),
+    "/": toStandardJsonSchema(
+      v.object({
+        user: v.object({ id: v.string(), name: v.string() }),
+      }),
+    ),
   },
 
+  // Slots define where apps render and which views they support.
+  // Add dashboardActions: { views: ["/dash"] } for custom page actions.
   slots: {
     page: { views: ["/"] },
   },
@@ -268,13 +307,7 @@ export const contract = defineContract({
 <Step title="Implement the server">
 
 Create a separate server file for action handlers and server configuration.
-The action inputs and return values infer from the contract. The `echo` action declared
-above takes and returns a string. Every declared action needs an implementation, including
-nested actions.
-
-<Tabs>
-
-<Tab title="Zod">
+The action inputs and return values infer from the contract.
 
 ```ts src/lib/tailorkit-server.ts
 import { createServer } from "tailorkit/server";
@@ -288,49 +321,6 @@ export const tailorKit = createServer({
   },
 });
 ```
-
-</Tab>
-
-<Tab title="ArkType">
-
-```ts src/lib/tailorkit-server.ts
-import { createServer } from "tailorkit/server";
-import { contract } from "./tailorkit";
-
-export const tailorKit = createServer({
-  contract,
-  projectKey: process.env.TAILORKIT_PROJECT_KEY,
-  actions: {
-    echo: ({ input }) => input,
-  },
-});
-```
-
-</Tab>
-
-<Tab title="Valibot">
-
-Import the JSON Schema converter only in this server file. `schemaSerializer` converts
-schemas for `/schema` and `/meta`; browser validation uses the native contract schemas.
-
-```ts src/lib/tailorkit-server.ts
-import { createServer } from "tailorkit/server";
-import { toJsonSchema } from "@valibot/to-json-schema";
-import { contract } from "./tailorkit";
-
-export const tailorKit = createServer({
-  contract,
-  projectKey: process.env.TAILORKIT_PROJECT_KEY,
-  schemaSerializer: toJsonSchema,
-  actions: {
-    echo: ({ input }) => input,
-  },
-});
-```
-
-</Tab>
-
-</Tabs>
 
 For private action context, supply `authenticate` when creating the server. Return
 `{ scopes, actionContext }`; action handlers receive the inferred `actionContext` as
@@ -513,18 +503,13 @@ export default app;
 The TailorKit client connects your frontend to the TailorKit API handler and
 maps the components from your contract to components in your app. It validates view
 context with the original Standard Schema validators and uses their parsed output,
-including transforms. Extra fields follow your schema's rules: Zod's `z.object` and
-Valibot's `v.object` strip them, strict objects reject them, and loose objects retain them.
-ArkType retains extra fields by default; configure its undeclared-key behavior to delete
-them if needed. The host client does not fetch `/meta`; that endpoint
+including stripped extra fields. The host client does not fetch `/meta`; that endpoint
 remains available for app type generation.
 
 App asset URLs normally come from discovery through `clientPath`. If you use the
 deployment URL fallback, pass `assetsBaseUrl` to the client.
 
 Create `tailorkit-client.tsx` in your frontend, wherever you keep client-side utilities.
-Import the contract value so TailorKit can validate context and infer types; you do not
-need to import the server instance or its types.
 
 ```tsx src/lib/tailorkit-client.tsx
 "use client";
@@ -703,21 +688,14 @@ export default function Page() {
   const [selectedId, setSelectedId] = useState("");
   const { data: views, isPending, error } = useViews({ slot: "page" });
   // Replace this with your own authentication hook.
-  const { data: session, isPending: isSessionPending, error: sessionError } = useSession();
+  const { data: session, isPending: isSessionPending } = useSession();
 
-  useViewContext("/", {
-    context: session ? { user: session.user } : undefined,
-    loading: isSessionPending,
-    error: sessionError,
-  });
+  useViewContext("/", session ? { context: { user: session.user } } : { status: "loading" });
 
   const selectedView = views?.find((view) => view.app.id === selectedId) ?? views?.[0];
 
-  if (isSessionPending) return <p>Loading your session…</p>;
-  if (sessionError) return <p>Unable to load your session.</p>;
-  if (!session) return <p>Sign in to view installed apps.</p>;
-  if (isPending) return <p>Loading views…</p>;
-  if (error) return <p>Unable to load views: {error.message}</p>;
+  if (isPending || isSessionPending) return <p>Loading views…</p>;
+  if (error) return "An error has occurred: " + error.message;
   if (!selectedView) return <p>No views available yet.</p>;
 
   return (
@@ -754,21 +732,14 @@ function Page() {
   const [selectedId, setSelectedId] = useState("");
   const { data: views, isPending, error } = useViews({ slot: "page" });
   // Replace this with your own authentication hook.
-  const { data: session, isPending: isSessionPending, error: sessionError } = useSession();
+  const { data: session, isPending: isSessionPending } = useSession();
 
-  useViewContext("/", {
-    context: session ? { user: session.user } : undefined,
-    loading: isSessionPending,
-    error: sessionError,
-  });
+  useViewContext("/", session ? { context: { user: session.user } } : { status: "loading" });
 
   const selectedView = views?.find((view) => view.app.id === selectedId) ?? views?.[0];
 
-  if (isSessionPending) return <p>Loading your session…</p>;
-  if (sessionError) return <p>Unable to load your session.</p>;
-  if (!session) return <p>Sign in to view installed apps.</p>;
-  if (isPending) return <p>Loading views…</p>;
-  if (error) return <p>Unable to load views: {error.message}</p>;
+  if (isPending || isSessionPending) return <p>Loading views…</p>;
+  if (error) return "An error has occurred: " + error.message;
   if (!selectedView) return <p>No views available yet.</p>;
 
   return (
@@ -802,21 +773,14 @@ export default function Page() {
   const [selectedId, setSelectedId] = useState("");
   const { data: views, isPending, error } = useViews({ slot: "page" });
   // Replace this with your own authentication hook.
-  const { data: session, isPending: isSessionPending, error: sessionError } = useSession();
+  const { data: session, isPending: isSessionPending } = useSession();
 
-  useViewContext("/", {
-    context: session ? { user: session.user } : undefined,
-    loading: isSessionPending,
-    error: sessionError,
-  });
+  useViewContext("/", session ? { context: { user: session.user } } : { status: "loading" });
 
   const selectedView = views?.find((view) => view.app.id === selectedId) ?? views?.[0];
 
-  if (isSessionPending) return <p>Loading your session…</p>;
-  if (sessionError) return <p>Unable to load your session.</p>;
-  if (!session) return <p>Sign in to view installed apps.</p>;
-  if (isPending) return <p>Loading views…</p>;
-  if (error) return <p>Unable to load views: {error.message}</p>;
+  if (isPending || isSessionPending) return <p>Loading views…</p>;
+  if (error) return "An error has occurred: " + error.message;
   if (!selectedView) return <p>No views available yet.</p>;
 
   return (
@@ -853,8 +817,7 @@ GET /api/tailorkit/meta
 GET /api/tailorkit/apps
 ```
 
-The schema and metadata endpoints describe your public app contract for app tooling.
-The host React client uses the imported contract and does not request these endpoints. The apps
+The schema and metadata endpoints describe your public app contract. The apps
 endpoint requires a valid host session and returns the apps installed for the
 authenticated scopes. Each scope is named by the schema key, such as `user`.
 
@@ -868,24 +831,6 @@ session and that the client points to the same origin as your host.
 
 </Step>
 </Steps>
-
-## Separate backend and frontend repositories
-
-Put `tailorkit.ts` in a shared package that both repositories can import. For example,
-`@your-product/tailorkit-contract` can export `contract` and depend on `tailorkit` and your
-schema library. Build and publish that package as part of your normal release process.
-
-The Hono backend imports that contract in `tailorkit-server.ts` and exposes the TailorKit
-handler. The Next.js frontend imports the same contract in `tailorkit-client.tsx` and
-points `baseUrl` at the backend's handler. Only the backend needs the project key, action
-implementations, authentication, and JSON Schema conversion.
-
-A separate repository does not require a separate browser origin. For cookie-based
-sessions, serve or proxy the backend's TailorKit route under the frontend's origin.
-For a direct cross-origin connection, configure CORS on the backend and provide a client
-`fetch` implementation that includes the credentials your backend requires. Keep both repositories on
-compatible contract versions. Installed app tooling can still use the backend's
-`/api/tailorkit/meta` and `/api/tailorkit/schema` endpoints for type generation.
 
 ## Next steps
 
