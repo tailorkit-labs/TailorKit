@@ -274,7 +274,24 @@ nested actions.
 
 <Tabs>
 
-<Tab title="Zod or ArkType">
+<Tab title="Zod">
+
+```ts src/lib/tailorkit-server.ts
+import { createServer } from "tailorkit/server";
+import { contract } from "./tailorkit";
+
+export const tailorKit = createServer({
+  contract,
+  projectKey: process.env.TAILORKIT_PROJECT_KEY,
+  actions: {
+    echo: ({ input }) => input,
+  },
+});
+```
+
+</Tab>
+
+<Tab title="ArkType">
 
 ```ts src/lib/tailorkit-server.ts
 import { createServer } from "tailorkit/server";
