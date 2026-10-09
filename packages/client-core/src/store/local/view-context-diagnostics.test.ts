@@ -107,6 +107,83 @@ it("reports issue paths without transforming context or changing the ready state
   await Promise.resolve();
 });
 
+const userContext = {
+  context: {
+    type: "object",
+    properties: {
+      user: {
+        type: "object",
+        properties: { id: { type: "string" }, name: { type: "string" } },
+        required: ["id", "name"],
+        additionalProperties: false,
+      },
+    },
+    required: ["user"],
+    additionalProperties: false,
+  },
+};
+
+it("publishes only declared user fields without logging errors or mutating the session", async () => {
+  const error = vi.spyOn(console, "error").mockImplementation(() => {});
+  const { store } = setup(userContext);
+  const id = Symbol("view");
+  const context = {
+    user: { id: "u1", name: "Alfie", email: "a@example.com", emailVerified: true },
+  };
+  store.register({ id, view: "/", context });
+  await Promise.resolve();
+  expect(store.getSnapshot()?.layers).toEqual([
+    { path: "/", status: "ready", context: { user: { id: "u1", name: "Alfie" } } },
+  ]);
+  expect(context.user.email).toBe("a@example.com");
+  expect(error).not.toHaveBeenCalled();
+  store.unregister(id);
+  await Promise.resolve();
+});
+
+it("strips delayed metadata and reprocesses original input when schema fields change", async () => {
+  const error = vi.spyOn(console, "error").mockImplementation(() => {});
+  const { store, metadata, schema } = setup({});
+  const id = Symbol("view");
+  const context = { user: { id: "u1", name: "Alfie", email: "a@example.com" } };
+  store.register({ id, view: "/", context });
+  await Promise.resolve();
+  expect(store.getSnapshot()?.layers[0]?.context).toBe(context);
+  metadata.setData(() => ({
+    assetsBaseUrl: null,
+    schema: { ...schema, views: { "/": userContext } },
+  }));
+  await Promise.resolve();
+  expect(store.getSnapshot()?.layers[0]?.context).toEqual({ user: { id: "u1", name: "Alfie" } });
+  metadata.setData(() => ({
+    assetsBaseUrl: null,
+    schema: {
+      ...schema,
+      views: {
+        "/": {
+          context: {
+            ...userContext.context,
+            properties: {
+              user: {
+                ...userContext.context.properties.user,
+                properties: { id: { type: "string" }, email: { type: "string" } },
+                required: ["id", "email"],
+              },
+            },
+          },
+        },
+      },
+    },
+  }));
+  await Promise.resolve();
+  expect(store.getSnapshot()?.layers[0]?.context).toEqual({
+    user: { id: "u1", email: "a@example.com" },
+  });
+  expect(error).not.toHaveBeenCalled();
+  store.unregister(id);
+  await Promise.resolve();
+});
+
 it.each([null, [], "invalid", 123])("reports non-object context: %j", async (context) => {
   const error = vi.spyOn(console, "error").mockImplementation(() => {});
   const { store } = setup();
