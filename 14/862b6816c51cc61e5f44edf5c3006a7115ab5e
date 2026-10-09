@@ -1,0 +1,47 @@
+packages/core/src/schema/shared.ts
+  s_d625adf058cbe1::t_bd1e9c8f4adccf 25
+  s_d625adf058cbe1::t_1289cf72bceaf3 13-22,24,46-49
+  s_d625adf058cbe1::t_ee74a9ab0c0126 23,26,42-45,50
+.changeset/shared-host-contract.md
+  s_d625adf058cbe1::t_1289cf72bceaf3 16
+  s_d625adf058cbe1::t_9d3f5945abef2e 15
+packages/core/src/schema/contract.test.ts
+  s_d625adf058cbe1::t_f29e00665666eb 76
+packages/core/src/schema/shared.test.ts
+  s_d625adf058cbe1::t_ae4094d15783ee 1-4,6,14-27
+  s_d625adf058cbe1::t_1289cf72bceaf3 5,7-13
+packages/core/src/server/contract.test.ts
+  s_d625adf058cbe1::t_ae4094d15783ee 5,131,133-154,156-158,161-180
+  s_d625adf058cbe1::t_1289cf72bceaf3 4,125-128,132,155
+  s_d625adf058cbe1::t_ee42dffe2c47c4 159-160
+  s_d625adf058cbe1::t_081343e2173526 181
+packages/core/src/schema/contract.test-d.ts
+  s_d625adf058cbe1::t_ae4094d15783ee 3,8,21,23-27,29-30
+  s_d625adf058cbe1::t_1289cf72bceaf3 4,22,28
+packages/core/src/schema/index.ts
+  s_d625adf058cbe1::t_1289cf72bceaf3 45-50
+packages/core/src/server/types.ts
+  s_d625adf058cbe1::t_1289cf72bceaf3 38
+docs/installation.mdx
+  s_d625adf058cbe1::t_1289cf72bceaf3 324
+packages/core/package.json
+  s_d625adf058cbe1::t_ee42dffe2c47c4 74
+pnpm-lock.yaml
+  s_d625adf058cbe1::t_d325b0f168ea1f 1273-1275,6475-6479,17436-17439
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "14862b6816c51cc61e5f44edf5c3006a7115ab5e",
+  "prompts": {},
+  "sessions": {
+    "s_d625adf058cbe1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11dc5-d127-77e0-9b78-07a98652692f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
