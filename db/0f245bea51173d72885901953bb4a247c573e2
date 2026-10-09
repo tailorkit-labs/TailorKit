@@ -1,0 +1,19 @@
+docs/installation.mdx
+  s_d625adf058cbe1::t_a90640c701b3c2 99-100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "db0f245bea51173d72885901953bb4a247c573e2",
+  "prompts": {},
+  "sessions": {
+    "s_d625adf058cbe1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11dc5-d127-77e0-9b78-07a98652692f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
