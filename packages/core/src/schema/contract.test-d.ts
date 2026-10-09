@@ -1,7 +1,8 @@
 import { expectTypeOf } from "vite-plus/test";
 import { z } from "zod";
 import { action, defineContract } from "./contract";
-import type { InferActionInput, InferActionOutput } from "./actions";
+import type { ActionDefinition, InferActionInput, InferActionOutput } from "./actions";
+import type { ActionImplementations } from "../server/contract";
 import { createServer } from "../server/contract";
 
 const contract = defineContract({
@@ -54,3 +55,45 @@ defineContract({
 
 expectTypeOf<InferActionInput<typeof contract.actions.rename>>().toEqualTypeOf<{ name: string }>();
 expectTypeOf<InferActionOutput<typeof contract.actions.rename>>().toEqualTypeOf<{ name: string }>();
+
+const emptyAction = action();
+const inputOnlyAction = action().input(z.string());
+const outputOnlyAction = action().output(z.number());
+expectTypeOf<InferActionInput<typeof emptyAction>>().toEqualTypeOf<undefined>();
+expectTypeOf<InferActionOutput<typeof emptyAction>>().toEqualTypeOf<void>();
+expectTypeOf<InferActionInput<typeof inputOnlyAction>>().toEqualTypeOf<string>();
+expectTypeOf<InferActionOutput<typeof inputOnlyAction>>().toEqualTypeOf<void>();
+expectTypeOf<InferActionInput<typeof outputOnlyAction>>().toEqualTypeOf<undefined>();
+expectTypeOf<InferActionOutput<typeof outputOnlyAction>>().toEqualTypeOf<number>();
+expectTypeOf<InferActionInput<ActionDefinition<undefined, undefined>>>().toEqualTypeOf<undefined>();
+expectTypeOf<InferActionOutput<ActionDefinition<undefined, undefined>>>().toEqualTypeOf<void>();
+expectTypeOf<
+  InferActionInput<ActionDefinition<z.ZodString, z.ZodNumber>>
+>().toEqualTypeOf<string>();
+expectTypeOf<
+  InferActionOutput<ActionDefinition<z.ZodString, z.ZodNumber>>
+>().toEqualTypeOf<number>();
+
+const noOutputContract = defineContract({ actions: { sync: emptyAction, async: inputOnlyAction } });
+type NoOutputImplementations = ActionImplementations<typeof noOutputContract.actions>;
+expectTypeOf<ReturnType<NoOutputImplementations["sync"]>>().toEqualTypeOf<void | Promise<void>>();
+expectTypeOf<ReturnType<NoOutputImplementations["async"]>>().toEqualTypeOf<void | Promise<void>>();
+createServer({
+  contract: noOutputContract,
+  actions: {
+    sync: ({ input }) => {
+      expectTypeOf(input).toEqualTypeOf<undefined>();
+    },
+    async: async ({ input }) => {
+      expectTypeOf(input).toEqualTypeOf<string>();
+    },
+  },
+});
+createServer({
+  contract: noOutputContract,
+  actions: {
+    sync: () => {},
+    // @ts-expect-error an async handler cannot expose output absent from the contract
+    async: async () => "undeclared output",
+  },
+});

@@ -1,6 +1,11 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { ContractAction, ContractActions, TailorKitContract } from "../schema/contract";
-import type { ActionHandler, ActionTree, ImplementedAction } from "../schema/actions";
+import type {
+  ActionHandler,
+  ActionTree,
+  ImplementedAction,
+  InferActionOutput,
+} from "../schema/actions";
 import { createTailorKitServer } from "./handler";
 import type { ContextDefinitions, SlotDefinitions } from "../schema/views";
 import type { MaybePromise } from "../schema/shared";
@@ -16,7 +21,7 @@ export type ContractScopes<TContract extends TailorKitContract> = {
 
 export type ActionImplementations<TActions extends ContractActions, TContext = never> = {
   [TName in keyof TActions]: TActions[TName] extends ContractAction<infer TInput, infer TOutput>
-    ? ActionHandler<TInput, TOutput, TContext>
+    ? ActionHandler<TInput, TOutput, TContext, InferActionOutput<TActions[TName]>>
     : TActions[TName] extends ContractActions
       ? ActionImplementations<TActions[TName], TContext>
       : never;
@@ -24,7 +29,7 @@ export type ActionImplementations<TActions extends ContractActions, TContext = n
 
 type ImplementedActions<TActions extends ContractActions, TContext> = {
   [TName in keyof TActions]: TActions[TName] extends ContractAction<infer TInput, infer TOutput>
-    ? ImplementedAction<TInput, TOutput, TContext>
+    ? ImplementedAction<TInput, TOutput, TContext, InferActionOutput<TActions[TName]>>
     : TActions[TName] extends ContractActions
       ? ImplementedActions<TActions[TName], TContext>
       : never;

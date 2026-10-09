@@ -103,9 +103,13 @@ export type NoMixedActionContexts<TActions> =
 export type ActionDefinitions = ActionTree;
 
 export type InferActionInput<TAction> = TAction extends { definition: { input?: infer TInput } }
-  ? InferSchema<TInput>
-  : TAction extends ActionDefinition<infer TInput, Schema | undefined>
+  ? TInput extends Schema
     ? InferSchema<TInput>
+    : undefined
+  : TAction extends ActionDefinition<infer TInput, Schema | undefined>
+    ? TInput extends Schema
+      ? InferSchema<TInput>
+      : undefined
     : never;
 
 export type InferActionOutput<TAction> =
@@ -126,9 +130,13 @@ export type InferActionOutput<TAction> =
           ? InferSchema<TOutput>
           : Awaited<TReturn>
       : TAction extends { definition: { output?: infer TOutput } }
-        ? InferSchema<TOutput>
-        : TAction extends ActionDefinition<Schema | undefined, infer TOutput>
+        ? TOutput extends Schema
           ? InferSchema<TOutput>
+          : void
+        : TAction extends ActionDefinition<Schema | undefined, infer TOutput>
+          ? TOutput extends Schema
+            ? InferSchema<TOutput>
+            : void
           : never;
 
 interface ActionBuilder<
