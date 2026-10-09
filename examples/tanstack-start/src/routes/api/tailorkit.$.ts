@@ -1,28 +1,8 @@
-import { getDemoUserFromRequest } from "@examples/shared";
-import { tailorKit } from "#lib/tailorkit";
+import { tailorKit } from "#lib/tailorkit-server";
 import { createFileRoute } from "@tanstack/react-router";
 
-const handle = ({ request }: { request: Request }) =>
-  tailorKit.handler(request, {
-    authenticate: () => {
-      const user = getDemoUserFromRequest(request);
-
-      if (!user) {
-        return null;
-      }
-
-      return {
-        actionContext: { user },
-        scopes: { user: { userId: user.id } },
-      };
-    },
-  });
+const handle = ({ request }: { request: Request }) => tailorKit.handler(request);
 
 export const Route = createFileRoute("/api/tailorkit/$")({
-  server: {
-    handlers: {
-      GET: handle,
-      POST: handle,
-    },
-  },
+  server: { handlers: { GET: handle, POST: handle } },
 });

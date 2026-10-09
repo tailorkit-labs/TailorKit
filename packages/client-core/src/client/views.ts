@@ -1,5 +1,4 @@
 import { createSlotStore } from "../store/fetch/slot";
-import { serializeCacheKey } from "../store/fetch/cache";
 import type { TailorKitStore } from "../store/store";
 import { matchesApp } from "./apps";
 
@@ -18,29 +17,18 @@ export async function refetchViews(
   { slot, scopes, appIds }: ViewsQueryOptions,
 ): Promise<void> {
   const queryOptions = () => {
-    const schema = store.getMetaSnapshot().schema;
+    const schema = store.contract;
     return {
       apps: store.getAppsSnapshot().apps.filter((app) => matchesApp(app, scopes, appIds)),
       slot,
-      activeView:
-        schema === null || schema.slots[slot]?.multiple === true ? store.views.getSnapshot() : null,
+      activeView: schema.slots[slot]?.multiple === true ? store.views.getSnapshot() : null,
     };
   };
-  if (
-    store.getAppsSnapshot().status === "ready" &&
-    store.getMetaSnapshot().schema?.slots[slot]?.multiple === true
-  ) {
-    await createSlotStore(store.client, queryOptions()).fetch({ force: true });
+  if (store.getAppsSnapshot().status === "ready" && store.contract.slots[slot]?.multiple === true) {
+    await createSlotStore(store.client, store.contract, queryOptions()).fetch({ force: true });
     return;
   }
   await store.fetchApps({ force: true });
-  let previousKey: string | undefined;
-  // Metadata can change which query owns the result, including after discovery retries.
-  while (store.getAppsSnapshot().status === "ready") {
-    const options = queryOptions();
-    const key = serializeCacheKey([options.apps, slot, options.activeView]);
-    if (key === previousKey) return;
-    previousKey = key;
-    await createSlotStore(store.client, options).fetch();
-  }
+  if (store.getAppsSnapshot().status !== "ready") return;
+  await createSlotStore(store.client, store.contract, queryOptions()).fetch();
 }

@@ -10,11 +10,6 @@ import type {
   CompleteComponentRenderers,
   TailorKitClientConfig,
   TailorKitApp,
-  TailorKitServerShape,
-  ServerComponents,
-  ServerViews,
-  ServerSlots,
-  ServerScopeNames,
   SlotMultiple,
 } from "@tailorkit/client-core";
 export type { TailorKitClientConfig } from "@tailorkit/client-core";
@@ -27,7 +22,7 @@ import type {
   ComponentProps,
   ViewDefinition,
   SlotDefinitions,
-  TailorKitSchema,
+  TailorKitContract,
 } from "@tailorkit/core/schema";
 import type { primitives } from "./primitives";
 
@@ -77,24 +72,26 @@ type CustomComponentRenderers<TComponents extends Record<string, AnyComponentDef
 };
 
 export function components<TComponents extends Record<string, AnyComponentDefinition>>(
-  _schema: TailorKitSchema<TComponents, Record<string, ViewDefinition>>,
+  _contract: { components: TComponents },
   customComponents: CustomComponentRenderers<TComponents>,
 ): ComponentRenderers<TComponents, ReactNode> {
   return customComponents as ComponentRenderers<TComponents, ReactNode>;
 }
 
-export function createTailorKitClient<TTailor extends TailorKitServerShape>(options: {
+export function createClient<const TContract extends TailorKitContract>(options: {
+  contract: TContract;
   baseUrl: string | URL;
-  components?: CompleteComponentRenderers<ServerComponents<TTailor>, ReactNode>;
+  assetsBaseUrl?: string | URL;
+  components?: CompleteComponentRenderers<NoInfer<TContract["components"]>, ReactNode>;
   theme?: TailorKitTheme;
   cache?: TailorKitCacheOptions;
   fetch?: typeof fetch;
-}): TailorKitInstance<ServerViews<TTailor>, ServerSlots<TTailor>, ServerScopeNames<TTailor>> {
+}): TailorKitInstance<TContract["views"], TContract["slots"], keyof TContract["scopes"] & string> {
   return createReactTailorKitClient<
-    ServerComponents<TTailor>,
-    ServerViews<TTailor>,
-    ServerSlots<TTailor>,
-    ServerScopeNames<TTailor>
+    TContract["components"],
+    TContract["views"],
+    TContract["slots"],
+    keyof TContract["scopes"] & string
   >(options);
 }
 
@@ -104,6 +101,8 @@ function createReactTailorKitClient<
   TSlots extends SlotDefinitions = SlotDefinitions,
   TScopeNames extends string = string,
 >(options: {
+  contract: TailorKitContract;
+  assetsBaseUrl?: string | URL;
   baseUrl: string | URL;
   components?: ComponentRenderers<TComponents, ReactNode>;
   theme?: TailorKitTheme;
@@ -126,7 +125,13 @@ function createReactTailorKitClient<
     ...clientConfig,
     Provider: function TailorKitProvider({ children, apps }: TailorKitProviderProps) {
       const [store] = useState(() =>
-        createTailorKitStore(client.baseUrl, apps, client.fetchClient),
+        createTailorKitStore({
+          baseUrl: client.baseUrl,
+          contract: client.contract,
+          apps,
+          client: client.fetchClient,
+          assetsBaseUrl: client.assetsBaseUrl,
+        }),
       );
       useEffect(() => {
         store.setProvidedApps(apps);

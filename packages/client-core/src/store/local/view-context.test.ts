@@ -1,14 +1,16 @@
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createTailorKitFetchClient } from "../../client/fetch-client";
+import { z } from "zod";
 import { createViewContextStore } from "./view-context";
 
 function createStore() {
-  const client = createTailorKitFetchClient({ baseUrl: "https://host.test" });
-  client.meta().setData(() => ({
-    assetsBaseUrl: null,
-    schema: { version: 1, actions: {}, components: {}, slots: {}, views: {} },
-  }));
-  return createViewContextStore(client);
+  return createViewContextStore({
+    views: {
+      "/home": z.looseObject({}),
+      "/home/detail": z.looseObject({}),
+      "/first": z.looseObject({}),
+      "/last": z.looseObject({}),
+    },
+  });
 }
 
 describe("view context store", () => {

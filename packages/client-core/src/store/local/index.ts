@@ -11,6 +11,7 @@ export { createViewContextStore } from "./view-context";
 export type { ViewEntry } from "./view-context";
 export type {
   ViewContext,
+  ViewContextInput,
   ViewContextRegistration,
   ViewContextState,
   ViewName,

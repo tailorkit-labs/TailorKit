@@ -8,8 +8,6 @@ export type {
 } from "./cache";
 export { createAppsStore } from "./apps";
 export type { TailorKitAppsSnapshot } from "./apps";
-export { createMetadataStore } from "./meta";
-export type { TailorKitMetaSnapshot } from "./meta";
 export { createPreviewManager } from "./preview-manager";
 export type { PreviewSnapshot } from "./preview-manager";
 export { createSlotStore } from "./slot";

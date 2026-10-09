@@ -8,6 +8,10 @@ export type ViewContext<TView> = TView extends ViewDefinition
   ? NonNullable<TView["~standard"]["types"]>["output"]
   : Record<string, never>;
 
+export type ViewContextInput<TView> = TView extends ViewDefinition
+  ? NonNullable<TView["~standard"]["types"]>["input"]
+  : Record<string, never>;
+
 export interface ViewContextState<TContext = unknown> {
   /** The complete context for this view, or undefined while it is unavailable. */
   context: TContext | undefined;
@@ -20,7 +24,7 @@ export interface ViewContextState<TContext = unknown> {
 export type ViewState<
   TViews extends Record<string, ViewDefinition> = DefaultViews,
   TView extends ViewName<TViews> = ViewName<TViews>,
-> = ViewContextState<ViewContext<TViews[TView]>>;
+> = ViewContextState<ViewContextInput<TViews[TView]>>;
 
 export type ViewOptions<
   TViews extends Record<string, ViewDefinition> = DefaultViews,

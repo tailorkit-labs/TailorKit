@@ -55,6 +55,7 @@ export const createTailorKitSchema = <
   const TActions extends ActionTree = EmptyActionMap,
 >(schema: {
   slots?: SlotDefinitions<keyof NoInfer<TViews> & string>;
+  scopes?: Record<string, Schema>;
   actions?: TActions & NoMixedActionContexts<NoInfer<TActions>>;
   components: TComponents & NoComponentFieldCallbackConflicts<NoInfer<TComponents>>;
   views?: TViews & ViewContextHierarchy<NoInfer<TViews>>;
@@ -132,6 +133,16 @@ export const createTailorKitSchema = <
           },
         ]),
       ),
+      ...(schema.scopes
+        ? {
+            scopes: Object.fromEntries(
+              Object.entries(schema.scopes).flatMap(([name, scope]) => {
+                const serialized = serializeSchema(scope, schemaSerializer);
+                return serialized ? [[name, serialized]] : [];
+              }),
+            ),
+          }
+        : {}),
       version: 1,
     };
   };

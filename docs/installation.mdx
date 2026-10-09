@@ -90,10 +90,12 @@ bun add tailorkit@beta valibot @valibot/to-json-schema
 </Tabs>
 
 </Step>
-<Step title="Define apps capabilities">
+<Step title="Define the shared contract">
 
 This file is the contract between installed apps and your platform.
-It defines what apps can render and which data they receive.
+It defines components, views, slots, scopes, and action inputs and outputs. Keep this file
+browser-safe: both your server and frontend import it. Action handlers and secrets belong
+in the server file.
 
 <Tip>
   Removing or changing a capability can break apps that rely on it. For example, removing a
@@ -105,7 +107,7 @@ It defines what apps can render and which data they receive.
 <Tab title="Zod">
 
 ```ts src/lib/tailorkit.ts
-import { createTailorKit } from "tailorkit";
+import { action, defineContract } from "tailorkit";
 import { primitives } from "tailorkit/zod";
 import { z } from "zod";
 
@@ -120,10 +122,11 @@ const Button = {
   children: true,
 };
 
-export const tailorKit = createTailorKit({
-  projectKey: process.env.TAILORKIT_PROJECT_KEY,
+export const contract = defineContract({
   // Values form the installation key: userId + teamId scopes installs per user per team.
   scopes: { user: z.object({ userId: z.string().min(1) }) },
+
+  actions: { echo: action().input(z.string()).output(z.string()) },
 
   components: {
     // These give apps basic layout and styling components; we strongly recommend including them.
@@ -161,7 +164,7 @@ export const tailorKit = createTailorKit({
 <Tab title="ArkType">
 
 ```ts src/lib/tailorkit.ts
-import { createTailorKit } from "tailorkit";
+import { action, defineContract } from "tailorkit";
 import { primitives } from "tailorkit/arktype";
 import { type } from "arktype";
 
@@ -176,12 +179,13 @@ const Button = {
   children: true,
 };
 
-export const tailorKit = createTailorKit({
-  projectKey: process.env.TAILORKIT_PROJECT_KEY,
+export const contract = defineContract({
   // Values form the installation key: userId + teamId scopes installs per user per team.
   scopes: {
-    user: { "~standard": type({ userId: "string > 0" })["~standard"] },
+    user: type({ userId: "string > 0" }),
   },
+
+  actions: { echo: action().input(type("string")).output(type("string")) },
 
   components: {
     // These give apps basic layout and styling components; we strongly recommend including them.
@@ -219,10 +223,12 @@ export const tailorKit = createTailorKit({
 <Tab title="Valibot">
 
 Use `toStandardJsonSchema` to give Valibot schemas the JSON Schema conversion
-TailorKit uses to publish your host contract.
+TailorKit uses to publish your host contract. Alternatively, keep native Valibot schemas
+in the contract and pass a `schemaSerializer` to `createServer`, importing the JSON Schema
+converter only in the server file. The browser only requires Standard Schema validation.
 
 ```ts src/lib/tailorkit.ts
-import { createTailorKit } from "tailorkit";
+import { action, defineContract } from "tailorkit";
 import { primitives } from "tailorkit/valibot";
 import * as v from "valibot";
 import { toStandardJsonSchema } from "@valibot/to-json-schema";
@@ -240,10 +246,13 @@ const Button = {
   children: true,
 };
 
-export const tailorKit = createTailorKit({
-  projectKey: process.env.TAILORKIT_PROJECT_KEY,
+export const contract = defineContract({
   // Values form the installation key: userId + teamId scopes installs per user per team.
-  scopes: { user: v.object({ userId: v.pipe(v.string(), v.minLength(1)) }) },
+  scopes: { user: toStandardJsonSchema(v.object({ userId: v.pipe(v.string(), v.minLength(1)) })) },
+
+  actions: {
+    echo: action().input(toStandardJsonSchema(v.string())).output(toStandardJsonSchema(v.string())),
+  },
 
   components: {
     // These give apps basic layout and styling components; we strongly recommend including them.
@@ -295,6 +304,32 @@ export const tailorKit = createTailorKit({
 </Tabs>
 
 </Step>
+<Step title="Implement the server">
+
+Create a separate server file for action handlers and server configuration.
+The action inputs and return values infer from the contract.
+
+```ts src/lib/tailorkit-server.ts
+import { createServer } from "tailorkit/server";
+import { contract } from "./tailorkit";
+
+export const tailorKit = createServer({
+  contract,
+  projectKey: process.env.TAILORKIT_PROJECT_KEY,
+  actions: {
+    echo: ({ input }) => input,
+  },
+});
+```
+
+For private action context, supply `authenticate` when creating the server. Return
+`{ scopes, actionContext }`; action handlers receive the inferred `actionContext` as
+`context`. Define the authentication function separately with a typed
+`{ request: Request }` argument, as in the Next.js and TanStack examples, so TypeScript
+can infer private context before checking the action handlers. You can also supply
+authentication per request when calling `handler`.
+
+</Step>
 <Step title="Add the API handler">
 
 Mount the handler at your TailorKit base path. The default is `/api/tailorkit`.
@@ -309,7 +344,7 @@ Mount the handler at your TailorKit base path. The default is `/api/tailorkit`.
 <Tab title="Next.js App Router">
 
 ```ts app/api/tailorkit/[...tailorkit]/route.ts
-import { tailorKit } from "@/lib/tailorkit";
+import { tailorKit } from "@/lib/tailorkit-server";
 
 async function handleRequest(request: Request) {
   return tailorKit.handler(request, {
@@ -337,7 +372,7 @@ export const POST = handleRequest;
 <Tab title="TanStack Start">
 
 ```ts routes/api/tailorkit.$.ts
-import { tailorKit } from "@/lib/tailorkit";
+import { tailorKit } from "@/lib/tailorkit-server";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/tailorkit/$")({
@@ -372,7 +407,7 @@ async function handleRequest({ request }: { request: Request }) {
 <Tab title="React Router">
 
 ```ts routes/api.tailorkit.$.ts
-import { tailorKit } from "@/lib/tailorkit";
+import { tailorKit } from "@/lib/tailorkit-server";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 
 async function handleRequest(request: Request) {
@@ -406,7 +441,7 @@ export async function action({ request }: ActionFunctionArgs) {
 <Tab title="Nitro">
 
 ```ts server/api/tailorkit/[...].ts
-import { tailorKit } from "@/lib/tailorkit";
+import { tailorKit } from "@/lib/tailorkit-server";
 import { toWebRequest } from "h3";
 
 export default defineEventHandler(async (event) => {
@@ -434,7 +469,7 @@ export default defineEventHandler(async (event) => {
 
 ```ts src/index.ts
 import { Hono } from "hono";
-import { tailorKit } from "@/lib/tailorkit";
+import { tailorKit } from "@/lib/tailorkit-server";
 
 const app = new Hono();
 
@@ -466,7 +501,13 @@ export default app;
 <Step title="Create the client">
 
 The TailorKit client connects your frontend to the TailorKit API handler and
-maps the components from your TailorKit config to components in your app.
+maps the components from your contract to components in your app. It validates view
+context with the original Standard Schema validators and uses their parsed output,
+including stripped extra fields. The host client does not fetch `/meta`; that endpoint
+remains available for app type generation.
+
+App asset URLs normally come from discovery through `clientPath`. If you use the
+deployment URL fallback, pass `assetsBaseUrl` to the client.
 
 Create `tailorkit-client.tsx` in your frontend, wherever you keep client-side utilities.
 
@@ -474,10 +515,11 @@ Create `tailorkit-client.tsx` in your frontend, wherever you keep client-side ut
 "use client";
 
 import { Button } from "@/components/button";
-import type { tailorKit } from "@/lib/tailorkit";
-import { createTailorKitClient, primitives } from "tailorkit/react";
+import { contract } from "@/lib/tailorkit";
+import { createClient, primitives } from "tailorkit/react";
 
-export const tailorKitClient = createTailorKitClient<typeof tailorKit>({
+export const tailorKitClient = createClient({
+  contract,
   // Replace this with your host origin and handler path.
   baseUrl: "http://localhost:3000/api/tailorkit/",
   components: {

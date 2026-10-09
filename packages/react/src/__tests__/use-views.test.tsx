@@ -1,9 +1,9 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
-import { createTailorKitServer } from "@tailorkit/core/server";
+import { defineContract } from "@tailorkit/core/schema";
 import type { ReactNode } from "react";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
-import { createTailorKitClient } from "../index";
+import { createClient } from "../index";
 import type { TailorKitApp } from "../index";
 
 const schema = {
@@ -11,10 +11,10 @@ const schema = {
     version: 1 as const,
     vendor: "test",
     jsonSchema: { input: () => ({}), output: () => ({}) },
-    validate: () => ({ value: {} }),
+    validate: (value: unknown) => ({ value: value as Record<never, never> }),
   },
 };
-const server = createTailorKitServer({
+const contract = defineContract({
   scopes: { user: schema },
   components: {},
   views: { "/": schema, "/customers": schema, "/customers/detail": schema },
@@ -25,9 +25,7 @@ const server = createTailorKitServer({
     default: { views: ["/"] },
   },
 });
-const client = createTailorKitClient<typeof server>({
-  baseUrl: "https://host.test/api/tailorkit/",
-});
+const client = createClient({ contract: contract, baseUrl: "https://host.test/api/tailorkit/" });
 const app: TailorKitApp = {
   id: "app_1",
   currentDeployment: { id: "deployment_1" },
@@ -53,8 +51,6 @@ function mockFetch() {
   return vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
     const path = url(input).pathname;
     if (path.endsWith("/apps")) return Response.json([app]);
-    if (path.endsWith("/meta"))
-      return Response.json({ schema: server.$internal.schema.serialize() });
     if (path.endsWith("/backend/session")) {
       return Response.json({
         token: "app-token",
@@ -167,7 +163,7 @@ it("fetches the matched view's instances over authenticated HTTP with combined c
   );
   await waitFor(() => expect(result.current.data).toBeDefined());
   expect(result.current.data).toEqual(withApp(instances));
-  expect(calls("/meta")).toHaveLength(1);
+  expect(calls("/meta")).toHaveLength(0);
   expect(calls("/backend/session")[0]?.[1]).toMatchObject({
     method: "POST",
     body: JSON.stringify({ appId: "app_1" }),
@@ -184,7 +180,7 @@ it("fetches the matched view's instances over authenticated HTTP with combined c
       },
     },
   });
-  expect(globalThis.fetch).toHaveBeenCalledTimes(3);
+  expect(globalThis.fetch).toHaveBeenCalledTimes(2);
 });
 
 it("uses the closest supported ancestor and excludes deeper loading context", async () => {
@@ -243,7 +239,7 @@ it("waits for every required ancestor before fetching instances", async () => {
     },
     { wrapper, initialProps: { ready: false } },
   );
-  await waitFor(() => expect(calls("/meta")).toHaveLength(1));
+  expect(calls("/meta")).toHaveLength(0);
   expect(result.current.isPending).toBe(true);
   expect(result.current.data).toBeUndefined();
   expect(calls("/backend/session")).toHaveLength(0);
@@ -282,7 +278,7 @@ it.each(["missing", "error", "invalid", "duplicate"] as const)(
 
 it("stays idle for multiple slots without a registered view and never calls a resolver", async () => {
   const { result } = renderHook(() => client.useViews({ slot: "page" }), { wrapper });
-  await waitFor(() => expect(calls("/meta")).toHaveLength(1));
+  expect(calls("/meta")).toHaveLength(0);
   expect(result.current.isRefetching).toBe(false);
   expect(result.current.isPending).toBe(true);
   expect(result.current.data).toBeUndefined();
@@ -341,7 +337,7 @@ it("does not refetch for equivalent inline objects and fetch refreshes instances
   expect(result.current.data).toEqual(withApp(instances));
   expect(calls("/actions")).toHaveLength(2);
   expect(calls("/backend/session")).toHaveLength(1);
-  expect(calls("/meta")).toHaveLength(1);
+  expect(calls("/meta")).toHaveLength(0);
 });
 
 it("clears previous data and ignores late responses after context changes", async () => {
@@ -404,28 +400,6 @@ it("exposes resolver errors and allows retry through fetch", async () => {
   await act(() => result.current.fetch());
   expect(result.current.data).toEqual(withApp(instances));
   expect(result.current.error).toBeNull();
-});
-
-it("retries failed metadata without authorizing an app before matching", async () => {
-  const original = vi.mocked(globalThis.fetch).getMockImplementation()!;
-  let fail = true;
-  vi.mocked(globalThis.fetch).mockImplementation(async (input, options) => {
-    if (fail && url(input).pathname.endsWith("/meta")) return new Response(null, { status: 503 });
-    return original(input, options);
-  });
-  const { result } = renderHook(
-    () => {
-      useDetail();
-      return client.useViews({ slot: "page" });
-    },
-    { wrapper },
-  );
-  await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
-  expect(calls("/backend/session")).toHaveLength(0);
-  fail = false;
-  await act(() => result.current.fetch());
-  expect(result.current.data).toEqual(withApp(instances));
-  expect(calls("/meta")).toHaveLength(2);
 });
 
 it("exposes session failures without sending an unauthenticated resolver call", async () => {
@@ -506,7 +480,7 @@ it("rejects a hook used outside a Provider or under another client", () => {
   expect(() => renderHook(() => client.useViews({ slot: "page" }))).toThrow(
     "useViews must be rendered inside a TailorKit Provider",
   );
-  const other = createTailorKitClient({ baseUrl: "https://other.test/api/" });
+  const other = createClient({ contract: contract, baseUrl: "https://other.test/api/" });
   const wrongWrapper = ({ children }: { children: ReactNode }) => (
     <other.Provider>{children}</other.Provider>
   );
@@ -538,7 +512,7 @@ it("shares one resolver across two hooks and retains data across remounts", asyn
   );
   await waitFor(() => expect(second.result.current.data).toBeDefined());
   expect(calls("/actions")).toHaveLength(1);
-  expect(calls("/meta")).toHaveLength(1);
+  expect(calls("/meta")).toHaveLength(0);
 });
 
 it("shares identical instance requests across roots while keeping their registrations separate", async () => {
@@ -638,7 +612,7 @@ it("aggregates apps in discovery order, resolves in parallel, and preserves dupl
   expect(result.current.data).toBeUndefined();
   await act(async () => pending[0]!.resolve(Response.json({ json: instances })));
   expect(result.current.data).toEqual([...withApp(instances), ...withApp(instances, second)]);
-  expect(calls("/meta")).toHaveLength(1);
+  expect(calls("/meta")).toHaveLength(0);
 });
 
 it("returns an empty result without requests when there are no apps or registered context", async () => {
@@ -649,7 +623,7 @@ it("returns an empty result without requests when there are no apps or registere
   expect(globalThis.fetch).not.toHaveBeenCalled();
 });
 
-it("returns an empty result with no app requests when only context diagnostics need metadata", async () => {
+it("returns an empty result with no app requests using the local contract", async () => {
   apps = [];
   const { result } = renderHook(
     () => {
@@ -660,7 +634,7 @@ it("returns an empty result with no app requests when only context diagnostics n
   );
   await waitFor(() => expect(result.current.data).toEqual([]));
   expect(result.current.isPending).toBe(false);
-  expect(calls("/meta")).toHaveLength(1);
+  expect(calls("/meta")).toHaveLength(0);
   expect(calls("/apps")).toHaveLength(0);
   expect(calls("/backend/session")).toHaveLength(0);
   expect(calls("/actions")).toHaveLength(0);
@@ -786,7 +760,7 @@ it.each(["single", "default"] as const)(
     const { result } = renderHook(() => client.useViews({ slot }), { wrapper });
     await waitFor(() => expect(result.current.data).toBeDefined());
     expect(result.current.data).toEqual([{ app: first }, { app: second }]);
-    expect(calls("/meta")).toHaveLength(1);
+    expect(calls("/meta")).toHaveLength(0);
     expect(calls("/apps")).toHaveLength(0);
     expect(calls("/backend/session")).toHaveLength(0);
     expect(calls("/actions")).toHaveLength(0);
@@ -840,7 +814,7 @@ it("intersects scope and app filters and updates supplied single-slot apps", asy
   rerender({ scopes: undefined, appIds: undefined });
   await waitFor(() => expect(result.current.data).toEqual([{ app: apps![0] }]));
   expect(calls("/apps")).toHaveLength(0);
-  expect(calls("/meta")).toHaveLength(1);
+  expect(calls("/meta")).toHaveLength(0);
   expect(calls("/actions")).toHaveLength(0);
 });
 
@@ -902,26 +876,7 @@ it("retains single-slot entries when registered context changes", async () => {
   await act(async () => {});
   expect(result.current.isPending).toBe(false);
   expect(result.current.data).toBe(previous);
-  expect(calls("/meta")).toHaveLength(1);
-  expect(calls("/actions")).toHaveLength(0);
-});
-
-it("retries failed single-slot metadata without authorizing an app", async () => {
-  apps = [{ ...app, views: [{ slot: "single", path: "/" }] }];
-  let fail = true;
-  const original = vi.mocked(globalThis.fetch).getMockImplementation()!;
-  vi.mocked(globalThis.fetch).mockImplementation(async (input, options) =>
-    fail && url(input).pathname.endsWith("/meta")
-      ? new Response(null, { status: 503 })
-      : original(input, options),
-  );
-  const { result } = renderHook(() => client.useViews({ slot: "single" }), { wrapper });
-  await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
-  fail = false;
-  await act(() => result.current.fetch());
-  await waitFor(() => expect(result.current.data).toEqual([{ app: apps![0] }]));
-  expect(calls("/meta")).toHaveLength(2);
-  expect(calls("/backend/session")).toHaveLength(0);
+  expect(calls("/meta")).toHaveLength(0);
   expect(calls("/actions")).toHaveLength(0);
 });
 
@@ -930,7 +885,6 @@ it.each(["page", "single"] as const)(
   async (slot) => {
     apps = undefined;
     let fail = true;
-    let finishMeta!: (response: Response) => void;
     let finishInstances!: (response: Response) => void;
     const discovered: TailorKitApp = {
       ...app,
@@ -945,10 +899,6 @@ it.each(["page", "single"] as const)(
         return Promise.resolve(
           fail ? new Response(null, { status: 503 }) : Response.json([discovered, excluded]),
         );
-      if (path.endsWith("/meta"))
-        return new Promise((resolve) => {
-          finishMeta = resolve;
-        });
       if (path.endsWith("/actions"))
         return new Promise((resolve) => {
           finishInstances = resolve;
@@ -971,11 +921,7 @@ it.each(["page", "single"] as const)(
         complete = true;
       });
     });
-    await waitFor(() => expect(calls("/meta")).toHaveLength(1));
-    expect(complete).toBe(false);
-    await act(async () => {
-      finishMeta(Response.json({ schema: server.$internal.schema.serialize() }));
-    });
+    expect(calls("/meta")).toHaveLength(0);
     if (slot === "page") {
       await waitFor(() => expect(calls("/actions")).toHaveLength(1));
       expect(complete).toBe(false);

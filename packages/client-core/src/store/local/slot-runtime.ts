@@ -89,17 +89,16 @@ export function createSlotRuntime(store: TailorKitStore, initial: SlotRuntimeOpt
         const instances = getQuery()!.state.get();
         if (instances.isPending) return loading;
         if (instances.error) return { status: "error", error: instances.error };
-        const schema = store.fetch.meta.state.get().schema;
-        if (schema && schema.slots[slot]?.multiple !== true)
+        const schema = store.contract;
+        if (schema.slots[slot]?.multiple !== true)
           return failure(`Slot "${slot}" does not support instances.`);
         const instance = instances.data?.find(
           (item): item is SlotItem<true> => "key" in item && item.key === options.instanceKey,
         );
         if (!instance) return failure(`View instance "${options.instanceKey}" is unavailable.`);
-        const resolved =
-          instances.isSuccess && schema
-            ? resolveSlotView(app.views ?? [], slot, active, schema)
-            : null;
+        const resolved = instances.isSuccess
+          ? resolveSlotView(app.views ?? [], slot, active, schema)
+          : null;
         if (resolved?.status !== "ready") return hidden;
         viewState = {
           controlled: true,
@@ -128,18 +127,17 @@ export function createSlotRuntime(store: TailorKitStore, initial: SlotRuntimeOpt
         return failure("A view instance is required. Pass instance to RenderSlot.Controlled.");
       }
     }
-    const metadata = store.fetch.meta.state.get();
+    const schema = store.contract;
     const source = getPreview().get();
     const appUrl = app.clientPath
       ? new URL(app.clientPath, store.baseUrl)
-      : metadata.assetsBaseUrl && app.projectId && app.currentDeployment?.id
+      : store.assetsBaseUrl && app.projectId && app.currentDeployment?.id
         ? new URL(
             `projects/${app.projectId}/apps/${app.id}/deployments/${app.currentDeployment.id}/client/client.js`,
-            toBaseUrl(metadata.assetsBaseUrl),
+            toBaseUrl(store.assetsBaseUrl),
           )
         : null;
-    if (metadata.schema === null || (appUrl === null && source.source === null)) return hidden;
-    const schema = metadata.schema;
+    if (appUrl === null && source.source === null) return hidden;
     const multiple = schema.slots[slot]?.multiple === true;
     if ("controlled" in viewState && viewState.status === "ready") {
       if (multiple && !viewState.instance)
@@ -192,7 +190,6 @@ export function createSlotRuntime(store: TailorKitStore, initial: SlotRuntimeOpt
       let active = true;
       let updating = false;
       let queued = false;
-      let requestedMetadata = false;
       let observedQuery: typeof query = null;
       let observedPreview: typeof preview | null = null;
       let stopQuery: (() => void) | undefined;
@@ -221,25 +218,17 @@ export function createSlotRuntime(store: TailorKitStore, initial: SlotRuntimeOpt
             stopPreview = nextPreview?.listen(refresh);
             stopPrevious?.();
           }
-          if (hasView && !requestedMetadata) {
-            requestedMetadata = true;
-            void store.fetchMeta();
-          } else if (!hasView) {
-            requestedMetadata = false;
-          }
           listener();
         } while (queued && active);
         updating = false;
       };
       const stopInput = input.listen(refresh);
       const stopView = store.views.state.listen(refresh);
-      const stopMeta = store.fetch.meta.state.listen(refresh);
       refresh();
       return () => {
         active = false;
         stopInput();
         stopView();
-        stopMeta();
         stopQuery?.();
         stopPreview?.();
       };

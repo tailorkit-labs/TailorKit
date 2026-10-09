@@ -1,5 +1,5 @@
 export { createEndpointClient } from "./endpoints";
-export type { EndpointClient, SlotInstancesInput, TailorKitMetadata } from "./endpoints";
+export type { EndpointClient, SlotInstancesInput } from "./endpoints";
 export { createTailorKitFetchClient } from "./fetch-client";
 export type {
   TailorKitFetchClient,

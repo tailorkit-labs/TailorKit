@@ -1,10 +1,14 @@
 import { createSnapshotStore } from "../snapshot-store";
 import type { ViewInstance } from "@tailorkit/app/client";
+import type { TailorKitContract } from "@tailorkit/core/schema";
 import type { ActiveView } from "@tailorkit/core/views";
 import type { TailorKitFetchClient } from "../../client/fetch-client";
 import { resolveSlotView } from "../../client/slot-view";
 import type { TailorKitApp } from "../../types";
 import type { FetchCacheOptions, FetchOptions, FetchSnapshot } from "./cache";
+
+const contractIds = new WeakMap<TailorKitContract, number>();
+let nextContractId = 0;
 
 interface SingleSlotItem {
   app: TailorKitApp;
@@ -35,7 +39,11 @@ interface Result {
 }
 
 /** Match all app contexts before authorizing any app or sending instance requests. */
-export function createSlotStore(client: TailorKitFetchClient, options: SlotStoreOptions) {
+export function createSlotStore(
+  client: TailorKitFetchClient,
+  contract: TailorKitContract,
+  options: SlotStoreOptions,
+) {
   const {
     apps,
     slot,
@@ -45,6 +53,11 @@ export function createSlotStore(client: TailorKitFetchClient, options: SlotStore
     appsStatus = "ready",
     appsError = null,
   } = options;
+  let contractId = contractIds.get(contract);
+  if (contractId === undefined) {
+    contractId = nextContractId++;
+    contractIds.set(contract, contractId);
+  }
   const enabled = appsStatus === "ready";
   const settings = {
     ...(staleTime === undefined ? {} : { staleTime }),
@@ -57,19 +70,13 @@ export function createSlotStore(client: TailorKitFetchClient, options: SlotStore
     isFetching: false,
   };
   const query = client.cache.getStore<Result>(
-    ["tailorkit", client.baseUrl.toString(), "slot", apps, slot, activeView],
+    ["tailorkit", client.baseUrl.toString(), "slot", contractId, apps, slot, activeView],
     async (signal) => {
       const candidates = apps.filter((app) =>
         app.views?.some((view) => view.slot === slot && !view.disabled),
       );
       if (!candidates.length) return { status: "ready", data: [] };
-      const meta = client.meta();
-      await meta.fetch();
-      signal.throwIfAborted();
-      const snapshot = meta.getSnapshot();
-      if (snapshot.error) throw snapshot.error;
-      if (!snapshot.data) throw new Error("TailorKit metadata is unavailable.");
-      const schema = snapshot.data.schema;
+      const schema = contract;
       const definition = schema.slots[slot];
       if (!definition) return { status: "ready", data: [] };
       if (definition.multiple !== true) {

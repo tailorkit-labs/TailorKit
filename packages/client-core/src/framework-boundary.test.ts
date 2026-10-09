@@ -24,6 +24,8 @@ it("bundles the core runtime without loading React or Preact modules in the host
   expect(modules.some((id) => /\/node_modules\/(?:react|react-dom|preact)(?:\/|$)/u.test(id))).toBe(
     false,
   );
+  expect(modules.some((id) => /\/core\/dist\/spec(?:\.|\/)/u.test(id))).toBe(false);
+  expect(modules.some((id) => /\/core\/dist\/server(?:\.|\/)/u.test(id))).toBe(false);
   expect(modules.some((id) => /\/node_modules\/@nanostores\/(?:react|preact)\//u.test(id))).toBe(
     false,
   );

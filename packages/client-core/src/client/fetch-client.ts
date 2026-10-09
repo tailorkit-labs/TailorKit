@@ -4,7 +4,6 @@ import { createEndpointClient } from "./endpoints";
 
 export interface TailorKitCacheOptions extends FetchCacheOptions {
   apps?: FetchCacheOptions;
-  meta?: FetchCacheOptions;
   slot?: FetchCacheOptions;
 }
 
@@ -27,8 +26,6 @@ export function createTailorKitFetchClient(options: TailorKitFetchClientOptions)
     cacheOptions: options.cache,
     apps: (settings: FetchCacheOptions = {}) =>
       cache.getStore([...prefix, "apps"], endpoints.apps, { ...options.cache?.apps, ...settings }),
-    meta: (settings: FetchCacheOptions = {}) =>
-      cache.getStore([...prefix, "meta"], endpoints.meta, { ...options.cache?.meta, ...settings }),
     clear() {
       cache.clear();
       endpoints.clearSessions();

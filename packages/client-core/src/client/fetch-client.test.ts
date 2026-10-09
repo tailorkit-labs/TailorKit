@@ -1,3 +1,4 @@
+import { testContract } from "../test-contract";
 import { afterEach, expect, it, vi } from "vite-plus/test";
 import { createTailorKitFetchClient } from "./fetch-client";
 import { createTailorKitStore } from "../store/store";
@@ -15,8 +16,18 @@ it("shares endpoint responses across roots without sharing local view registrati
     ),
   );
   const client = createTailorKitFetchClient({ baseUrl: "https://host.test/api", fetch: fetchMock });
-  const first = createTailorKitStore(client.baseUrl, undefined, client);
-  const second = createTailorKitStore(client.baseUrl, undefined, client);
+  const first = createTailorKitStore({
+    baseUrl: client.baseUrl,
+    apps: undefined,
+    client,
+    contract: testContract(),
+  });
+  const second = createTailorKitStore({
+    baseUrl: client.baseUrl,
+    apps: undefined,
+    client,
+    contract: testContract(),
+  });
   const stop = second.subscribeApps(vi.fn());
   await Promise.all([first.fetchApps(), second.fetchApps()]);
   expect(fetchMock).toHaveBeenCalledOnce();
@@ -30,8 +41,18 @@ it("shares endpoint responses across roots without sharing local view registrati
 it("keeps supplied discovery data local while another root fetches", async () => {
   const fetchMock = vi.fn().mockResolvedValue(Response.json([{ id: "remote" }]));
   const client = createTailorKitFetchClient({ baseUrl: "https://host.test/", fetch: fetchMock });
-  const supplied = createTailorKitStore(client.baseUrl, [{ id: "provided" }], client);
-  const remote = createTailorKitStore(client.baseUrl, undefined, client);
+  const supplied = createTailorKitStore({
+    baseUrl: client.baseUrl,
+    apps: [{ id: "provided" }],
+    client,
+    contract: testContract(),
+  });
+  const remote = createTailorKitStore({
+    baseUrl: client.baseUrl,
+    apps: undefined,
+    client,
+    contract: testContract(),
+  });
   await Promise.all([supplied.fetchApps(), remote.fetchApps()]);
   expect(supplied.getAppsSnapshot().apps).toEqual([{ id: "provided" }]);
   expect(remote.getAppsSnapshot().apps).toEqual([{ id: "remote" }]);
@@ -39,7 +60,7 @@ it("keeps supplied discovery data local while another root fetches", async () =>
   expect(fetchMock).toHaveBeenCalledOnce();
 });
 
-it("honors independent app and metadata freshness defaults", async () => {
+it("honors app freshness defaults", async () => {
   vi.useFakeTimers();
   const fetchMock = vi.fn((input) =>
     Promise.resolve(
@@ -49,16 +70,14 @@ it("honors independent app and metadata freshness defaults", async () => {
   const client = createTailorKitFetchClient({
     baseUrl: "https://host.test/",
     fetch: fetchMock,
-    cache: { gcTime: Infinity, apps: { staleTime: 10 }, meta: { staleTime: Infinity } },
+    cache: { gcTime: Infinity, apps: { staleTime: 10 } },
   });
   await client.apps().fetch();
-  await client.meta().fetch();
   vi.advanceTimersByTime(11);
   await client.apps().fetch();
-  await client.meta().fetch();
-  expect(fetchMock).toHaveBeenCalledTimes(3);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
   await client.apps({ staleTime: Infinity }).fetch();
-  expect(fetchMock).toHaveBeenCalledTimes(3);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
 });
 
 it("isolates authenticated clients at the same endpoint and clears credentials with data", async () => {
@@ -100,6 +119,7 @@ it("deduplicates instance requests and sessions across framework-neutral consume
     return Promise.resolve(Response.json({ json: [{ key: "overview", data: {}, metadata: {} }] }));
   });
   const client = createTailorKitFetchClient({ baseUrl: "https://host.test/", fetch: fetchMock });
+  const contract = testContract(true);
   const options = {
     apps: [{ id: "app", views: [{ slot: "page", path: "/", instances: true as const }] }],
     slot: "page",
@@ -108,8 +128,8 @@ it("deduplicates instance requests and sessions across framework-neutral consume
       layers: [{ path: "/", context: { userId: "user" }, status: "ready" as const }],
     },
   };
-  const first = createSlotStore(client, options);
-  const second = createSlotStore(client, options);
+  const first = createSlotStore(client, contract, options);
+  const second = createSlotStore(client, contract, options);
   const stopFirst = first.subscribe(vi.fn());
   const stopSecond = second.subscribe(vi.fn());
   const pending = first.fetch();
@@ -117,7 +137,7 @@ it("deduplicates instance requests and sessions across framework-neutral consume
   await pending;
   expect(first.getSnapshot().data?.[0]).toMatchObject({ key: "overview" });
   expect(second.getSnapshot().data).toBe(first.getSnapshot().data);
-  expect(fetchMock).toHaveBeenCalledTimes(3);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
   stopFirst();
   stopSecond();
 });

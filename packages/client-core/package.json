@@ -50,6 +50,7 @@
     "@tailorkit/config": "workspace:*",
     "@types/node": "catalog:",
     "tsup": "^8.5.1",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "zod": "catalog:"
   }
 }

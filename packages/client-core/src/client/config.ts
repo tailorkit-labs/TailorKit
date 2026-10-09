@@ -4,8 +4,7 @@ import type {
   ComponentDefinition,
   ComponentProps,
   Schema,
-  ViewDefinition,
-  SlotDefinitions,
+  TailorKitContract,
 } from "@tailorkit/core/schema";
 import { createTailorKitFetchClient } from "./fetch-client";
 import type { TailorKitFetchClient, TailorKitCacheOptions } from "./fetch-client";
@@ -45,6 +44,8 @@ export const toComponentTagName = (name: string): string =>
 
 export interface TailorKitClientConfig {
   readonly baseUrl: string | URL;
+  readonly contract: TailorKitContract;
+  readonly assetsBaseUrl?: string | URL;
   readonly fetchClient?: TailorKitFetchClient;
   readonly components: Record<string, unknown>;
   readonly theme: TailorKitTheme;
@@ -56,54 +57,10 @@ export type SlotMultiple<TSlot> = TSlot extends { multiple: infer TMultiple exte
     ? TMultiple | false
     : false;
 
-export interface TailorKitServerShape {
-  $internal: {
-    schema: {
-      components: Record<string, unknown>;
-      views: Record<string, unknown>;
-    };
-  };
-}
-
-type ServerComponentMap<TTailor extends TailorKitServerShape> =
-  TTailor["$internal"]["schema"]["components"];
-
-export type ServerComponents<TTailor extends TailorKitServerShape> = {
-  [
-    TName in keyof ServerComponentMap<TTailor>
-  ]: ServerComponentMap<TTailor>[TName] extends AnyComponentDefinition
-    ? ServerComponentMap<TTailor>[TName]
-    : never;
-};
-
-type ServerViewMap<TTailor extends TailorKitServerShape> = TTailor["$internal"]["schema"]["views"];
-
-export type ServerScopeNames<TTailor extends TailorKitServerShape> = TTailor extends {
-  handler: (request: Request, options: infer TOptions) => unknown;
-}
-  ? TOptions extends { authenticate: infer TAuthenticate }
-    ? TAuthenticate extends (...args: infer _TArgs) => infer TResult
-      ? Extract<Awaited<TResult>, { scopes: unknown }> extends { scopes: infer TScopes }
-        ? keyof TScopes & string
-        : never
-      : never
-    : never
-  : never;
-
-export type ServerViews<TTailor extends TailorKitServerShape> = {
-  [TName in keyof ServerViewMap<TTailor>]: ServerViewMap<TTailor>[TName] extends ViewDefinition
-    ? ServerViewMap<TTailor>[TName]
-    : never;
-};
-
-export type ServerSlots<TTailor> = TTailor extends {
-  readonly $slots?: infer V extends SlotDefinitions;
-}
-  ? V
-  : SlotDefinitions;
-
 /** Build framework-independent client configuration after an adapter wraps its renderers. */
 export function createTailorKitClientConfig(options: {
+  contract: TailorKitContract;
+  assetsBaseUrl?: string | URL;
   baseUrl: string | URL;
   components?: Record<string, unknown>;
   theme?: TailorKitTheme;
@@ -112,6 +69,8 @@ export function createTailorKitClientConfig(options: {
 }): TailorKitClientConfig {
   return {
     baseUrl: options.baseUrl,
+    contract: options.contract,
+    assetsBaseUrl: options.assetsBaseUrl,
     fetchClient: createTailorKitFetchClient(options),
     components: options.components ?? {},
     theme: options.theme ?? {},

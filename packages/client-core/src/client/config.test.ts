@@ -1,3 +1,4 @@
+import { testContract } from "../test-contract";
 import { expect, it, vi } from "vite-plus/test";
 import { createComponentRegistry, createTailorKitClientConfig } from "./config";
 
@@ -12,7 +13,11 @@ it("wraps each renderer once and shares it with remote component aliases", () =>
 
 it("builds reusable client configuration without initiating network requests", () => {
   const fetch = vi.fn<typeof globalThis.fetch>();
-  const config = createTailorKitClientConfig({ baseUrl: "https://host.test/api/", fetch });
+  const config = createTailorKitClientConfig({
+    contract: testContract(),
+    baseUrl: "https://host.test/api/",
+    fetch,
+  });
   expect(config.theme).toEqual({});
   expect(config.components).toEqual({});
   expect(config.fetchClient?.baseUrl.href).toBe("https://host.test/api/");

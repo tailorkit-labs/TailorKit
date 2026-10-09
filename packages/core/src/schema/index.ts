@@ -45,3 +45,5 @@ export {
 export { type Schema, type SchemaSerializer, jsonSchemaSerializer } from "./shared";
 export { createTailorKitSchema, type TailorKit, type TailorKitSchema } from "./schema";
 export type { TailorKitTheme } from "../primitives/theme";
+export { action, defineContract } from "./contract";
+export type { ContractAction, ContractActions, TailorKitContract } from "./contract";

@@ -1,3 +1,4 @@
+import { testContract } from "../../test-contract";
 import { allTasks } from "nanostores";
 import { expect, it, vi } from "vite-plus/test";
 import { createTailorKitFetchClient } from "../../client/fetch-client";
@@ -9,17 +10,13 @@ import type { TailorKitApp } from "../../types";
 function setup(multiple = false) {
   const fetch = vi.fn<typeof globalThis.fetch>();
   const client = createTailorKitFetchClient({ baseUrl: "https://host.test/api/", fetch });
-  client.meta().setData(() => ({
+  const store = createTailorKitStore({
+    baseUrl: client.baseUrl,
+    apps: [],
+    client,
+    contract: testContract(multiple),
     assetsBaseUrl: "https://assets.test/",
-    schema: {
-      version: 1,
-      actions: {},
-      components: {},
-      views: { "/": {} },
-      slots: { page: { views: ["/"], multiple } },
-    },
-  }));
-  const store = createTailorKitStore(client.baseUrl, [], client);
+  });
   const app: TailorKitApp = {
     id: "app",
     projectId: "project",
@@ -36,16 +33,6 @@ it("waits for an active managed view and constructs deployment URL and hierarchy
   const stop = runtime.state.listen(vi.fn());
   expect(runtime.state.get().status).toBe("hidden");
   expect(fetch).not.toHaveBeenCalled();
-  client.meta().setData(() => ({
-    assetsBaseUrl: "https://assets.test/",
-    schema: {
-      version: 1,
-      components: {},
-      actions: {},
-      views: { "/": {} },
-      slots: { page: { views: ["/"] } },
-    },
-  }));
   const id = Symbol("view");
   store.views.register({ id, view: "/", context: { customer: "registered" } });
   await Promise.resolve();
@@ -215,25 +202,6 @@ it("keeps preview subscriptions across context changes and switches sessions wit
   });
   stop();
   expect(second.lc).toBe(0);
-});
-
-it("does not repeatedly retry failed metadata as a side effect of state updates", async () => {
-  const { client, store, app, fetch } = setup();
-  client.clear();
-  fetch.mockRejectedValue(new Error("offline"));
-  const runtime = createSlotRuntime(store, {
-    mode: "controlled",
-    app,
-    slot: "page",
-    view: "/",
-    status: "ready",
-    context: {},
-  });
-  const stop = runtime.state.listen(vi.fn());
-  await allTasks();
-  expect(fetch).toHaveBeenCalledOnce();
-  expect(runtime.state.get().status).toBe("hidden");
-  stop();
 });
 
 it("cancels an instance request when switching to a controlled slot", async () => {
