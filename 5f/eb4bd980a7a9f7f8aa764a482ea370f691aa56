@@ -1,0 +1,23 @@
+docs/installation.mdx
+  s_f2ddb473c5fa73::t_b1f11638e85360 302,305
+  s_f2ddb473c5fa73::t_12101f4a32c1e7 6-9
+  s_f2ddb473c5fa73::t_e8e22be1b8a64c 98,101
+docs/index.mdx
+  s_f2ddb473c5fa73::t_30a75c26c63409 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5feb4bd980a7a9f7f8aa764a482ea370f691aa56",
+  "prompts": {},
+  "sessions": {
+    "s_f2ddb473c5fa73": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11a59-e9dd-79d1-a142-9b39b411d1c0",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
