@@ -1,8 +1,11 @@
 import { expectTypeOf } from "vite-plus/test";
 import { z } from "zod";
+import * as v from "valibot";
+import { toJsonSchema } from "@valibot/to-json-schema";
 import { action, defineContract } from "./contract";
 import type { ActionDefinition, InferActionInput, InferActionOutput } from "./actions";
 import type { ActionImplementations } from "../server/contract";
+import type { SchemaSerializer } from "./shared";
 import { createServer } from "../server/contract";
 
 const contract = defineContract({
@@ -15,6 +18,16 @@ const contract = defineContract({
       .output(z.object({ name: z.string() })),
   },
 });
+
+const valibotSerializer: SchemaSerializer = toJsonSchema;
+createServer({
+  contract: defineContract({
+    views: { "/": v.object({ userId: v.string() }) },
+    scopes: { user: v.object({ userId: v.string() }) },
+  }),
+  schemaSerializer: toJsonSchema,
+});
+void valibotSerializer;
 expectTypeOf(contract.slots.page.multiple).toEqualTypeOf<true>();
 createServer({
   contract,

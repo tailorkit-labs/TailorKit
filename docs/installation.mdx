@@ -316,25 +316,17 @@ schemas for `/schema` and `/meta`; browser validation uses the native contract s
 ```ts src/lib/tailorkit-server.ts
 import { createServer } from "tailorkit/server";
 import { toJsonSchema } from "@valibot/to-json-schema";
-import type { BaseIssue, BaseSchema } from "valibot";
 import { contract } from "./tailorkit";
 
 export const tailorKit = createServer({
   contract,
   projectKey: process.env.TAILORKIT_PROJECT_KEY,
-  schemaSerializer: (schema) => ({
-    ...toJsonSchema(schema as BaseSchema<unknown, unknown, BaseIssue<unknown>>, {
-      target: "draft-2020-12",
-      typeMode: "output",
-    }),
-  }),
+  schemaSerializer: toJsonSchema,
   actions: {
     echo: ({ input }) => input,
   },
 });
 ```
-
-The serializer above assumes every schema in your contract is a Valibot schema.
 
 </Tab>
 
