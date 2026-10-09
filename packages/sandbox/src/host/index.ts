@@ -1,3 +1,4 @@
+import * as v from "valibot";
 import { AppError } from "@tailorkit/app/client/connection";
 import type { Session } from "@tailorkit/app/client/connection";
 import { HostToIframePayload, IframeToHostPayload } from "../protocol.js";
@@ -100,13 +101,17 @@ export function createIframeUiHost(
       return;
     }
 
-    const result = IframeToHostPayload.safeParse(event.data.payload);
+    const result = v.safeParse(IframeToHostPayload, event.data.payload);
     if (!result.success) {
-      reportError(new Error(`Invalid sandbox message: ${result.error.message}`));
+      reportError(
+        new Error(
+          `Invalid sandbox message: ${result.issues.map((issue) => issue.message).join("; ")}`,
+        ),
+      );
       return;
     }
-    if (result.data.type === "backendSessionRequest") {
-      const { id, refresh } = result.data.data;
+    if (result.output.type === "backendSessionRequest") {
+      const { id, refresh } = result.output.data;
       if (sessionCalls.has(id) || sessionCalls.size >= 4) {
         return;
       }
@@ -136,7 +141,7 @@ export function createIframeUiHost(
       return;
     }
     try {
-      store.handleSandboxMessage(result.data);
+      store.handleSandboxMessage(result.output);
     } catch (error) {
       reportError(error);
     }
@@ -156,7 +161,7 @@ export function createIframeUiHost(
       iframe.remove();
     },
     dispatch(payload) {
-      HostToIframePayload.parse(payload);
+      v.parse(HostToIframePayload, payload);
       if (!iframeReady) {
         queuedPayloads.push(payload);
         return;

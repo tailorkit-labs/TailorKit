@@ -1,4 +1,30 @@
-import z from "zod";
+import * as v from "valibot";
+
+// Valibot object schemas also accept arrays; the wire protocol requires objects.
+const ObjectInput = v.custom<Record<string, unknown>>(
+  (input) => input !== null && typeof input === "object" && !Array.isArray(input),
+  "Expected an object",
+);
+const Props = v.pipe(ObjectInput, v.record(v.string(), v.unknown()));
+function strictObject<const TEntries extends v.ObjectEntries>(entries: TEntries) {
+  return v.pipe(ObjectInput, v.strictObject(entries));
+}
+
+const FiniteNumber = v.pipe(v.number(), v.finite());
+const SessionId = v.pipe(v.string(), v.minLength(1), v.maxLength(128));
+// Preserve WHATWG URL validation, including non-HTTP absolute URLs.
+const SessionUrl = v.pipe(
+  v.string(),
+  v.check((value) => {
+    try {
+      new URL(value.trim());
+      return true;
+    } catch {
+      return false;
+    }
+  }, "Invalid URL"),
+  v.transform((value) => value.trim().replace(/[\t\n\r]/gu, "")),
+);
 
 export type RemoteNode = RemoteElementNode | RemoteFragmentNode | RemoteTextNode;
 
@@ -64,144 +90,160 @@ export type RemotePatch =
       op: "setCallbacks";
     };
 
-export const HostToIframePayload = z.discriminatedUnion("type", [
-  z.strictObject({
-    type: z.literal("backendSessionResult"),
-    data: z.strictObject({
-      id: z.string().min(1).max(128),
-      session: z
-        .strictObject({ token: z.string().max(8192), expiresAt: z.number(), url: z.url() })
-        .optional(),
-      error: z
-        .strictObject({
-          code: z.enum([
-            "BAD_REQUEST",
-            "UNAUTHORIZED",
-            "FORBIDDEN",
-            "NOT_FOUND",
-            "CONFLICT",
-            "INCOMPATIBLE_VERSION",
-            "UNAVAILABLE",
-            "INTERNAL_SERVER_ERROR",
-          ]),
-          message: z.string(),
-        })
-        .optional(),
+export const HostToIframePayload = v.pipe(
+  ObjectInput,
+  v.variant("type", [
+    v.strictObject({
+      type: v.literal("backendSessionResult"),
+      data: strictObject({
+        id: SessionId,
+        session: v.optional(
+          strictObject({
+            token: v.pipe(v.string(), v.maxLength(8192)),
+            expiresAt: FiniteNumber,
+            url: SessionUrl,
+          }),
+        ),
+        error: v.optional(
+          strictObject({
+            code: v.picklist([
+              "BAD_REQUEST",
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "CONFLICT",
+              "INCOMPATIBLE_VERSION",
+              "UNAVAILABLE",
+              "INTERNAL_SERVER_ERROR",
+            ]),
+            message: v.string(),
+          }),
+        ),
+      }),
     }),
-  }),
-  z.strictObject({
-    data: z.strictObject({
-      appSource: z.string(),
-      appUrl: z.string(),
-      props: z.record(z.string(), z.unknown()).optional(),
+    v.strictObject({
+      data: strictObject({
+        appSource: v.string(),
+        appUrl: v.string(),
+        props: v.optional(Props),
+      }),
+      type: v.literal("init"),
     }),
-    type: z.literal("init"),
-  }),
-  z.strictObject({
-    data: z.strictObject({
-      args: z.array(z.unknown()).optional(),
-      event: z.string(),
-      nodeId: z.string(),
+    v.strictObject({
+      data: strictObject({
+        args: v.optional(v.array(v.unknown())),
+        event: v.string(),
+        nodeId: v.string(),
+      }),
+      type: v.literal("dispatchCallback"),
     }),
-    type: z.literal("dispatchCallback"),
-  }),
-  z.strictObject({
-    data: z.strictObject({ timestamp: z.number() }),
-    type: z.literal("animationFrame"),
-  }),
-]);
-export type HostToIframePayload = z.output<typeof HostToIframePayload>;
+    v.strictObject({
+      data: strictObject({ timestamp: FiniteNumber }),
+      type: v.literal("animationFrame"),
+    }),
+  ]),
+);
+export type HostToIframePayload = v.InferOutput<typeof HostToIframePayload>;
 
-const RemoteCallbackBindingSchema = z.strictObject({
-  callback: z.string(),
-  inputCount: z.number(),
-  event: z.string(),
+const RemoteCallbackBindingSchema = strictObject({
+  callback: v.string(),
+  inputCount: FiniteNumber,
+  event: v.string(),
 });
 
-type RemoteNodeSchemaType = z.ZodType<RemoteNode>;
-const RemoteNodeSchema: RemoteNodeSchemaType = z.lazy(() =>
-  z.discriminatedUnion("kind", [
-    z.strictObject({
-      id: z.string(),
-      kind: z.literal("text"),
-      text: z.string(),
+type RemoteNodeSchemaType = v.GenericSchema<unknown, RemoteNode>;
+const RemoteNodeSchema: RemoteNodeSchemaType = v.lazy(() =>
+  v.pipe(
+    ObjectInput,
+    v.variant("kind", [
+      v.strictObject({
+        id: v.string(),
+        kind: v.literal("text"),
+        text: v.string(),
+      }),
+      v.strictObject({
+        children: v.array(RemoteNodeSchema),
+        id: v.string(),
+        kind: v.literal("fragment"),
+      }),
+      v.strictObject({
+        callbacks: v.optional(v.array(RemoteCallbackBindingSchema)),
+        children: v.array(RemoteNodeSchema),
+        id: v.string(),
+        kind: v.literal("element"),
+        props: Props,
+        type: v.string(),
+      }),
+    ]),
+  ),
+);
+
+const RemotePatchSchema: v.GenericSchema<unknown, RemotePatch> = v.pipe(
+  ObjectInput,
+  v.variant("op", [
+    v.strictObject({
+      beforeId: v.optional(v.string()),
+      node: RemoteNodeSchema,
+      op: v.literal("insert"),
+      parentId: v.string(),
     }),
-    z.strictObject({
-      children: z.array(RemoteNodeSchema),
-      id: z.string(),
-      kind: z.literal("fragment"),
+    v.strictObject({
+      nodeId: v.string(),
+      op: v.literal("remove"),
     }),
-    z.strictObject({
-      callbacks: z.array(RemoteCallbackBindingSchema).optional(),
-      children: z.array(RemoteNodeSchema),
-      id: z.string(),
-      kind: z.literal("element"),
-      props: z.record(z.string(), z.unknown()),
-      type: z.string(),
+    v.strictObject({
+      name: v.string(),
+      nodeId: v.string(),
+      op: v.literal("setProp"),
+      value: v.unknown(),
+    }),
+    v.strictObject({
+      name: v.string(),
+      nodeId: v.string(),
+      op: v.literal("removeProp"),
+    }),
+    v.strictObject({
+      nodeId: v.string(),
+      op: v.literal("setText"),
+      text: v.string(),
+    }),
+    v.strictObject({
+      callbacks: v.array(RemoteCallbackBindingSchema),
+      nodeId: v.string(),
+      op: v.literal("setCallbacks"),
     }),
   ]),
 );
 
-const RemotePatchSchema: z.ZodType<RemotePatch> = z.discriminatedUnion("op", [
-  z.strictObject({
-    beforeId: z.string().optional(),
-    node: RemoteNodeSchema,
-    op: z.literal("insert"),
-    parentId: z.string(),
-  }),
-  z.strictObject({
-    nodeId: z.string(),
-    op: z.literal("remove"),
-  }),
-  z.strictObject({
-    name: z.string(),
-    nodeId: z.string(),
-    op: z.literal("setProp"),
-    value: z.unknown(),
-  }),
-  z.strictObject({
-    name: z.string(),
-    nodeId: z.string(),
-    op: z.literal("removeProp"),
-  }),
-  z.strictObject({
-    nodeId: z.string(),
-    op: z.literal("setText"),
-    text: z.string(),
-  }),
-  z.strictObject({
-    callbacks: z.array(RemoteCallbackBindingSchema),
-    nodeId: z.string(),
-    op: z.literal("setCallbacks"),
-  }),
-]);
-
-export const IframeToHostPayload = z.discriminatedUnion("type", [
-  z.strictObject({
-    type: z.literal("backendSessionRequest"),
-    data: z.strictObject({ id: z.string().min(1).max(128), refresh: z.boolean() }),
-  }),
-  z.strictObject({ type: z.literal("ready") }),
-  z.strictObject({
-    data: z.strictObject({
-      revision: z.number(),
-      tree: RemoteNodeSchema,
+export const IframeToHostPayload = v.pipe(
+  ObjectInput,
+  v.variant("type", [
+    v.strictObject({
+      type: v.literal("backendSessionRequest"),
+      data: strictObject({ id: SessionId, refresh: v.boolean() }),
     }),
-    type: z.literal("snapshot"),
-  }),
-  z.strictObject({
-    data: z.strictObject({
-      patches: z.array(RemotePatchSchema),
-      revision: z.number(),
+    v.strictObject({ type: v.literal("ready") }),
+    v.strictObject({
+      data: strictObject({
+        revision: FiniteNumber,
+        tree: RemoteNodeSchema,
+      }),
+      type: v.literal("snapshot"),
     }),
-    type: z.literal("patches"),
-  }),
-  z.strictObject({
-    data: z.strictObject({
-      message: z.string(),
+    v.strictObject({
+      data: strictObject({
+        patches: v.array(RemotePatchSchema),
+        revision: FiniteNumber,
+      }),
+      type: v.literal("patches"),
     }),
-    type: z.literal("error"),
-  }),
-  z.strictObject({ data: z.strictObject({}), type: z.literal("requestAnimationFrame") }),
-]);
-export type IframeToHostPayload = z.output<typeof IframeToHostPayload>;
+    v.strictObject({
+      data: strictObject({
+        message: v.string(),
+      }),
+      type: v.literal("error"),
+    }),
+    v.strictObject({ data: strictObject({}), type: v.literal("requestAnimationFrame") }),
+  ]),
+);
+export type IframeToHostPayload = v.InferOutput<typeof IframeToHostPayload>;

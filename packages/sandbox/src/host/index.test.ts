@@ -128,6 +128,20 @@ describe("createIframeUiHost", () => {
     expect(host.getRevision()).toBe(1);
   });
 
+  it("rejects invalid outbound messages before queuing or posting them", async () => {
+    const host = createIframeUiHost("https://assets.test/app.js", { fetch: createFetch() });
+    host.mount();
+    const postMessage = vi.spyOn(getContentWindow(host.iframe), "postMessage");
+    const invalid = { type: "animationFrame" as const, data: { timestamp: Infinity } };
+
+    expect(() => host.dispatch(invalid)).toThrow();
+    emitFromIframe(host.iframe, { channel: getChannel(host.iframe), type: iframeReadyType });
+    await vi.waitFor(() => expect(postMessage).toHaveBeenCalledTimes(1));
+    expect(() => host.dispatch(invalid)).toThrow();
+    expect(postMessage).toHaveBeenCalledTimes(1);
+    host.destroy();
+  });
+
   it("rejects messages from other windows", () => {
     const onError = vi.fn();
     const host = createIframeUiHost("https://assets.test/app.js", {
