@@ -1,0 +1,37 @@
+packages/core/src/spec/view-context.test.ts
+  s_d625adf058cbe1::t_b7cc40127ee270 3,32-73,78-107,111-132
+  s_d625adf058cbe1::t_52f2122513f0e6 74-77,108-110
+packages/core/src/spec/index.ts
+  s_d625adf058cbe1::t_5567de9a8be9c7 4
+packages/client-core/src/store/local/view-context-diagnostics.ts
+  s_d625adf058cbe1::t_5567de9a8be9c7 1,10,19,26,33,37,49-52,54-55
+  s_d625adf058cbe1::t_52f2122513f0e6 15-18
+packages/core/src/spec/view-context.ts
+  s_d625adf058cbe1::t_5567de9a8be9c7 3-9,11,13,17-26,30-46,48-54
+  s_d625adf058cbe1::t_52f2122513f0e6 27-29
+  s_d625adf058cbe1::t_b8027ce8cd16af 47
+packages/client-core/src/store/local/view-context.ts
+  s_d625adf058cbe1::t_5567de9a8be9c7 28,33-36,38,49,55-57,106-110,142
+packages/client-core/src/store/local/view-context-diagnostics.test.ts
+  s_d625adf058cbe1::t_b7cc40127ee270 107-108,110-129,133-151,156-178,182-183
+  s_d625adf058cbe1::t_52f2122513f0e6 130-132,152-155,179-181
+  s_d625adf058cbe1::t_a333b83aaeb1aa 109
+.changeset/strip-view-context-extras.md
+  s_d625adf058cbe1::t_b8027ce8cd16af 1-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "59c6b8a7c74e3a838d94c57652ec21d985e051ca",
+  "prompts": {},
+  "sessions": {
+    "s_d625adf058cbe1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11dc5-d127-77e0-9b78-07a98652692f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
