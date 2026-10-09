@@ -1,0 +1,37 @@
+packages/sandbox/src/host/index.test.ts
+  s_d625adf058cbe1::t_5d0f5b93e09936 131-144
+packages/sandbox/src/protocol.test.ts
+  s_d625adf058cbe1::t_f556631e819142 9-18,33-51,72-75,77-85,90-93,142-173,177-185,192-209,212-228,232-237
+  s_d625adf058cbe1::t_aeb3bdb55ae697 98-140
+  s_d625adf058cbe1::t_ab09a7456d6dbb 1-8,19-32,52-71,76,86-89,94-97,141,174-176,186-191,210-211,229-231,238-239
+packages/sandbox/src/protocol.ts
+  s_d625adf058cbe1::t_2a0cce70db5a91 3-12,27,93-130,132-138,140-142,144-146,148,156-180,182-203,205-208,210-213,218-231,233-238,240-244,246-248
+  s_d625adf058cbe1::t_aeb3bdb55ae697 154,181
+  s_d625adf058cbe1::t_51d1cbd7756685 20-26
+  s_d625adf058cbe1::t_64c861421a482c 1-2,13-19,149-151,155,249
+packages/sandbox/src/host/index.ts
+  s_d625adf058cbe1::t_f556631e819142 106-110
+  s_d625adf058cbe1::t_b09bcf43dc8c2c 1,104,113-114,144,164
+.changeset/sandbox-valibot.md
+  s_d625adf058cbe1::t_ead6c533841f94 1-5
+packages/sandbox/package.json
+  s_d625adf058cbe1::t_0d3b64268c63d8 35
+pnpm-lock.yaml
+  s_d625adf058cbe1::t_159d1751106edb 1598-1600
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "274ead89afd136483842ad702b399161d06d1b4b",
+  "prompts": {},
+  "sessions": {
+    "s_d625adf058cbe1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11dc5-d127-77e0-9b78-07a98652692f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
