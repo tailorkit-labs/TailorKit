@@ -25,13 +25,17 @@ export function createViewContextStore(client: TailorKitFetchClient) {
   const diagnose = createViewContextDiagnostics();
   const keys = new Map<symbol, string>();
   const diagnostics = new Map<symbol, string>();
+  const parsedContexts = new Map<symbol, unknown>();
 
   const check = (entry: ViewEntry) => {
     const definition = metadata.getSnapshot().data?.schema?.views?.[entry.view];
     const diagnostic = diagnose(entry, definition);
-    if (!diagnostic) {
+    const context = "value" in diagnostic ? diagnostic.value : entry.context;
+    const changed = JSON.stringify(parsedContexts.get(entry.id)) !== JSON.stringify(context);
+    if (changed || !parsedContexts.has(entry.id)) parsedContexts.set(entry.id, context);
+    if ("value" in diagnostic) {
       diagnostics.delete(entry.id);
-      return;
+      return changed;
     }
     const key = JSON.stringify([entry.view, entry.context, diagnostic.message]);
     if (key !== diagnostics.get(entry.id)) {
@@ -42,12 +46,15 @@ export function createViewContextStore(client: TailorKitFetchClient) {
         console.error(diagnostic.message, diagnostic.details);
       }
     }
+    return changed;
   };
 
   const observeMetadata = () => {
     if (!stopMetadata) {
       stopMetadata = metadata.subscribe(() => {
-        for (const entry of entries.values()) check(entry);
+        let changed = false;
+        for (const entry of entries.values()) changed = check(entry) || changed;
+        if (changed) publish();
       });
     }
     if (metadataScheduled) return;
@@ -96,7 +103,11 @@ export function createViewContextStore(client: TailorKitFetchClient) {
           layers: ordered
             .filter((entry) => isViewAncestor(entry.view, selected.view))
             .toReversed()
-            .map((entry) => ({ path: entry.view, context: entry.context, status: entry.status })),
+            .map((entry) => ({
+              path: entry.view,
+              context: parsedContexts.get(entry.id),
+              status: entry.status,
+            })),
         });
       } else {
         state.set(null);
@@ -128,6 +139,7 @@ export function createViewContextStore(client: TailorKitFetchClient) {
     unregister(id: symbol) {
       if (!entries.delete(id)) return;
       keys.delete(id);
+      parsedContexts.delete(id);
       if (entries.size === 0) {
         stopMetadata?.();
         stopMetadata = null;
