@@ -89,7 +89,7 @@ export function createAppsQuery(store: TailorKitStore, options: AppsQueryOptions
   return { state, refetch, fetch: store.fetchApps };
 }
 
-/** Resolve a slot reactively as discovery, metadata, and registered context change. */
+/** Resolve a slot reactively as discovery and registered context change. */
 export function createViewsQuery(store: TailorKitStore, options: ViewsQueryOptions) {
   return viewsQuery(store, options);
 }
@@ -108,65 +108,59 @@ function viewsQuery(store: TailorKitStore, options: ViewsQueryOptions, app?: Tai
     selection.get();
     return app ? query.fetch({ force: true }) : refetchViews(store, options);
   };
-  const selection = computed(
-    [store.fetch.apps.state, store.fetch.meta.state, store.views.state],
-    (discovery, metadata, active) => {
-      const apps = app
-        ? [app]
-        : discovery.status === "ready"
-          ? discovery.apps.filter((candidate) =>
-              matchesApp(candidate, options.scopes, options.appIds),
-            )
-          : [];
-      const appsStatus = app ? "ready" : discovery.status;
-      const appsError = app ? null : discovery.error;
-      const activeView =
-        metadata.schema === null || metadata.schema.slots[options.slot]?.multiple === true
-          ? active
-          : null;
-      const key = serializeCacheKey([apps, options.slot, activeView, appsStatus]);
-      if (key !== previousKey || appsError !== previousError) {
-        previousKey = key;
-        previousError = appsError;
-        const slot = createSlotStore(store.client, {
-          apps,
-          slot: options.slot,
-          activeView,
-          appsStatus,
-          appsError,
-        });
-        query = slot;
-        let last: ReturnType<typeof slot.getSnapshot> | undefined;
-        let fetching: boolean | undefined;
-        let snapshot: ViewsQueryResult;
-        selected = createSnapshotStore(
-          () => {
-            const current = slot.state.get();
-            const appsFetching = !app && store.fetch.apps.state.get().isFetching;
-            if (current !== last || fetching !== appsFetching) {
-              last = current;
-              fetching = appsFetching;
-              snapshot = result(
-                { ...current, isFetching: appsFetching || current.isFetching },
-                refetch,
-              );
-            }
-            return snapshot;
-          },
-          (listener) => {
-            const stopSlot = slot.state.listen(listener);
-            const stopApps = app ? () => {} : store.fetch.apps.state.listen(listener);
-            void slot.fetch();
-            return () => {
-              stopSlot();
-              stopApps();
-            };
-          },
-        );
-      }
-      return selected;
-    },
-  );
+  const selection = computed([store.fetch.apps.state, store.views.state], (discovery, active) => {
+    const apps = app
+      ? [app]
+      : discovery.status === "ready"
+        ? discovery.apps.filter((candidate) =>
+            matchesApp(candidate, options.scopes, options.appIds),
+          )
+        : [];
+    const appsStatus = app ? "ready" : discovery.status;
+    const appsError = app ? null : discovery.error;
+    const activeView = store.contract.slots[options.slot]?.multiple === true ? active : null;
+    const key = serializeCacheKey([apps, options.slot, activeView, appsStatus]);
+    if (key !== previousKey || appsError !== previousError) {
+      previousKey = key;
+      previousError = appsError;
+      const slot = createSlotStore(store.client, store.contract, {
+        apps,
+        slot: options.slot,
+        activeView,
+        appsStatus,
+        appsError,
+      });
+      query = slot;
+      let last: ReturnType<typeof slot.getSnapshot> | undefined;
+      let fetching: boolean | undefined;
+      let snapshot: ViewsQueryResult;
+      selected = createSnapshotStore(
+        () => {
+          const current = slot.state.get();
+          const appsFetching = !app && store.fetch.apps.state.get().isFetching;
+          if (current !== last || fetching !== appsFetching) {
+            last = current;
+            fetching = appsFetching;
+            snapshot = result(
+              { ...current, isFetching: appsFetching || current.isFetching },
+              refetch,
+            );
+          }
+          return snapshot;
+        },
+        (listener) => {
+          const stopSlot = slot.state.listen(listener);
+          const stopApps = app ? () => {} : store.fetch.apps.state.listen(listener);
+          void slot.fetch();
+          return () => {
+            stopSlot();
+            stopApps();
+          };
+        },
+      );
+    }
+    return selected;
+  });
   const source = switchStore(selection);
   const state = createSnapshotStore(source.get, (listener) => {
     const stop = source.listen(listener);

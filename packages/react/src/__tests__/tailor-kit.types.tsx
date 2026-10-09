@@ -1,7 +1,7 @@
-import { createTailorKitServer } from "@tailorkit/core/server";
+import { defineContract } from "@tailorkit/core/schema";
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from "@standard-schema/spec";
 import type { ReactNode } from "react";
-import { components, createTailorKitClient } from "../tailorkit";
+import { components, createClient } from "../tailorkit";
 import type { TailorKitApp } from "../tailorkit";
 import type { TailorKitInstance, UseAppsResult, UseViewsResult } from "../index";
 
@@ -17,8 +17,8 @@ type ViewsResultKeys = Assert<HasExactResultKeys<UseViewsResult>>;
 const resultKeys: [AppsResultKeys, ViewsResultKeys] = [true, true];
 void resultKeys;
 
-const typedSchema = <TValue,>(): StandardSchemaV1<unknown, TValue> &
-  StandardJSONSchemaV1<unknown, TValue> =>
+const typedSchema = <TValue,>(): StandardSchemaV1<TValue, TValue> &
+  StandardJSONSchemaV1<TValue, TValue> =>
   ({
     "~standard": {
       jsonSchema: {
@@ -29,9 +29,9 @@ const typedSchema = <TValue,>(): StandardSchemaV1<unknown, TValue> &
       vendor: "test",
       version: 1,
     },
-  }) as const satisfies StandardSchemaV1<unknown, TValue> & StandardJSONSchemaV1<unknown, TValue>;
+  }) as const satisfies StandardSchemaV1<TValue, TValue> & StandardJSONSchemaV1<TValue, TValue>;
 
-const server = createTailorKitServer({
+const contract = defineContract({
   scopes: {
     organization: typedSchema<{ orgId: string }>(),
     user: typedSchema<{ userId: string }>(),
@@ -55,7 +55,7 @@ const server = createTailorKitServer({
   },
 });
 
-const tailor = createTailorKitClient<typeof server>({ baseUrl: "http://runtime.test" });
+const tailor = createClient({ contract: contract, baseUrl: "http://runtime.test" });
 const { Provider: TailorKitProvider, RenderSlot, useApps, useViews, useViewContext } = tailor;
 const app = { clientPath: "/apps/todo.js", id: "todo" };
 
@@ -72,7 +72,7 @@ const app = { clientPath: "/apps/todo.js", id: "todo" };
 // @ts-expect-error provided apps must have a string id
 <TailorKitProvider apps={[{ id: 123 }]} />;
 
-const childrenServer = createTailorKitServer({
+const childrenContract = defineContract({
   scopes: { user: typedSchema<{ userId: string }>() },
   components: {
     Button: {
@@ -81,9 +81,10 @@ const childrenServer = createTailorKitServer({
   },
 });
 
-const childrenSchema = childrenServer.$internal.schema;
+const childrenSchema = childrenContract;
 
-createTailorKitClient<typeof childrenServer>({
+createClient({
+  contract: childrenContract,
   baseUrl: "http://runtime.test",
   components: {
     Button: ({ children }) => {
@@ -93,7 +94,7 @@ createTailorKitClient<typeof childrenServer>({
   },
 });
 
-const requiredComponentsServer = createTailorKitServer({
+const requiredComponentsContract = defineContract({
   scopes: { user: typedSchema<{ userId: string }>() },
   components: {
     Button: {},
@@ -101,9 +102,10 @@ const requiredComponentsServer = createTailorKitServer({
   },
 });
 
-createTailorKitClient<typeof requiredComponentsServer>({
+createClient({
+  contract: requiredComponentsContract,
   baseUrl: "http://runtime.test",
-  // @ts-expect-error all server components must have client renderers when components are provided
+  // @ts-expect-error all contract components must have client renderers when components are provided
   components: {
     Button: () => null,
   },
@@ -119,7 +121,7 @@ components(childrenSchema, {
   },
 });
 
-const callbackServer = createTailorKitServer({
+const callbackContract = defineContract({
   scopes: { user: typedSchema<{ userId: string }>() },
   components: {
     Button: {
@@ -132,7 +134,7 @@ const callbackServer = createTailorKitServer({
   },
 });
 
-components(callbackServer.$internal.schema, {
+components(callbackContract, {
   Button: ({ props }) => {
     const variant: "default" | "secondary" | undefined = props.variant;
     const onClick: (() => void) | undefined = props.onClick;
@@ -188,14 +190,15 @@ void appsError;
 void appsRefetching;
 void appsFetch;
 useApps({ scopes: ["organization", "user"] });
-// @ts-expect-error selected scopes must be declared by the server
+// @ts-expect-error selected scopes must be declared by the contract
 useApps({ scopes: ["unknown"] });
 
-const workspaceServer = createTailorKitServer({
+const workspaceContract = defineContract({
   scopes: { workspace: typedSchema<{ workspaceId: string }>() },
   components: {},
 });
-const workspaceClient = createTailorKitClient<typeof workspaceServer>({
+const workspaceClient = createClient({
+  contract: workspaceContract,
   baseUrl: "http://runtime.test",
 });
 workspaceClient.useApps({ scopes: ["workspace"] });
@@ -206,7 +209,7 @@ workspaceClient.useApps({ scopes: ["organization"] });
 useViewContext({ view: "/user", context: { userId: "u1" } });
 
 useViews({ scopes: ["organization"], appIds: ["todo"], slot: "panel" });
-// @ts-expect-error scope names must be declared by this server
+// @ts-expect-error scope names must be declared by this contract
 useViews({ scopes: ["unknown"], slot: "panel" });
 
 const instances = useViews({ slot: "page" });
@@ -241,16 +244,8 @@ if ("key" in selectedItem) {
   void narrowedKey;
   void narrowedMetadata;
 }
-const genericItems = createTailorKitClient({ baseUrl: "http://runtime.test" }).useViews({
-  slot: "page",
-});
-// @ts-expect-error clients without a typed schema require narrowing before reading an instance key
-void genericItems.data![0]!.key;
-const genericItem = genericItems.data![0]!;
-if ("key" in genericItem) {
-  const narrowedKey: string = genericItem.key;
-  void narrowedKey;
-}
+// @ts-expect-error host clients require a runtime contract
+createClient({ baseUrl: "http://runtime.test" });
 void requiredKey;
 void requiredMetadata;
 declare const optionalClient: TailorKitInstance<
@@ -268,7 +263,7 @@ const instanceKey: string | undefined = instances.data?.[0]?.key;
 const instanceData: unknown = instances.data?.[0]?.data;
 void instanceKey;
 void instanceData;
-// @ts-expect-error slots must be declared by this server
+// @ts-expect-error slots must be declared by this contract
 useViews({ slot: "missing" });
 const instanceApp: TailorKitApp | undefined = instances.data?.[0]?.app;
 void instanceApp;
@@ -349,7 +344,7 @@ useViews({});
 // @ts-expect-error unknown views cannot be rendered
 <RenderSlot.Controlled app={app} slot="panel" view="/missing" status="loading" />;
 
-const optionalContextServer = createTailorKitServer({
+const optionalContextContract = defineContract({
   components: {},
   scopes: { user: typedSchema<{ userId: string }>() },
   slots: { panel: { views: ["/detail"] } },
@@ -358,7 +353,8 @@ const optionalContextServer = createTailorKitServer({
     "/detail": typedSchema<{ detailId: string }>(),
   },
 });
-const optionalContextClient = createTailorKitClient<typeof optionalContextServer>({
+const optionalContextClient = createClient({
+  contract: optionalContextContract,
   baseUrl: "http://runtime.test",
 });
 optionalContextClient.useViewContext("/", { context: undefined });
@@ -379,7 +375,7 @@ const OptionalSlot = optionalContextClient.RenderSlot;
   context={{ workspaceId: "w1", detailId: "d1" }}
 />;
 
-const unionContextServer = createTailorKitServer({
+const unionContextContract = defineContract({
   components: {},
   scopes: { user: typedSchema<{ userId: string }>() },
   slots: { panel: { views: ["/detail"] } },
@@ -388,7 +384,8 @@ const unionContextServer = createTailorKitServer({
     "/detail": typedSchema<{ detailId: string }>(),
   },
 });
-const UnionSlot = createTailorKitClient<typeof unionContextServer>({
+const UnionSlot = createClient({
+  contract: unionContextContract,
   baseUrl: "http://runtime.test",
 }).RenderSlot;
 <UnionSlot.Controlled
@@ -477,3 +474,19 @@ const suppliedInstance = {
 const slotName: "page" | "navbar" = Math.random() > 0.5 ? "page" : "navbar";
 // @ts-expect-error A union slot name cannot bypass the key requirement.
 <RenderSlot app={app} slot={slotName} />;
+
+// Registration accepts schema input; apps receive the validated output.
+const transformedSchema: StandardSchemaV1<{ count: string }, { count: number }> = {
+  "~standard": {
+    version: 1,
+    vendor: "test",
+    validate: (value) => ({ value: { count: Number((value as { count: string }).count) } }),
+  },
+};
+const transformedClient = createClient({
+  baseUrl: "https://host.test",
+  contract: defineContract({ views: { "/": transformedSchema } }),
+});
+transformedClient.useViewContext("/", { context: { count: "1" } });
+// @ts-expect-error registration must match the schema input, before transformation
+transformedClient.useViewContext("/", { context: { count: 1 } });

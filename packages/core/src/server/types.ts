@@ -11,6 +11,7 @@ import type {
   ViewContextHierarchy,
   ContextDefinitions,
   SlotDefinitions,
+  SchemaSerializer,
   TailorKitSchema,
 } from "../schema/index";
 
@@ -34,6 +35,8 @@ export interface TailorKitServerBaseOptions<
   scopes: TScopes;
   /** Optional custom asset origin. Hosted apps receive a tenant-viewd clientPath from TailorKit automatically. */
   assetsBaseUrl?: string;
+  /** Convert schemas without Standard JSON Schema support for metadata and app type generation. */
+  schemaSerializer?: SchemaSerializer;
   basePath?: string;
   /**
    * Configuration for browser-based TailorKit CLI authentication.

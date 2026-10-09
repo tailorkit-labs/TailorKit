@@ -1,3 +1,4 @@
+import { testContract } from "../test-contract";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { createTailorKitStore } from "./store";
 import { toBaseUrl } from "../client/url";
@@ -28,19 +29,22 @@ describe("client stores", () => {
   ])("rejects the mismatched endpoint %s before creating fetch stores", (baseUrl) => {
     const client = createTailorKitFetchClient({ baseUrl: "https://host.test/api" });
     const apps = vi.spyOn(client, "apps");
-    const meta = vi.spyOn(client, "meta");
-    expect(() => createTailorKitStore(baseUrl, undefined, client)).toThrow(
-      "createTailorKitStore: baseUrl does not match the supplied fetch client.",
-    );
+    expect(() =>
+      createTailorKitStore({ baseUrl: baseUrl, apps: undefined, client, contract: testContract() }),
+    ).toThrow("createTailorKitStore: baseUrl does not match the supplied fetch client.");
     expect(apps).not.toHaveBeenCalled();
-    expect(meta).not.toHaveBeenCalled();
   });
 
   it.each(["https://HOST.test:443/api", new URL("https://host.test/api/")])(
     "accepts the equivalent normalized endpoint %s",
     (baseUrl) => {
       const client = createTailorKitFetchClient({ baseUrl: "https://host.test/api/" });
-      const store = createTailorKitStore(baseUrl, undefined, client);
+      const store = createTailorKitStore({
+        baseUrl: baseUrl,
+        apps: undefined,
+        client,
+        contract: testContract(),
+      });
       expect(store.client).toBe(client);
       expect(store.baseUrl.href).toBe("https://host.test/api/");
     },
@@ -50,7 +54,10 @@ describe("client stores", () => {
     const response = deferredResponse();
     const fetchMock = vi.fn(() => response.promise);
     vi.stubGlobal("fetch", fetchMock);
-    const store = createTailorKitStore("https://host.test/api/tailorkit");
+    const store = createTailorKitStore({
+      baseUrl: "https://host.test/api/tailorkit",
+      contract: testContract(),
+    });
     const listener = vi.fn();
     const stop = store.subscribeApps(listener);
     const first = store.fetchApps();
@@ -82,7 +89,7 @@ describe("client stores", () => {
       "fetch",
       vi.fn().mockReturnValueOnce(old.promise).mockReturnValueOnce(current.promise),
     );
-    const store = createTailorKitStore("https://host.test/");
+    const store = createTailorKitStore({ baseUrl: "https://host.test/", contract: testContract() });
     const first = store.fetchApps();
     await Promise.resolve();
     const second = store.fetchApps({ force: true });
@@ -101,7 +108,7 @@ describe("client stores", () => {
       "fetch",
       vi.fn(() => response.promise),
     );
-    const store = createTailorKitStore("https://host.test/");
+    const store = createTailorKitStore({ baseUrl: "https://host.test/", contract: testContract() });
     const pending = store.fetchApps();
     const apps: TailorKitApp[] = [{ id: "provided" }];
     store.setProvidedApps(apps);
@@ -115,7 +122,11 @@ describe("client stores", () => {
   it("resumes discovery when provided apps are removed with an active subscriber", async () => {
     const fetchMock = vi.fn().mockResolvedValue(Response.json([{ id: "remote" }]));
     vi.stubGlobal("fetch", fetchMock);
-    const store = createTailorKitStore("https://host.test/", [{ id: "provided" }]);
+    const store = createTailorKitStore({
+      baseUrl: "https://host.test/",
+      contract: testContract(),
+      apps: [{ id: "provided" }],
+    });
     const firstStop = store.subscribeApps(vi.fn());
     const stop = store.subscribeApps(vi.fn());
     await store.fetchApps();
@@ -133,7 +144,7 @@ describe("client stores", () => {
     const response = deferredResponse();
     const fetchMock = vi.fn<typeof fetch>(() => response.promise);
     vi.stubGlobal("fetch", fetchMock);
-    const store = createTailorKitStore("https://host.test/");
+    const store = createTailorKitStore({ baseUrl: "https://host.test/", contract: testContract() });
     const views = [{ slot: "panel", path: "/preview" }];
 
     store.fetch.apps.updateViews("app", views);
@@ -154,56 +165,17 @@ describe("client stores", () => {
     expect(store.getAppsSnapshot().apps[0]?.views).toEqual(views);
   });
 
-  it("keeps apps subscribers isolated from unrelated metadata changes", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi
-        .fn()
-        .mockResolvedValue(Response.json({ assetsBaseUrl: "https://assets.test/", schema: {} })),
-    );
-    const store = createTailorKitStore("https://host.test/", [{ id: "provided" }]);
-    const listener = vi.fn();
-    const unsubscribe = store.subscribeApps(listener);
-    const snapshot = store.getAppsSnapshot();
-    await store.fetchMeta();
-    expect(store.getMetaSnapshot()).toMatchObject({
-      assetsBaseUrl: "https://assets.test/",
-      status: "ready",
-    });
-    expect(store.getAppsSnapshot()).toBe(snapshot);
-    expect(listener).not.toHaveBeenCalled();
-    unsubscribe();
-  });
-
-  it("deduplicates metadata requests and ignores superseded responses", async () => {
-    const old = deferredResponse();
-    const current = deferredResponse();
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockReturnValueOnce(old.promise).mockReturnValueOnce(current.promise),
-    );
-    const store = createTailorKitStore("https://host.test/");
-    const first = store.fetchMeta();
-    expect(store.fetchMeta()).toBe(first);
-    await Promise.resolve();
-    const second = store.fetchMeta({ force: true });
-    current.resolve(Response.json({ assetsBaseUrl: "https://current.test/", schema: {} }));
-    await second;
-    const ready = store.getMetaSnapshot();
-    old.resolve(Response.json({ assetsBaseUrl: "https://old.test/", schema: {} }));
-    await first;
-    expect(store.getMetaSnapshot()).toBe(ready);
-    expect(ready.assetsBaseUrl).toBe("https://current.test/");
-  });
-
   it("recovers from failed requests and keeps client instances isolated", async () => {
     const fetchMock = vi
       .fn()
       .mockRejectedValueOnce("offline")
       .mockResolvedValueOnce(Response.json([{ id: "remote" }]));
     vi.stubGlobal("fetch", fetchMock);
-    const first = createTailorKitStore("https://host.test/");
-    const second = createTailorKitStore("https://other.test/");
+    const first = createTailorKitStore({ baseUrl: "https://host.test/", contract: testContract() });
+    const second = createTailorKitStore({
+      baseUrl: "https://other.test/",
+      contract: testContract(),
+    });
     await first.fetchApps();
     expect(first.getAppsSnapshot().error?.message).toBe("offline");
     expect(first.getAppsSnapshot().status).toBe("error");

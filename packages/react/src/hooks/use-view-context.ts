@@ -3,7 +3,13 @@ import type { ViewDefinition } from "@tailorkit/core/schema";
 import type { ViewName, ViewState } from "@tailorkit/client-core";
 import { useTailorkitContext } from "../components/context";
 
-export type { ViewName, ViewContext, ViewOptions, ViewState } from "@tailorkit/client-core";
+export type {
+  ViewName,
+  ViewContext,
+  ViewContextInput,
+  ViewOptions,
+  ViewState,
+} from "@tailorkit/client-core";
 
 type DefaultViews = Record<`/${string}`, ViewDefinition>;
 

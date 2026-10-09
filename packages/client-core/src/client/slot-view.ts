@@ -1,6 +1,6 @@
 import { composeViewContext, getViewHierarchy } from "@tailorkit/core/views";
 import type { ActiveView } from "@tailorkit/core/views";
-import type { TailorKitSchemaSpecType } from "@tailorkit/core/spec";
+import type { TailorKitContract } from "@tailorkit/core/schema";
 import type { TailorKitApp } from "../types";
 
 /** Select the supported view without reading or composing its context. */
@@ -8,7 +8,7 @@ export function selectSlotView(
   views: NonNullable<TailorKitApp["views"]>,
   slot: string,
   activePath: string,
-  schema: TailorKitSchemaSpecType,
+  schema: Pick<TailorKitContract, "slots" | "views">,
 ) {
   const supported = schema.slots[slot]?.views ?? [];
   const path = getViewHierarchy(activePath).find(
@@ -24,7 +24,7 @@ export function resolveSlotView(
   views: NonNullable<TailorKitApp["views"]>,
   slot: string,
   activeView: ActiveView,
-  schema: TailorKitSchemaSpecType,
+  schema: Pick<TailorKitContract, "slots" | "views">,
 ) {
   const view = selectSlotView(views, slot, activeView.view, schema);
   if (!view) return null;

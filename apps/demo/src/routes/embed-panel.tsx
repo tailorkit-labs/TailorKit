@@ -8,7 +8,8 @@ import {
   defaultTheme,
   toCssVars,
 } from "#lib/demo-theme";
-import { createDemoTailorClient, demoApps } from "#lib/tailorkit";
+import { demoApps } from "#lib/tailorkit";
+import { createDemoTailorClient } from "#lib/tailorkit-client";
 
 function TodoIcon() {
   return (

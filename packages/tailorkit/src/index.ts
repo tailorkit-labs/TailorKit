@@ -1,8 +1,12 @@
-export { createActions } from "@tailorkit/core/schema";
-export { createTailorKitServer as createTailorKit } from "@tailorkit/core/server";
+export { action, defineContract } from "@tailorkit/core/schema";
 export type {
-  Action,
-  Actions,
+  ContractAction,
+  ContractAction as Action,
+  ContractActions,
+  ContractActions as Actions,
+  TailorKitContract,
+} from "@tailorkit/core/schema";
+export type {
   Component,
   Components,
   ContextDefinitions,
@@ -11,4 +15,3 @@ export type {
   TailorKit,
   TailorKitTheme,
 } from "@tailorkit/core/schema";
-export type { TailorKitServer, TailorKitServerOptions } from "@tailorkit/core/server/types";

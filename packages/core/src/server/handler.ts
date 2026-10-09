@@ -76,6 +76,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
           NoMixedActionContexts<InferTailorKitServerActions<TOptions>>)
       | undefined,
     slots: options.slots,
+    scopes: options.scopes,
     components: options.components,
     views: options.views,
   });
@@ -138,13 +139,13 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
       });
     }
     if (url.pathname === `${basePath}/schema`) {
-      return Response.json(schema.serialize());
+      return Response.json(schema.serialize(options.schemaSerializer));
     }
 
     if (url.pathname === `${basePath}/meta`) {
       return Response.json({
         assetsBaseUrl: assetsBaseUrl ?? null,
-        schema: schema.serialize(),
+        schema: schema.serialize(options.schemaSerializer),
       });
     }
 

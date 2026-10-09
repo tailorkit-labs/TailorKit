@@ -125,9 +125,11 @@ export type InferActionOutput<TAction> =
         : [TOutput] extends [Schema]
           ? InferSchema<TOutput>
           : Awaited<TReturn>
-      : TAction extends ActionDefinition<Schema | undefined, infer TOutput>
+      : TAction extends { definition: { output?: infer TOutput } }
         ? InferSchema<TOutput>
-        : never;
+        : TAction extends ActionDefinition<Schema | undefined, infer TOutput>
+          ? InferSchema<TOutput>
+          : never;
 
 interface ActionBuilder<
   TInput extends Schema | undefined = undefined,

@@ -5,7 +5,7 @@ export type {
   RenderSlotContext,
   RenderSlotProps,
 } from "./components/render-slot";
-export { components, createTailorKitClient } from "./tailorkit";
+export { components, createClient } from "./tailorkit";
 export type {
   TailorKitApp,
   TailorKitClientConfig,

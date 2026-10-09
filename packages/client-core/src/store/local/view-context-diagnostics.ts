@@ -1,54 +1,43 @@
-import { createViewContextValidator } from "@tailorkit/core/spec";
-import type { TailorKitSchemaSpecType } from "@tailorkit/core/spec";
+import type { Schema } from "@tailorkit/core/schema";
 import type { ViewEntry } from "./view-context";
 
-type Definition = TailorKitSchemaSpecType["views"][string];
-interface Diagnostic {
+export interface ViewContextDiagnostic {
   message: string;
   details?: unknown;
 }
-type Validation = { validate: ReturnType<typeof createViewContextValidator> } | { error: unknown };
+export type ViewContextResult = { value: unknown } | ViewContextDiagnostic;
 
-/** Cache validators by schema identity; metadata refreshes can replace schemas. */
-export function createViewContextDiagnostics() {
-  const validators = new WeakMap<Record<string, unknown>, Validation>();
-  return (entry: ViewEntry, definition: Definition | undefined): Diagnostic | null => {
-    if (entry.status !== "ready" || !definition) return null;
-    const { context, view } = entry;
-    if (context === undefined) {
-      return definition.context && !definition.contextOptional
-        ? {
-            message: `TailorKit view "${view}" is ready without its required context. Supply context or set loading: true while it is unavailable.`,
-          }
-        : null;
-    }
-    if (context === null || typeof context !== "object" || Array.isArray(context)) {
-      return {
-        message: `TailorKit view "${view}" requires an object context that matches the view's schema.`,
-      };
-    }
-    if (!definition.context) return null;
-    let validation = validators.get(definition.context);
-    if (!validation) {
-      try {
-        validation = { validate: createViewContextValidator(definition.context) };
-      } catch (error) {
-        validation = { error };
-      }
-      validators.set(definition.context, validation);
-    }
-    if ("error" in validation) {
-      return {
-        message: `TailorKit could not validate context for view "${view}" against its JSON Schema.`,
-        details: validation.error,
-      };
-    }
-    const issues = validation.validate(context);
-    return issues
+/** Validate through the original schema and preserve its parsed output. */
+export function validateViewContext(
+  entry: ViewEntry,
+  schema: Schema | undefined,
+): ViewContextResult | Promise<ViewContextResult> {
+  if (entry.status !== "ready") return { value: undefined };
+  const { context, view } = entry;
+  if (!schema) {
+    return { message: `TailorKit view "${view}" is not declared in the contract.` };
+  }
+  if (
+    context !== undefined &&
+    (context === null || typeof context !== "object" || Array.isArray(context))
+  ) {
+    return {
+      message: `TailorKit view "${view}" requires an object context that matches the view's schema.`,
+    };
+  }
+  const classify = (
+    result: Awaited<ReturnType<Schema["~standard"]["validate"]>>,
+  ): ViewContextResult => {
+    if (!result.issues) return { value: result.value };
+    return context === undefined
       ? {
-          message: `TailorKit view "${view}" received context that does not match the view's schema.`,
-          details: issues,
+          message: `TailorKit view "${view}" is ready without its required context. Supply context or set loading: true while it is unavailable.`,
         }
-      : null;
+      : {
+          message: `TailorKit view "${view}" received context that does not match the view's schema.`,
+          details: result.issues,
+        };
   };
+  const result = schema["~standard"].validate(context);
+  return "then" in result ? result.then(classify) : classify(result);
 }

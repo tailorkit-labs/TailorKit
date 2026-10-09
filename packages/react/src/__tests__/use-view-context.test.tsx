@@ -1,13 +1,12 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { createTailorKitStore } from "@tailorkit/client-core";
-import { createTailorKitServer } from "@tailorkit/core/server";
+import { defineContract } from "@tailorkit/core/schema";
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from "@standard-schema/spec";
-import type { TailorKitSchemaSpecType } from "@tailorkit/core/spec";
 import type { ReactNode } from "react";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 import { TailorkitContext } from "../components/context";
-import { createTailorKitClient } from "../tailorkit";
+import { createClient } from "../tailorkit";
 import type { ViewState } from "../hooks/use-view-context";
 
 const contextSchema: StandardSchemaV1<unknown, Record<string, unknown> | undefined> &
@@ -16,10 +15,10 @@ const contextSchema: StandardSchemaV1<unknown, Record<string, unknown> | undefin
     version: 1,
     vendor: "test",
     jsonSchema: { input: () => ({}), output: () => ({}) },
-    validate: () => ({ value: {} }),
+    validate: (value) => ({ value: value as Record<string, unknown> | undefined }),
   },
 };
-const server = createTailorKitServer({
+const contract = defineContract({
   scopes: { user: contextSchema },
   components: {},
   views: { "/": contextSchema },
@@ -27,23 +26,21 @@ const server = createTailorKitServer({
 type Options = ViewState<{ "/": typeof contextSchema }, "/">;
 
 beforeEach(() => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    Response.json({ schema: server.$internal.schema.serialize() }),
-  );
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({}));
 });
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
 
-function setup(definition?: TailorKitSchemaSpecType["views"][string]) {
-  const client = createTailorKitClient<typeof server>({ baseUrl: "https://host.test" });
-  const store = createTailorKitStore(client.baseUrl, [], client.fetchClient);
-  if (definition) {
-    const schema = server.$internal.schema.serialize();
-    schema.views["/"] = definition;
-    store.client.meta().setData(() => ({ schema, assetsBaseUrl: null }));
-  }
+function setup() {
+  const client = createClient({ contract: contract, baseUrl: "https://host.test" });
+  const store = createTailorKitStore({
+    baseUrl: client.baseUrl,
+    contract: contract,
+    apps: [],
+    client: client.fetchClient,
+  });
   const wrapper = ({ children }: { children: ReactNode }) => (
     <StrictMode>
       <TailorkitContext.Provider value={{ client, store }}>{children}</TailorkitContext.Provider>

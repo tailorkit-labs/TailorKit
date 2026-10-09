@@ -25,6 +25,7 @@ export const TailorKitSchemaSpec = z
       )
       .default({}),
     actions: actionRecord.default({}),
+    scopes: z.record(z.string(), z.record(z.string(), z.unknown())).optional(),
     components: componentRecord,
     views: viewRecord.default({}),
   })

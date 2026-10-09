@@ -1,14 +1,8 @@
 import { createClient, createSessionProvider, reference } from "@tailorkit/app/client/connection";
 import type { ViewInstance } from "@tailorkit/app/client";
 import { previewMetadataSchema } from "@tailorkit/client-platform/preview";
-import type { TailorKitSchemaSpecType } from "@tailorkit/core/spec";
 import type { TailorKitApp } from "../types";
 import { toBaseUrl } from "./url";
-
-export interface TailorKitMetadata {
-  assetsBaseUrl: string | null;
-  schema: TailorKitSchemaSpecType;
-}
 
 export interface SlotInstancesInput {
   slot: string;
@@ -71,16 +65,6 @@ export function createEndpointClient(options: { baseUrl: string | URL; fetch?: t
       if (!response.ok)
         throw new Error(`Unable to fetch TailorKit apps from ${baseUrl.toString()}.`);
       return (await response.json()) as TailorKitApp[];
-    },
-    async meta(signal: AbortSignal): Promise<TailorKitMetadata> {
-      const response = await request(new URL("meta", baseUrl), {
-        signal,
-        credentials: "same-origin",
-      });
-      if (!response.ok)
-        throw new Error(`Unable to fetch TailorKit metadata from ${baseUrl.toString()}.`);
-      const value = (await response.json()) as TailorKitMetadata;
-      return { ...value, assetsBaseUrl: value.assetsBaseUrl ?? null };
     },
     async slotInstances(app: TailorKitApp, input: SlotInstancesInput, signal: AbortSignal) {
       signal.throwIfAborted();

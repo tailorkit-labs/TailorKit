@@ -4,10 +4,10 @@ import { createElement, StrictMode } from "react";
 import type { ReactNode } from "react";
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from "@standard-schema/spec";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { createTailorKitServer } from "@tailorkit/core/server";
+import { defineContract } from "@tailorkit/core/schema";
 import type { IframeUiHost } from "@tailorkit/sandbox/host";
 import type { HostToIframePayload, RemoteNode } from "@tailorkit/sandbox/protocol";
-import { createTailorKitClient } from "../tailorkit";
+import { createClient } from "../tailorkit";
 import { RemoteViewHost } from "../remote-view";
 import { createTailorKitStore } from "@tailorkit/client-core";
 import type { TailorKitApp } from "../tailorkit";
@@ -74,7 +74,7 @@ const emptySchema: StandardSchemaV1<unknown, Record<never, never>> &
   },
 } as const;
 
-const server = createTailorKitServer({
+const contract = defineContract({
   scopes: {
     organization: emptySchema,
     test: emptySchema,
@@ -99,14 +99,12 @@ const components = {
   Button: ({ children }: { children?: ReactNode }) => createElement("button", null, children),
 };
 
-const schema = server.$internal.schema;
-
 function CurrentViewRoute({
   nested,
   tailor,
 }: {
   nested: boolean;
-  tailor: ReturnType<typeof createTailorKitClient<typeof server>>;
+  tailor: ReturnType<typeof createClient<typeof contract>>;
 }) {
   const { useViewContext } = tailor;
   useViewContext(
@@ -128,7 +126,7 @@ function CurrentViewHost({
   tailor,
 }: {
   nested: boolean;
-  tailor: ReturnType<typeof createTailorKitClient<typeof server>>;
+  tailor: ReturnType<typeof createClient<typeof contract>>;
 }) {
   return (
     <tailor.Provider apps={[{ clientPath: "/apps/todo.js", id: "todo" }]}>
@@ -142,7 +140,7 @@ function HomeSlot({
   tailor,
 }: {
   app: TailorKitApp;
-  tailor: ReturnType<typeof createTailorKitClient<typeof server>>;
+  tailor: ReturnType<typeof createClient<typeof contract>>;
 }) {
   const { useViewContext } = tailor;
   useViewContext("/home", { context: { page: { title: "home" } } });
@@ -175,7 +173,7 @@ describe("tailorKitClient React adapter", () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       Response.json({
         assetsBaseUrl: "http://assets.test/",
-        schema: schema.serialize(),
+        schema: {},
       }),
     );
   });
@@ -190,7 +188,7 @@ describe("tailorKitClient React adapter", () => {
       Promise.resolve(
         input instanceof URL && input.pathname.endsWith("/preview/metadata")
           ? new Response(null, { status: 503 })
-          : Response.json({ assetsBaseUrl: "http://assets.test/", schema: schema.serialize() }),
+          : Response.json({ assetsBaseUrl: "http://assets.test/", schema: {} }),
       ),
     );
     class PreviewSocket extends EventTarget {
@@ -210,7 +208,8 @@ describe("tailorKitClient React adapter", () => {
       }
     }
     vi.stubGlobal("WebSocket", PreviewSocket);
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test/api/tailorkit",
       components,
     });
@@ -255,7 +254,8 @@ describe("tailorKitClient React adapter", () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       Response.json([{ id: "todo", name: "Todo", scope: { name: "user" } }]),
     );
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test/api/tailorkit",
       components,
     });
@@ -293,7 +293,8 @@ describe("tailorKitClient React adapter", () => {
         { id: "user", scope: { name: "user" } },
       ]),
     );
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test/api/tailorkit",
       components,
     });
@@ -328,7 +329,10 @@ describe("tailorKitClient React adapter", () => {
 
   it("retains app discovery across subscriber unmounts", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json([]));
-    const store = createTailorKitStore("http://runtime.test/api/tailorkit");
+    const store = createTailorKitStore({
+      baseUrl: "http://runtime.test/api/tailorkit",
+      contract: contract,
+    });
     const idle = store.getAppsSnapshot();
     expect(store.getAppsSnapshot()).toBe(idle);
     const unsubscribe = store.subscribeApps(() => {});
@@ -344,7 +348,8 @@ describe("tailorKitClient React adapter", () => {
 
   it("defaults to all scopes when useApps omits a selection", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json([]));
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test/api/tailorkit",
     });
 
@@ -367,8 +372,10 @@ describe("tailorKitClient React adapter", () => {
   });
 
   it("derives the hierarchy from the current view and reuses its extended context", async () => {
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test",
+      assetsBaseUrl: "http://assets.test/",
       components,
     });
 
@@ -404,8 +411,10 @@ describe("tailorKitClient React adapter", () => {
   });
 
   it("publishes loading and error states without stale context", async () => {
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test",
+      assetsBaseUrl: "http://assets.test/",
       components,
     });
 
@@ -446,8 +455,10 @@ describe("tailorKitClient React adapter", () => {
 
   it("renders the current match for multiple direct app props", async () => {
     hostRecords.length = 0;
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test",
+      assetsBaseUrl: "http://assets.test/",
       components,
     });
 
@@ -498,8 +509,10 @@ describe("tailorKitClient React adapter", () => {
   });
 
   it("renders a controlled view without a registered current view", async () => {
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test",
+      assetsBaseUrl: "http://assets.test/",
       components,
     });
     const { RenderSlot: ClientRenderSlot } = tailor;
@@ -527,11 +540,14 @@ describe("tailorKitClient React adapter", () => {
   });
 
   it("rejects a client RenderSlot rendered under a different client Provider", () => {
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test",
+      assetsBaseUrl: "http://assets.test/",
       components,
     });
-    const otherTailor = createTailorKitClient<typeof server>({
+    const otherTailor = createClient({
+      contract: contract,
       baseUrl: "http://other-runtime.test",
       components,
     });
@@ -551,8 +567,10 @@ describe("tailorKitClient React adapter", () => {
 
   it("warns when multiple hooks register views at the same hierarchy depth", async () => {
     const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test",
+      assetsBaseUrl: "http://assets.test/",
       components,
     });
 
@@ -581,8 +599,10 @@ describe("tailorKitClient React adapter", () => {
   });
 
   it("passes primitive theme tokens into mounted views", async () => {
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test",
+      assetsBaseUrl: "http://assets.test/",
       components,
       theme: {
         tokens: {
@@ -609,8 +629,10 @@ describe("tailorKitClient React adapter", () => {
 
   it("renders missing component errors inside the app container", async () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test",
+      assetsBaseUrl: "http://assets.test/",
     });
 
     render(
@@ -627,8 +649,10 @@ describe("tailorKitClient React adapter", () => {
 
   it("clears a missing component error when switching apps", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
-    const tailor = createTailorKitClient<typeof server>({
+    const tailor = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test",
+      assetsBaseUrl: "http://assets.test/",
       components,
     });
 
@@ -665,7 +689,7 @@ describe("view registries", () => {
   beforeEach(() => {
     hostRecords.length = 0;
     vi.spyOn(globalThis, "fetch").mockImplementation(() =>
-      Promise.resolve(Response.json({ schema: schema.serialize() })),
+      Promise.resolve(Response.json({ schema: {} })),
     );
   });
   afterEach(cleanup);
@@ -674,7 +698,7 @@ describe("view registries", () => {
     client,
     detail = true,
   }: {
-    client: ReturnType<typeof createTailorKitClient<typeof server>>;
+    client: ReturnType<typeof createClient<typeof contract>>;
     detail?: boolean;
   }) {
     const { useViewContext } = client;
@@ -688,15 +712,17 @@ describe("view registries", () => {
       </>
     );
   }
-  function Detail({ client }: { client: ReturnType<typeof createTailorKitClient<typeof server>> }) {
+  function Detail({ client }: { client: ReturnType<typeof createClient<typeof contract>> }) {
     const { useViewContext } = client;
     useViewContext("/home/detail", { context: undefined, loading: true });
     return null;
   }
 
   it("publishes the same active chain to simultaneous slots and removes unmounted layers", async () => {
-    const client = createTailorKitClient<typeof server>({
+    const client = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test",
+      assetsBaseUrl: "http://assets.test/",
       components,
     });
     const view = render(
@@ -725,8 +751,10 @@ describe("view registries", () => {
   });
 
   it("isolates roots sharing a client and survives Strict Mode effect replay", async () => {
-    const client = createTailorKitClient<typeof server>({
+    const client = createClient({
+      contract: contract,
       baseUrl: "http://runtime.test",
+      assetsBaseUrl: "http://assets.test/",
       components,
     });
     function OtherRoute() {
@@ -763,16 +791,10 @@ it("isolates a new client cache even when its endpoint is equivalent", async () 
   const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
     const url = new URL(input.toString());
     return Promise.resolve(
-      Response.json(
-        url.pathname.endsWith("/apps") ? [{ id: url.hostname }] : { schema: schema.serialize() },
-      ),
+      Response.json(url.pathname.endsWith("/apps") ? [{ id: url.hostname }] : { schema: {} }),
     );
   });
-  function Contents({
-    client,
-  }: {
-    client: ReturnType<typeof createTailorKitClient<typeof server>>;
-  }) {
+  function Contents({ client }: { client: ReturnType<typeof createClient<typeof contract>> }) {
     const { useApps, useViewContext } = client;
     const { data } = useApps();
     useViewContext("/user", { context: { userId: "u1" } });
@@ -783,9 +805,9 @@ it("isolates a new client cache even when its endpoint is equivalent", async () 
       </>
     );
   }
-  const createClient = (baseUrl: string | URL) =>
-    createTailorKitClient<typeof server>({ baseUrl, components });
-  const firstClient = createClient("http://first.test/api");
+  const createRootClient = (baseUrl: string | URL) =>
+    createClient({ contract: contract, baseUrl, components });
+  const firstClient = createRootClient("http://first.test/api");
   const view = render(
     <firstClient.Provider>
       <Contents client={firstClient} />
@@ -793,14 +815,14 @@ it("isolates a new client cache even when its endpoint is equivalent", async () 
   );
   await waitFor(() => expect(testingView.getByText("first.test")).toBeTruthy());
   const count = fetchMock.mock.calls.length;
-  const equivalentClient = createClient(new URL("http://first.test/api/"));
+  const equivalentClient = createRootClient(new URL("http://first.test/api/"));
   view.rerender(
     <equivalentClient.Provider>
       <Contents client={equivalentClient} />
     </equivalentClient.Provider>,
   );
-  await waitFor(() => expect(fetchMock.mock.calls).toHaveLength(count + 2));
-  const secondClient = createClient("http://second.test/api");
+  await waitFor(() => expect(fetchMock.mock.calls).toHaveLength(count + 1));
+  const secondClient = createRootClient("http://second.test/api");
   view.rerender(
     <secondClient.Provider>
       <Contents client={secondClient} />
@@ -819,12 +841,13 @@ it("keeps each provider bound to its client's fetch transport", async () => {
   const fallbackFetch = vi
     .spyOn(globalThis, "fetch")
     .mockImplementation(() => Promise.resolve(Response.json([{ id: "fallback-user" }])));
-  const client = createTailorKitClient<typeof server>({
+  const client = createClient({
+    contract: contract,
     baseUrl: "http://runtime.test/api",
     components,
     fetch: explicitFetch,
   });
-  const fallback = createTailorKitClient<typeof server>({ baseUrl: client.baseUrl, components });
+  const fallback = createClient({ contract: contract, baseUrl: client.baseUrl, components });
   function Contents() {
     const { data } = useApps();
     return <span>{data?.[0]?.id}</span>;
@@ -861,10 +884,12 @@ it("keeps each provider bound to its client's fetch transport", async () => {
 
 it("retains equivalent explicit context identity and publishes changed values", async () => {
   vi.spyOn(globalThis, "fetch").mockImplementation(() =>
-    Promise.resolve(Response.json({ schema: schema.serialize() })),
+    Promise.resolve(Response.json({ schema: {} })),
   );
-  const client = createTailorKitClient<typeof server>({
+  const client = createClient({
+    contract: contract,
     baseUrl: "http://runtime.test",
+    assetsBaseUrl: "http://assets.test/",
     components,
   });
   const content = (userId: string) => (
@@ -902,7 +927,7 @@ describe("supplied app discovery", () => {
       </button>
     );
   }
-  const client = createTailorKitClient({ baseUrl: "https://apps.test/api/" });
+  const client = createClient({ contract: contract, baseUrl: "https://apps.test/api/" });
 
   it("uses supplied apps for discovery, including updates and empty lists, without fetching", async () => {
     const fetch = vi.spyOn(globalThis, "fetch");

@@ -1,9 +1,10 @@
 import { atom } from "nanostores";
 import { getViewDepth, isViewAncestor } from "@tailorkit/core/views";
 import type { ActiveView, ViewStatus } from "@tailorkit/core/views";
-import type { TailorKitFetchClient } from "../../client/fetch-client";
+import type { TailorKitContract } from "@tailorkit/core/schema";
 import type { ViewContextRegistration } from "./view-context-types";
-import { createViewContextDiagnostics } from "./view-context-diagnostics";
+import { validateViewContext } from "./view-context-diagnostics";
+import type { ViewContextResult } from "./view-context-diagnostics";
 
 export interface ViewEntry {
   id: symbol;
@@ -14,51 +15,52 @@ export interface ViewEntry {
 }
 
 /** Own view state and diagnostics independently of any framework adapter. */
-export function createViewContextStore(client: TailorKitFetchClient) {
+export function createViewContextStore(contract: Pick<TailorKitContract, "views">) {
   const entries = new Map<symbol, ViewEntry>();
   const state = atom<ActiveView | null>(null);
   let nextOrder = 0;
   let scheduled = false;
-  let metadataScheduled = false;
-  let stopMetadata: (() => void) | null = null;
-  const metadata = client.meta();
-  const diagnose = createViewContextDiagnostics();
   const keys = new Map<symbol, string>();
   const diagnostics = new Map<symbol, string>();
 
-  const check = (entry: ViewEntry) => {
-    const definition = metadata.getSnapshot().data?.schema?.views?.[entry.view];
-    const diagnostic = diagnose(entry, definition);
-    if (!diagnostic) {
-      diagnostics.delete(entry.id);
-      return;
-    }
-    const key = JSON.stringify([entry.view, entry.context, diagnostic.message]);
-    if (key !== diagnostics.get(entry.id)) {
-      diagnostics.set(entry.id, key);
-      if (diagnostic.details === undefined) {
-        console.error(diagnostic.message);
-      } else {
-        console.error(diagnostic.message, diagnostic.details);
-      }
-    }
-  };
+  const parsed = new Map<symbol, { context: unknown; status: ViewStatus }>();
 
-  const observeMetadata = () => {
-    if (!stopMetadata) {
-      stopMetadata = metadata.subscribe(() => {
-        for (const entry of entries.values()) check(entry);
-      });
-    }
-    if (metadataScheduled) return;
-    metadataScheduled = true;
-    // Let other store consumers start a shared metadata request first.
-    queueMicrotask(() => {
-      metadataScheduled = false;
-      if (entries.size > 0 && metadata.getSnapshot().status === "idle") {
-        void metadata.fetch();
+  const apply = (entry: ViewEntry, result: ViewContextResult) => {
+    if (entries.get(entry.id) !== entry) return;
+    if ("value" in result) {
+      parsed.set(entry.id, { context: result.value, status: entry.status });
+      diagnostics.delete(entry.id);
+    } else {
+      parsed.set(entry.id, { context: undefined, status: "error" });
+      const key = JSON.stringify([entry.view, entry.context, result.message]);
+      if (key !== diagnostics.get(entry.id)) {
+        diagnostics.set(entry.id, key);
+        if (result.details === undefined) console.error(result.message);
+        else console.error(result.message, result.details);
       }
-    });
+    }
+    publish();
+  };
+  const check = (entry: ViewEntry) => {
+    const failed = (error: unknown) =>
+      apply(entry, {
+        message: `TailorKit could not validate context for view "${entry.view}".`,
+        details: error,
+      });
+    try {
+      const result = validateViewContext(
+        entry,
+        contract.views[entry.view as keyof typeof contract.views],
+      );
+      if ("then" in result) {
+        parsed.set(entry.id, { context: undefined, status: "loading" });
+        void result.then((value) => apply(entry, value), failed);
+      } else {
+        apply(entry, result);
+      }
+    } catch (error) {
+      failed(error);
+    }
   };
 
   const publish = () => {
@@ -96,7 +98,11 @@ export function createViewContextStore(client: TailorKitFetchClient) {
           layers: ordered
             .filter((entry) => isViewAncestor(entry.view, selected.view))
             .toReversed()
-            .map((entry) => ({ path: entry.view, context: entry.context, status: entry.status })),
+            .map((entry) => ({
+              path: entry.view,
+              context: parsed.get(entry.id)?.context,
+              status: parsed.get(entry.id)?.status ?? entry.status,
+            })),
         });
       } else {
         state.set(null);
@@ -121,17 +127,13 @@ export function createViewContextStore(client: TailorKitFetchClient) {
       };
       entries.set(input.id, entry);
       keys.set(input.id, key);
-      observeMetadata();
       check(entry);
       publish();
     },
     unregister(id: symbol) {
       if (!entries.delete(id)) return;
       keys.delete(id);
-      if (entries.size === 0) {
-        stopMetadata?.();
-        stopMetadata = null;
-      }
+      parsed.delete(id);
       publish();
     },
   };

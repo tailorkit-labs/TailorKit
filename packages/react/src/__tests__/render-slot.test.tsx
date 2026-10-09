@@ -1,10 +1,10 @@
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from "@standard-schema/spec";
-import { createTailorKitServer } from "@tailorkit/core/server";
+import { defineContract } from "@tailorkit/core/schema";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { RenderSlot } from "../index";
-import { createTailorKitClient } from "../tailorkit";
+import { createClient } from "../tailorkit";
 
 const requests: { appUrl: string; props: Record<string, unknown> }[] = [];
 vi.mock("../remote-view", () => ({
@@ -22,7 +22,7 @@ const typedSchema = <T,>(): StandardSchemaV1<unknown, T> & StandardJSONSchemaV1<
     jsonSchema: { input: () => ({}), output: () => ({}) },
   },
 });
-const server = createTailorKitServer({
+const contract = defineContract({
   components: {},
   scopes: { user: typedSchema<{ id: string }>() },
   slots: {
@@ -36,14 +36,12 @@ const server = createTailorKitServer({
     "/customers/detail": typedSchema<{ customer: { id: string } }>(),
   },
 });
-const client = createTailorKitClient<typeof server>({ baseUrl: "https://host.test/api/" });
+const client = createClient({ contract: contract, baseUrl: "https://host.test/api/" });
 const app = { id: "test", clientPath: "/client.js" };
 
 beforeEach(() => {
   requests.length = 0;
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    Response.json({ schema: server.$internal.schema.serialize() }),
-  );
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ schema: {} }));
 });
 afterEach(() => {
   cleanup();
@@ -91,7 +89,7 @@ describe("RenderSlot", () => {
         ],
       }),
     );
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   it("renders nothing and does not fetch before a context is registered", () => {
@@ -105,7 +103,7 @@ describe("RenderSlot", () => {
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
-  it("shares metadata across slots and isolates roots during Strict Mode", async () => {
+  it("uses the contract across slots and isolates roots during Strict Mode", async () => {
     render(
       <StrictMode>
         <client.Provider>
@@ -120,7 +118,7 @@ describe("RenderSlot", () => {
     );
     await waitFor(() => expect(requests.some(({ props }) => props.slot === "navbar")).toBe(true));
     expect(requests.every(({ appUrl }) => appUrl === "https://host.test/client.js")).toBe(true);
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 });
 
@@ -155,7 +153,7 @@ describe("RenderSlot.Controlled", () => {
     await waitFor(() =>
       expect(requests.at(-1)?.props.context).toMatchObject({ customer: { id: "c2" } }),
     );
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   it("does not inherit or react to registered context", async () => {
@@ -210,7 +208,7 @@ describe("RenderSlot.Controlled", () => {
 it.each(["managed", "controlled"] as const)(
   "rejects a %s RenderSlot under the wrong client",
   (mode) => {
-    const other = createTailorKitClient<typeof server>({ baseUrl: "https://other.test/api/" });
+    const other = createClient({ contract: contract, baseUrl: "https://other.test/api/" });
     vi.spyOn(console, "error").mockImplementation(() => {});
     expect(() =>
       render(
@@ -251,7 +249,7 @@ it("resolves the key and sends a complete controlled instance through the render
       return new Promise((resolve) => {
         finish = resolve;
       });
-    return Response.json({ schema: server.$internal.schema.serialize() });
+    return Response.json({ schema: {} });
   });
   const content = (key: string) => (
     <client.Provider>
@@ -301,7 +299,7 @@ it("reports resolver failures and missing keys without mounting stale instances"
         { json: { code: "FORBIDDEN", message: "No reports available", defined: false } },
         { status: 403 },
       );
-    return Response.json({ schema: server.$internal.schema.serialize() });
+    return Response.json({ schema: {} });
   });
   render(
     <client.Provider>
@@ -396,7 +394,7 @@ it("passes supplied instances without resolving them and clears them while loadi
   await waitFor(() => expect(requests.at(-1)?.props.instance).toEqual(summary));
   view.rerender(content(summary, "loading"));
   expect(requests.at(-1)?.props).not.toHaveProperty("instance");
-  expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+  expect(globalThis.fetch).not.toHaveBeenCalled();
 });
 
 it("reports a missing controlled instance and recovers when one is supplied", async () => {

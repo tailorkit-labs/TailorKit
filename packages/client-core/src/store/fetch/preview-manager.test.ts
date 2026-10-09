@@ -1,3 +1,4 @@
+import { testContract } from "../../test-contract";
 /* oxlint-disable require-await -- transport mocks return the asynchronous client shape. */
 import { createHash } from "node:crypto";
 import { afterEach, expect, it, vi } from "vite-plus/test";
@@ -93,7 +94,11 @@ it("publishes preview source and views together without notifying on subscriptio
       token: "token",
     },
   };
-  const store = createTailorKitStore("https://host.test/api/tailorkit/", [app]);
+  const store = createTailorKitStore({
+    baseUrl: "https://host.test/api/tailorkit/",
+    contract: testContract(),
+    apps: [app],
+  });
   const snapshot = () => ({
     preview: store.previews.getSnapshot("session"),
     views: store.getAppsSnapshot().apps[0]?.views,
