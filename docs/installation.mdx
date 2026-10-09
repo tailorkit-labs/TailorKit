@@ -3,6 +3,10 @@ title: "Installation"
 description: "Install TailorKit, expose your host API, and render installed apps in React."
 ---
 
+<Note>
+  You'll need a TailorKit account to get started. [Sign up](https://tailorkit.dev/signup).
+</Note>
+
 <Steps titleSize="h2">
 <Step title="Install TailorKit">
 
@@ -91,10 +95,10 @@ bun add tailorkit@beta valibot @valibot/to-json-schema
 This file is the contract between installed apps and your platform.
 It defines what apps can render and which data they receive.
 
-<Info>
+<Tip>
   Removing or changing a capability can break apps that rely on it. For example, removing a
   component makes it unavailable to every app using it.
-</Info>
+</Tip>
 
 <Tabs>
 
@@ -295,10 +299,10 @@ export const tailorKit = createTailorKit({
 
 Mount the handler at your TailorKit base path. The default is `/api/tailorkit`.
 
-<Info>
+<Note>
   TailorKit supports any backend framework that uses standard `Request` and `Response` objects, with
   examples for popular frameworks below.
-</Info>
+</Note>
 
 <Tabs>
 
