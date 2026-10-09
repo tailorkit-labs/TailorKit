@@ -4,7 +4,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { z } from "zod";
-import { createActions, createTailorKitSchema } from "@tailorkit/core/schema";
+import { action, defineContract, createTailorKitSchema } from "@tailorkit/core/schema";
+import { createServer } from "@tailorkit/core/server";
 import { TailorKitSchemaSpec } from "@tailorkit/core/spec";
 
 import { generateTypes, renderGeneratedTypes } from "./types";
@@ -405,19 +406,24 @@ describe("renderGeneratedTypes", () => {
     expect(output).toContain("background?: Background;");
   });
 
-  it("generates caller input types before transforms and return types after transforms", () => {
-    const schema = createTailorKitSchema({
-      components: {},
-      actions: {
-        nested: {
-          increment: createActions()
-            .input(z.string().transform(Number).pipe(z.number()))
-            .output(z.union([z.string(), z.number()]).transform(Number).pipe(z.number()))
-            .handler(({ input }) => input + 1),
+  it("generates caller input types before transforms and return types after transforms", async () => {
+    const server = createServer({
+      contract: defineContract({
+        scopes: { user: z.object({ userId: z.string() }) },
+        actions: {
+          nested: {
+            increment: action()
+              .input(z.string().transform(Number).pipe(z.number()))
+              .output(z.union([z.string(), z.number()]).transform(Number).pipe(z.number())),
+          },
         },
-      },
-    }).serialize();
-    const output = renderGeneratedTypes(schema);
+      }),
+      actions: { nested: { increment: ({ input }) => input + 1 } },
+      authenticate: () => null,
+    });
+    const response = await server.handler(new Request("https://host.test/api/tailorkit/schema"));
+    expect(response.ok).toBe(true);
+    const output = renderGeneratedTypes(await response.json());
     expect(output).toContain("increment: (input: string) => Promise<number>;");
   });
 
