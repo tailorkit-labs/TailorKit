@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { z } from "zod";
-import { createTailorKitSchema } from "@tailorkit/core/schema";
+import { createActions, createTailorKitSchema } from "@tailorkit/core/schema";
 import { TailorKitSchemaSpec } from "@tailorkit/core/spec";
 
 import { generateTypes, renderGeneratedTypes } from "./types";
@@ -403,6 +403,22 @@ describe("renderGeneratedTypes", () => {
 
     expect(output).toContain("export type Background = never;");
     expect(output).toContain("background?: Background;");
+  });
+
+  it("generates caller input types before transforms and return types after transforms", () => {
+    const schema = createTailorKitSchema({
+      components: {},
+      actions: {
+        nested: {
+          increment: createActions()
+            .input(z.string().transform(Number).pipe(z.number()))
+            .output(z.union([z.string(), z.number()]).transform(Number).pipe(z.number()))
+            .handler(({ input }) => input + 1),
+        },
+      },
+    }).serialize();
+    const output = renderGeneratedTypes(schema);
+    expect(output).toContain("increment: (input: string) => Promise<number>;");
   });
 
   it("generates typed action callers without request context", () => {

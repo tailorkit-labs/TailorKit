@@ -196,7 +196,7 @@ export const serializeActions = (
     if ("$tailorkitAction" in definition) {
       const actionDefinition = (definition as ImplementedAction).definition;
       serialized[name] = {
-        input: serializeSchema(actionDefinition.input, schemaSerializer),
+        input: serializeSchema(actionDefinition.input, schemaSerializer, "input"),
         output: serializeSchema(actionDefinition.output, schemaSerializer),
       };
     } else {
