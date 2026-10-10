@@ -1,5 +1,23 @@
 # @tailorkit/client-core
 
+## 0.1.0-beta.27
+
+### Minor Changes
+
+- 664a460: Allow `useViewContext` errors to be booleans, strings, or `Error` instances. Only `false`, `null`, and `undefined` mean no error; all strings, including an empty string, mark the view as failed. Errors continue to take precedence over loading and suppress context publication.
+- 4685874: Remove the React provider's `subjectId` prop and subject-based cache partitioning and remounting. Providers share their client cache, and backend sessions are cached per app until renewal or an explicit refresh. Remove the session provider's subject cache key and the endpoint client's `setSubject` method; authenticated subject identity continues to come from the server.
+
+  Expose `client.clearCache()` to clear shared app data and backend sessions after host authentication changes.
+
+### Patch Changes
+
+- Updated dependencies [21761f2]
+- Updated dependencies [4685874]
+  - @tailorkit/core@0.1.0-beta.27
+  - @tailorkit/app@0.1.0-beta.27
+  - @tailorkit/sandbox@0.1.0-beta.27
+  - @tailorkit/client-platform@0.1.0-beta.27
+
 ## 0.1.0-beta.26
 
 ### Minor Changes
