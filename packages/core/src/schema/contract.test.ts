@@ -73,5 +73,6 @@ it("bundles the public contract entry without server code or a built-in validato
     },
   });
   expect(modules.some((id) => /\/(?:zod|arktype|valibot)\//u.test(id))).toBe(false);
+  expect(modules.some((id) => id.includes("@valibot/to-json-schema"))).toBe(false);
   expect(modules.some((id) => /\/(?:core\/dist\/server|@orpc\/server)/u.test(id))).toBe(false);
 });

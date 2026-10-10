@@ -1,6 +1,8 @@
 import { expect, it, vi } from "vite-plus/test";
 import { z } from "zod";
 import * as v from "valibot";
+import { toJsonSchema } from "@valibot/to-json-schema";
+import { primitives } from "../primitives/valibot";
 import { action, defineContract } from "../schema/contract";
 import { createServer } from "./contract";
 import { createTailorKitClient } from "./client";
@@ -120,6 +122,99 @@ it("allows JSON Schema conversion to stay on the server for native Standard Sche
     new Request("https://host.test/api/tailorkit/meta"),
   );
   expect((await response.json()).schema.views["/"].context).toEqual(jsonSchema);
-  expect(serializer).toHaveBeenCalledWith(contextSchema);
+  expect(serializer).toHaveBeenCalledWith(contextSchema, {
+    target: "draft-2020-12",
+    typeMode: "output",
+  });
   expect(serializer).toHaveBeenCalledTimes(2);
+});
+
+it("accepts Valibot's JSON Schema converter directly across the contract", async () => {
+  const contract = defineContract({
+    components: {
+      ...primitives(),
+      Button: {
+        fields: v.object({ label: v.string() }),
+        callbacks: {
+          onClick: { input: v.object({ id: v.string() }), output: v.boolean() },
+        },
+      },
+    },
+    views: { "/": v.object({ name: v.string() }) },
+    scopes: { user: v.object({ userId: v.string() }) },
+    actions: {
+      nested: {
+        increment: action()
+          .input(v.pipe(v.string(), v.transform(Number), v.number()))
+          .output(v.pipe(v.union([v.string(), v.number()]), v.transform(Number), v.number())),
+      },
+    },
+  });
+  const server = createServer({
+    contract,
+    schemaSerializer: toJsonSchema,
+    actions: { nested: { increment: ({ input }) => input + 1 } },
+    authenticate: () => ({ scopes: { user: { userId: "u1" } } }),
+  });
+  const request = (path: string) =>
+    server.handler(new Request(`https://host.test/api/tailorkit/${path}`));
+  const schema = await (await request("schema")).json();
+  const meta = await (await request("meta")).json();
+  expect(meta.schema).toEqual(schema);
+  expect(schema.components.Button.fields.properties.label.type).toBe("string");
+  expect(schema.components.Button.callbacks.onClick.input.properties.id.type).toBe("string");
+  expect(schema.components.Button.callbacks.onClick.output.type).toBe("boolean");
+  expect(schema.views["/"].context.properties.name.type).toBe("string");
+  expect(schema.scopes.user.properties.userId.type).toBe("string");
+  expect(schema.actions.nested.increment.input).toMatchObject({
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "string",
+  });
+  expect(schema.actions.nested.increment.output.type).toBe("number");
+  expect(JSON.stringify(schema)).not.toContain("~standard");
+  expect(contract.views["/"]["~standard"]).not.toHaveProperty("jsonSchema");
+  const client = createTailorKitClient({
+    url: "https://host.test/api/tailorkit",
+    fetch: async (input, init) => server.handler(new Request(String(input), init)),
+  });
+  await expect(client.actions.execute({ path: "nested.increment", input: "4" })).resolves.toBe(5);
+  await expect(client.actions.execute({ path: "nested.increment", input: 4 })).rejects.toThrow(
+    "Invalid TailorKit payload",
+  );
+});
+
+it("publishes raw action input and parsed output types through the default Standard serializer", async () => {
+  const server = createServer({
+    contract: defineContract({
+      scopes: { user: z.object({ userId: z.string() }) },
+      views: { "/": z.object({ count: z.string().transform(Number).pipe(z.number()) }) },
+      actions: {
+        nested: {
+          increment: action()
+            .input(z.string().transform(Number).pipe(z.number()))
+            .output(z.union([z.string(), z.number()]).transform(Number).pipe(z.number())),
+        },
+      },
+    }),
+    actions: { nested: { increment: ({ input }) => input + 1 } },
+    authenticate: () => ({ scopes: { user: { userId: "u1" } } }),
+  });
+  const schema = await (
+    await server.handler(new Request("https://host.test/api/tailorkit/schema"))
+  ).json();
+  const meta = await (
+    await server.handler(new Request("https://host.test/api/tailorkit/meta"))
+  ).json();
+  expect(meta.schema).toEqual(schema);
+  expect(schema.actions.nested.increment.input.type).toBe("string");
+  expect(schema.actions.nested.increment.output.type).toBe("number");
+  expect(schema.views["/"].context.properties.count.type).toBe("number");
+  const client = createTailorKitClient({
+    url: "https://host.test/api/tailorkit",
+    fetch: async (input, init) => server.handler(new Request(String(input), init)),
+  });
+  await expect(client.actions.execute({ path: "nested.increment", input: "4" })).resolves.toBe(5);
+  await expect(client.actions.execute({ path: "nested.increment", input: 4 })).rejects.toThrow(
+    "Invalid TailorKit payload",
+  );
 });

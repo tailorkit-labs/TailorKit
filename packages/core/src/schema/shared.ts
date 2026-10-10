@@ -10,9 +10,22 @@ export type InferSchema<TSchema> = TSchema extends StandardSchemaV1
 
 export type MergeProps<TBase, TOverride> = Omit<TBase, keyof TOverride> & TOverride;
 
-export type SchemaSerializer = (schema: Schema) => Record<string, unknown> | undefined;
+// JSON Schema interfaces from converters may omit a string index signature.
+type SerializedSchema =
+  | Record<string, unknown>
+  | { readonly $schema?: string; readonly type?: string | readonly string[] };
 
-export const jsonSchemaSerializer: SchemaSerializer = (schema) => {
+export interface SchemaSerializerOptions {
+  target: "draft-2020-12";
+  typeMode: "input" | "output";
+}
+
+export type SchemaSerializer = {
+  // Native converters need their library's schema metadata beyond Standard Schema.
+  serialize(schema: Schema, options?: SchemaSerializerOptions): SerializedSchema | undefined;
+}["serialize"];
+
+export const jsonSchemaSerializer: SchemaSerializer = (schema, options) => {
   const properties = schema["~standard"] as StandardSchemaV1.Props &
     Partial<StandardJSONSchemaV1.Props>;
   if (!properties.jsonSchema) {
@@ -20,11 +33,19 @@ export const jsonSchemaSerializer: SchemaSerializer = (schema) => {
       "This schema does not implement Standard JSON Schema. Supply a schemaSerializer when creating the server.",
     );
   }
-  return properties.jsonSchema.output({ target: "draft-2020-12" });
+  return properties.jsonSchema[options?.typeMode ?? "output"]({ target: "draft-2020-12" });
 };
 
 export const serializeSchema = (
   schema: Schema | undefined,
   schemaSerializer: SchemaSerializer | undefined,
-): Record<string, unknown> | undefined =>
-  schema === undefined || schemaSerializer === undefined ? undefined : schemaSerializer(schema);
+  typeMode: SchemaSerializerOptions["typeMode"] = "output",
+): Record<string, unknown> | undefined => {
+  if (schema === undefined || schemaSerializer === undefined) {
+    return undefined;
+  }
+  return schemaSerializer(schema, {
+    target: "draft-2020-12",
+    typeMode,
+  }) as Record<string, unknown> | undefined;
+};
