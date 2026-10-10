@@ -41,6 +41,9 @@ export default defineConfig(({ mode }) => {
           tailwindcss(),
           tanstackStart(),
           nitro({
+            // Workflow's Nitro builder must resolve package IDs from the same
+            // app root as its Vite transform, rather than the monorepo root.
+            workspaceDir: import.meta.dirname,
             serverDir: false,
             // Preview uploads and viewer revisions share this Nitro deployment.
             // KV leases give the CLI 75 seconds to reconnect after an upgrade.
