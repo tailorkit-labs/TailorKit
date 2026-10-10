@@ -8,8 +8,7 @@ import type {
   SlotDefinitions,
 } from "../schema/index";
 import { createTailorKitSchema } from "../schema/schema";
-import { normalizeBasePath } from "./apps";
-import { normalizePublicOrigin } from "./origin";
+import { normalizeBaseUrl } from "./base-url";
 import { handleCliAuthApprovalPage } from "./cli-auth-page";
 import { handlePreviewConsent, readPreviewGrantIds } from "./preview-consent";
 import { createContext } from "./context";
@@ -51,8 +50,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
 > & {
   readonly $slots?: TOptions extends { slots: infer V } ? V : Record<never, never>;
 } {
-  const basePath = normalizeBasePath(options.basePath ?? "/api/tailorkit");
-  const publicOrigin = normalizePublicOrigin(options.publicUrl);
+  const { basePath, publicOrigin } = normalizeBaseUrl(options.baseUrl);
   const scopeSchemas = validateTailorKitScopeSchemas(options.scopes);
   const previewReturnPath = options.preview?.returnPath ?? "/";
   if (

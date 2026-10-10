@@ -66,6 +66,22 @@ export const server = createServer({
 });
 ```
 
+Configure the product route with one `baseUrl` option:
+
+```ts
+createServer({
+  contract,
+  tools: serverTools,
+  baseUrl: "https://product.com/api/whatever",
+});
+```
+
+This uses `/api/whatever` as the route prefix and
+`https://product.com/api/whatever/tools/execute` as the signed tool destination.
+A root-relative value such as `/api/whatever` uses the request's origin.
+The default is `/api/tailorkit`. Trailing slashes are normalized. When requests
+arrive through an internal proxy address, configure the full public URL.
+
 `subjectId` can identify a user, service account, agent, or any other
 product-defined principal. It is optional. Without it, use `installationId` for
 attribution. The platform carries the authenticated subject through runtime calls

@@ -208,7 +208,7 @@ it("accepts the same app session JWT across declared server tools", async () => 
 it("uses the trusted public origin to verify tool destinations behind a proxy", async () => {
   const proxied = createServer({
     contract,
-    publicUrl: new URL("https://product.test/"),
+    baseUrl: new URL("https://product.test/custom/tailorkit/"),
     authenticate: () => null,
     tools: {
       math: { increment: handler, broken: () => 0, transformed: () => "42" },
@@ -225,14 +225,20 @@ it("uses the trusted public origin to verify tool destinations behind a proxy", 
             }),
     },
   });
-  const internalUrl = "http://internal:3000/api/tailorkit/tools/execute";
+  const internalUrl = "http://internal:3000/custom/tailorkit/tools/execute";
   const request = (credential: string) =>
     new Request(internalUrl, {
       method: "POST",
       headers: { authorization: `Bearer ${credential}`, "content-type": "application/json" },
       body: JSON.stringify({ path: "math.increment", input: "41", requestId: crypto.randomUUID() }),
     });
-  expect((await proxied.handler(request(await token()))).status).toBe(200);
+  expect(
+    (
+      await proxied.handler(
+        request(await token({ toolUrl: "https://product.test/custom/tailorkit/tools/execute" })),
+      )
+    ).status,
+  ).toBe(200);
   expect((await proxied.handler(request(await token({ toolUrl: internalUrl })))).status).toBe(401);
 });
 

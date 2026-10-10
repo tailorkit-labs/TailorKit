@@ -51,7 +51,7 @@ describe("createTailorKitServer", () => {
   it("issues the public tool destination and checks the browser origin behind a proxy", async () => {
     const requests: Request[] = [];
     const server = createTailorKitServer({
-      publicUrl: "https://host.test/",
+      baseUrl: "https://host.test/custom/tailorkit/",
       projectKey: "project-key",
       scopes: { org: testScopeSchema },
       components: {},
@@ -67,7 +67,7 @@ describe("createTailorKitServer", () => {
       },
     });
     const request = (origin: string) =>
-      new Request("http://internal:3000/api/tailorkit/backend/session", {
+      new Request("http://internal:3000/custom/tailorkit/backend/session", {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -80,7 +80,7 @@ describe("createTailorKitServer", () => {
     const authentication = { authenticate: () => ({ scopes: { org: { tenant: "verified" } } }) };
     expect((await server.handler(request("https://host.test"), authentication)).status).toBe(200);
     expect(await requests[0]?.json()).toMatchObject({
-      toolUrl: "https://host.test/api/tailorkit/tools/execute",
+      toolUrl: "https://host.test/custom/tailorkit/tools/execute",
     });
     expect((await server.handler(request("https://attacker.test"), authentication)).status).toBe(
       400,
@@ -89,6 +89,77 @@ describe("createTailorKitServer", () => {
       400,
     );
     expect(requests).toHaveLength(1);
+  });
+
+  it.each([
+    { baseUrl: undefined, prefix: "/api/tailorkit", origin: "https://request.test" },
+    { baseUrl: "/custom/routes///", prefix: "/custom/routes", origin: "https://request.test" },
+    {
+      baseUrl: "https://public.test/custom/routes///",
+      prefix: "/custom/routes",
+      origin: "https://public.test",
+    },
+    {
+      baseUrl: new URL("https://public.test:8443/custom/routes/"),
+      prefix: "/custom/routes",
+      origin: "https://public.test:8443",
+    },
+    { baseUrl: "https://public.test/", prefix: "", origin: "https://public.test" },
+    { baseUrl: "/", prefix: "", origin: "https://request.test" },
+  ])("routes and issues sessions from baseUrl=$baseUrl", async ({ baseUrl, prefix, origin }) => {
+    const bodies: unknown[] = [];
+    const server = createTailorKitServer({
+      baseUrl,
+      scopes: { org: testScopeSchema },
+      components: {},
+      $internal: {
+        platformFetch: async (input, init) => {
+          bodies.push(await (input instanceof Request ? input : new Request(input, init)).json());
+          return Response.json({ token: "token", expiresAt: 123, url: "https://runtime.test/rpc" });
+        },
+      },
+    });
+    const authentication = { authenticate: () => ({ scopes: { org: { tenant: "verified" } } }) };
+    for (const route of ["schema", "meta"]) {
+      expect(
+        (
+          await server.handler(
+            new Request(`https://request.test${prefix}/${route}`),
+            authentication,
+          )
+        ).status,
+      ).toBe(200);
+    }
+    const response = await server.handler(
+      new Request(`https://request.test${prefix}/backend/session`, {
+        method: "POST",
+        headers: { "content-type": "application/json", origin },
+        body: JSON.stringify({ appId: "app" }),
+      }),
+      authentication,
+    );
+    expect(response.status).toBe(200);
+    expect(bodies).toEqual([
+      {
+        scopes: [{ name: "org", value: { tenant: "verified" } }],
+        toolUrl: origin + prefix + "/tools/execute",
+      },
+    ]);
+  });
+
+  it.each([
+    "//attacker.test/api",
+    "api/relative",
+    "ftp://host.test/api",
+    "https://user:password@host.test/api",
+    "/api?query=1",
+    "https://host.test/api#fragment",
+    "/api\\path",
+    " /api",
+  ])("rejects an ambiguous or invalid baseUrl=%s", (baseUrl) => {
+    expect(() =>
+      createTailorKitServer({ baseUrl, scopes: { org: testScopeSchema }, components: {} }),
+    ).toThrow();
   });
 
   it("returns platform scope denials without issuing a backend session", async () => {

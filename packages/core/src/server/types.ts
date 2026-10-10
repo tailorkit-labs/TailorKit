@@ -34,9 +34,11 @@ export interface TailorKitServerBaseOptions<
   assetsBaseUrl?: string;
   /** Convert schemas to JSON Schema for metadata and app type generation. */
   schemaSerializer?: SchemaSerializer;
-  basePath?: string;
-  /** Trusted external URL when a proxy changes the request origin. Defaults to the request origin. */
-  publicUrl?: string | URL;
+  /**
+   * Public HTTP(S) base URL or root-relative route prefix. Defaults to "/api/tailorkit".
+   * Absolute URLs supply the trusted origin; relative paths use the request origin.
+   */
+  baseUrl?: string | URL;
   /**
    * Configuration for browser-based TailorKit CLI authentication.
    */

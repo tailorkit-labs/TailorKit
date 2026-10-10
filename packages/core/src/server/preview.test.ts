@@ -13,7 +13,7 @@ const baseUrl = `https://host.test${basePath}`;
 function server(requests: string[], previewError?: unknown, platformBodies: unknown[] = []) {
   return createTailorKitServer({
     scopes: { org: testScopeSchema },
-    basePath,
+    baseUrl: basePath,
     components: {},
     cliAuth: { signInPath: "/sign-in" },
     preview: { returnPath: "/dashboard" },

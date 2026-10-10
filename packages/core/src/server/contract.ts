@@ -6,8 +6,7 @@ import type { ToolImplementations, ToolContext } from "../schema/tools";
 import { flattenTools, validateToolValue } from "../schema/tools";
 import { createTailorKitServer } from "./handler";
 import { normalizeTailorKitNamedScope } from "./scope";
-import { normalizeBasePath } from "./apps";
-import { normalizePublicOrigin } from "./origin";
+import { normalizeBaseUrl } from "./base-url";
 import { createToolVerifier } from "./tool-auth";
 import type { MaybePromise } from "../schema/shared";
 import type {
@@ -78,8 +77,7 @@ export function createServer<const T extends TailorKitContract>(
       ? { authorization: `Bearer ${configuration.projectKey}` }
       : undefined);
   const verify = createToolVerifier({ platformUrl, fetch: requestPlatform });
-  const basePath = normalizeBasePath(configuration.basePath ?? "/api/tailorkit");
-  const publicOrigin = normalizePublicOrigin(configuration.publicUrl);
+  const { basePath, publicOrigin } = normalizeBaseUrl(configuration.baseUrl);
   return {
     ...server,
     contract,
