@@ -1,0 +1,41 @@
+examples/tanstack-start/src/components/tailorkit-shell.tsx
+  s_d6b6385c37a4c1::t_cda0d4cfbdff04 189
+.changeset/shared-provider-caches.md
+  s_d6b6385c37a4c1::t_c9381a1c84e5b1 1-8
+packages/client-core/src/client/endpoints.ts
+  s_d6b6385c37a4c1::t_cda0d4cfbdff04 47,92
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_d6b6385c37a4c1::t_cda0d4cfbdff04 66-67
+examples/nextjs/components/tailorkit-shell.tsx
+  s_d6b6385c37a4c1::t_cda0d4cfbdff04 214
+packages/react/src/tailorkit.tsx
+  s_d6b6385c37a4c1::t_cda0d4cfbdff04 133-142
+  s_d6b6385c37a4c1::t_31a4b69c9c5d71 143-145,151
+docs/tools.mdx
+  s_d6b6385c37a4c1::t_cda0d4cfbdff04 165-166
+packages/app/src/client/session.test.ts
+  s_d6b6385c37a4c1::t_08c577a2e6b68b 107-126
+  s_d6b6385c37a4c1::t_0f34badc049350 131-137,139-144
+packages/client-core/src/client/tools.test.ts
+  s_d6b6385c37a4c1::t_08c577a2e6b68b 68,79
+packages/react/src/__tests__/use-views.test.tsx
+  s_d6b6385c37a4c1::t_672ba35a512e7f 339
+packages/app/src/client/session.ts
+  s_d6b6385c37a4c1::t_3486b8d14f39a6 40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "468587468d5d546b76a3c06d29a9741bd51988d2",
+  "prompts": {},
+  "sessions": {
+    "s_d6b6385c37a4c1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1240c-0a82-7a62-bd01-9877a714fcc9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
