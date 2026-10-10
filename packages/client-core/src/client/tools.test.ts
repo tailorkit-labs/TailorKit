@@ -45,7 +45,6 @@ it("binds client tool calls to the installation and validates transformed inputs
       });
     },
   });
-  client.setSubject(identity.subjectId);
   const bridge = client.getToolBridge(app);
   expect(await bridge.client("ui.select", "test")).toBe(5);
   const credential = await bridge.session("data.read");
@@ -66,7 +65,7 @@ it("binds client tool calls to the installation and validates transformed inputs
   implementation.mockImplementation(() => "invalid" as unknown as number);
   await expect(bridge.client("ui.select", "test")).rejects.toThrow("Invalid tool payload");
 });
-it("discards a pending credential when the authenticated principal changes", async () => {
+it("discards a pending credential when the session cache is cleared", async () => {
   let complete!: (response: Response) => void;
   const client = createEndpointClient({
     contract,
@@ -76,9 +75,8 @@ it("discards a pending credential when the authenticated principal changes", asy
         complete = resolve;
       }),
   });
-  client.setSubject(identity.subjectId);
   const pending = client.getToolBridge(app).session("data.read");
-  client.setSubject("job:replacement");
+  client.clearSessions();
   complete(
     Response.json({
       subjectId: identity.subjectId,

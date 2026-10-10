@@ -23,3 +23,34 @@ it("builds reusable client configuration without initiating network requests", (
   expect(config.fetchClient?.baseUrl.href).toBe("https://host.test/api/");
   expect(fetch).not.toHaveBeenCalled();
 });
+
+it("clears shared app data and sessions through clearCache", async () => {
+  let user = "first";
+  const fetch = vi
+    .fn<typeof globalThis.fetch>()
+    .mockImplementation(async (input) =>
+      Response.json(
+        String(input).endsWith("/apps")
+          ? [{ id: user }]
+          : { token: user, expiresAt: Date.now() + 300_000, url: "https://runtime.test/rpc" },
+      ),
+    );
+  const config = createTailorKitClientConfig({
+    contract: testContract(),
+    baseUrl: "https://host.test/api/",
+    fetch,
+  });
+  const client = config.fetchClient!;
+  const apps = client.apps();
+  const session = client.endpoints.getSessionProvider({ id: "app" });
+  await apps.fetch();
+  await expect(session({ refresh: false })).resolves.toMatchObject({ token: "first" });
+
+  user = "second";
+  config.clearCache();
+  expect(apps.getSnapshot().data).toBeUndefined();
+  await apps.fetch();
+  expect(apps.getSnapshot().data).toEqual([{ id: "second" }]);
+  await expect(session({ refresh: false })).resolves.toMatchObject({ token: "second" });
+  expect(fetch).toHaveBeenCalledTimes(4);
+});

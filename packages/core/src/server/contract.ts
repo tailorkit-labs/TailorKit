@@ -8,7 +8,6 @@ import { createTailorKitServer } from "./handler";
 import { normalizeTailorKitNamedScope } from "./scope";
 import { normalizeBaseUrl } from "./base-url";
 import { createToolVerifier } from "./tool-auth";
-import type { MaybePromise } from "../schema/shared";
 import type {
   TailorKitServerBaseOptions,
   TailorKitHandlerOptions,
@@ -19,9 +18,6 @@ export type { ToolImplementations } from "../schema/tools";
 export type ContractScopes<T extends TailorKitContract> = {
   [N in keyof T["scopes"]]: StandardSchemaV1.InferInput<T["scopes"][N]>;
 };
-type Authentication<T extends TailorKitContract> = (options: {
-  request: Request;
-}) => MaybePromise<{ scopes: Partial<ContractScopes<T>>; subjectId?: string } | null>;
 function getImplementation(tree: unknown, path: string): unknown {
   let value = tree;
   for (const name of path.split(".")) {
@@ -40,12 +36,11 @@ function implementationPaths(tree: unknown, prefix = ""): string[] {
 export function createServer<const T extends TailorKitContract>(
   options: Omit<TailorKitServerBaseOptions<T["scopes"]>, "scopes"> & {
     contract: T;
-    authenticate?: Authentication<T>;
   } & (keyof ToolImplementations<T["tools"], "server"> extends never
       ? { tools?: ToolImplementations<T["tools"], "server"> }
       : { tools: ToolImplementations<T["tools"], "server"> }),
 ) {
-  const { contract, authenticate, tools, ...configuration } = options;
+  const { contract, tools, ...configuration } = options;
   const declarations = flattenTools(contract.tools);
   for (const [path, leaf] of declarations) {
     if (leaf.kind === "server" && typeof getImplementation(tools, path) !== "function")
@@ -83,10 +78,11 @@ export function createServer<const T extends TailorKitContract>(
     contract,
     async handler(
       request: Request,
-      handlerOptions?: TailorKitHandlerOptions<Partial<ContractScopes<T>>>,
+      handlerOptions: TailorKitHandlerOptions<Partial<ContractScopes<T>>>,
     ) {
-      const authentication = handlerOptions?.authenticate ?? authenticate;
-      if (!authentication) throw new Error("Supply authenticate to createServer or its handler");
+      if (!handlerOptions?.authenticate) {
+        throw new Error("Supply authenticate to the handler");
+      }
       const url = new URL(request.url);
       if (url.pathname === basePath + "/tools/execute") {
         const headers = {
@@ -121,7 +117,7 @@ export function createServer<const T extends TailorKitContract>(
           if (!authorization?.startsWith("Bearer ")) throw new Error();
           const identity = await verify(
             authorization.slice(7),
-            (publicOrigin ?? url.origin) + basePath + "/tools/execute",
+            publicOrigin + basePath + "/tools/execute",
           );
           const schema = contract.scopes[identity.scope.name];
           if (!schema) throw new Error();
@@ -167,9 +163,7 @@ export function createServer<const T extends TailorKitContract>(
           return new Response("Tool execution failed", { status: 500, headers });
         }
       }
-      return server.handler(request, { authenticate: authentication } as Parameters<
-        typeof server.handler
-      >[1]);
+      return server.handler(request, handlerOptions as Parameters<typeof server.handler>[1]);
     },
   };
 }

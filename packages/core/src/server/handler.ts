@@ -73,7 +73,6 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
     views: options.views,
   });
   const platformBaseUrl = options.$internal?.platformBaseUrl ?? defaultPlatformBaseUrl;
-  const assetsBaseUrl = options.assetsBaseUrl;
   const platform = createClient({
     baseUrl: platformBaseUrl,
     fetch: options.$internal?.platformFetch,
@@ -126,7 +125,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
             path: { appId },
             body: {
               subjectId,
-              toolUrl: (publicOrigin ?? url.origin) + basePath + "/tools/execute",
+              toolUrl: publicOrigin + basePath + "/tools/execute",
               scopes: Object.entries(scopes).map(([name, value]) => ({ name, value })),
             },
           });
@@ -137,7 +136,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
             status: session.response?.status ?? 502,
           });
         },
-        publicOrigin ?? url.origin,
+        publicOrigin,
       );
     }
     if (url.pathname === `${basePath}/schema`) {
@@ -146,7 +145,6 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
 
     if (url.pathname === `${basePath}/meta`) {
       return Response.json({
-        assetsBaseUrl: assetsBaseUrl ?? null,
         schema: schema.serialize(options.schemaSerializer),
       });
     }
@@ -320,7 +318,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
   };
 
   return {
-    $internal: { assetsBaseUrl, platformBaseUrl, router: tailorkitRouter, schema },
+    $internal: { platformBaseUrl, router: tailorkitRouter, schema },
     handler,
   };
 }

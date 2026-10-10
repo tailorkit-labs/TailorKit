@@ -41,6 +41,7 @@ Open `http://localhost:5020`. The TailorKit API is mounted at
 - `components/tailorkit-shell.tsx` loads installed apps and renders `RenderSlot`.
 - `app/customers/layout.tsx` publishes route context with `useViewContext`.
 
-The example defaults to the platform at `http://localhost:3000` and the
-SeaweedFS service started by the root development command. Override
-`TAILORKIT_PLATFORM_BASE_URL` or `TAILORKIT_ASSETS_BASE_URL` when needed.
+The example defaults to the platform at `http://localhost:3000`. Override
+`TAILORKIT_PLATFORM_BASE_URL` when needed. App asset URLs come from platform discovery.
+Set `TAILORKIT_BASE_URL` to your full public handler URL when deploying; it defaults
+to `http://localhost:5020/api/tailorkit`.

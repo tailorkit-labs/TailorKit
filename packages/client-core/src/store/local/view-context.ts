@@ -114,7 +114,12 @@ export function createViewContextStore(contract: Pick<TailorKitContract, "views"
     getSnapshot: () => state.get(),
     subscribe: (listener: () => void): (() => void) => state.listen(listener),
     register(input: ViewContextRegistration) {
-      const status = input.error != null ? "error" : input.loading ? "loading" : "ready";
+      const status =
+        input.error != null && input.error !== false
+          ? "error"
+          : input.loading
+            ? "loading"
+            : "ready";
       const context = status === "ready" ? input.context : undefined;
       const key = JSON.stringify({ view: input.view, context, status });
       if (keys.get(input.id) === key) return;

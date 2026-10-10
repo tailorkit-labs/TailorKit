@@ -75,7 +75,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
-  client.fetchClient?.clear();
+  client.clearCache();
   vi.restoreAllMocks();
 });
 
@@ -336,7 +336,7 @@ it("does not refetch for equivalent inline objects and fetch refreshes instances
   await act(() => result.current.fetch());
   expect(result.current.data).toEqual(withApp(instances));
   expect(calls("/actions")).toHaveLength(2);
-  expect(calls("/backend/session")).toHaveLength(2);
+  expect(calls("/backend/session")).toHaveLength(1);
   expect(calls("/meta")).toHaveLength(0);
 });
 

@@ -2,7 +2,6 @@ import {
   createTailorKitClientConfig,
   createComponentRegistry,
   createTailorKitStore,
-  createTailorKitFetchClient,
 } from "@tailorkit/client-core";
 import type {
   AnyComponentDefinition,
@@ -46,8 +45,6 @@ export type { TailorKitApp } from "@tailorkit/client-core";
 
 export interface TailorKitProviderProps {
   apps?: TailorKitApp[];
-  /** Cache partition for the authenticated product principal. */
-  subjectId?: string;
   children?: ReactNode;
 }
 
@@ -131,40 +128,27 @@ function createReactTailorKitClient<
     };
   });
   const clientConfig = createTailorKitClientConfig({ ...options, components: wrappedComponents });
-  const subjectClients = new Map<
-    string | undefined,
-    ReturnType<typeof createTailorKitFetchClient>
-  >();
-  subjectClients.set(undefined, clientConfig.fetchClient!);
   const client: TailorKitInstance<TViews, TSlots, TScopeNames> = {
     ...clientConfig,
-    Provider: function TailorKitProvider({ children, apps, subjectId }: TailorKitProviderProps) {
-      const store = useMemo(() => {
-        let fetchClient = subjectClients.get(subjectId);
-        if (!fetchClient) {
-          fetchClient = createTailorKitFetchClient({ ...options });
-          fetchClient.endpoints.setSubject(subjectId);
-          subjectClients.set(subjectId, fetchClient);
-        }
-        return createTailorKitStore({
-          baseUrl: client.baseUrl,
-          contract: client.contract,
-          tools: client.tools,
-          apps,
-          client: fetchClient,
-          assetsBaseUrl: client.assetsBaseUrl,
-        });
-      }, [subjectId]);
+    Provider: function TailorKitProvider({ children, apps }: TailorKitProviderProps) {
+      const store = useMemo(
+        () =>
+          createTailorKitStore({
+            baseUrl: client.baseUrl,
+            contract: client.contract,
+            tools: client.tools,
+            apps,
+            client: clientConfig.fetchClient,
+            assetsBaseUrl: client.assetsBaseUrl,
+          }),
+        [],
+      );
       useEffect(() => {
         store.setProvidedApps(apps);
       }, [store, apps]);
       useEffect(() => () => store.previews.dispose(), [store]);
       const context = useMemo(() => ({ store, client }), [store]);
-      return createElement(
-        TailorkitContext.Provider,
-        { value: context, key: subjectId ?? "installation" },
-        children,
-      );
+      return createElement(TailorkitContext.Provider, { value: context }, children);
     },
     RenderSlot: Object.assign(
       function ClientRenderSlot(props: RenderSlotProps<TSlots>) {

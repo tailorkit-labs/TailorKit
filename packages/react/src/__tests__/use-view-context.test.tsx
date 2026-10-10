@@ -53,7 +53,15 @@ it.each([
   { options: { context: {} }, status: "ready", context: {} },
   { options: { context: undefined }, status: "ready", context: undefined },
   { options: { context: {}, loading: false, error: null }, status: "ready", context: {} },
+  { options: { context: {}, error: undefined }, status: "ready", context: {} },
+  { options: { context: {}, error: false }, status: "ready", context: {} },
   { options: { context: {}, loading: true }, status: "loading", context: undefined },
+  { options: { context: {}, loading: true, error: false }, status: "loading", context: undefined },
+  { options: { context: {}, error: true }, status: "error", context: undefined },
+  { options: { context: {}, error: "Failed" }, status: "error", context: undefined },
+  { options: { context: {}, error: "" }, status: "error", context: undefined },
+  { options: { context: {}, loading: true, error: true }, status: "error", context: undefined },
+  { options: { context: {}, loading: true, error: "" }, status: "error", context: undefined },
   { options: { context: {}, error: new Error("Failed") }, status: "error", context: undefined },
   {
     options: { context: {}, loading: true, error: new Error("Failed") },
@@ -83,13 +91,13 @@ it("updates loading, error, and ready context as query results change", async ()
     initialProps: { context: undefined, loading: true },
   });
   await waitFor(() => expect(store.views.getSnapshot()?.layers[0]?.status).toBe("loading"));
-  rerender({ context: {}, loading: true, error: new Error("Failed") });
+  rerender({ context: {}, loading: true, error: "" });
   await waitFor(() =>
     expect(store.views.getSnapshot()?.layers).toEqual([
       { path: "/", context: undefined, status: "error" },
     ]),
   );
-  rerender({ context: {}, error: null });
+  rerender({ context: {}, error: false });
   await waitFor(() =>
     expect(store.views.getSnapshot()?.layers).toEqual([
       { path: "/", context: {}, status: "ready" },
