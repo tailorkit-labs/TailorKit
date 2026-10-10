@@ -12,6 +12,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@tailorkit/ui/sid
 import type { TailorKitApp } from "tailorkit/react";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
+  tailor,
   TailorKitProvider,
   RenderSlot,
   useApps,
@@ -28,6 +29,7 @@ function TailorKitShellWithApps({ children, user }: { children: ReactNode; user:
 
   async function signOut() {
     await signOutDemoUser();
+    tailor.fetchClient?.clear();
     router.refresh();
   }
 

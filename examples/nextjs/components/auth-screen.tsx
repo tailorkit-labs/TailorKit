@@ -6,6 +6,7 @@ import { Building2 } from "lucide-react";
 import { demoUsers, signInDemoUser } from "@examples/shared";
 import { Button } from "@tailorkit/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tailorkit/ui/card";
+import { tailor } from "@/lib/tailorkit-client";
 
 export function AuthScreen() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export function AuthScreen() {
 
     try {
       await signInDemoUser(userId);
+      tailor.fetchClient?.clear();
       router.refresh();
     } finally {
       setPendingUserId(null);

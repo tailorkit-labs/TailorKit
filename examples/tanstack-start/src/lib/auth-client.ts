@@ -1,6 +1,7 @@
 import type { DemoUser } from "@examples/shared";
 import { getDemoAuthSession, signInDemoUser, signOutDemoUser } from "@examples/shared";
 import { useCallback, useEffect, useState } from "react";
+import { tailor } from "./tailorkit-client";
 
 interface AuthState {
   data: { user: DemoUser } | null;
@@ -35,11 +36,13 @@ export function useAuthSession(): AuthState & {
 
   const signIn = useCallback(async (userId: string) => {
     const { user } = await signInDemoUser(userId);
+    tailor.fetchClient?.clear();
     setState({ data: user ? { user } : null, isPending: false });
   }, []);
 
   const signOut = useCallback(async () => {
     await signOutDemoUser();
+    tailor.fetchClient?.clear();
     setState({ data: null, isPending: false });
   }, []);
 

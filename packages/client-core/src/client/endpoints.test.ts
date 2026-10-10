@@ -82,6 +82,37 @@ it("clears sessions for held consumers through the public client and shares repl
   expect(request).toHaveBeenCalledTimes(3);
 });
 
+it("reauthorizes held consumers after host sign-out and account changes", async () => {
+  let user: string | null = "first-user";
+  const request = vi.fn<typeof fetch>().mockImplementation(async () =>
+    user
+      ? Response.json({
+          subjectId: user,
+          token: `${user}-token`,
+          expiresAt: Date.now() + 300_000,
+          url: "https://runtime.test/rpc",
+        })
+      : new Response(null, { status: 401 }),
+  );
+  const fetchClient = createTailorKitFetchClient({ baseUrl: "https://host.test/", fetch: request });
+  const held = fetchClient.endpoints.getSessionProvider(deployedApp);
+  await expect(held({ refresh: false })).resolves.toMatchObject({ token: "first-user-token" });
+
+  user = null;
+  fetchClient.clear();
+  await expect(held({ refresh: false })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+
+  user = "next-user";
+  fetchClient.clear();
+  await expect(held({ refresh: false })).resolves.toMatchObject({ token: "next-user-token" });
+  await expect(held({ refresh: false })).resolves.toMatchObject({ token: "next-user-token" });
+
+  user = "third-user";
+  fetchClient.clear();
+  await expect(held({ refresh: false })).resolves.toMatchObject({ token: "third-user-token" });
+  expect(request).toHaveBeenCalledTimes(4);
+});
+
 it.each(["clear", "deployment", "preview"])(
   "rejects a late session response after %s invalidates its credentials",
   async (change) => {
@@ -95,11 +126,15 @@ it.each(["clear", "deployment", "preview"])(
           }),
       )
       .mockResolvedValueOnce(session("current"));
-    const client = createEndpointClient({ baseUrl: "https://host.test/", fetch: request });
+    const fetchClient = createTailorKitFetchClient({
+      baseUrl: "https://host.test/",
+      fetch: request,
+    });
+    const client = fetchClient.endpoints;
     const held = client.getSessionProvider(deployedApp);
     const pending = held({ refresh: false });
     const rejected = expect(pending).rejects.toMatchObject({ name: "AbortError" });
-    if (change === "clear") client.clearSessions();
+    if (change === "clear") fetchClient.clear();
     else
       client.getSessionProvider(
         change === "preview" ? previewApp : { ...deployedApp, currentDeployment: { id: "second" } },
