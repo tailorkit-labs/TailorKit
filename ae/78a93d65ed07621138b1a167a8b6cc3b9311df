@@ -1,0 +1,50 @@
+packages/core/src/server/backend.ts
+  s_64d7f8fdc4ce50::t_1ba85facdf6f67 15,22
+examples/apps/email/package.json
+  s_64d7f8fdc4ce50::t_1ba85facdf6f67 29-30
+packages/sandbox/src/host/index.ts
+  s_64d7f8fdc4ce50::t_1ba85facdf6f67 53,118-119,135
+packages/core/src/server/types.ts
+  s_64d7f8fdc4ce50::t_1ba85facdf6f67 38-39
+docs/tools.mdx
+  s_64d7f8fdc4ce50::t_1ba85facdf6f67 151-152
+packages/core/src/server/tools.test.ts
+  s_64d7f8fdc4ce50::t_a588eece3db602 153-155,221-225,229-234,242-245,247-248,257-259,263-265,268-270,283-284,286-288,292-294,306-308,310-312
+  s_64d7f8fdc4ce50::t_dd70768bf314a6 207-220,226-228,235-241,246,249-256,260-262,266-267,271-282,285,289-291,295-305,309,313-314
+  s_64d7f8fdc4ce50::t_33e2ae6b9cd889 6,74-78,81,144-145
+packages/core/src/server/tool-auth.ts
+  s_64d7f8fdc4ce50::t_33e2ae6b9cd889 14-35,49,51-62
+packages/core/src/server/contract.ts
+  s_64d7f8fdc4ce50::t_1ba85facdf6f67 10,82,126
+packages/core/src/server/handler.ts
+  s_64d7f8fdc4ce50::t_1ba85facdf6f67 12,55
+  s_64d7f8fdc4ce50::t_a588eece3db602 116-143
+packages/core/src/server/handler.test.ts
+  s_64d7f8fdc4ce50::t_dd70768bf314a6 51-60,66-68,80-81,91-93
+  s_64d7f8fdc4ce50::t_a588eece3db602 61-65,69-79,82-90
+examples/apps/notes/package.json
+  s_64d7f8fdc4ce50::t_1ba85facdf6f67 29-30
+packages/core/src/server/origin.ts
+  s_64d7f8fdc4ce50::t_1ba85facdf6f67 1-8
+packages/sandbox/src/host/index.test.ts
+  s_64d7f8fdc4ce50::t_a588eece3db602 263-331,333-334
+  s_64d7f8fdc4ce50::t_dd70768bf314a6 262,332
+pnpm-lock.yaml
+  s_64d7f8fdc4ce50::t_7fb34471404e3c 575-577,594-596
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ae78a93d65ed07621138b1a167a8b6cc3b9311df",
+  "prompts": {},
+  "sessions": {
+    "s_64d7f8fdc4ce50": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a12380-c197-7ad2-bf0c-1724de70fcb3",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
