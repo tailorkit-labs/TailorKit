@@ -1,5 +1,17 @@
 # @tailorkit/sandbox
 
+## 0.1.0-beta.26
+
+### Minor Changes
+
+- 274ead8: Replace Zod with Valibot for iframe message validation to reduce the sandbox browser bundle. Preserve strict message validation, recursive remote trees, and session limits. Exported protocol schemas are now Valibot schemas; use Valibot `parse` or `safeParse` instead of Zod schema methods.
+
+### Patch Changes
+
+- Updated dependencies [3fa95bc]
+  - @tailorkit/core@0.1.0-beta.26
+  - @tailorkit/app@0.1.0-beta.26
+
 ## 0.1.0-beta.25
 
 ### Patch Changes
