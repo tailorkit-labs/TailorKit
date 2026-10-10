@@ -30,7 +30,7 @@ export const contract = defineContract({
 
 ## Implement server tools
 
-Register server implementations with `createServer({ contract, baseUrl, tools })`. The
+Register server implementations with `createServer({ contract, tools })`. The
 product's authentication function supplies scopes and, optionally, a principal.
 Use the verified installation scope when authorizing access to product data.
 
@@ -40,8 +40,16 @@ import { contract } from "./tailorkit";
 
 export const server = createServer({
   contract,
-  baseUrl: "https://product.com/api/tailorkit",
   projectKey: process.env.TAILORKIT_PROJECT_KEY,
+  authenticate: async ({ request }) => {
+    const principal = await authenticateProduct(request);
+    return principal
+      ? {
+          scopes: { workspace: { workspaceId: principal.workspaceId } },
+          subjectId: principal.id,
+        }
+      : null;
+  },
   tools: {
     customers: {
       read: async ({ input, context }) => {
@@ -58,25 +66,7 @@ export const server = createServer({
 });
 ```
 
-Supply authentication when your product route calls `.handler()`:
-
-```ts
-export function handle(request: Request) {
-  return server.handler(request, {
-    authenticate: async ({ request }) => {
-      const principal = await authenticateProduct(request);
-      return principal
-        ? {
-            scopes: { workspace: { workspaceId: principal.workspaceId } },
-            subjectId: principal.id,
-          }
-        : null;
-    },
-  });
-}
-```
-
-Configure the product route with the required `baseUrl` option:
+Configure the product route with one `baseUrl` option:
 
 ```ts
 createServer({
@@ -88,10 +78,9 @@ createServer({
 
 This uses `/api/whatever` as the route prefix and
 `https://product.com/api/whatever/tools/execute` as the signed tool destination.
-The value must be a full public HTTP(S) URL; relative paths are rejected.
-Trailing slashes are normalized. When requests arrive through an internal proxy
-address, the configured public origin still determines the signed tool destination
-and backend session origin checks.
+A root-relative value such as `/api/whatever` uses the request's origin.
+The default is `/api/tailorkit`. Trailing slashes are normalized. When requests
+arrive through an internal proxy address, configure the full public URL.
 
 `subjectId` can identify a user, service account, agent, or any other
 product-defined principal. It is optional. Without it, use `installationId` for
@@ -122,6 +111,15 @@ export const tailor = createClient({
     },
   },
 });
+```
+
+Pass the current principal ID to the provider so credential caches and mounted app
+views follow principal changes. This value partitions caches; server authentication
+establishes identity. Without a supplied cache principal, runtime credentials are
+requested afresh from the authenticated product server.
+
+```tsx
+<tailor.Provider subjectId={principal?.id}>{children}</tailor.Provider>
 ```
 
 ## Call tools from apps
@@ -162,8 +160,8 @@ product tool destination. It uses the `tailorkit-app` audience.
 Backend actions send their verified execution JWT through the trusted runtime;
 app code never receives that runtime credential. App frontend callers obtain the
 same app session through the trusted sandbox bridge, sharing the backend session
-provider and per-app session cache. There is no per-tool token or credential
-exchange. Sessions are reused until renewal or an explicit refresh.
+provider and principal-specific cache. There is no per-tool token or credential
+exchange. Renewing or changing principals replaces the shared session.
 
 The product verifies issuer, audience, signature, expiry, destination,
 scope, and the requested tool path, then checks the active installation and

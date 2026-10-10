@@ -318,7 +318,6 @@ import { contract } from "./tailorkit";
 
 export const tailorKit = createServer({
   contract,
-  baseUrl: "http://localhost:3000/api/tailorkit",
   projectKey: process.env.TAILORKIT_PROJECT_KEY,
   tools: {
     echo: ({ input }) => input,
@@ -326,15 +325,11 @@ export const tailorKit = createServer({
 });
 ```
 
-Set `baseUrl` to the full public HTTP(S) URL of your handler, including its route
-prefix. It is required; relative paths are rejected. Use your public deployment
-URL in production, including when requests arrive through an internal proxy.
-
-Supply `authenticate` when calling `.handler()` to return `{ scopes, subjectId? }`. `subjectId` is any
+Supply `authenticate` to return `{ scopes, subjectId? }`. `subjectId` is any
 product-defined principal, such as a user, service account, or scheduled job. Omit
 it to attribute calls to the installation. Tool handlers receive verified
 `context.identity`, the installation's `context.scope`, and `context.requestId`.
-Authentication is required on each call to `.handler()`.
+Authentication can also be supplied per request when calling `handler`.
 
 Client tools use `tool.client()` and are implemented through `createClient({
 contract, tools })` in the product frontend. See [Tools](/tools) for nested callers,
@@ -343,8 +338,7 @@ backend action access, and credential behavior.
 </Step>
 <Step title="Add the API handler">
 
-Mount the handler at the path configured in your server's `baseUrl`. The examples
-below use `/api/tailorkit`.
+Mount the handler at your TailorKit base path. The default is `/api/tailorkit`.
 
 <Note>
   TailorKit supports any backend framework that uses standard `Request` and `Response` objects, with
@@ -563,12 +557,6 @@ Wrap your pages in the TailorKit provider to use TailorKit hooks and components.
 The provider uses the client that created it and renders no DOM wrapper. It accepts
 `children` and an optional `apps` list; you do not need to pass `client`.
 
-When signing in, signing out, or switching accounts, call
-`tailorKitClient.clearCache()` after updating the host auth session and
-before refreshing or rendering the new auth state. This clears cached app data
-and bearer tokens and invalidates pending session responses. The provider does not
-detect changes to the host's auth cookie automatically.
-
 <Tabs>
 
 <Tab title="Next.js App Router">
@@ -671,10 +659,6 @@ Add a page to supply view context and switch between apps available in the `page
 `useViewContext(path, state)` registers the host location, context, and readiness
 that app views consume. It updates when those values change and unregisters when
 the component unmounts.
-
-Its `error` field accepts a boolean, string, `Error`, or `null`. Only `false`,
-`null`, and `undefined` mean no error; every string, including `""`, marks the view
-as failed. An error takes precedence over `loading` and prevents context publication.
 
 `useViews({ slot: "page" })` returns one `{ app }` item per app for single-view
 slots (`multiple: false` or omitted). It checks enabled, supported app views
