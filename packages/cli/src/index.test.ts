@@ -1,10 +1,14 @@
 import { beforeEach, expect, it, vi } from "vite-plus/test";
 import type { runDeploy } from "./deploy";
+import type { runAgentCommand } from "./agent";
 
 const mocks = vi.hoisted(() => ({
   actions: new Map<string, (options: Record<string, unknown>) => Promise<void>>(),
   login: vi.fn(),
   deploy: vi.fn(),
+  agent: vi.fn(),
+  logout: vi.fn(),
+  whoami: vi.fn(),
   open: vi.fn(),
   info: vi.fn(),
   error: vi.fn(),
@@ -42,10 +46,11 @@ vi.mock("@clack/prompts", () => ({
 vi.mock("./auth", () => ({
   createCliAuthApprovalUrl: () => "https://host.example/cli-auth/approve?code=ABC-123",
   runLogin: mocks.login,
-  runLogout: vi.fn(),
-  runWhoami: vi.fn(),
+  runLogout: mocks.logout,
+  runWhoami: mocks.whoami,
 }));
 vi.mock("./deploy", () => ({ runDeploy: mocks.deploy }));
+vi.mock("./agent", () => ({ runAgentCommand: mocks.agent }));
 vi.mock("./generator/types", () => ({ generateTypes: vi.fn() }));
 vi.mock("./init", () => ({ runInit: vi.fn() }));
 vi.mock("./preview", () => ({ runPreview: vi.fn(), toPreviewOptions: vi.fn() }));
@@ -90,10 +95,46 @@ it("preserves standalone login timeout and --no-open behavior", async () => {
   await mocks.actions.get("login")?.({ cwd: "/app", open: false, timeout: 60 });
 
   expect(mocks.login).toHaveBeenCalledWith(
-    { cwd: "/app", configPath: undefined, timeout: 60_000 },
+    { cwd: "/app", configPath: undefined, host: undefined, timeout: 60_000 },
     expect.any(Function),
   );
   expect(mocks.open).not.toHaveBeenCalled();
   expect(mocks.stop).toHaveBeenCalledWith("Approved.");
   expect(mocks.outro).toHaveBeenCalledWith("Authenticated successfully.");
+});
+
+it("passes the explicit host through agent startup and automatic login", async () => {
+  mocks.agent.mockImplementation(async (options: Parameters<typeof runAgentCommand>[0]) => {
+    await options.onLoginRequired?.();
+  });
+
+  await mocks.actions.get("agent")?.({
+    host: "https://host.example",
+    app: "app-one",
+  });
+
+  expect(mocks.agent).toHaveBeenCalledWith({
+    host: "https://host.example",
+    appId: "app-one",
+    onLoginRequired: expect.any(Function),
+  });
+  expect(mocks.login).toHaveBeenCalledWith({ host: "https://host.example" }, expect.any(Function));
+  expect(mocks.open).toHaveBeenCalledOnce();
+});
+
+it("passes --host through standalone authentication commands", async () => {
+  mocks.logout.mockResolvedValue({ removed: true, hostUrl: "https://host.example" });
+  mocks.whoami.mockResolvedValue({ hostUrl: "https://host.example", scope: {} });
+  const options = { cwd: "/host", host: "https://host.example" };
+
+  await mocks.actions.get("login")?.(options);
+  await mocks.actions.get("logout")?.(options);
+  await mocks.actions.get("whoami")?.(options);
+
+  expect(mocks.login).toHaveBeenCalledWith(
+    { ...options, configPath: undefined, timeout: 1_800_000 },
+    expect.any(Function),
+  );
+  expect(mocks.logout).toHaveBeenCalledWith({ ...options, configPath: undefined });
+  expect(mocks.whoami).toHaveBeenCalledWith({ ...options, configPath: undefined });
 });

@@ -7,8 +7,9 @@ import { z } from "zod";
 import { normalizeHostUrl } from "./utils/url";
 
 interface AuthOptions {
+  host?: string;
   configPath?: string;
-  cwd: string;
+  cwd?: string;
 }
 
 interface LoginOptions extends AuthOptions {
@@ -113,6 +114,18 @@ const writeAuthStore = async (store: AuthStore): Promise<void> => {
 };
 
 export const resolveHostUrl = async (options: AuthOptions): Promise<string> => {
+  if (options.host !== undefined) {
+    let url: URL;
+    try {
+      url = new URL(options.host);
+    } catch {
+      throw new Error("Invalid TailorKit host URL. Use an absolute http:// or https:// URL.");
+    }
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      throw new Error("Invalid TailorKit host URL. Use an absolute http:// or https:// URL.");
+    }
+    return normalizeHostUrl(options.host);
+  }
   const loaded = await loadTailorKitConfig(options.configPath, options.cwd);
   if (loaded.config.host) {
     return normalizeHostUrl(loaded.config.host);
@@ -135,9 +148,7 @@ export const createCliAuthApprovalUrl = (hostUrl: string, userCode: string): str
 
 export class NotLoggedInError extends Error {
   constructor(hostUrl: string) {
-    super(
-      `Not logged in for ${hostUrl}. Run tailorkit login after checking host in tailorkit.config.ts.`,
-    );
+    super(`Not logged in for ${hostUrl}. Run tailorkit login --host ${hostUrl}.`);
     this.name = "NotLoggedInError";
   }
 }

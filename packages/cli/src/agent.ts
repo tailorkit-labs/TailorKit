@@ -1,17 +1,14 @@
-import { loadTailorKitConfig } from "@tailorkit/app/config/loader";
 import { createTailorKitClient, type TailorKitRouterClient } from "@tailorkit/core/server";
 import { autocomplete, cancel, isCancel, log, spinner, text } from "@clack/prompts";
-import { readAppName, writeAppIdToConfig } from "./app-link";
 import { getDeployToken, NotLoggedInError, resolveHostUrl, runWhoami } from "./auth";
 
 interface AgentOptions {
   appId?: string;
-  configPath?: string;
-  cwd: string;
+  host?: string;
   onLoginRequired?: () => Promise<unknown>;
 }
 
-async function chooseApp(client: TailorKitRouterClient, root: string): Promise<string | undefined> {
+async function chooseApp(client: TailorKitRouterClient): Promise<string | undefined> {
   const loading = spinner();
   const apps: Awaited<ReturnType<TailorKitRouterClient["apps"]["list"]>>["items"] = [];
   loading.start("Finding apps");
@@ -49,11 +46,10 @@ async function chooseApp(client: TailorKitRouterClient, root: string): Promise<s
   }
   if (selection !== null) return selection;
 
-  const defaultName = await readAppName(root);
   const name = await text({
     message: "App name",
-    defaultValue: defaultName,
-    placeholder: defaultName,
+    initialValue: "My app",
+    placeholder: "My app",
     validate: (value) => (value?.trim() ? undefined : "Enter an app name."),
   });
   if (isCancel(name)) {
@@ -75,8 +71,10 @@ export async function runAgentCommand(options: AgentOptions) {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
     throw new Error("tailorkit agent requires an interactive terminal.");
   }
-  const loaded = await loadTailorKitConfig(options.configPath, options.cwd);
-  let appId = options.appId ?? loaded.config.appId;
+  if (!options.host?.trim()) {
+    throw new Error("Missing TailorKit host URL. Use tailorkit agent --host <url>.");
+  }
+  let appId = options.appId;
   const hostUrl = await resolveHostUrl(options);
   try {
     await runWhoami(options);
@@ -92,11 +90,10 @@ export async function runAgentCommand(options: AgentOptions) {
     headers: { authorization: `Bearer ${auth.deployToken}` },
   });
   if (!appId) {
-    appId = await chooseApp(client, loaded.root);
+    appId = await chooseApp(client);
     if (!appId) return;
-    await writeAppIdToConfig(loaded.filepath, appId);
-    log.info(`Saved appId ${appId} to ${loaded.filepath}.`);
   }
+  log.info(`App: ${appId}`);
   const { openAgentTui } = await import("./agent-tui");
   await openAgentTui({ client, hostUrl, appId });
 }

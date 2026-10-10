@@ -49,6 +49,7 @@ describe("auth store", () => {
   });
 
   afterEach(async () => {
+    vi.useRealTimers();
     vi.doUnmock("node:os");
 
     await Promise.all(
@@ -180,6 +181,71 @@ describe("auth store", () => {
     );
   });
 
+  it("resolves an explicit host without loading config", async () => {
+    const homeDirectory = await createTemporaryHome();
+    const { resolveHostUrl } = await loadAuthModule(homeDirectory);
+
+    await expect(
+      resolveHostUrl({
+        cwd: homeDirectory,
+        configPath: "missing.config.ts",
+        host: "https://example.com/api/tailorkit///?unused=true#fragment",
+      }),
+    ).resolves.toBe("https://example.com/api/tailorkit");
+    expect(loadTailorKitConfig).not.toHaveBeenCalled();
+  });
+
+  it.each(["", "localhost:3000", "ftp://example.com"])(
+    "rejects invalid explicit host %s without falling back to config",
+    async (host) => {
+      const homeDirectory = await createTemporaryHome();
+      const { resolveHostUrl } = await loadAuthModule(homeDirectory);
+
+      await expect(resolveHostUrl({ cwd: homeDirectory, host })).rejects.toThrow("host URL");
+      expect(loadTailorKitConfig).not.toHaveBeenCalled();
+    },
+  );
+
+  it("logs in, verifies credentials, and logs out using an explicit host without config", async () => {
+    vi.useFakeTimers();
+    const homeDirectory = await createTemporaryHome();
+    const hostUrl = "https://example.com/api/tailorkit";
+    const scope = { name: "user", value: { userId: "user-1" } };
+    const start = vi.fn().mockResolvedValue({
+      deviceCode: "device-code",
+      userCode: "ABC-123",
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+    const poll = vi.fn().mockResolvedValue({
+      status: "approved",
+      deployToken: "deploy-token",
+      scope,
+    });
+    const verifyToken = vi.fn().mockResolvedValue({ scope });
+    vi.mocked(createTailorKitClient).mockReturnValue({
+      cliAuth: { start, poll, verifyToken },
+    } as unknown as ReturnType<typeof createTailorKitClient>);
+    const { runLogin, runWhoami, runLogout, getDeployToken } = await loadAuthModule(homeDirectory);
+    const onUserCode = vi.fn();
+    const options = { cwd: homeDirectory, host: `${hostUrl}/` };
+    const login = runLogin(options, onUserCode);
+    await vi.advanceTimersByTimeAsync(2000);
+
+    await expect(login).resolves.toEqual({ hostUrl, scope });
+    expect(onUserCode).toHaveBeenCalledWith(
+      expect.objectContaining({ hostUrl, userCode: "ABC-123" }),
+    );
+    expect(poll).toHaveBeenCalledWith({ deviceCode: "device-code" });
+    await expect(runWhoami(options)).resolves.toEqual({ hostUrl, scope });
+    expect(createTailorKitClient).toHaveBeenLastCalledWith({
+      url: hostUrl,
+      headers: { authorization: "Bearer deploy-token" },
+    });
+    await expect(runLogout(options)).resolves.toEqual({ hostUrl, removed: true });
+    await expect(getDeployToken(hostUrl)).resolves.toBeUndefined();
+    expect(loadTailorKitConfig).not.toHaveBeenCalled();
+  });
+
   it("identifies missing host credentials as not logged in", async () => {
     const homeDirectory = await createTemporaryHome();
     vi.mocked(loadTailorKitConfig).mockResolvedValue({
@@ -218,7 +284,7 @@ describe("auth store", () => {
 
     await expect(runWhoami({ cwd: homeDirectory })).rejects.toBeInstanceOf(NotLoggedInError);
     await expect(runWhoami({ cwd: homeDirectory })).rejects.toThrow(
-      "Not logged in for https://example.com. Run tailorkit login after checking host in tailorkit.config.ts.",
+      "Not logged in for https://example.com. Run tailorkit login --host https://example.com.",
     );
   });
 

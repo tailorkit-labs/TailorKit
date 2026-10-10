@@ -60,10 +60,9 @@ const loginWithApproval = async (options: Parameters<typeof runLogin>[0], open =
   }
 };
 
-cli.option("--cwd <path>", "Working directory", { default: "." });
-
 cli
   .command("preview", "Preview the app inside a host app")
+  .option("--cwd <path>", "Working directory", { default: "." })
   .option("--config <path>", "Path to tailorkit config")
   .option("--out-dir <path>", "Build output directory")
   .option("--mode <mode>", "Vite mode")
@@ -80,6 +79,8 @@ cli
 
 cli
   .command("login", "Authenticate the TailorKit CLI with a host app")
+  .option("--cwd <path>", "Working directory", { default: "." })
+  .option("--host <url>", "TailorKit host API URL (overrides config host)")
   .option("--config <path>", "Path to tailorkit config")
   .option("--open", "Open the approval URL in the default browser", { default: true })
   .option("--timeout <seconds>", "Seconds to wait for approval", { default: 1800 })
@@ -94,6 +95,7 @@ cli
       await loginWithApproval(
         {
           configPath: options.config as string | undefined,
+          host: options.host as string | undefined,
           cwd: String(options.cwd ?? "."),
           timeout: timeoutSeconds * 1000,
         },
@@ -108,11 +110,14 @@ cli
 
 cli
   .command("logout", "Remove stored TailorKit CLI credentials for a host app")
+  .option("--cwd <path>", "Working directory", { default: "." })
+  .option("--host <url>", "TailorKit host API URL (overrides config host)")
   .option("--config <path>", "Path to tailorkit config")
   .action(async (options: Record<string, unknown>) => {
     intro(pc.bold("TailorKit"));
     try {
       const result = await runLogout({
+        host: options.host as string | undefined,
         configPath: options.config as string | undefined,
         cwd: String(options.cwd ?? "."),
       });
@@ -130,11 +135,14 @@ cli
 
 cli
   .command("whoami", "Show the current TailorKit CLI authentication scope")
+  .option("--cwd <path>", "Working directory", { default: "." })
+  .option("--host <url>", "TailorKit host API URL (overrides config host)")
   .option("--config <path>", "Path to tailorkit config")
   .action(async (options: Record<string, unknown>) => {
     intro(pc.bold("TailorKit"));
     try {
       const result = await runWhoami({
+        host: options.host as string | undefined,
         configPath: options.config as string | undefined,
         cwd: String(options.cwd ?? "."),
       });
@@ -150,6 +158,7 @@ cli
 
 cli
   .command("deploy", "Build and deploy the TailorKit app")
+  .option("--cwd <path>", "Working directory", { default: "." })
   .option("--config <path>", "Path to tailorkit config")
   .option("--out-dir <path>", "Build output directory")
   .option("--mode <mode>", "Vite mode")
@@ -247,6 +256,7 @@ cli
 
 cli
   .command("build", "Build the TailorKit app")
+  .option("--cwd <path>", "Working directory", { default: "." })
   .option("--config <path>", "Path to tailorkit config")
   .option("--out-dir <path>", "Build output directory")
   .option("--mode <mode>", "Vite mode")
@@ -269,6 +279,7 @@ cli
 
 cli
   .command("db <command>", "Generate database migrations with db generate")
+  .option("--cwd <path>", "Working directory", { default: "." })
   .option("--config <path>", "Path to tailorkit config")
   .option("--name <name>", "Migration name")
   .action(async (command: string, options: Record<string, unknown>) => {
@@ -292,6 +303,7 @@ cli
 
 cli
   .command("generate", "Generate TailorKit app bindings")
+  .option("--cwd <path>", "Working directory", { default: "." })
   .option("--config <path>", "Path to tailorkit config")
   .option("--out <path>", "Generated TypeScript output file")
   .action(async (options: Record<string, unknown>) => {
@@ -311,6 +323,7 @@ cli
 
 cli
   .command("init [directory]", "Create a new TailorKit app")
+  .option("--cwd <path>", "Working directory", { default: "." })
   .option("--name <name>", "Package name")
   .option("--host <url>", "TailorKit host URL")
   .option("--package-manager <pm>", "Package manager: bun, yarn, pnpm, or npm")
@@ -342,19 +355,17 @@ cli
 
 cli
   .command("agent", "Chat with the TailorKit app agent")
-  .option("--app <id>", "App ID (uses config appId, or prompts to select or create an app)")
-  .option("--config <path>", "Path to tailorkit config")
+  .option("--host <url>", "TailorKit host API URL (required)")
+  .option("--app <id>", "App ID (otherwise prompts to select or create an app)")
   .action(async (options: Record<string, unknown>) => {
     try {
       const { runAgentCommand } = await import("./agent");
       await runAgentCommand({
         appId: options.app as string | undefined,
-        configPath: options.config as string | undefined,
-        cwd: String(options.cwd ?? "."),
+        host: options.host as string | undefined,
         onLoginRequired: () =>
           loginWithApproval({
-            configPath: options.config as string | undefined,
-            cwd: String(options.cwd ?? "."),
+            host: options.host as string | undefined,
           }),
       });
     } catch (error) {
