@@ -1,6 +1,6 @@
 import { expect, it, vi, afterEach } from "vite-plus/test";
 import { Effect } from "effect";
-import { APP_RUNTIME_AUDIENCE } from "@tailorkit/api-utils/app-auth";
+import { APP_AUDIENCE } from "@tailorkit/api-utils/app-auth";
 import { issueAppToken } from "@tailorkit/api-utils/app-auth";
 import { createAppRuntimeVerifierEffect } from "./auth";
 
@@ -11,8 +11,8 @@ const pair = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256
 const issuer = "https://platform.test/api/platform";
 const signing = {
   issuer,
-  audience: APP_RUNTIME_AUDIENCE,
-  purpose: "runtime" as const,
+  audience: APP_AUDIENCE,
+  purpose: "app" as const,
   keyId: "platform",
   privateKey: pair.privateKey,
 };

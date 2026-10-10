@@ -15,7 +15,7 @@ vi.mock("cloudflare:workers", () => ({
 }));
 
 import { AppError } from "@tailorkit/app/server";
-import { issueAppToken, APP_RUNTIME_AUDIENCE } from "@tailorkit/api-utils/app-auth";
+import { issueAppToken, APP_AUDIENCE } from "@tailorkit/api-utils/app-auth";
 import worker from "./worker";
 import { AppInstallation } from "./installation";
 
@@ -50,8 +50,8 @@ const keys = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256
 ]);
 const signing = {
   issuer: "https://platform.test/api/platform",
-  audience: APP_RUNTIME_AUDIENCE,
-  purpose: "runtime" as const,
+  audience: APP_AUDIENCE,
+  purpose: "app" as const,
   keyId: "host",
   privateKey: keys.privateKey,
 };

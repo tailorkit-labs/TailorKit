@@ -1,13 +1,7 @@
-import type {
-  AppTokenTrust,
-  AppTokenIdentity,
-  VerifiedAppTokenIdentity,
-} from "@tailorkit/api-utils/app-auth";
+import type { AppTokenTrust, AppTokenIdentity } from "@tailorkit/api-utils/app-auth";
 import { createPrivateKey, createPublicKey } from "node:crypto";
 import {
-  APP_RUNTIME_AUDIENCE,
-  APP_TOOL_AUDIENCE,
-  appTokenVerifier,
+  APP_AUDIENCE,
   appRuntimeIssuer,
   issueAppToken,
   parseAppPublicKeys,
@@ -47,34 +41,10 @@ export function issueAppRuntimeToken(identity: AppTokenIdentity) {
   return issueAppToken(
     {
       issuer: appRuntimeIssuer(env.OPENAPI_SERVER_URL ?? "https://tailorkit.dev/api/platform"),
-      audience: APP_RUNTIME_AUDIENCE,
-      purpose: "runtime",
+      audience: APP_AUDIENCE,
+      purpose: "app",
       keyId: key.kid,
       privateKey: key,
-    },
-    identity,
-  );
-}
-
-export function verifyAppRuntimeToken(token: string) {
-  return appTokenVerifier({
-    issuer: appRuntimeIssuer(env.OPENAPI_SERVER_URL ?? "https://tailorkit.dev/api/platform"),
-    audience: APP_RUNTIME_AUDIENCE,
-    purpose: "runtime",
-    publicKeys: appRuntimePublicKeys(),
-  })(token);
-}
-export function issueAppToolToken(identity: VerifiedAppTokenIdentity, toolPath: string) {
-  const key = signingKey();
-  return issueAppToken(
-    {
-      issuer: appRuntimeIssuer(env.OPENAPI_SERVER_URL ?? "https://tailorkit.dev/api/platform"),
-      audience: APP_TOOL_AUDIENCE,
-      purpose: "tool",
-      toolPath,
-      keyId: key.kid,
-      privateKey: key,
-      lifetimeSeconds: Math.min(60, Math.floor((identity.expiresAt - Date.now()) / 1000)),
     },
     identity,
   );

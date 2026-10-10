@@ -541,6 +541,15 @@ describe("platform appRouter", () => {
     };
     const session = await call(appRouter.runtimeSession, input, { context });
     expect(session.body.token).toBe("platform-token");
+    expect(session.body.toolUrl).toBe(input.body.toolUrl);
+    expect(session.body.identity).toMatchObject({
+      installationId: created.id,
+      projectId,
+      deploymentId: deployment.id,
+      scope: created.scope,
+      toolUrl: input.body.toolUrl,
+      expiresAt: session.body.expiresAt,
+    });
     expect(testState.issueToken).toHaveBeenCalledWith({
       subjectId: undefined,
       scope: created.scope,

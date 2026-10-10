@@ -78,14 +78,15 @@ async function token(overrides: Record<string, unknown> = {}, privateKey = pair.
     data.encode(
       JSON.stringify({
         ...identity,
+        publicTeamId: "team",
+        appPublicId: "public-app",
         sub: identity.installationId,
         iss: issuer,
-        aud: "tailorkit-product-tools",
-        purpose: "tool",
-        toolPath: "math.increment",
+        aud: "tailorkit-app",
+        purpose: "app",
         toolUrl,
         iat: now,
-        exp: now + 60,
+        exp: now + 300,
         ...overrides,
       }),
     ),
@@ -131,12 +132,11 @@ it("attributes a call without a subject to its installation", async () => {
 });
 it.each([
   { iss: "https://attacker.test" },
-  { aud: "tailorkit-apps-worker" },
-  { purpose: "runtime" },
-  { toolPath: "math.broken" },
+  { aud: "another-service" },
+  { purpose: "another-purpose" },
   { toolUrl: "https://other.test/tools" },
   { exp: 1 },
-  { exp: Math.floor(Date.now() / 1000) + 301 },
+  { exp: Math.floor(Date.now() / 1000) + 601 },
   { iat: Math.floor(Date.now() / 1000) + 1 },
   { scope: { name: "other", value: {} } },
   { subjectId: 123 },
@@ -157,10 +157,8 @@ it("rejects a signature from an untrusted key", async () => {
 });
 it("validates both directions and dispatches only declared server tools", async () => {
   expect((await execute(await token(), "math.increment", {})).status).toBe(400);
-  expect(
-    (await execute(await token({ toolPath: "math.broken" }), "math.broken", undefined)).status,
-  ).toBe(500);
-  expect((await execute(await token({ toolPath: "ui.open" }), "ui.open")).status).toBe(404);
+  expect((await execute(await token(), "math.broken", undefined)).status).toBe(500);
+  expect((await execute(await token(), "ui.open")).status).toBe(404);
 });
 it("serializes nested kinds and schemas without implementations", () => {
   const metadata = server.$internal.schema.serialize();
@@ -187,11 +185,15 @@ it("permits sandbox HTTP preflights without cookie credentials", async () => {
 });
 
 it("validates and transforms implementation output before returning it to callers", async () => {
-  const response = await execute(
-    await token({ toolPath: "math.transformed" }),
-    "math.transformed",
-    undefined,
-  );
+  const response = await execute(await token(), "math.transformed", undefined);
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({ output: 42 });
+});
+
+it("accepts the same app session JWT across declared server tools", async () => {
+  const session = await token();
+  expect((await execute(session)).status).toBe(200);
+  expect(await (await execute(session, "math.transformed", undefined)).json()).toEqual({
+    output: 42,
+  });
 });

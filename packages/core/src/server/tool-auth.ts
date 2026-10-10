@@ -1,6 +1,6 @@
 import type { ToolIdentity } from "../schema/tools";
 
-const audience = "tailorkit-product-tools";
+const audience = "tailorkit-app";
 const decode = (part: string) =>
   Uint8Array.from(atob(part.replaceAll("-", "+").replaceAll("_", "/")), (c) => c.charCodeAt(0));
 /** Only configured platform keys are trusted. Never follow URLs from token headers. */
@@ -11,7 +11,7 @@ export function createToolVerifier(options: {
 }) {
   const issuer = options.platformUrl.replace(/\/$/u, "");
   let cached: { expiresAt: number; keys: (JsonWebKey & { kid: string })[] } | undefined;
-  return async (token: string, path: string, toolUrl: string): Promise<ToolIdentity> => {
+  return async (token: string, toolUrl: string): Promise<ToolIdentity> => {
     if (token.length > 8192) throw new Error("Invalid tool credential");
     const parts = token.split(".");
     if (parts.length !== 3) throw new Error("Invalid tool credential");
@@ -62,20 +62,26 @@ export function createToolVerifier(options: {
     if (
       claims.iss !== issuer ||
       claims.aud !== audience ||
-      claims.purpose !== "tool" ||
-      claims.toolPath !== path ||
+      claims.purpose !== "app" ||
       claims.toolUrl !== toolUrl ||
       !Number.isInteger(claims.exp) ||
       !Number.isInteger(claims.iat) ||
       claims.exp <= now ||
       claims.iat > now ||
       claims.exp <= claims.iat ||
-      claims.exp - claims.iat > 60 ||
+      claims.exp - claims.iat > 300 ||
       claims.sub !== claims.installationId ||
       (options.projectId && claims.projectId !== options.projectId)
     )
       throw new Error("Invalid tool claims");
-    for (const name of ["installationId", "appId", "projectId", "deploymentId"])
+    for (const name of [
+      "installationId",
+      "appId",
+      "projectId",
+      "deploymentId",
+      "publicTeamId",
+      "appPublicId",
+    ])
       if (typeof claims[name] !== "string" || !claims[name] || claims[name].length > 256)
         throw new Error("Invalid installation identity");
     if (

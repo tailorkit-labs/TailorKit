@@ -14,10 +14,10 @@ const { publicKey, privateKey } = await generateKeyPair("ES256", { extractable: 
 const publicKeys = { keys: [{ ...(await exportJWK(publicKey)), kid: "host-key" }] };
 const signing = {
   issuer: "https://host.test",
-  audience: "tailorkit-apps-worker",
+  audience: "tailorkit-app",
   privateKey,
   keyId: "host-key",
-  purpose: "runtime" as const,
+  purpose: "app" as const,
 };
 const identity = {
   publicTeamId: "abc123def45678",
@@ -58,16 +58,12 @@ it("rejects wrong signature, issuer, audience, app, expiry, missing claims and e
   }
   const sign = (claims: Record<string, unknown>) =>
     new SignJWT({
-      publicTeamId: identity.publicTeamId,
-      appPublicId: identity.appPublicId,
-      projectId: identity.projectId,
-      scope: { name: "org", value: { id: "tenant" } },
-      toolUrl: "https://host.test/api/tailorkit/tools/execute",
-      deploymentId: identity.deploymentId,
+      ...identity,
+      purpose: "app",
       ...claims,
     })
       .setProtectedHeader({ alg: "ES256", kid: "host-key", typ: "JWT" })
-      .setSubject("user")
+      .setSubject(identity.installationId)
       .setIssuer(signing.issuer)
       .setAudience(signing.audience)
       .sign(privateKey);
@@ -75,7 +71,7 @@ it("rejects wrong signature, issuer, audience, app, expiry, missing claims and e
   for (const claims of [
     { appId: "app", installationId: "installation", iat: now - 100, exp: now - 1 },
     { appId: "app", installationId: "installation", iat: now },
-    { appId: "app", iat: now, exp: now + 120 },
+    { appId: "app", installationId: undefined, iat: now, exp: now + 120 },
     { appId: "app", installationId: "installation", iat: now, exp: now + 1000 },
     { appId: "app", installationId: "installation", iat: now + 60, exp: now + 120 },
     {
@@ -161,7 +157,7 @@ it.each(["projectId", "deploymentId", "publicTeamId", "appPublicId"])(
   "requires the signed %s claim",
   async (field) => {
     const now = Math.floor(Date.now() / 1000);
-    const claims = { ...identity, [field]: undefined, iat: now, exp: now + 120 };
+    const claims = { ...identity, purpose: "app", [field]: undefined, iat: now, exp: now + 120 };
     const token = await new SignJWT(claims)
       .setProtectedHeader({ alg: "ES256", kid: "host-key", typ: "JWT" })
       .setSubject(identity.installationId)
@@ -172,31 +168,17 @@ it.each(["projectId", "deploymentId", "publicTeamId", "appPublicId"])(
   },
 );
 
-it("preserves arbitrary product principals and separates runtime and tool credentials", async () => {
-  const toolSigning = {
-    ...signing,
-    audience: "tailorkit-product-tools",
-    purpose: "tool" as const,
-    toolPath: "billing.read",
-  };
-  const credential = await issueAppToken(toolSigning, {
-    ...identity,
-    subjectId: "job:invoice-run",
-  });
-  const toolVerify = appTokenVerifier({ ...toolSigning, publicKeys });
-  expect(await toolVerify(credential.token)).toMatchObject({
+it("preserves arbitrary product principals in the shared app session", async () => {
+  const session = await issueAppToken(signing, { ...identity, subjectId: "job:invoice-run" });
+  expect(await verify(session.token)).toMatchObject({
     subjectId: "job:invoice-run",
     scope: identity.scope,
     installationId: identity.installationId,
   });
-  expect(decodeJwt(credential.token).sub).toBe(identity.installationId);
-  expect(decodeJwt(credential.token).exp! - decodeJwt(credential.token).iat!).toBe(60);
-  await expect(verify(credential.token)).rejects.toMatchObject({ code: "UNAUTHORIZED" });
-  const runtime = await issueAppToken(signing, identity);
-  await expect(toolVerify(runtime.token)).rejects.toMatchObject({ code: "UNAUTHORIZED" });
-  await expect(
-    appTokenVerifier({ ...toolSigning, toolPath: "billing.write", publicKeys })(credential.token),
-  ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  const claims = decodeJwt(session.token);
+  expect(claims.sub).toBe(identity.installationId);
+  expect(claims.purpose).toBe("app");
+  expect(claims.exp! - claims.iat!).toBe(300);
   const installation = await issueAppToken(signing, { ...identity, subjectId: undefined });
   expect(await verify(installation.token)).toMatchObject({
     subjectId: undefined,

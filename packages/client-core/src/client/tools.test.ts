@@ -23,7 +23,8 @@ const identity = {
   scope: { name: "workspace", value: { id: "workspace" } },
   projectId: "project",
   deploymentId: "deployment",
-  expiresAt: Date.now() + 60_000,
+  toolUrl: "https://product.test/tools",
+  expiresAt: Date.now() + 300_000,
 };
 it("binds client tool calls to the installation and validates transformed inputs and outputs", async () => {
   const implementation = vi.fn(({ input }) => input + 1);
@@ -35,8 +36,10 @@ it("binds client tool calls to the installation and validates transformed inputs
     fetch: async (_url, options) => {
       bodies.push(JSON.parse(String(options?.body)));
       return Response.json({
+        subjectId: identity.subjectId,
         token: "verified-token",
-        url: "https://product.test/tools",
+        url: "https://runtime.test/rpc",
+        toolUrl: identity.toolUrl,
         expiresAt: identity.expiresAt,
         identity,
       });
@@ -45,7 +48,15 @@ it("binds client tool calls to the installation and validates transformed inputs
   client.setSubject(identity.subjectId);
   const bridge = client.getToolBridge(app);
   expect(await bridge.client("ui.select", "test")).toBe(5);
-  expect(bodies).toEqual([{ appId: app.id, path: "ui.select" }]);
+  const credential = await bridge.session("data.read");
+  const backendSession = await client.getSessionProvider(app)({ refresh: false });
+  expect(credential.token).toBe(backendSession.token);
+  expect(credential.url).toBe(identity.toolUrl);
+  expect(backendSession.url).toBe("https://runtime.test/rpc");
+  expect(bodies).toEqual([{ appId: app.id }]);
+  expect(Object.isFrozen(implementation.mock.calls[0]?.[0].context.identity.scope.value)).toBe(
+    true,
+  );
   expect(implementation.mock.calls[0]?.[0]).toMatchObject({
     input: 4,
     context: { identity, scope: identity.scope },
@@ -70,11 +81,13 @@ it("discards a pending credential when the authenticated principal changes", asy
   client.setSubject("job:replacement");
   complete(
     Response.json({
+      subjectId: identity.subjectId,
       token: "old-subject",
-      url: "https://product.test/tools",
+      url: "https://runtime.test/rpc",
+      toolUrl: identity.toolUrl,
       expiresAt: identity.expiresAt,
       identity,
     }),
   );
-  await expect(pending).rejects.toThrow("Tool identity changed");
+  await expect(pending).rejects.toThrow("The app session was invalidated");
 });

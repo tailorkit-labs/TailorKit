@@ -1,12 +1,23 @@
+import type { Identity } from "../server/functions";
 import { AppError } from "../errors";
 
 const APP_SESSION_RENEWAL_MS = 60_000;
 
 export interface Session {
+  toolUrl?: string;
+  identity?: Identity;
   subjectId?: string;
   token: string;
   expiresAt: number;
   url: string;
+}
+
+function freezeIdentity<T>(value: T): T {
+  if (value && typeof value === "object" && !Object.isFrozen(value)) {
+    for (const child of Object.values(value)) freezeIdentity(child);
+    Object.freeze(value);
+  }
+  return value;
 }
 
 export function sessionRenewalDelay(session: Session) {
@@ -64,6 +75,8 @@ export function createSessionProvider(options: {
       if (options.subjectId !== undefined && value.subjectId !== options.subjectId)
         throw new AppError("UNAUTHORIZED", "Authenticated principal changed");
       cached = {
+        ...(value.toolUrl !== undefined ? { toolUrl: value.toolUrl } : {}),
+        ...(value.identity !== undefined ? { identity: freezeIdentity(value.identity) } : {}),
         token: value.token,
         expiresAt: value.expiresAt,
         url: value.url,

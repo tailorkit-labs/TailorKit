@@ -1,7 +1,7 @@
 import { Effect } from "effect";
 import { AppError } from "../runtime/errors";
 import {
-  APP_RUNTIME_AUDIENCE,
+  APP_AUDIENCE,
   appRuntimeIssuer,
   appTokenVerifierEffect,
   parseAppPublicKeys,
@@ -17,8 +17,8 @@ export function createAppRuntimeVerifierEffect(options: RuntimeVerifierOptions) 
   try {
     verify = appTokenVerifierEffect({
       issuer: appRuntimeIssuer(options.platformUrl),
-      audience: APP_RUNTIME_AUDIENCE,
-      purpose: "runtime",
+      audience: APP_AUDIENCE,
+      purpose: "app",
       publicKeys: parseAppPublicKeys(
         typeof options.publicKeys === "string"
           ? JSON.parse(options.publicKeys)

@@ -8,12 +8,7 @@ import { mkdtemp, rm, readFile, writeFile, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { build } from "vite";
-import {
-  issueAppToken,
-  appTokenVerifier,
-  APP_RUNTIME_AUDIENCE,
-  APP_TOOL_AUDIENCE,
-} from "@tailorkit/api-utils/app-auth";
+import { issueAppToken, appTokenVerifier, APP_AUDIENCE } from "@tailorkit/api-utils/app-auth";
 
 import { createClient, createApi, reference } from "@tailorkit/app/client";
 
@@ -35,8 +30,8 @@ it("runs isolated app backends with persistent SQLite and two-client realtime up
   ]);
   const signing = {
     issuer: "https://platform.test/api/platform",
-    audience: APP_RUNTIME_AUDIENCE,
-    purpose: "runtime",
+    audience: APP_AUDIENCE,
+    purpose: "app",
     keyId: "test",
     privateKey: keys.privateKey,
   };
@@ -50,6 +45,7 @@ it("runs isolated app backends with persistent SQLite and two-client realtime up
   const appPublicId = "app000000001";
   const rpcUrl = `https://${publicTeamId}.tailorkit.app/p/${projectId}/a/${appPublicId}/rpc`;
   let published;
+  const appTokens = new Set();
   let externalCalls = 0;
   let releaseExternal;
   let pendingExternal;
@@ -78,30 +74,12 @@ it("runs isolated app backends with persistent SQLite and two-client realtime up
       ASSET_DOMAIN: "tailorkit.app",
     },
     outboundService: async (request) => {
-      if (request.url === "https://platform.test/api/platform/runtime/tools") {
-        const verified = await appTokenVerifier({ ...signing, publicKeys })(
-          request.headers.get("authorization").slice(7),
-        );
-        const { path: toolPath } = await request.json();
-        assert.ok(["product.identity", "echo"].includes(toolPath));
-        return Response.json({
-          ...(await issueAppToken(
-            { ...signing, purpose: "tool", audience: APP_TOOL_AUDIENCE, toolPath },
-            verified,
-          )),
-          url: verified.toolUrl,
-        });
-      }
       if (request.url === "https://host.test/api/tailorkit/tools/execute") {
         const { path: toolPath, input, requestId } = await request.json();
         assert.match(requestId, /^[0-9a-f-]{36}$/u);
-        const verified = await appTokenVerifier({
-          ...signing,
-          purpose: "tool",
-          audience: APP_TOOL_AUDIENCE,
-          toolPath,
-          publicKeys,
-        })(request.headers.get("authorization").slice(7));
+        const token = request.headers.get("authorization").slice(7);
+        assert.ok(appTokens.has(token), "tool calls reuse an issued app execution JWT");
+        const verified = await appTokenVerifier({ ...signing, publicKeys })(token);
         if (toolPath === "echo") return Response.json({ output: input });
         return Response.json({
           output: {
@@ -296,24 +274,23 @@ export const migrations = ${JSON.stringify(history)};`;
       createClient({
         getSession: async () => {
           renewals++;
-          return {
-            ...(await issueAppToken(
-              // Renew after five seconds while keeping the production one-minute renewal window.
-              { ...signing, lifetimeSeconds: 65 },
-              {
-                publicTeamId,
-                appPublicId,
-                scope: { name: "org", value: { id: "tenant" } },
-                toolUrl: "https://host.test/api/tailorkit/tools/execute",
-                subjectId: "user",
-                projectId,
-                appId: "app",
-                installationId,
-                deploymentId: published.deploymentId,
-              },
-            )),
-            url: rpcUrl,
-          };
+          const session = await issueAppToken(
+            // Renew after five seconds while keeping the production one-minute renewal window.
+            { ...signing, lifetimeSeconds: 65 },
+            {
+              publicTeamId,
+              appPublicId,
+              scope: { name: "org", value: { id: "tenant" } },
+              toolUrl: "https://host.test/api/tailorkit/tools/execute",
+              subjectId: "user",
+              projectId,
+              appId: "app",
+              installationId,
+              deploymentId: published.deploymentId,
+            },
+          );
+          appTokens.add(session.token);
+          return { ...session, url: rpcUrl };
         },
         fetch: (url, init) => mf.dispatchFetch(String(url), init),
         connect: async (url, protocols) => {

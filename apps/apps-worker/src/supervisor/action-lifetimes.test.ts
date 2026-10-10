@@ -85,38 +85,29 @@ it("cancels all active actions on deployment replacement", () => {
   next.close();
 });
 
-it.each(["exchange", "execution"])(
-  "rejects %s redirects without forwarding tool credentials",
-  async (phase) => {
-    const redirect = new Response(null, {
-      status: 302,
-      headers: { location: "https://attacker.test" },
+it("sends the verified app session directly to the product and rejects redirects", async () => {
+  const fetch = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      new Response(null, { status: 302, headers: { location: "https://attacker.test" } }),
+    );
+  const lease = createActionLeases().open(identity);
+  const capability = new ActionCapability(lease, async () => {}, {
+    url: identity.toolUrl,
+    token: "verified-app-credential",
+  });
+  try {
+    await expect(capability.tool("customers.read", { id: "customer" })).rejects.toBeDefined();
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(fetch.mock.calls[0]).toMatchObject([
+      identity.toolUrl,
+      { redirect: "manual", headers: { authorization: "Bearer verified-app-credential" } },
+    ]);
+    expect(JSON.parse(String(fetch.mock.calls[0]?.[1]?.body))).toMatchObject({
+      path: "customers.read",
+      input: { id: "customer" },
     });
-    const fetch = vi.spyOn(globalThis, "fetch");
-    if (phase === "exchange") fetch.mockResolvedValueOnce(redirect);
-    else
-      fetch
-        .mockResolvedValueOnce(Response.json({ token: "tool-credential", url: identity.toolUrl }))
-        .mockResolvedValueOnce(redirect);
-    const lease = createActionLeases().open(identity);
-    const capability = new ActionCapability(lease, async () => {}, {
-      platformUrl: "https://platform.test/api/platform",
-      token: "verified-runtime-credential",
-    });
-    try {
-      await expect(capability.tool("customers.read", { id: "customer" })).rejects.toBeDefined();
-      expect(fetch).toHaveBeenCalledTimes(phase === "exchange" ? 1 : 2);
-      for (const [, options] of fetch.mock.calls) expect(options?.redirect).toBe("manual");
-      expect(fetch.mock.calls[0]?.[1]).toMatchObject({
-        body: JSON.stringify({ path: "customers.read" }),
-        headers: { authorization: "Bearer verified-runtime-credential" },
-      });
-      if (phase === "execution")
-        expect(fetch.mock.calls[1]?.[1]).toMatchObject({
-          headers: { authorization: "Bearer tool-credential" },
-        });
-    } finally {
-      lease.close();
-    }
-  },
-);
+  } finally {
+    lease.close();
+  }
+});

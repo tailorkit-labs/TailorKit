@@ -88,56 +88,6 @@ export function createServer<const T extends TailorKitContract>(
       const authentication = handlerOptions?.authenticate ?? authenticate;
       if (!authentication) throw new Error("Supply authenticate to createServer or its handler");
       const url = new URL(request.url);
-      if (url.pathname === basePath + "/tools/session") {
-        const headers = { "cache-control": "no-store" };
-        if (
-          request.method !== "POST" ||
-          (request.headers.get("origin") && request.headers.get("origin") !== url.origin)
-        )
-          return new Response("Invalid request", { status: 400, headers });
-        let input: { appId: string; path: string };
-        try {
-          input = await request.json();
-          if (
-            !input ||
-            typeof input.appId !== "string" ||
-            !input.appId ||
-            input.appId.length > 256 ||
-            typeof input.path !== "string" ||
-            Object.keys(input).length !== 2 ||
-            !declarations.has(input.path)
-          )
-            throw new Error();
-        } catch {
-          return new Response("Invalid tool", { status: 400, headers });
-        }
-        const runtime = await server.handler(
-          new Request(url.origin + basePath + "/backend/session", {
-            method: "POST",
-            headers: request.headers,
-            body: JSON.stringify({ appId: input.appId }),
-          }),
-          { authenticate: authentication } as Parameters<typeof server.handler>[1],
-        );
-        if (!runtime.ok) return runtime;
-        const session = (await runtime.json()) as { token: string };
-        const credential = await requestPlatform(
-          platformUrl.replace(/\/$/u, "") + "/runtime/tools",
-          {
-            method: "POST",
-            redirect: "manual",
-            headers: {
-              authorization: `Bearer ${session.token}`,
-              "content-type": "application/json",
-            },
-            body: JSON.stringify({ path: input.path }),
-          },
-        );
-        return new Response(credential.body, {
-          status: credential.status,
-          headers: { ...headers, "content-type": "application/json" },
-        });
-      }
       if (url.pathname === basePath + "/tools/execute") {
         const headers = {
           "cache-control": "no-store",
@@ -171,7 +121,6 @@ export function createServer<const T extends TailorKitContract>(
           if (!authorization?.startsWith("Bearer ")) throw new Error();
           const identity = await verify(
             authorization.slice(7),
-            input.path,
             url.origin + basePath + "/tools/execute",
           );
           const schema = contract.scopes[identity.scope.name];

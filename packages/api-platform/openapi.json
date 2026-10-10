@@ -214,9 +214,72 @@
                     "url": {
                       "type": "string",
                       "format": "uri"
+                    },
+                    "toolUrl": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "identity": {
+                      "type": "object",
+                      "properties": {
+                        "subjectId": {
+                          "type": "string"
+                        },
+                        "installationId": {
+                          "type": "string"
+                        },
+                        "appId": {
+                          "type": "string"
+                        },
+                        "projectId": {
+                          "type": "string"
+                        },
+                        "deploymentId": {
+                          "type": "string"
+                        },
+                        "scope": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                            },
+                            "value": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              },
+                              "additionalProperties": {
+                                "$ref": "#/components/schemas/__schema0"
+                              }
+                            }
+                          },
+                          "required": ["name", "value"],
+                          "additionalProperties": false
+                        },
+                        "toolUrl": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "expiresAt": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "installationId",
+                        "appId",
+                        "projectId",
+                        "deploymentId",
+                        "scope",
+                        "toolUrl",
+                        "expiresAt"
+                      ],
+                      "additionalProperties": false
                     }
                   },
-                  "required": ["token", "expiresAt", "url"],
+                  "required": ["token", "expiresAt", "url", "toolUrl", "identity"],
                   "additionalProperties": false
                 }
               }

@@ -1,4 +1,4 @@
-import type { TailorKitContract, ToolImplementations, ToolContext } from "@tailorkit/core/schema";
+import type { TailorKitContract, ToolImplementations } from "@tailorkit/core/schema";
 import { flattenTools, validateToolValue } from "@tailorkit/core/schema";
 import type { ToolBridge } from "@tailorkit/app/client";
 import { createClient, createSessionProvider, reference } from "@tailorkit/app/client/connection";
@@ -35,7 +35,7 @@ export function createEndpointClient(options: {
   }
   let subjectId: string | undefined;
   let generation = 0;
-  const toolBridges = new Map<string, ToolBridge>();
+  const toolBridges = new Map<string, { bridge: ToolBridge; app: TailorKitApp }>();
   const declarations = flattenTools(options.contract?.tools ?? {});
   const sessions = new Map<string, SessionEntry>();
   const createSessionEntry = (appId: string, key?: string): SessionEntry => ({
@@ -68,37 +68,30 @@ export function createEndpointClient(options: {
     return entry.provider;
   };
   const getToolBridge = (app: TailorKitApp): ToolBridge => {
-    let bridge = toolBridges.get(app.id);
-    if (bridge) return bridge;
+    const existing = toolBridges.get(app.id);
+    if (existing) {
+      existing.app = app;
+      return existing.bridge;
+    }
     const session = async (path: string) => {
       const admitted = generation;
       if (!declarations.has(path)) throw new Error("Tool not declared");
-      const response = await request(new URL("tools/session", baseUrl), {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ appId: app.id, path }),
+      const result = await getSessionProvider(toolBridges.get(app.id)?.app ?? app)({
+        refresh: false,
       });
-      if (!response.ok) throw new Error("Unable to authorize tool");
-      const result = (await response.json()) as {
-        token: string;
-        url: string;
-        expiresAt: number;
-        identity: ToolContext["identity"];
-      };
       if (admitted !== generation) throw new Error("Tool identity changed");
       if (
         typeof result.token !== "string" ||
-        typeof result.url !== "string" ||
+        typeof result.toolUrl !== "string" ||
         !Number.isFinite(result.expiresAt) ||
         result.expiresAt <= Date.now() ||
         result.identity?.installationId !== app.id ||
         (subjectId !== undefined && result.identity.subjectId !== subjectId)
       )
         throw new Error("Invalid tool session");
-      return result;
+      return { ...result, identity: result.identity, url: result.toolUrl };
     };
-    bridge = {
+    const bridge: ToolBridge = {
       session: (path) => {
         if (declarations.get(path)?.kind !== "server")
           return Promise.reject(new Error("Not a server tool"));
@@ -134,7 +127,7 @@ export function createEndpointClient(options: {
         return result;
       },
     };
-    toolBridges.set(app.id, bridge);
+    toolBridges.set(app.id, { bridge, app });
     return bridge;
   };
   return {

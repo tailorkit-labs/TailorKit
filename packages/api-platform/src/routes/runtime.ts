@@ -10,13 +10,8 @@ import {
 import { db } from "@tailorkit/db";
 import z from "zod";
 import { o, protectedRouter, requireAppInScopes } from "../procedures";
-import {
-  appRuntimePublicKeys,
-  issueAppRuntimeToken,
-  issueAppToolToken,
-  verifyAppRuntimeToken,
-} from "../runtime/auth";
-import { canonicalizeScope, scopesSchema } from "../scope";
+import { appRuntimePublicKeys, issueAppRuntimeToken } from "../runtime/auth";
+import { scopeSchema, scopesSchema } from "../scope";
 
 /** Public routes must be dispatched before constructing the authenticated platform context. */
 export function handlePublicRuntimeRequest(request: Request): Response | undefined {
@@ -63,7 +58,26 @@ export const runtimeSession = protectedRouter
       }),
     }),
   )
-  .output(z.object({ body: z.object({ token: z.string(), expiresAt: z.number(), url: z.url() }) }))
+  .output(
+    z.object({
+      body: z.object({
+        token: z.string(),
+        expiresAt: z.number(),
+        url: z.url(),
+        toolUrl: z.url(),
+        identity: z.object({
+          subjectId: z.string().optional(),
+          installationId: z.string(),
+          appId: z.string(),
+          projectId: z.string(),
+          deploymentId: z.string(),
+          scope: scopeSchema,
+          toolUrl: z.url(),
+          expiresAt: z.number(),
+        }),
+      }),
+    }),
+  )
   .use(
     requireAppInScopes.adaptInput(({ params: { appId }, body: { scopes } }) => ({ appId, scopes })),
   )
@@ -92,7 +106,7 @@ export const runtimeSession = protectedRouter
     const url = new URL(`/p/${context.project.id}/a/${context.app.publicId}/rpc`, runtime);
     // Each app belongs to one installation scope. Resolve identity from the authorized
     // database record, never from browser input or the ordering of the viewer's scopes.
-    const session = await issueAppRuntimeToken({
+    const identity = {
       subjectId: input.body.subjectId,
       scope: context.app.scope,
       toolUrl: input.body.toolUrl,
@@ -102,8 +116,16 @@ export const runtimeSession = protectedRouter
       deploymentId: deployment.id,
       publicTeamId: context.organization.publicId,
       appPublicId: context.app.publicId,
-    });
-    return { body: { ...session, url: url.href } };
+    };
+    const session = await issueAppRuntimeToken(identity);
+    return {
+      body: {
+        ...session,
+        url: url.href,
+        toolUrl: identity.toolUrl,
+        identity: { ...identity, expiresAt: session.expiresAt },
+      },
+    };
   });
 
 // Trusted runtime metadata: return the authorized private R2 key without minting a download URL.
@@ -191,40 +213,4 @@ export function publishRuntimeMetadata(metadata: AppDeploymentMetadata, appPubli
       ),
     ),
   );
-}
-
-/** Exchange a verified runtime execution credential for one product tool credential. */
-export async function handleToolCredentialRequest(request: Request): Promise<Response | undefined> {
-  if (new URL(request.url).pathname !== "/api/platform/runtime/tools") return undefined;
-  const headers = { "cache-control": "no-store" };
-  if (request.method !== "POST")
-    return new Response("Method not allowed", { status: 405, headers });
-  try {
-    const authorization = request.headers.get("authorization");
-    if (!authorization?.startsWith("Bearer ")) throw new Error("Missing token");
-    const identity = await verifyAppRuntimeToken(authorization.slice(7));
-    const input = z
-      .strictObject({
-        path: z
-          .string()
-          .max(512)
-          .regex(/^[a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z][a-zA-Z0-9_]*)*$/u),
-      })
-      .parse(await request.json());
-    const app = await db.query.app.findFirst({
-      where: { id: identity.appId, projectId: identity.projectId },
-      with: { currentDeployment: true },
-    });
-    if (
-      !app ||
-      app.id !== identity.installationId ||
-      app.currentDeployment?.id !== identity.deploymentId ||
-      app.scopeKey !== canonicalizeScope(identity.scope).scopeKey
-    )
-      throw new Error("Installation unavailable");
-    const credential = await issueAppToolToken(identity, input.path);
-    return Response.json({ ...credential, url: identity.toolUrl, identity }, { headers });
-  } catch {
-    return new Response("Unauthorized", { status: 401, headers });
-  }
 }

@@ -136,10 +136,20 @@ export const readCustomer = action({
 });
 ```
 
-Server tool calls use authenticated HTTP. The trusted runtime exchanges its verified
-execution credential for a platform-signed tool JWT. Tool credentials last at most
-60 seconds and bind the installation, scope, subject, destination, and tool path.
-Their audience and purpose differ from runtime JWTs. The product verifies issuer,
-audience, signature, expiry, and scope before executing a server tool, then validates
-the output. Backend actions cannot invoke client tools or choose another verified
-principal.
+Server tool calls use authenticated HTTP with the same platform-signed app JWT
+used for the app backend. An app session lasts at most five minutes and binds the
+installation, scope, optional subject, deployment, runtime route identity, and
+product tool destination. It uses the `tailorkit-app` audience and `app` purpose.
+
+Backend actions send their verified execution JWT through the trusted runtime;
+app code never receives that runtime credential. App frontend callers obtain the
+same app session through the trusted sandbox bridge, sharing the backend session
+provider and principal-specific cache. There is no per-tool token or credential
+exchange. Renewing or changing principals replaces the shared session.
+
+The product verifies issuer, audience, purpose, signature, expiry, destination,
+and scope, then checks the installation and deployment using its project key.
+It authorizes and dispatches only declared server tools and validates both input
+and output. Product handlers should apply operation-specific authorization using
+`context.identity` and `context.scope`. Backend actions cannot invoke client tools
+or choose another verified principal.

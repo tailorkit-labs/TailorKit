@@ -229,7 +229,7 @@ export class AppInstallation extends DurableObject<Env> {
               lease,
               (tables) =>
                 Effect.runPromise(this.#queue.withPermits(1)(this.#refresh(tables, facet))),
-              { platformUrl: this.env.PLATFORM_URL, token },
+              { url: identity.toolUrl, token },
             );
             return abortable(
               facet.action(input, identity, capability, cancellationStream(lease.signal)),

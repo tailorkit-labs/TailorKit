@@ -1,7 +1,4 @@
-import {
-  handlePublicRuntimeRequest,
-  handleToolCredentialRequest,
-} from "@tailorkit/api-platform/routes/runtime";
+import { handlePublicRuntimeRequest } from "@tailorkit/api-platform/routes/runtime";
 import { onError } from "@orpc/server";
 import { createContext } from "@tailorkit/api-platform/context";
 import { platformRouter } from "@tailorkit/api-platform";
@@ -32,8 +29,7 @@ async function handle({ request }: { request: Request }) {
     "tailorkit.package": "apps-web",
   });
 
-  const publicResponse =
-    handlePublicRuntimeRequest(request) ?? (await handleToolCredentialRequest(request));
+  const publicResponse = handlePublicRuntimeRequest(request);
   if (publicResponse) return publicResponse;
 
   const context = await createContext({ request }).catch((error) => {
