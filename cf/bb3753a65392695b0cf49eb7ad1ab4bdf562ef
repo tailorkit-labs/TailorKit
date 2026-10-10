@@ -1,0 +1,19 @@
+apps/web/vite.config.ts
+  s_2e83fa8a199a81::t_cb648d06fee7c6 44-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cfbb3753a65392695b0cf49eb7ad1ab4bdf562ef",
+  "prompts": {},
+  "sessions": {
+    "s_2e83fa8a199a81": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a12487-4a0e-7072-b3eb-da4913c9f0a1",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
