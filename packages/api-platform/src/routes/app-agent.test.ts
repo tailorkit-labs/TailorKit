@@ -83,6 +83,10 @@ describe("platform app chat", () => {
     expect(events).toContainEqual({ type: "text-delta", id: "text-1", delta: "Hello" });
     expect(events.at(-1)).toEqual({ type: "finish" });
     const first = mocks.start.mock.lastCall![1][0];
+    expect(first).toMatchObject({
+      deployToken: input.body.deployToken,
+      platformUrl: "https://tailorkit.dev/api/platform",
+    });
     expect(first.hostUrl).toBe(input.body.hostUrl);
     expect(first.schema).toBeUndefined();
     expect(first.messages).toEqual([{ role: "user", content: [{ type: "text", text: "Build" }] }]);

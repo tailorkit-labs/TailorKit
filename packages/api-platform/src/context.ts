@@ -6,6 +6,7 @@ import { getStorage } from "@tailorkit/storage";
 import type { Storage } from "@tailorkit/storage";
 import { auth } from "@tailorkit/auth";
 import { db } from "@tailorkit/db";
+import { authenticateCliToken } from "./cli-token";
 import { initializeObservability, setSpanAttributes, withSpan } from "@tailorkit/observability";
 
 export interface Context {
@@ -14,6 +15,22 @@ export interface Context {
   storage: Storage;
   /** Internal metadata-only access; not a project host credential. */
   runtimeService?: boolean;
+  /** Present only for the dedicated CLI HTTP surface. */
+  cliToken?: Awaited<ReturnType<typeof authenticateCliToken>>;
+}
+
+export async function createCliContext({ request }: { request: Request }): Promise<Context> {
+  await initializeObservability("tailorkit-web");
+  const [scheme, secret] = request.headers.get("authorization")?.split(" ") ?? [];
+  if (scheme !== "Bearer" || !secret) throw new Error("Missing CLI deploy token");
+  const cliToken = await authenticateCliToken(secret);
+  const project = await db.query.project.findFirst({
+    where: { id: cliToken.projectId },
+    with: { organization: true },
+  });
+  const storage = getStorage();
+  if (!project?.organization || !storage) throw new Error("CLI project unavailable");
+  return { project, organization: project.organization, storage, cliToken };
 }
 
 export async function createContext({ request }: { request: Request }): Promise<Context> {

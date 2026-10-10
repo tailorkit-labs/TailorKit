@@ -27,6 +27,8 @@ import type {
   AppsRuntimeSessionResponses,
   AppsUpdateData,
   AppsUpdateResponses,
+  CliAppsCreateData,
+  CliAppsCreateResponses,
   CliAuthApproveData,
   CliAuthApproveResponses,
   CliAuthDenyData,
@@ -37,6 +39,12 @@ import type {
   CliAuthStartResponses,
   CliAuthVerifyTokenData,
   CliAuthVerifyTokenResponses,
+  CliDeploymentsCreateData,
+  CliDeploymentsCreateResponses,
+  CliDeploymentsPublishData,
+  CliDeploymentsPublishResponses,
+  CliVerifyData,
+  CliVerifyResponses,
   DeploymentsCreateData,
   DeploymentsCreateResponses,
   DeploymentsGetData,
@@ -76,6 +84,54 @@ export type Options<
    */
   meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
+
+export const cliVerify = <ThrowOnError extends boolean = false>(
+  options: Options<CliVerifyData, ThrowOnError>,
+): RequestResult<CliVerifyResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<CliVerifyResponses, unknown, ThrowOnError>({
+    url: "/cli/verify",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const cliAppsCreate = <ThrowOnError extends boolean = false>(
+  options: Options<CliAppsCreateData, ThrowOnError>,
+): RequestResult<CliAppsCreateResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<CliAppsCreateResponses, unknown, ThrowOnError>({
+    url: "/cli/apps",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const cliDeploymentsCreate = <ThrowOnError extends boolean = false>(
+  options: Options<CliDeploymentsCreateData, ThrowOnError>,
+): RequestResult<CliDeploymentsCreateResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<CliDeploymentsCreateResponses, unknown, ThrowOnError>({
+    url: "/cli/deployments",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const cliDeploymentsPublish = <ThrowOnError extends boolean = false>(
+  options: Options<CliDeploymentsPublishData, ThrowOnError>,
+): RequestResult<CliDeploymentsPublishResponses, unknown, ThrowOnError> =>
+  (options.client ?? client).post<CliDeploymentsPublishResponses, unknown, ThrowOnError>({
+    url: "/cli/deployments/{deploymentId}",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
 
 export const appAgentChat = <ThrowOnError extends boolean = false>(
   options: Options<AppAgentChatData, ThrowOnError, AppAgentChatResponse>,

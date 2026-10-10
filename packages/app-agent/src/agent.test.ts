@@ -35,6 +35,8 @@ vi.mock("workflow", () => ({
 const input = {
   appId: "app-123",
   hostUrl: "http://localhost:3000/api/tailorkit",
+  deployToken: "private-cli-token",
+  platformUrl: "https://tailorkit.dev/api/platform",
   model: "test-model",
   messages: [{ role: "user" as const, content: "Build my app" }],
 };
@@ -56,6 +58,7 @@ describe("app agent workflow", () => {
       timeout: 30 * 60_000,
     });
     expect(Object.keys(mocks.configure.mock.lastCall?.[0].tools)).toEqual([
+      "deploy",
       "read",
       "write",
       "edit",
@@ -65,10 +68,17 @@ describe("app agent workflow", () => {
       "ls",
     ]);
     expect(mocks.configure.mock.lastCall?.[0].toolsContext.write).toEqual({ sandboxName });
+    expect(mocks.configure.mock.lastCall?.[0].toolsContext.deploy).toEqual({
+      sandboxName,
+      appId: input.appId,
+      deployToken: input.deployToken,
+      platformUrl: input.platformUrl,
+    });
     expect(mocks.deleteSandbox).toHaveBeenCalledWith(sandboxName);
     expect(mocks.renewSandbox).not.toHaveBeenCalled();
     expect(mocks.writeAgentSchema).not.toHaveBeenCalled();
     const instructions = mocks.configure.mock.lastCall![0].instructions;
+    expect(instructions).not.toContain(input.deployToken);
     expect(instructions).toContain("--host 'http://localhost:3000/api/tailorkit'");
     expect(instructions).toContain("pnpm run generate in /workspace/app");
     expect(instructions).not.toContain("--schema");

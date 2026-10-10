@@ -134,6 +134,25 @@ it("opens login approval and resumes deploy with the selected config and working
   expect(mocks.outro).toHaveBeenCalledWith("Deployment published.");
 });
 
+it("disables interactive deployment fallbacks and forwards the selected app", async () => {
+  mocks.deploy.mockResolvedValue({
+    hostUrl: "https://host.example",
+    appId: "selected-app",
+    deploymentId: "deployment",
+    uploadedFiles: [],
+  });
+  await mocks.actions.get("deploy")?.({ cwd: "/app", appId: "selected-app", interactive: false });
+  expect(mocks.deploy).toHaveBeenCalledWith(
+    expect.objectContaining({
+      appId: "selected-app",
+      onLoginRequired: undefined,
+      onMissingAppId: undefined,
+      onTypecheckFailed: undefined,
+    }),
+  );
+  expect(mocks.login).not.toHaveBeenCalled();
+});
+
 it("preserves standalone login timeout and --no-open behavior", async () => {
   await mocks.actions.get("login")?.({ cwd: "/app", open: false, timeout: 60 });
 

@@ -47,7 +47,7 @@ export interface TailorKitConfig extends z.input<typeof tailorkitConfigSchema> {
     outDir?: string;
   };
   /**
-   * URL of the TailorKit host used for authentication, deployment, remote preview,
+   * URL of the TailorKit host used for login, remote preview,
    * and fetching the host schema for generated types. Required; has no default.
    */
   host: string;

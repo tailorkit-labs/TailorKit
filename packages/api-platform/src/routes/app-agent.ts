@@ -12,6 +12,7 @@ import {
 } from "ai";
 import { start } from "workflow/api";
 import { z } from "zod";
+import { env } from "#env";
 import { findAppInScopes, o, protectedRouter } from "../procedures";
 import { authenticateCli } from "../cli-token";
 import { canonicalizeScope } from "../scope";
@@ -70,6 +71,8 @@ const chat = protectedRouter
         appId: app.id,
         hostUrl: input.body.hostUrl,
         schema: input.body.schema,
+        deployToken: input.body.deployToken,
+        platformUrl: env.OPENAPI_SERVER_URL ?? "https://tailorkit.dev/api/platform",
         messages,
         model: APP_AGENT_MODEL,
       },

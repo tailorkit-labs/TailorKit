@@ -43,6 +43,10 @@ export const o = os.$context<Context>().meta(
 );
 
 export const protectedRouter = o
+  .use(async ({ context, next }) => {
+    if (context.cliToken) throw new ORPCError("FORBIDDEN");
+    return next();
+  })
   .use(devDelayMiddleware)
   .use(ratelimitMiddleware(rateLimiter, ({ context }) => context.organization.id));
 
