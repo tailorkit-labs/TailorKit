@@ -50,6 +50,8 @@ export interface TailorKitClientConfig {
   readonly contract: TailorKitContract;
   readonly assetsBaseUrl?: string | URL;
   readonly fetchClient?: TailorKitFetchClient;
+  /** Clear cached app data and sessions after changing the host auth session. */
+  readonly clearCache: () => void;
   readonly components: Record<string, unknown>;
   readonly theme: TailorKitTheme;
 }
@@ -93,12 +95,14 @@ export function createTailorKitClientConfig(options: {
           : undefined;
     if (typeof value !== "function") throw new Error(`Missing client tool "${path}"`);
   }
+  const fetchClient = createTailorKitFetchClient(options);
   return {
     tools: options.tools,
     baseUrl: options.baseUrl,
     contract: options.contract,
     assetsBaseUrl: options.assetsBaseUrl,
-    fetchClient: createTailorKitFetchClient(options),
+    fetchClient,
+    clearCache: () => fetchClient.clear(),
     components: options.components ?? {},
     theme: options.theme ?? {},
   };

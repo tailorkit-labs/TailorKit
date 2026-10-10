@@ -36,13 +36,13 @@ export function useAuthSession(): AuthState & {
 
   const signIn = useCallback(async (userId: string) => {
     const { user } = await signInDemoUser(userId);
-    tailor.fetchClient?.clear();
+    tailor.clearCache();
     setState({ data: user ? { user } : null, isPending: false });
   }, []);
 
   const signOut = useCallback(async () => {
     await signOutDemoUser();
-    tailor.fetchClient?.clear();
+    tailor.clearCache();
     setState({ data: null, isPending: false });
   }, []);
 

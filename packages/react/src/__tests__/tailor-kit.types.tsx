@@ -56,6 +56,7 @@ const contract = defineContract({
 });
 
 const tailor = createClient({ contract: contract, baseUrl: "http://runtime.test" });
+tailor.clearCache();
 const { Provider: TailorKitProvider, RenderSlot, useApps, useViews, useViewContext } = tailor;
 const app = { clientPath: "/apps/todo.js", id: "todo" };
 

@@ -564,7 +564,7 @@ The provider uses the client that created it and renders no DOM wrapper. It acce
 `children` and an optional `apps` list; you do not need to pass `client`.
 
 When signing in, signing out, or switching accounts, call
-`tailorKitClient.fetchClient?.clear()` after updating the host auth session and
+`tailorKitClient.clearCache()` after updating the host auth session and
 before refreshing or rendering the new auth state. This clears cached app data
 and bearer tokens and invalidates pending session responses. The provider does not
 detect changes to the host's auth cookie automatically.

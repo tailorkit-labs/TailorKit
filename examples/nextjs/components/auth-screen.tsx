@@ -17,7 +17,7 @@ export function AuthScreen() {
 
     try {
       await signInDemoUser(userId);
-      tailor.fetchClient?.clear();
+      tailor.clearCache();
       router.refresh();
     } finally {
       setPendingUserId(null);

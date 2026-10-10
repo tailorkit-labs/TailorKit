@@ -29,7 +29,7 @@ function TailorKitShellWithApps({ children, user }: { children: ReactNode; user:
 
   async function signOut() {
     await signOutDemoUser();
-    tailor.fetchClient?.clear();
+    tailor.clearCache();
     router.refresh();
   }
 
