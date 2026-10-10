@@ -1,0 +1,30 @@
+docs/installation.mdx
+  s_d6b6385c37a4c1::t_3a1ab53c2c357d 566-568,570-571
+  s_d6b6385c37a4c1::t_c18dde3fcf8e94 569
+examples/nextjs/components/auth-screen.tsx
+  s_d6b6385c37a4c1::t_3a1ab53c2c357d 9,20
+examples/nextjs/components/tailorkit-shell.tsx
+  s_d6b6385c37a4c1::t_3a1ab53c2c357d 15,32
+examples/tanstack-start/src/lib/auth-client.ts
+  s_d6b6385c37a4c1::t_3a1ab53c2c357d 4,39,45
+packages/client-core/src/client/endpoints.test.ts
+  s_d6b6385c37a4c1::t_c18dde3fcf8e94 109-113,129-130
+  s_d6b6385c37a4c1::t_3a1ab53c2c357d 85-108,114-115,131
+  s_d6b6385c37a4c1::t_c390c63d779a67 132-133,137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6d879144f9456084181d6f7de26ef5271df0a783",
+  "prompts": {},
+  "sessions": {
+    "s_d6b6385c37a4c1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1240c-0a82-7a62-bd01-9877a714fcc9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
