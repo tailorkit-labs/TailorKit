@@ -142,7 +142,7 @@ describe("agent command", () => {
   it("creates a named app when none exist without writing config", async () => {
     mocks.text.mockResolvedValueOnce("  New app  ");
     await runAgentCommand({ host });
-    expect(mocks.text).toHaveBeenCalledWith(expect.objectContaining({ defaultValue: "My app" }));
+    expect(mocks.text).toHaveBeenCalledWith(expect.objectContaining({ initialValue: "My app" }));
     const { validate } = mocks.text.mock.lastCall![0];
     expect(validate("  ")).toBe("Enter an app name.");
     expect(validate("New app")).toBeUndefined();

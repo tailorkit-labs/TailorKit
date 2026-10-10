@@ -48,7 +48,7 @@ async function chooseApp(client: TailorKitRouterClient): Promise<string | undefi
 
   const name = await text({
     message: "App name",
-    defaultValue: "My app",
+    initialValue: "My app",
     placeholder: "My app",
     validate: (value) => (value?.trim() ? undefined : "Enter an app name."),
   });
