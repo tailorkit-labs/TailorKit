@@ -19,22 +19,21 @@ Only one run can edit an app at a time; concurrent requests fail. Follow-ups
 reuse the Drive in a fresh sandbox. Preserve files, configuration, app identity,
 and unrelated behavior.
 
-For a new app, scaffold with the TailorKit CLI using the user's host API URL,
-usually ending in `/api/tailorkit`. Get the URL from the request or existing app
-configuration. Ask for it if missing; never invent a host or schema.
+For a new app, scaffold with the TailorKit CLI using the supplied host API URL,
+usually ending in `/api/tailorkit`. Follow the host and generation commands
+provided below; never invent a host or schema.
 
 For a fresh scaffold, prepare an isolated CLI installation under
 `/tmp/tailorkit-cli` with a `pnpm-workspace.yaml` containing
 `minimumReleaseAge: 4320` and exclusions only for `tailorkit` and
 `@tailorkit/*`. Install `@tailorkit/cli@latest` and `tailorkit@beta` there.
-Use `/tmp/tailorkit-cli/node_modules/.bin/tailorkit init /workspace --name app
---host <user-provided URL> --package-manager pnpm --lint --format --no-install`.
+Use the init command provided below.
 Before scaffolding, check whether `/workspace/app` exists. If so, inspect and
 preserve it; never overwrite it or change its host identity. Pin the generated
 app's SDK to the exact beta SDK version installed in the CLI environment, and
 write the same package release policy into `/workspace/app/pnpm-workspace.yaml`.
-Then run `pnpm install` and `pnpm run generate` in `/workspace/app` before
-implementing anything. Generation must succeed against the configured host;
+Then run `pnpm install` and the generate command provided below in `/workspace/app` before
+implementing anything. Generation must succeed using the supplied host contract;
 never implement against the scaffold's example bindings. Read the generated
 bindings before building the app.
 

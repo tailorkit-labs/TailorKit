@@ -1,9 +1,12 @@
-import { mkdir, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { isViewAncestor } from "@tailorkit/core/views";
 
 import { loadTailorKitConfig } from "@tailorkit/app/config/loader";
-import { SerializedComponent as SerializedComponentSchema } from "@tailorkit/core/spec";
+import {
+  SerializedComponent as SerializedComponentSchema,
+  TailorKitSchemaSpec,
+} from "@tailorkit/core/spec";
 
 interface JsonSchema {
   additionalProperties?: boolean | JsonSchema;
@@ -48,7 +51,7 @@ interface SerializedTool {
   output?: JsonSchema;
 }
 
-export interface TailorKitSchemaFile {
+export interface TailorKitSchemaFile extends Record<string, unknown> {
   tools?: SerializedTools;
   components?: Record<string, SerializedComponent>;
   views?: Record<string, SerializedView>;
@@ -58,6 +61,7 @@ export interface TailorKitSchemaFile {
 export interface GenerateTypesOptions {
   configPath?: string;
   schema?: TailorKitSchemaFile;
+  schemaPath?: string;
   cwd?: string;
   outFile?: string;
 }
@@ -568,9 +572,23 @@ const joinUrlPath = (baseUrl: string, pathName: string): string => {
   return url.toString();
 };
 
-export const fetchSchemaFromHost = async (host: string): Promise<TailorKitSchemaFile> => {
+export const readSchemaFile = async (schemaPath: string): Promise<TailorKitSchemaFile> => {
+  try {
+    return TailorKitSchemaSpec.parse(JSON.parse(await readFile(schemaPath, "utf-8")));
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Unable to read TailorKit schema from ${schemaPath}: ${detail}`, {
+      cause: error,
+    });
+  }
+};
+
+export const fetchSchemaFromHost = async (
+  host: string,
+  signal?: AbortSignal,
+): Promise<TailorKitSchemaFile> => {
   const schemaUrl = joinUrlPath(host, "schema");
-  const response = await fetch(schemaUrl);
+  const response = await fetch(schemaUrl, { signal });
 
   if (!response.ok) {
     throw new Error(`Unable to fetch TailorKit schema from ${schemaUrl}: ${response.statusText}`);
@@ -583,7 +601,11 @@ export const generateTypes = async (options: GenerateTypesOptions = {}): Promise
   const root = path.resolve(options.cwd ?? ".");
   const outPath = path.resolve(root, options.outFile ?? path.join("src", "tailorkit.gen.ts"));
   const loaded = await loadTailorKitConfig(options.configPath, root);
-  const schema = options.schema ?? (await fetchSchemaFromHost(loaded.config.host));
+  const schema =
+    options.schema ??
+    (options.schemaPath !== undefined
+      ? await readSchemaFile(path.resolve(root, options.schemaPath))
+      : await fetchSchemaFromHost(loaded.config.host));
 
   const serverEntry = path.resolve(loaded.root, loaded.config.server?.entry ?? "src/server.ts");
   const serverExists = await stat(serverEntry)

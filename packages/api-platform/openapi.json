@@ -24,6 +24,17 @@
                     "type": "string",
                     "minLength": 1
                   },
+                  "hostUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "schema": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  },
                   "messages": {
                     "minItems": 1,
                     "type": "array",
@@ -62,7 +73,7 @@
                     "minLength": 1
                   }
                 },
-                "required": ["appId", "messages", "deployToken"]
+                "required": ["appId", "hostUrl", "messages", "deployToken"]
               }
             }
           }

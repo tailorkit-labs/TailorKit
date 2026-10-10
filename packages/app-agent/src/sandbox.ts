@@ -1,12 +1,25 @@
 import { APIError, Drive, Sandbox } from "@vercel/sandbox";
 import { FatalError } from "workflow";
 
+export const agentSchemaPath = "/workspace/tailorkit.schema.json";
+
+export async function writeAgentSchema(sandboxName: string, schema: Record<string, unknown>) {
+  "use step";
+  const sandbox = await getSandbox(sandboxName);
+  await sandbox
+    .currentSession()
+    .writeFiles([{ path: agentSchemaPath, content: Buffer.from(JSON.stringify(schema), "utf-8") }]);
+}
+
 export const sandboxIdleTimeoutMs = 15 * 60_000;
 
 export async function prepareSandbox(driveName: string, sandboxName: string) {
   "use step";
   try {
-    const drive = await Drive.getOrCreate({ name: driveName });
+    const drive = await Drive.getOrCreate({
+      name: driveName,
+      maxSize: 5 * 1024 * 1024 * 1024, // 5 GiB
+    });
     if (drive.currentSandboxName && drive.currentSandboxName !== sandboxName) {
       throw new FatalError(
         "This app is already being edited. Retry after the active run finishes.",

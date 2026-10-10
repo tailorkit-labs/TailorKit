@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { APIError } from "@vercel/sandbox";
 import { FatalError } from "workflow";
-import { deleteSandbox, getSandbox, prepareSandbox, sandboxIdleTimeoutMs } from "./sandbox";
+import {
+  deleteSandbox,
+  getSandbox,
+  prepareSandbox,
+  sandboxIdleTimeoutMs,
+  writeAgentSchema,
+  agentSchemaPath,
+} from "./sandbox";
 
 const mocks = vi.hoisted(() => ({
   drive: vi.fn(),
@@ -9,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   getOrCreate: vi.fn(),
   delete: vi.fn(),
   extend: vi.fn(),
+  writeFiles: vi.fn(),
 }));
 vi.mock("workflow", () => ({ FatalError: class extends Error {} }));
 vi.mock("@vercel/sandbox", () => ({
@@ -34,7 +42,7 @@ beforeEach(() => {
     name: sandboxName,
     status: "running",
     expiresAt: new Date(sandboxIdleTimeoutMs),
-    currentSession: () => ({ extendTimeout: mocks.extend }),
+    currentSession: () => ({ extendTimeout: mocks.extend, writeFiles: mocks.writeFiles }),
     delete: mocks.delete,
   });
 });
@@ -51,6 +59,15 @@ describe("sandbox ownership and sliding timeout", () => {
       mounts: { "/workspace": expect.objectContaining({ name: "app-123" }) },
     });
     expect(mocks.delete).not.toHaveBeenCalled();
+  });
+
+  it("writes a supplied schema as JSON on the persistent Drive", async () => {
+    const schema = { version: 1, components: {}, views: {}, slots: {}, tools: {} };
+    await writeAgentSchema(sandboxName, schema);
+    expect(mocks.writeFiles).toHaveBeenCalledExactlyOnceWith([
+      { path: agentSchemaPath, content: Buffer.from(JSON.stringify(schema), "utf-8") },
+    ]);
+    expect(agentSchemaPath).toBe("/workspace/tailorkit.schema.json");
   });
 
   it("fails busy Drive requests immediately without touching the active writer", async () => {

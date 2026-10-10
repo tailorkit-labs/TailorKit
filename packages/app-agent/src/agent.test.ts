@@ -4,6 +4,7 @@ import { appAgent } from "./agent";
 const mocks = vi.hoisted(() => ({
   configure: vi.fn(),
   prepareSandbox: vi.fn(),
+  writeAgentSchema: vi.fn(),
   renewSandbox: vi.fn(),
   deleteSandbox: vi.fn(),
   sleep: vi.fn(),
@@ -12,6 +13,8 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("./sandbox", () => ({
   prepareSandbox: mocks.prepareSandbox,
+  writeAgentSchema: mocks.writeAgentSchema,
+  agentSchemaPath: "/workspace/tailorkit.schema.json",
   renewSandbox: mocks.renewSandbox,
   deleteSandbox: mocks.deleteSandbox,
 }));
@@ -31,6 +34,7 @@ vi.mock("workflow", () => ({
 
 const input = {
   appId: "app-123",
+  hostUrl: "http://localhost:3000/api/tailorkit",
   model: "test-model",
   messages: [{ role: "user" as const, content: "Build my app" }],
 };
@@ -63,6 +67,34 @@ describe("app agent workflow", () => {
     expect(mocks.configure.mock.lastCall?.[0].toolsContext.write).toEqual({ sandboxName });
     expect(mocks.deleteSandbox).toHaveBeenCalledWith(sandboxName);
     expect(mocks.renewSandbox).not.toHaveBeenCalled();
+    expect(mocks.writeAgentSchema).not.toHaveBeenCalled();
+    const instructions = mocks.configure.mock.lastCall![0].instructions;
+    expect(instructions).toContain("--host 'http://localhost:3000/api/tailorkit'");
+    expect(instructions).toContain("pnpm run generate in /workspace/app");
+    expect(instructions).not.toContain("--schema");
+    expect(instructions).not.toContain("/workspace/tailorkit.schema.json");
+  });
+
+  it("writes each supplied schema before the model starts and uses it for init and generate", async () => {
+    const schema = { version: 1, components: {}, views: {}, slots: {}, tools: {} };
+    mocks.configure.mockImplementation(() => {
+      expect(mocks.writeAgentSchema).toHaveBeenLastCalledWith(sandboxName, schema);
+    });
+    await appAgent({ ...input, schema });
+    expect(mocks.writeAgentSchema).toHaveBeenCalledOnce();
+    const instructions = mocks.configure.mock.lastCall![0].instructions;
+    expect(instructions).toContain(
+      "--host 'http://localhost:3000/api/tailorkit' --schema /workspace/tailorkit.schema.json",
+    );
+    expect(instructions).toContain("pnpm run generate --schema /workspace/tailorkit.schema.json");
+    expect(instructions).toContain("including subsequent regeneration");
+  });
+
+  it("stops and cleans up when writing the schema fails", async () => {
+    mocks.writeAgentSchema.mockRejectedValueOnce(new Error("Schema write failed"));
+    await expect(appAgent({ ...input, schema: {} })).rejects.toThrow("Schema write failed");
+    expect(mocks.configure).not.toHaveBeenCalled();
+    expect(mocks.deleteSandbox).toHaveBeenCalledWith(sandboxName);
   });
 
   it("renews during a long model call and deletes only after that call settles", async () => {

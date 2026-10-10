@@ -7,6 +7,8 @@ const mocks = vi.hoisted(() => ({
   login: vi.fn(),
   deploy: vi.fn(),
   agent: vi.fn(),
+  init: vi.fn(),
+  generate: vi.fn(),
   logout: vi.fn(),
   whoami: vi.fn(),
   open: vi.fn(),
@@ -51,8 +53,8 @@ vi.mock("./auth", () => ({
 }));
 vi.mock("./deploy", () => ({ runDeploy: mocks.deploy }));
 vi.mock("./agent", () => ({ runAgentCommand: mocks.agent }));
-vi.mock("./generator/types", () => ({ generateTypes: vi.fn() }));
-vi.mock("./init", () => ({ runInit: vi.fn() }));
+vi.mock("./generator/types", () => ({ generateTypes: mocks.generate }));
+vi.mock("./init", () => ({ runInit: mocks.init }));
 vi.mock("./preview", () => ({ runPreview: vi.fn(), toPreviewOptions: vi.fn() }));
 vi.mock("./utils/open-browser", () => ({ openUrlInBrowser: mocks.open }));
 
@@ -68,6 +70,47 @@ beforeEach(() => {
     });
     return { hostUrl: "https://host.example" };
   });
+});
+
+it("passes --schema through generate with its working directory and config", async () => {
+  mocks.generate.mockResolvedValue("/app/src/host.ts");
+  await mocks.actions.get("generate")?.({
+    cwd: "/app",
+    config: "custom.config.ts",
+    schema: "../host.json",
+    out: "src/host.ts",
+  });
+  expect(mocks.generate).toHaveBeenCalledWith({
+    cwd: "/app",
+    configPath: "custom.config.ts",
+    schemaPath: "../host.json",
+    outFile: "src/host.ts",
+  });
+});
+
+it("passes --schema through init while retaining the required host", async () => {
+  mocks.init.mockResolvedValue("/workspace/app");
+  const init = mocks.actions.get("init [directory]") as unknown as (
+    directory: string,
+    options: Record<string, unknown>,
+  ) => Promise<void>;
+  await init("/workspace", {
+    cwd: "/tmp",
+    name: "app",
+    host: "http://localhost:3000/api/tailorkit",
+    schema: "host.json",
+    install: false,
+  });
+  expect(mocks.init).toHaveBeenCalledWith(
+    expect.objectContaining({
+      cwd: "/tmp",
+      directory: "/workspace",
+      name: "app",
+      host: "http://localhost:3000/api/tailorkit",
+      schemaPath: "host.json",
+      install: false,
+    }),
+  );
 });
 
 it("opens login approval and resumes deploy with the selected config and working directory", async () => {

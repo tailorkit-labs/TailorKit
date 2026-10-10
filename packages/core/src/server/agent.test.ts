@@ -12,6 +12,7 @@ import { createTailorKitServer } from "./handler";
 const messages = [
   { id: "user-1", role: "user" as const, parts: [{ type: "text" as const, text: "Build an app" }] },
 ];
+const hostUrl = "http://localhost:3000/api/tailorkit";
 const appId = "a3e7568a-c4f7-4ac0-8c35-71ff0f4cd002";
 const events: AgentChunk[] = [
   { type: "start", messageId: "answer" },
@@ -75,18 +76,36 @@ describe("host agent relay", () => {
   it("verifies CLI auth, uses the host project key, and round trips streamed events", async () => {
     const { client, requests } = setup();
     const received = [];
-    for await (const event of await client.appAgent.chat({ appId, messages })) received.push(event);
+    for await (const event of await client.appAgent.chat({ appId, hostUrl, messages }))
+      received.push(event);
     expect(received).toEqual(events);
     for (const request of requests)
       expect(request.headers.get("authorization")).toBe("Bearer host-project-key");
     const chat = requests.find((request) => request.url.endsWith("/chat"))!;
-    expect(await chat.json()).toEqual({ deployToken: "cli-token", appId, messages });
+    expect(await chat.json()).toEqual({ deployToken: "cli-token", appId, hostUrl, messages });
     expect(requests.filter((request) => request.url.endsWith("/verify-token"))).toHaveLength(1);
+  });
+
+  it("forwards a supplied local schema without fetching from the host", async () => {
+    const { client, requests } = setup();
+    const schema = { version: 1, components: {}, views: {}, slots: {}, tools: {} };
+    for await (const _ of await client.appAgent.chat({ appId, hostUrl, schema, messages })) {
+      /* consume */
+    }
+    const chat = requests.find((request) => request.url.endsWith("/chat"))!;
+    expect(await chat.json()).toEqual({
+      deployToken: "cli-token",
+      appId,
+      hostUrl,
+      schema,
+      messages,
+    });
+    expect(requests.some((request) => request.url.endsWith("/schema"))).toBe(false);
   });
 
   it("assembles AI SDK messages across the real oRPC and OpenAPI transports", async () => {
     const { client } = setup();
-    const chunks = await client.appAgent.chat({ appId, messages });
+    const chunks = await client.appAgent.chat({ appId, hostUrl, messages });
     let latest;
     for await (const message of readUIMessageStream({
       stream: asyncIteratorToUnproxiedDataStream(chunks),
@@ -112,7 +131,7 @@ describe("host agent relay", () => {
       fetch: async (input, init) =>
         server.handler(new Request(input, init), { authenticate: () => null }),
     });
-    await expect(client.appAgent.chat({ appId, messages })).rejects.toMatchObject({
+    await expect(client.appAgent.chat({ appId, hostUrl, messages })).rejects.toMatchObject({
       code: "UNAUTHORIZED",
     });
     expect(requests).toHaveLength(0);
@@ -120,7 +139,7 @@ describe("host agent relay", () => {
 
   it("rejects a token for an undeclared host scope", async () => {
     const { client } = setup({ scopeName: "forged" });
-    await expect(client.appAgent.chat({ appId, messages })).rejects.toMatchObject({
+    await expect(client.appAgent.chat({ appId, hostUrl, messages })).rejects.toMatchObject({
       code: "UNAUTHORIZED",
     });
   });
@@ -129,7 +148,7 @@ describe("host agent relay", () => {
     const { client, requests } = setup({ events: events.slice(0, 2) });
     await expect(
       (async () => {
-        for await (const _event of await client.appAgent.chat({ appId, messages })) {
+        for await (const _event of await client.appAgent.chat({ appId, hostUrl, messages })) {
           /* consume */
         }
       })(),
@@ -141,7 +160,7 @@ describe("host agent relay", () => {
     const { client, requests } = setup({ status: 401 });
     await expect(
       (async () => {
-        for await (const _event of await client.appAgent.chat({ appId, messages })) {
+        for await (const _event of await client.appAgent.chat({ appId, hostUrl, messages })) {
           /* consume */
         }
       })(),

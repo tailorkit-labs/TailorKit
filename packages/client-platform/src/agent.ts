@@ -23,5 +23,7 @@ export const agentMessagesSchema = z
 
 export const agentChatSchema = z.object({
   appId: z.string().min(1),
+  hostUrl: z.url({ protocol: /^https?$/u }),
+  schema: z.record(z.string(), z.unknown()).optional(),
   messages: agentMessagesSchema,
 });

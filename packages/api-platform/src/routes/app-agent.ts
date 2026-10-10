@@ -39,6 +39,8 @@ const agentMessagesSchema = z
 
 const agentChatSchema = z.object({
   appId: z.string().min(1),
+  hostUrl: z.url({ protocol: /^https?$/u }),
+  schema: z.record(z.string(), z.unknown()).optional(),
   messages: agentMessagesSchema,
 });
 
@@ -66,6 +68,8 @@ const chat = protectedRouter
     const run = await start(appAgent, [
       {
         appId: app.id,
+        hostUrl: input.body.hostUrl,
+        schema: input.body.schema,
         messages,
         model: APP_AGENT_MODEL,
       },
