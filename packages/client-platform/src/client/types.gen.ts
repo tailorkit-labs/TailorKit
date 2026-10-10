@@ -14,6 +14,282 @@ export type Schema0 =
       [key: string]: Schema0;
     };
 
+export type CliVerifyData = {
+  body: {
+    [key: string]: never;
+  };
+  path?: never;
+  query?: never;
+  url: "/cli/verify";
+};
+
+export type CliVerifyResponses = {
+  /**
+   * OK
+   */
+  200: {
+    projectId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
+  };
+};
+
+export type CliVerifyResponse = CliVerifyResponses[keyof CliVerifyResponses];
+
+export type CliAppsCreateData = {
+  body: {
+    name: string;
+    description: string | null;
+  };
+  path?: never;
+  query?: never;
+  url: "/cli/apps";
+};
+
+export type CliAppsCreateResponses = {
+  /**
+   * OK
+   */
+  200: {
+    id: string;
+    publicId: string;
+    projectId: string;
+    scope: {
+      name: string;
+      value: {
+        [key: string]: Schema0;
+      };
+    };
+    name: string;
+    description: string | null;
+    currentDeploymentId: string | null;
+    createdAt: string;
+    updatedAt: string;
+    currentDeployment: {
+      id: string;
+      publicId: string;
+      appId: string;
+      status: "uploading" | "deploying" | "verifying" | "published";
+      clientEntryFileId: string | null;
+      logoLightFileId: string | null;
+      logoDarkFileId: string | null;
+      views: Array<{
+        slot: string;
+        path: string;
+        instances?: true;
+        disabled?: true;
+      }>;
+      logoLightPath: string | null;
+      logoDarkPath: string | null;
+      createdAt: string;
+      updatedAt: string;
+    } | null;
+    views: Array<{
+      slot: string;
+      path: string;
+      instances?: true;
+      disabled?: true;
+    }>;
+    clientPath?: string;
+    logoPaths?: {
+      dark?: string;
+      light?: string;
+    };
+  };
+};
+
+export type CliAppsCreateResponse = CliAppsCreateResponses[keyof CliAppsCreateResponses];
+
+export type CliDeploymentsCreateData = {
+  body: {
+    appId: string;
+    assets: [
+      {
+        checksum: string;
+        contentLength: number;
+        contentType: "application/javascript";
+        encoding: "utf-8" | "gzip";
+        objectKey: "client.js";
+      },
+    ];
+    server?: {
+      checksum: string;
+      contentLength: number;
+      contentType: "application/javascript";
+      encoding: "utf-8" | "gzip";
+      objectKey: "server.js";
+    };
+    logos?: {
+      dark?: {
+        checksum: string;
+        contentLength: number;
+        contentType: "image/svg+xml" | "image/png" | "image/webp";
+      };
+      light?: {
+        checksum: string;
+        contentLength: number;
+        contentType: "image/svg+xml" | "image/png" | "image/webp";
+      };
+    };
+    views?: Array<{
+      slot: string;
+      path: string;
+      instances?: true;
+      disabled?: true;
+    }>;
+  };
+  path?: never;
+  query?: never;
+  url: "/cli/deployments";
+};
+
+export type CliDeploymentsCreateResponses = {
+  /**
+   * OK
+   */
+  200: {
+    assets: Array<{
+      file: {
+        id: string;
+        appDeploymentId: string;
+        objectKey: string;
+        contentType: "application/javascript" | "image/svg+xml" | "image/png" | "image/webp";
+        encoding: "utf-8" | "gzip" | null;
+        contentLength: number;
+        checksum: string | null;
+        status: "uploading" | "verifying" | "verified" | "failed";
+        createdAt: string;
+        updatedAt: string;
+      };
+      headers?: {
+        [key: string]: string;
+      };
+      uploadUrl: string;
+    }>;
+    server?: {
+      file: {
+        id: string;
+        appDeploymentId: string;
+        objectKey: string;
+        contentType: "application/javascript" | "image/svg+xml" | "image/png" | "image/webp";
+        encoding: "utf-8" | "gzip" | null;
+        contentLength: number;
+        checksum: string | null;
+        status: "uploading" | "verifying" | "verified" | "failed";
+        createdAt: string;
+        updatedAt: string;
+      };
+      headers?: {
+        [key: string]: string;
+      };
+      uploadUrl: string;
+    };
+    deployment: {
+      id: string;
+      publicId: string;
+      appId: string;
+      status: "uploading" | "deploying" | "verifying" | "published";
+      clientEntryFileId: string | null;
+      logoLightFileId: string | null;
+      logoDarkFileId: string | null;
+      views: Array<{
+        slot: string;
+        path: string;
+        instances?: true;
+        disabled?: true;
+      }>;
+      logoLightPath: string | null;
+      logoDarkPath: string | null;
+      createdAt: string;
+      updatedAt: string;
+    };
+    logos?: {
+      dark?: {
+        file: {
+          id: string;
+          appDeploymentId: string;
+          objectKey: string;
+          contentType: "image/svg+xml" | "image/png" | "image/webp";
+          encoding: "utf-8" | "gzip" | null;
+          contentLength: number;
+          checksum: string | null;
+          status: "uploading" | "verifying" | "verified" | "failed";
+          createdAt: string;
+          updatedAt: string;
+        };
+        headers?: {
+          [key: string]: string;
+        };
+        uploadUrl?: string;
+      };
+      light?: {
+        file: {
+          id: string;
+          appDeploymentId: string;
+          objectKey: string;
+          contentType: "image/svg+xml" | "image/png" | "image/webp";
+          encoding: "utf-8" | "gzip" | null;
+          contentLength: number;
+          checksum: string | null;
+          status: "uploading" | "verifying" | "verified" | "failed";
+          createdAt: string;
+          updatedAt: string;
+        };
+        headers?: {
+          [key: string]: string;
+        };
+        uploadUrl?: string;
+      };
+    };
+  };
+};
+
+export type CliDeploymentsCreateResponse =
+  CliDeploymentsCreateResponses[keyof CliDeploymentsCreateResponses];
+
+export type CliDeploymentsPublishData = {
+  body: {
+    rollout?: boolean;
+  };
+  path: {
+    deploymentId: string;
+  };
+  query?: never;
+  url: "/cli/deployments/{deploymentId}";
+};
+
+export type CliDeploymentsPublishResponses = {
+  /**
+   * OK
+   */
+  200: {
+    id: string;
+    publicId: string;
+    appId: string;
+    status: "uploading" | "deploying" | "verifying" | "published";
+    clientEntryFileId: string | null;
+    logoLightFileId: string | null;
+    logoDarkFileId: string | null;
+    views: Array<{
+      slot: string;
+      path: string;
+      instances?: true;
+      disabled?: true;
+    }>;
+    logoLightPath: string | null;
+    logoDarkPath: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+export type CliDeploymentsPublishResponse =
+  CliDeploymentsPublishResponses[keyof CliDeploymentsPublishResponses];
+
 export type AppAgentChatData = {
   body: {
     appId: string;

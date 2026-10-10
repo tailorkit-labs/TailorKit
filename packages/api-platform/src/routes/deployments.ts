@@ -68,7 +68,7 @@ const createDeploymentLogoInput = z.object({
   contentType: logoContentType,
 });
 
-const createDeploymentInput = z
+export const createDeploymentInput = z
   .object({
     appId: z.string(),
     assets: z.tuple([createDeploymentAssetInput]),
@@ -102,6 +102,15 @@ const deploymentLogoUpload = deploymentAssetUpload.extend({
 const deploymentLogoUploads = z.object({
   dark: deploymentLogoUpload.optional(),
   light: deploymentLogoUpload.optional(),
+});
+
+export const createDeploymentOutput = z.object({
+  body: z.object({
+    assets: z.array(deploymentAssetUpload),
+    server: deploymentAssetUpload.optional(),
+    deployment: AppDeployment,
+    logos: deploymentLogoUploads.optional(),
+  }),
 });
 
 function isNotFound(error: unknown) {
@@ -342,16 +351,7 @@ const createAppDeployment = protectedRouter
       body: createDeploymentInput,
     }),
   )
-  .output(
-    z.object({
-      body: z.object({
-        assets: z.array(deploymentAssetUpload),
-        server: deploymentAssetUpload.optional(),
-        deployment: AppDeployment,
-        logos: deploymentLogoUploads.optional(),
-      }),
-    }),
-  )
+  .output(createDeploymentOutput)
   .use(requireApp.adaptInput(({ body: { appId, scope } }) => ({ appId, scope })))
   .handler(async ({ context, input }) => {
     const deploymentId = crypto.randomUUID();

@@ -2,6 +2,7 @@ import { WorkflowAgent, type ModelCallStreamPart } from "@ai-sdk/workflow";
 import { stepCountIs, type ModelMessage } from "ai";
 import { getWorkflowMetadata, getWritable, sleep } from "workflow";
 import { bashTool, editTool, globTool, grepTool, lsTool, readTool, writeTool } from "./tools";
+import { deployTool } from "./tools/deploy";
 import {
   agentSchemaPath,
   deleteSandbox,
@@ -19,6 +20,9 @@ export interface AppAgentInput {
   hostUrl: string;
   /** Optional serialized host schema for generation without contacting the host. */
   schema?: Record<string, unknown>;
+  /** Approved CLI credential; supplied only to the deployment tool. */
+  deployToken: string;
+  platformUrl: string;
   messages: ModelMessage[];
   /** Serializable AI Gateway model ID. */
   model: string;
@@ -31,7 +35,15 @@ async function keepSandboxAlive(sandboxName: string, finished: Promise<boolean>)
 }
 
 /** One editing turn. The Drive's exclusive mount rejects concurrent writers. */
-export async function appAgent({ messages, model, appId, hostUrl, schema }: AppAgentInput) {
+export async function appAgent({
+  messages,
+  model,
+  appId,
+  hostUrl,
+  schema,
+  deployToken,
+  platformUrl,
+}: AppAgentInput) {
   "use workflow";
   const sandboxName = `app-agent-${getWorkflowMetadata().workflowRunId}`;
 
@@ -52,6 +64,7 @@ export async function appAgent({ messages, model, appId, hostUrl, schema }: AppA
       model,
       instructions: `${instructions.trim()}\n\n## Host and generation commands\n\n${hostInstructions}`,
       tools: {
+        deploy: deployTool,
         read: readTool,
         write: writeTool,
         edit: editTool,
@@ -61,6 +74,7 @@ export async function appAgent({ messages, model, appId, hostUrl, schema }: AppA
         ls: lsTool,
       },
       toolsContext: {
+        deploy: { ...context, appId, deployToken, platformUrl },
         read: context,
         write: context,
         edit: context,

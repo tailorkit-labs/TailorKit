@@ -50,6 +50,8 @@ describe("auth store", () => {
 
   afterEach(async () => {
     vi.useRealTimers();
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
     vi.doUnmock("node:os");
 
     await Promise.all(
@@ -57,6 +59,60 @@ describe("auth store", () => {
         .splice(0)
         .map((directory) => rm(directory, { force: true, recursive: true })),
     );
+  });
+
+  it("verifies the existing login directly with the platform when the host is offline", async () => {
+    const home = await createTemporaryHome();
+    const { runDeployWhoami } = await loadAuthModule(home);
+    const host = "http://localhost:1/api/tailorkit";
+    await writeAuthStoreFixture(home, { hosts: { [host]: { deployToken: "approved-token" } } });
+    const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
+      Response.json({
+        projectId: "project-one",
+        scope: { name: "user", value: { userId: "user-one" } },
+      }),
+    );
+    await expect(runDeployWhoami({ host })).resolves.toMatchObject({ hostUrl: host });
+    const request = fetch.mock.calls[0]![0] as Request;
+    expect(request.url).toBe("https://tailorkit.dev/api/platform/cli/verify");
+    expect(request.headers.get("authorization")).toBe("Bearer approved-token");
+    expect(createTailorKitClient).not.toHaveBeenCalled();
+  });
+
+  it("uses a headless token without reading or writing the auth store", async () => {
+    const home = await createTemporaryHome();
+    const { runDeployWhoami } = await loadAuthModule(home);
+    vi.stubEnv("TAILORKIT_DEPLOY_TOKEN", "headless-token");
+    vi.stubEnv("TAILORKIT_PLATFORM_URL", "https://platform.test/api/platform");
+    await writeAuthStoreFixture(home, "invalid store");
+    const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
+      Response.json({
+        projectId: "project-one",
+        scope: { name: "user", value: { userId: "user-one" } },
+      }),
+    );
+    await runDeployWhoami({ host: "http://localhost:1/api/tailorkit" });
+    const request = fetch.mock.calls[0]![0] as Request;
+    expect(request.url).toBe("https://platform.test/api/platform/cli/verify");
+    expect(request.headers.get("authorization")).toBe("Bearer headless-token");
+    expect(await readFile(authStorePath(home), "utf-8")).toBe('"invalid store"');
+  });
+
+  it("reports expired platform credentials as requiring login", async () => {
+    const { runDeployWhoami, NotLoggedInError } = await loadAuthModule(await createTemporaryHome());
+    vi.stubEnv("TAILORKIT_DEPLOY_TOKEN", "expired-token");
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
+      Response.json(
+        {
+          code: "UNAUTHORIZED",
+          message: "Invalid CLI deploy token.",
+        },
+        { status: 401 },
+      ),
+    );
+    await expect(
+      runDeployWhoami({ host: "http://localhost:1/api/tailorkit" }),
+    ).rejects.toBeInstanceOf(NotLoggedInError);
   });
 
   it("stores and reads deploy tokens by host", async () => {

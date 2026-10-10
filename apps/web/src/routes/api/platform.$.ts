@@ -1,6 +1,6 @@
 import { handlePublicRuntimeRequest } from "@tailorkit/api-platform/routes/runtime";
-import { onError } from "@orpc/server";
-import { createContext } from "@tailorkit/api-platform/context";
+import { onError, ORPCError } from "@orpc/server";
+import { createCliContext, createContext } from "@tailorkit/api-platform/context";
 import { platformRouter } from "@tailorkit/api-platform";
 import { RateLimitHandlerPlugin } from "@tailorkit/api-utils/rate-limiting";
 import { createFileRoute } from "@tanstack/react-router";
@@ -22,6 +22,14 @@ const handler = new OpenAPIHandler(platformRouter, {
   ],
 });
 
+// CLI credentials must never reach the host's project-key authenticated routes.
+const cliHandler = new OpenAPIHandler(
+  { cli: platformRouter.cli },
+  {
+    plugins: [new RateLimitHandlerPlugin()],
+  },
+);
+
 async function handle({ request }: { request: Request }) {
   await initializeObservability("tailorkit-web");
   setSpanAttributes({
@@ -32,13 +40,27 @@ async function handle({ request }: { request: Request }) {
   const publicResponse = handlePublicRuntimeRequest(request);
   if (publicResponse) return publicResponse;
 
-  const context = await createContext({ request }).catch((error) => {
-    recordException(error, { "tailorkit.adapter": "orpc-openapi" });
-    console.error("OpenAPI authorization failed", sanitizeErrorForLog(error));
-    throw new Response("Unauthorized", { status: 401 });
-  });
+  const isCli = new URL(request.url).pathname.startsWith("/api/platform/cli/");
+  const context = await (isCli ? createCliContext({ request }) : createContext({ request })).catch(
+    (error) => {
+      recordException(error, { "tailorkit.adapter": "orpc-openapi" });
+      console.error("OpenAPI authorization failed", sanitizeErrorForLog(error));
+      if (isCli) {
+        throw Response.json(
+          {
+            code: error instanceof ORPCError ? error.code : "UNAUTHORIZED",
+            message: error instanceof ORPCError ? error.message : "Invalid CLI deploy token.",
+          },
+          {
+            status: error instanceof ORPCError && error.code === "SERVICE_UNAVAILABLE" ? 503 : 401,
+          },
+        );
+      }
+      throw new Response("Unauthorized", { status: 401 });
+    },
+  );
 
-  const rpcResult = await handler.handle(request, {
+  const rpcResult = await (isCli ? cliHandler : handler).handle(request, {
     context,
     prefix: "/api/platform",
   });

@@ -5,6 +5,7 @@ import { loadTailorKitConfig } from "@tailorkit/app/config/loader";
 import { createTailorKitClient } from "@tailorkit/core/server";
 import { z } from "zod";
 import { normalizeHostUrl } from "./utils/url";
+import { createDeploymentClient } from "./deployment-client";
 
 interface AuthOptions {
   host?: string;
@@ -188,6 +189,29 @@ export const removeDeployToken = async (hostUrl: string): Promise<boolean> => {
 export const getDeployToken = async (hostUrl: string): Promise<StoredHostAuth | undefined> => {
   const store = await readAuthStore();
   return store.hosts?.[hostUrl];
+};
+
+/** Environment credentials are used for headless deploys and never saved to disk. */
+export const getDeploymentToken = async (hostUrl: string): Promise<StoredHostAuth | undefined> =>
+  process.env.TAILORKIT_DEPLOY_TOKEN
+    ? { deployToken: process.env.TAILORKIT_DEPLOY_TOKEN }
+    : getDeployToken(hostUrl);
+
+export const runDeployWhoami = async (options: AuthOptions) => {
+  const hostUrl = await resolveHostUrl(options);
+  const auth = await getDeploymentToken(hostUrl);
+  if (!auth) throw new NotLoggedInError(hostUrl);
+  try {
+    const result = await createDeploymentClient(auth.deployToken).verify();
+    const identity = "data" in result ? result.data : result;
+    if (!identity) throw new NotLoggedInError(hostUrl);
+    return { hostUrl, scope: identity.scope };
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "UNAUTHORIZED") {
+      throw new NotLoggedInError(hostUrl);
+    }
+    throw error;
+  }
 };
 
 export const runLogin = async (

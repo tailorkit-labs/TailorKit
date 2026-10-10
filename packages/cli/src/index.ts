@@ -158,6 +158,11 @@ cli
 
 cli
   .command("deploy", "Build and deploy the TailorKit app")
+  .option("--app-id <id>", "Deploy to this existing app")
+  .option(
+    "--no-interactive",
+    "Fail instead of prompting for login, app creation, or type check overrides",
+  )
   .option("--cwd <path>", "Working directory", { default: "." })
   .option("--config <path>", "Path to tailorkit config")
   .option("--out-dir <path>", "Build output directory")
@@ -168,6 +173,7 @@ cli
     try {
       deploySpinner.start("Building and deploying app");
       const result = await runDeploy({
+        appId: options.appId as string | undefined,
         configPath: options.config as string | undefined,
         cwd: String(options.cwd ?? "."),
         mode: options.mode as string | undefined,
@@ -228,6 +234,9 @@ cli
 
           return shouldUpload === true;
         },
+        ...(options.interactive === false
+          ? { onLoginRequired: undefined, onMissingAppId: undefined, onTypecheckFailed: undefined }
+          : {}),
         outDir: options.outDir as string | undefined,
       });
       deploySpinner.stop("Deployed app.");

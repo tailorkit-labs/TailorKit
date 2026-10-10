@@ -32,11 +32,11 @@ vi.mock("@tailorkit/app/builder", () => ({
   tailorkitUploadManifestSchema,
   getClientSourceFiles,
 }));
-vi.mock("@tailorkit/core/server", () => ({ createTailorKitClient: mocks.client }));
+vi.mock("./deployment-client", () => ({ createDeploymentClient: mocks.client }));
 vi.mock("./auth", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./auth")>()),
-  getDeployToken: mocks.token,
-  runWhoami: mocks.whoami,
+  getDeploymentToken: mocks.token,
+  runDeployWhoami: mocks.whoami,
 }));
 const { runDeploy } = await import("./deploy");
 let root: string;
@@ -76,8 +76,30 @@ beforeEach(async () => {
   mocks.publish.mockResolvedValue({ id: "deployment", status: "published" });
 });
 afterEach(async () => {
+  vi.unstubAllEnvs();
   vi.restoreAllMocks();
   await rm(root, { recursive: true, force: true });
+});
+
+it("pins an explicit existing app instead of using or replacing the config's app identity", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
+  await runDeploy({ cwd: root, appId: "selected-app" });
+  expect(mocks.create.mock.calls[0]![0].appId).toBe("selected-app");
+  mocks.create.mockRejectedValue({ code: "NOT_FOUND", message: "App not found." });
+  const onMissingAppId = vi.fn();
+  await expect(runDeploy({ cwd: root, appId: "selected-app", onMissingAppId })).rejects.toThrow(
+    "requested deployment app was not found",
+  );
+  expect(onMissingAppId).not.toHaveBeenCalled();
+});
+
+it("does not start browser login for an expired headless token", async () => {
+  vi.stubEnv("TAILORKIT_DEPLOY_TOKEN", "expired-token");
+  mocks.whoami.mockRejectedValue(new NotLoggedInError("https://host.example"));
+  const onLoginRequired = vi.fn();
+  await expect(runDeploy({ cwd: root, onLoginRequired })).rejects.toThrow("Not logged in");
+  expect(onLoginRequired).not.toHaveBeenCalled();
+  expect(mocks.build).not.toHaveBeenCalled();
 });
 
 it("uploads gzip server and client code with metadata matching the stored bytes", async () => {
@@ -295,6 +317,7 @@ it.each(["missing", "expired"])(
       expect(mocks.build).not.toHaveBeenCalled();
       expect(mocks.create).not.toHaveBeenCalled();
       mocks.token.mockResolvedValue({ deployToken: "new-token" });
+      mocks.whoami.mockResolvedValue({ hostUrl: "https://host.example" });
       return { hostUrl: "https://host.example" };
     });
     vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
@@ -307,10 +330,7 @@ it.each(["missing", "expired"])(
     );
     expect(onLoginRequired).toHaveBeenCalledOnce();
     expect(mocks.token).toHaveBeenCalledWith("https://host.example");
-    expect(mocks.client).toHaveBeenCalledWith({
-      headers: { authorization: "Bearer new-token" },
-      url: "https://host.example",
-    });
+    expect(mocks.client).toHaveBeenCalledWith("new-token");
     expect(mocks.publish).toHaveBeenCalledOnce();
   },
 );

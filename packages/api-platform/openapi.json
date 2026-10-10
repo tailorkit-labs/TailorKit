@@ -9,7 +9,1290 @@
     }
   ],
   "openapi": "3.2.0",
+  "components": {
+    "schemas": {
+      "__schema0": {
+        "anyOf": [
+          {
+            "type": "string",
+            "maxLength": 255
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          },
+          {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/__schema0"
+            }
+          },
+          {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "additionalProperties": {
+              "$ref": "#/components/schemas/__schema0"
+            }
+          }
+        ]
+      }
+    }
+  },
   "paths": {
+    "/cli/verify": {
+      "post": {
+        "operationId": "cli.verify",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {
+                      "type": "string"
+                    },
+                    "scope": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["projectId", "scope"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cli/apps": {
+      "post": {
+        "operationId": "cli.appsCreate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 127
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 255
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": ["name", "description"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "publicId": {
+                      "type": "string",
+                      "maxLength": 12
+                    },
+                    "projectId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "scope": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                        },
+                        "value": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          },
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/__schema0"
+                          }
+                        }
+                      },
+                      "required": ["name", "value"],
+                      "additionalProperties": false
+                    },
+                    "name": {
+                      "type": "string",
+                      "maxLength": 127
+                    },
+                    "description": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "currentDeploymentId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "x-native-type": "date"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "x-native-type": "date"
+                    },
+                    "currentDeployment": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "publicId": {
+                              "type": "string",
+                              "maxLength": 12
+                            },
+                            "appId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": ["uploading", "deploying", "verifying", "published"]
+                            },
+                            "clientEntryFileId": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "logoLightFileId": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "logoDarkFileId": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "views": {
+                              "maxItems": 1000,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "slot": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 255
+                                  },
+                                  "path": {
+                                    "type": "string",
+                                    "maxLength": 1024,
+                                    "format": "starts_with",
+                                    "pattern": "^\\/.*"
+                                  },
+                                  "instances": {
+                                    "type": "boolean",
+                                    "const": true
+                                  },
+                                  "disabled": {
+                                    "type": "boolean",
+                                    "const": true
+                                  }
+                                },
+                                "required": ["slot", "path"],
+                                "additionalProperties": false
+                              }
+                            },
+                            "logoLightPath": {
+                              "type": ["string", "null"]
+                            },
+                            "logoDarkPath": {
+                              "type": ["string", "null"]
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "x-native-type": "date"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "x-native-type": "date"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "publicId",
+                            "appId",
+                            "status",
+                            "clientEntryFileId",
+                            "logoLightFileId",
+                            "logoDarkFileId",
+                            "views",
+                            "logoLightPath",
+                            "logoDarkPath",
+                            "createdAt",
+                            "updatedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "views": {
+                      "maxItems": 1000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slot": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255
+                          },
+                          "path": {
+                            "type": "string",
+                            "maxLength": 1024,
+                            "format": "starts_with",
+                            "pattern": "^\\/.*"
+                          },
+                          "instances": {
+                            "type": "boolean",
+                            "const": true
+                          },
+                          "disabled": {
+                            "type": "boolean",
+                            "const": true
+                          }
+                        },
+                        "required": ["slot", "path"],
+                        "additionalProperties": false
+                      }
+                    },
+                    "clientPath": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "logoPaths": {
+                      "type": "object",
+                      "properties": {
+                        "dark": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "light": {
+                          "type": "string",
+                          "format": "uri"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "publicId",
+                    "projectId",
+                    "scope",
+                    "name",
+                    "description",
+                    "currentDeploymentId",
+                    "createdAt",
+                    "updatedAt",
+                    "currentDeployment",
+                    "views"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cli/deployments": {
+      "post": {
+        "operationId": "cli.deploymentsCreate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "appId": {
+                    "type": "string"
+                  },
+                  "assets": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "checksum": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "contentLength": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "contentType": {
+                            "type": "string",
+                            "const": "application/javascript"
+                          },
+                          "encoding": {
+                            "type": "string",
+                            "enum": ["utf-8", "gzip"]
+                          },
+                          "objectKey": {
+                            "type": "string",
+                            "const": "client.js"
+                          }
+                        },
+                        "required": [
+                          "checksum",
+                          "contentLength",
+                          "contentType",
+                          "encoding",
+                          "objectKey"
+                        ]
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  },
+                  "server": {
+                    "type": "object",
+                    "properties": {
+                      "checksum": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "contentLength": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 3145728
+                      },
+                      "contentType": {
+                        "type": "string",
+                        "const": "application/javascript"
+                      },
+                      "encoding": {
+                        "type": "string",
+                        "enum": ["utf-8", "gzip"]
+                      },
+                      "objectKey": {
+                        "type": "string",
+                        "const": "server.js"
+                      }
+                    },
+                    "required": [
+                      "checksum",
+                      "contentLength",
+                      "contentType",
+                      "encoding",
+                      "objectKey"
+                    ]
+                  },
+                  "logos": {
+                    "type": "object",
+                    "properties": {
+                      "dark": {
+                        "type": "object",
+                        "properties": {
+                          "checksum": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "contentLength": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 262144
+                          },
+                          "contentType": {
+                            "type": "string",
+                            "enum": ["image/svg+xml", "image/png", "image/webp"]
+                          }
+                        },
+                        "required": ["checksum", "contentLength", "contentType"]
+                      },
+                      "light": {
+                        "type": "object",
+                        "properties": {
+                          "checksum": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "contentLength": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 262144
+                          },
+                          "contentType": {
+                            "type": "string",
+                            "enum": ["image/svg+xml", "image/png", "image/webp"]
+                          }
+                        },
+                        "required": ["checksum", "contentLength", "contentType"]
+                      }
+                    }
+                  },
+                  "views": {
+                    "maxItems": 1000,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "slot": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "path": {
+                          "type": "string",
+                          "maxLength": 1024,
+                          "format": "starts_with",
+                          "pattern": "^\\/.*"
+                        },
+                        "instances": {
+                          "type": "boolean",
+                          "const": true
+                        },
+                        "disabled": {
+                          "type": "boolean",
+                          "const": true
+                        }
+                      },
+                      "required": ["slot", "path"]
+                    }
+                  }
+                },
+                "required": ["appId", "assets"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "assets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "file": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "appDeploymentId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "objectKey": {
+                                "type": "string",
+                                "maxLength": 512,
+                                "pattern": "^(?:[a-zA-Z0-9._-]+\\/)*[a-zA-Z0-9._-]+\\.[a-zA-Z0-9]+$"
+                              },
+                              "contentType": {
+                                "type": "string",
+                                "enum": [
+                                  "application/javascript",
+                                  "image/svg+xml",
+                                  "image/png",
+                                  "image/webp"
+                                ]
+                              },
+                              "encoding": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": ["utf-8", "gzip"]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "contentLength": {
+                                "type": "integer",
+                                "minimum": -2147483648,
+                                "maximum": 2147483647
+                              },
+                              "checksum": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 64
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": ["uploading", "verifying", "verified", "failed"]
+                              },
+                              "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "x-native-type": "date"
+                              },
+                              "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "x-native-type": "date"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "appDeploymentId",
+                              "objectKey",
+                              "contentType",
+                              "encoding",
+                              "contentLength",
+                              "checksum",
+                              "status",
+                              "createdAt",
+                              "updatedAt"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "headers": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {
+                              "type": "string"
+                            }
+                          },
+                          "uploadUrl": {
+                            "type": "string",
+                            "format": "uri"
+                          }
+                        },
+                        "required": ["file", "uploadUrl"],
+                        "additionalProperties": false
+                      }
+                    },
+                    "server": {
+                      "type": "object",
+                      "properties": {
+                        "file": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "appDeploymentId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "objectKey": {
+                              "type": "string",
+                              "maxLength": 512,
+                              "pattern": "^(?:[a-zA-Z0-9._-]+\\/)*[a-zA-Z0-9._-]+\\.[a-zA-Z0-9]+$"
+                            },
+                            "contentType": {
+                              "type": "string",
+                              "enum": [
+                                "application/javascript",
+                                "image/svg+xml",
+                                "image/png",
+                                "image/webp"
+                              ]
+                            },
+                            "encoding": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "enum": ["utf-8", "gzip"]
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "contentLength": {
+                              "type": "integer",
+                              "minimum": -2147483648,
+                              "maximum": 2147483647
+                            },
+                            "checksum": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "maxLength": 64
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": ["uploading", "verifying", "verified", "failed"]
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "x-native-type": "date"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "x-native-type": "date"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "appDeploymentId",
+                            "objectKey",
+                            "contentType",
+                            "encoding",
+                            "contentLength",
+                            "checksum",
+                            "status",
+                            "createdAt",
+                            "updatedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "headers": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "uploadUrl": {
+                          "type": "string",
+                          "format": "uri"
+                        }
+                      },
+                      "required": ["file", "uploadUrl"],
+                      "additionalProperties": false
+                    },
+                    "deployment": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "publicId": {
+                          "type": "string",
+                          "maxLength": 12
+                        },
+                        "appId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": ["uploading", "deploying", "verifying", "published"]
+                        },
+                        "clientEntryFileId": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "logoLightFileId": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "logoDarkFileId": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "views": {
+                          "maxItems": 1000,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "slot": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 255
+                              },
+                              "path": {
+                                "type": "string",
+                                "maxLength": 1024,
+                                "format": "starts_with",
+                                "pattern": "^\\/.*"
+                              },
+                              "instances": {
+                                "type": "boolean",
+                                "const": true
+                              },
+                              "disabled": {
+                                "type": "boolean",
+                                "const": true
+                              }
+                            },
+                            "required": ["slot", "path"],
+                            "additionalProperties": false
+                          }
+                        },
+                        "logoLightPath": {
+                          "type": ["string", "null"]
+                        },
+                        "logoDarkPath": {
+                          "type": ["string", "null"]
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "x-native-type": "date"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "x-native-type": "date"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "publicId",
+                        "appId",
+                        "status",
+                        "clientEntryFileId",
+                        "logoLightFileId",
+                        "logoDarkFileId",
+                        "views",
+                        "logoLightPath",
+                        "logoDarkPath",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "logos": {
+                      "type": "object",
+                      "properties": {
+                        "dark": {
+                          "type": "object",
+                          "properties": {
+                            "file": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "appDeploymentId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "objectKey": {
+                                  "type": "string",
+                                  "maxLength": 512,
+                                  "pattern": "^(?:[a-zA-Z0-9._-]+\\/)*[a-zA-Z0-9._-]+\\.[a-zA-Z0-9]+$"
+                                },
+                                "contentType": {
+                                  "type": "string",
+                                  "enum": ["image/svg+xml", "image/png", "image/webp"]
+                                },
+                                "encoding": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": ["utf-8", "gzip"]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "contentLength": {
+                                  "type": "integer",
+                                  "minimum": -2147483648,
+                                  "maximum": 2147483647
+                                },
+                                "checksum": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 64
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": ["uploading", "verifying", "verified", "failed"]
+                                },
+                                "createdAt": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "x-native-type": "date"
+                                },
+                                "updatedAt": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "x-native-type": "date"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "appDeploymentId",
+                                "objectKey",
+                                "contentType",
+                                "encoding",
+                                "contentLength",
+                                "checksum",
+                                "status",
+                                "createdAt",
+                                "updatedAt"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "headers": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            },
+                            "uploadUrl": {
+                              "type": "string",
+                              "format": "uri"
+                            }
+                          },
+                          "required": ["file"],
+                          "additionalProperties": false
+                        },
+                        "light": {
+                          "type": "object",
+                          "properties": {
+                            "file": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "appDeploymentId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "objectKey": {
+                                  "type": "string",
+                                  "maxLength": 512,
+                                  "pattern": "^(?:[a-zA-Z0-9._-]+\\/)*[a-zA-Z0-9._-]+\\.[a-zA-Z0-9]+$"
+                                },
+                                "contentType": {
+                                  "type": "string",
+                                  "enum": ["image/svg+xml", "image/png", "image/webp"]
+                                },
+                                "encoding": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": ["utf-8", "gzip"]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "contentLength": {
+                                  "type": "integer",
+                                  "minimum": -2147483648,
+                                  "maximum": 2147483647
+                                },
+                                "checksum": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 64
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": ["uploading", "verifying", "verified", "failed"]
+                                },
+                                "createdAt": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "x-native-type": "date"
+                                },
+                                "updatedAt": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "x-native-type": "date"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "appDeploymentId",
+                                "objectKey",
+                                "contentType",
+                                "encoding",
+                                "contentLength",
+                                "checksum",
+                                "status",
+                                "createdAt",
+                                "updatedAt"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "headers": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            },
+                            "uploadUrl": {
+                              "type": "string",
+                              "format": "uri"
+                            }
+                          },
+                          "required": ["file"],
+                          "additionalProperties": false
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["assets", "deployment"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cli/deployments/{deploymentId}": {
+      "post": {
+        "operationId": "cli.deploymentsPublish",
+        "parameters": [
+          {
+            "in": "path",
+            "required": true,
+            "name": "deploymentId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rollout": {
+                    "default": true,
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "publicId": {
+                      "type": "string",
+                      "maxLength": 12
+                    },
+                    "appId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["uploading", "deploying", "verifying", "published"]
+                    },
+                    "clientEntryFileId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "logoLightFileId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "logoDarkFileId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "views": {
+                      "maxItems": 1000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slot": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255
+                          },
+                          "path": {
+                            "type": "string",
+                            "maxLength": 1024,
+                            "format": "starts_with",
+                            "pattern": "^\\/.*"
+                          },
+                          "instances": {
+                            "type": "boolean",
+                            "const": true
+                          },
+                          "disabled": {
+                            "type": "boolean",
+                            "const": true
+                          }
+                        },
+                        "required": ["slot", "path"],
+                        "additionalProperties": false
+                      }
+                    },
+                    "logoLightPath": {
+                      "type": ["string", "null"]
+                    },
+                    "logoDarkPath": {
+                      "type": ["string", "null"]
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "x-native-type": "date"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "x-native-type": "date"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "publicId",
+                    "appId",
+                    "status",
+                    "clientEntryFileId",
+                    "logoLightFileId",
+                    "logoDarkFileId",
+                    "views",
+                    "logoLightPath",
+                    "logoDarkPath",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/app-agent/chat": {
       "post": {
         "operationId": "appAgent.chat",
@@ -4378,45 +5661,6 @@
             }
           }
         }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "__schema0": {
-        "anyOf": [
-          {
-            "type": "string",
-            "maxLength": 255
-          },
-          {
-            "type": "number"
-          },
-          {
-            "type": "boolean"
-          },
-          {
-            "type": "null"
-          },
-          {
-            "maxItems": 100,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/__schema0"
-            }
-          },
-          {
-            "type": "object",
-            "propertyNames": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64
-            },
-            "additionalProperties": {
-              "$ref": "#/components/schemas/__schema0"
-            }
-          }
-        ]
       }
     }
   }

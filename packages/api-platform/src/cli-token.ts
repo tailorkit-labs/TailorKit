@@ -10,9 +10,17 @@ export async function authenticateCli(
   runtimeService?: boolean,
 ) {
   if (runtimeService) throw new ORPCError("FORBIDDEN");
+  return authenticateCliToken(deployToken, projectId);
+}
+
+/** Direct CLI requests derive their project and scope from the issued token. */
+export async function authenticateCliToken(deployToken: string, projectId?: string) {
   if (!env.AUTH_SECRET) throw new ORPCError("SERVICE_UNAVAILABLE");
   const token = await db.query.cliToken.findFirst({
-    where: { projectId, tokenHash: hashSecret(deployToken, env.AUTH_SECRET) },
+    where: {
+      ...(projectId === undefined ? {} : { projectId }),
+      tokenHash: hashSecret(deployToken, env.AUTH_SECRET),
+    },
   });
   if (!token || token.revokedAt || token.expiresAt.getTime() <= Date.now()) {
     throw new ORPCError("UNAUTHORIZED", { message: "Invalid CLI deploy token." });
