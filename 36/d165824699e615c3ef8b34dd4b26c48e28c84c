@@ -1,0 +1,19 @@
+packages/app-agent/src/agent.ts
+  s_c10310aebb55f0::t_bf505425f33a4d 44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "36d165824699e615c3ef8b34dd4b26c48e28c84c",
+  "prompts": {},
+  "sessions": {
+    "s_c10310aebb55f0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a124a0-9495-78a1-9d9a-5d7e94cf687a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
