@@ -1,0 +1,83 @@
+apps/web/src/routes/api/platform.$.ts
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 1,32
+packages/api-utils/src/app-auth/tokens.ts
+  s_64d7f8fdc4ce50::t_1dd59f49eef51e 84
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 6,30,35,50,82,197
+packages/api-platform/src/routes/apps.test.ts
+  s_64d7f8fdc4ce50::t_f68a4b43ef20ae 544
+  s_64d7f8fdc4ce50::t_21d6d579d2b6d0 545-552
+apps/apps-worker/src/worker.test.ts
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 18,53-54
+apps/apps-worker/src/supervisor/auth.test.ts
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 3,14-15
+packages/core/src/server/tool-auth.ts
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 3,14,65,72
+  s_64d7f8fdc4ce50::t_21d6d579d2b6d0 77-84
+packages/core/src/server/tools.test.ts
+  s_64d7f8fdc4ce50::t_39e0d4234c5c7d 81-82
+  s_64d7f8fdc4ce50::t_1dd59f49eef51e 85-86,89,139,160-161,188,192-198
+  s_64d7f8fdc4ce50::t_6e868122f8a3bb 135-136
+  s_64d7f8fdc4ce50::t_d47c1e40373e57 199
+packages/client-core/src/client/tools.test.ts
+  s_64d7f8fdc4ce50::t_39e0d4234c5c7d 39,84
+  s_64d7f8fdc4ce50::t_1dd59f49eef51e 26-27,41-42,51-59,86-87
+  s_64d7f8fdc4ce50::t_f68a4b43ef20ae 92
+docs/tools.mdx
+  s_64d7f8fdc4ce50::t_39e0d4234c5c7d 139-155
+packages/api-platform/src/routes/runtime.ts
+  s_64d7f8fdc4ce50::t_1dd59f49eef51e 13-14,61-80,121-128
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 109,119-120
+packages/client-core/src/client/endpoints.ts
+  s_64d7f8fdc4ce50::t_21d6d579d2b6d0 72-75,79-80
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 85
+  s_64d7f8fdc4ce50::t_57477937c48059 1,38,71,92,94,130
+packages/app/src/client/session.ts
+  s_64d7f8fdc4ce50::t_1dd59f49eef51e 15-22,78-79
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 1,7-8
+packages/api-utils/src/app-auth/tokens.test.ts
+  s_64d7f8fdc4ce50::t_8664d0a7381ea5 61-62,66,74,160
+  s_64d7f8fdc4ce50::t_1dd59f49eef51e 171-173,178-181
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 17,20
+apps/apps-worker/src/installation.ts
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 232
+apps/apps-worker/src/supervisor/auth.ts
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 4,20-21
+apps/apps-worker/src/supervisor/action-lifetimes.test.ts
+  s_64d7f8fdc4ce50::t_1dd59f49eef51e 88-108,110-113
+packages/api-utils/src/app-auth/policy.ts
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 2
+apps/apps-worker/src/supervisor/actions.ts
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 70,75,80,84,89-90
+apps/apps-worker/README.md
+  s_64d7f8fdc4ce50::t_39e0d4234c5c7d 11,131,133
+apps/apps-worker/src/tests/integration.test.mjs
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 33-34
+  s_64d7f8fdc4ce50::t_1dd59f49eef51e 11
+  s_64d7f8fdc4ce50::t_6e868122f8a3bb 48,80-82,277,292-293
+  s_64d7f8fdc4ce50::t_21d6d579d2b6d0 278-291
+packages/api-platform/src/runtime/auth.test.ts
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 2,38-39
+packages/api-platform/src/runtime/auth.ts
+  s_64d7f8fdc4ce50::t_b8cbc303a3e051 4,44-45
+  s_64d7f8fdc4ce50::t_1dd59f49eef51e 1
+packages/api-platform/openapi.json
+  s_64d7f8fdc4ce50::t_eec076e9e25458 217-279,282
+packages/client-platform/src/client/types.gen.ts
+  s_64d7f8fdc4ce50::t_63bfedee02481b 92-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ca0b9ff1c7cb1731eed936e3538140c766342e47",
+  "prompts": {},
+  "sessions": {
+    "s_64d7f8fdc4ce50": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a12380-c197-7ad2-bf0c-1724de70fcb3",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
