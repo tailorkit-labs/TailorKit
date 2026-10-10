@@ -1,5 +1,9 @@
 # @tailorkit/app
 
+## 0.1.0-beta.28
+
+No changes in this release.
+
 ## 0.1.0-beta.27
 
 ### Minor Changes
