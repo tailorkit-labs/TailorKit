@@ -30,7 +30,7 @@ export const contract = defineContract({
 
 ## Implement server tools
 
-Register server implementations with `createServer({ contract, tools })`. The
+Register server implementations with `createServer({ contract, baseUrl, tools })`. The
 product's authentication function supplies scopes and, optionally, a principal.
 Use the verified installation scope when authorizing access to product data.
 
@@ -40,16 +40,8 @@ import { contract } from "./tailorkit";
 
 export const server = createServer({
   contract,
+  baseUrl: "https://product.com/api/tailorkit",
   projectKey: process.env.TAILORKIT_PROJECT_KEY,
-  authenticate: async ({ request }) => {
-    const principal = await authenticateProduct(request);
-    return principal
-      ? {
-          scopes: { workspace: { workspaceId: principal.workspaceId } },
-          subjectId: principal.id,
-        }
-      : null;
-  },
   tools: {
     customers: {
       read: async ({ input, context }) => {
@@ -66,7 +58,25 @@ export const server = createServer({
 });
 ```
 
-Configure the product route with one `baseUrl` option:
+Supply authentication when your product route calls `.handler()`:
+
+```ts
+export function handle(request: Request) {
+  return server.handler(request, {
+    authenticate: async ({ request }) => {
+      const principal = await authenticateProduct(request);
+      return principal
+        ? {
+            scopes: { workspace: { workspaceId: principal.workspaceId } },
+            subjectId: principal.id,
+          }
+        : null;
+    },
+  });
+}
+```
+
+Configure the product route with the required `baseUrl` option:
 
 ```ts
 createServer({
@@ -78,9 +88,10 @@ createServer({
 
 This uses `/api/whatever` as the route prefix and
 `https://product.com/api/whatever/tools/execute` as the signed tool destination.
-A root-relative value such as `/api/whatever` uses the request's origin.
-The default is `/api/tailorkit`. Trailing slashes are normalized. When requests
-arrive through an internal proxy address, configure the full public URL.
+The value must be a full public HTTP(S) URL; relative paths are rejected.
+Trailing slashes are normalized. When requests arrive through an internal proxy
+address, the configured public origin still determines the signed tool destination
+and backend session origin checks.
 
 `subjectId` can identify a user, service account, agent, or any other
 product-defined principal. It is optional. Without it, use `installationId` for

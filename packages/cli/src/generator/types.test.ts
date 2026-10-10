@@ -408,6 +408,7 @@ describe("renderGeneratedTypes", () => {
 
   it("generates caller input types before transforms and return types after transforms", async () => {
     const server = createServer({
+      baseUrl: "https://example.com/api/tailorkit",
       contract: defineContract({
         scopes: { user: z.object({ userId: z.string() }) },
         tools: {
@@ -420,9 +421,10 @@ describe("renderGeneratedTypes", () => {
         },
       }),
       tools: { nested: { increment: ({ input }) => input + 1 } },
+    });
+    const response = await server.handler(new Request("https://host.test/api/tailorkit/schema"), {
       authenticate: () => null,
     });
-    const response = await server.handler(new Request("https://host.test/api/tailorkit/schema"));
     expect(response.ok).toBe(true);
     const output = renderGeneratedTypes(await response.json());
     expect(output).toContain("increment: (input: string) => Promise<number>;");

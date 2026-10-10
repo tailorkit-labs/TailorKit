@@ -42,6 +42,7 @@ function setup(options: { events?: AgentChunk[]; status?: number; scopeName?: st
       }),
   });
   const server = createTailorKitServer({
+    baseUrl: "https://example.com/api/tailorkit",
     projectKey: "host-project-key",
     scopes: { org: z.object({ tenant: z.string() }) },
     components: {},

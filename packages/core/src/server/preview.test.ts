@@ -12,8 +12,8 @@ const baseUrl = `https://host.test${basePath}`;
 
 function server(requests: string[], previewError?: unknown, platformBodies: unknown[] = []) {
   return createTailorKitServer({
+    baseUrl,
     scopes: { org: testScopeSchema },
-    baseUrl: basePath,
     components: {},
     cliAuth: { signInPath: "/sign-in" },
     preview: { returnPath: "/dashboard" },
@@ -303,6 +303,7 @@ describe("preview host flow", () => {
   it("rejects a return path that could leave the host origin", () => {
     expect(() =>
       createTailorKitServer({
+        baseUrl: "https://example.com/api/tailorkit",
         scopes: { org: testScopeSchema },
         components: {},
         preview: { returnPath: "//evil.test" },

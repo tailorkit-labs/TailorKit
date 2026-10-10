@@ -42,7 +42,8 @@ at `http://localhost:5010/api/tailorkit`.
 - `src/components/tailorkit-shell.tsx` loads installed apps, publishes the root
   view context with `useViewContext`, and renders the selected app in its slot.
 
-The example defaults to the platform at `http://localhost:3000` and the
-SeaweedFS service started by the root development command. Set
-`TAILORKIT_PLATFORM_BASE_URL` or `TAILORKIT_ASSETS_BASE_URL` to point it at
-different services.
+The example defaults to the platform at `http://localhost:3000`. Set
+`TAILORKIT_PLATFORM_BASE_URL` to point it at a different service. App asset URLs
+come from platform discovery.
+Set `TAILORKIT_BASE_URL` to your full public handler URL when deploying; it defaults
+to `http://localhost:5010/api/tailorkit`.

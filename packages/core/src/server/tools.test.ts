@@ -40,7 +40,7 @@ const contract = defineContract({
 });
 const server = createServer({
   contract,
-  authenticate: () => null,
+  baseUrl: "https://product.test/api/tailorkit",
   tools: {
     math: {
       increment: handler,
@@ -66,6 +66,41 @@ const server = createServer({
     },
   },
 });
+it.each([
+  undefined,
+  "",
+  "/api/tailorkit",
+  "//product.test/api/tailorkit",
+  "ftp://product.test/api/tailorkit",
+])("requires an absolute HTTP(S) base URL when creating a server: %s", (baseUrl) => {
+  expect(() =>
+    createServer({ contract: defineContract({}), baseUrl: baseUrl as string }),
+  ).toThrow();
+});
+
+it("uses the authentication supplied for each handler call", async () => {
+  const fetchApps = vi.fn<typeof fetch>().mockResolvedValue(
+    Response.json({
+      items: [],
+      pagination: { hasMore: false, page: 1, pageSize: 100 },
+    }),
+  );
+  const host = createServer({
+    contract: defineContract({ scopes: { org: z.object({ id: z.string() }) } }),
+    baseUrl: "https://product.test/api/tailorkit",
+    $internal: { platformFetch: fetchApps },
+  });
+  const request = new Request("https://product.test/api/tailorkit/apps");
+  const denied = await host.handler(request, { authenticate: () => null });
+  expect(denied.status).toBe(401);
+  expect(fetchApps).not.toHaveBeenCalled();
+  const authenticate = vi.fn(() => ({ scopes: { org: { id: "tenant" } } }));
+  const allowed = await host.handler(request, { authenticate });
+  expect(allowed.status).toBe(200);
+  expect(authenticate).toHaveBeenCalledWith({ request });
+  expect(fetchApps).toHaveBeenCalledOnce();
+});
+
 const encode = (value: Uint8Array) =>
   btoa(String.fromCharCode(...value))
     .replaceAll("+", "-")
@@ -119,6 +154,7 @@ async function execute(credential: string, path = "math.increment", ...args: [in
       headers: { authorization: `Bearer ${credential}`, "content-type": "application/json" },
       body: JSON.stringify({ path, input, requestId: "1a5febf3-e3af-4a01-89a7-35a4f1846114" }),
     }),
+    { authenticate: () => null },
   );
 }
 it("validates transformed inputs and exposes verified installation, principal, scope and request ID", async () => {
@@ -183,6 +219,7 @@ it("permits sandbox HTTP preflights without cookie credentials", async () => {
         "access-control-request-headers": "authorization,content-type",
       },
     }),
+    { authenticate: () => null },
   );
   expect(response.status).toBe(204);
   expect(response.headers.get("access-control-allow-origin")).toBe("*");
@@ -207,7 +244,6 @@ it("uses the trusted public origin to verify tool destinations behind a proxy", 
   const proxied = createServer({
     contract,
     baseUrl: new URL("https://product.test/custom/tailorkit/"),
-    authenticate: () => null,
     tools: {
       math: { increment: handler, broken: () => 0, transformed: () => "42" },
     },
@@ -234,10 +270,17 @@ it("uses the trusted public origin to verify tool destinations behind a proxy", 
     (
       await proxied.handler(
         request(await token({ toolUrl: "https://product.test/custom/tailorkit/tools/execute" })),
+        { authenticate: () => null },
       )
     ).status,
   ).toBe(200);
-  expect((await proxied.handler(request(await token({ toolUrl: internalUrl })))).status).toBe(401);
+  expect(
+    (
+      await proxied.handler(request(await token({ toolUrl: internalUrl })), {
+        authenticate: () => null,
+      })
+    ).status,
+  ).toBe(401);
 });
 
 it("refreshes once for a rotated key, coalesces requests and throttles unknown key IDs", async () => {
