@@ -572,6 +572,9 @@ importers:
       preact:
         specifier: ^11.0.0
         version: 11.0.0
+      tailorkit:
+        specifier: workspace:*
+        version: link:../../../packages/tailorkit
     devDependencies:
       '@tailorkit/cli':
         specifier: workspace:*
@@ -588,6 +591,9 @@ importers:
       preact:
         specifier: ^11.0.0
         version: 11.0.0
+      tailorkit:
+        specifier: workspace:*
+        version: link:../../../packages/tailorkit
     devDependencies:
       '@tailorkit/cli':
         specifier: workspace:*

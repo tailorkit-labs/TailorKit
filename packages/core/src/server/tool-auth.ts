@@ -11,20 +11,10 @@ export function createToolVerifier(options: {
 }) {
   const issuer = options.platformUrl.replace(/\/$/u, "");
   let cached: { expiresAt: number; keys: (JsonWebKey & { kid: string })[] } | undefined;
-  return async (token: string, toolUrl: string): Promise<ToolIdentity> => {
-    if (token.length > 8192) throw new Error("Invalid tool credential");
-    const parts = token.split(".");
-    if (parts.length !== 3) throw new Error("Invalid tool credential");
-    const [headerPart, payloadPart, signaturePart] = parts as [string, string, string];
-    const header = JSON.parse(new TextDecoder().decode(decode(headerPart)));
-    if (
-      header.alg !== "ES256" ||
-      header.typ !== "JWT" ||
-      typeof header.kid !== "string" ||
-      header.crit
-    )
-      throw new Error("Invalid tool credential");
-    if (!cached || cached.expiresAt <= Date.now()) {
+  let refreshing: Promise<void> | undefined;
+  let nextUnknownKeyRefresh = 0;
+  function refreshKeys(): Promise<void> {
+    refreshing ??= (async () => {
       const response = await options.fetch(issuer + "/runtime/keys", { redirect: "manual" });
       if (!response.ok) throw new Error("Signing keys unavailable");
       const result = (await response.json()) as { keys: (JsonWebKey & { kid: string })[] };
@@ -38,8 +28,39 @@ export function createToolVerifier(options: {
       )
         throw new Error("Invalid signing keys");
       cached = { expiresAt: Date.now() + 60_000, keys: result.keys };
+    })().finally(() => {
+      refreshing = undefined;
+    });
+    return refreshing;
+  }
+  return async (token: string, toolUrl: string): Promise<ToolIdentity> => {
+    if (token.length > 8192) throw new Error("Invalid tool credential");
+    const parts = token.split(".");
+    if (parts.length !== 3) throw new Error("Invalid tool credential");
+    const [headerPart, payloadPart, signaturePart] = parts as [string, string, string];
+    const header = JSON.parse(new TextDecoder().decode(decode(headerPart)));
+    if (
+      header.alg !== "ES256" ||
+      header.typ !== "JWT" ||
+      typeof header.kid !== "string" ||
+      header.crit
+    )
+      throw new Error("Invalid tool credential");
+    let refreshed = false;
+    if (!cached || cached.expiresAt <= Date.now()) {
+      await refreshKeys();
+      refreshed = true;
     }
-    const jwk = cached.keys.find((k) => k.kid === header.kid);
+    let jwk = cached?.keys.find((k) => k.kid === header.kid);
+    if (!jwk && !refreshed) {
+      if (refreshing) {
+        await refreshing;
+      } else if (Date.now() >= nextUnknownKeyRefresh) {
+        nextUnknownKeyRefresh = Date.now() + 10_000;
+        await refreshKeys();
+      }
+      jwk = cached?.keys.find((k) => k.kid === header.kid);
+    }
     if (!jwk) throw new Error("Unknown signing key");
     const key = await crypto.subtle.importKey(
       "jwk",

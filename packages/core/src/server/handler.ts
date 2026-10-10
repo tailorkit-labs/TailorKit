@@ -9,6 +9,7 @@ import type {
 } from "../schema/index";
 import { createTailorKitSchema } from "../schema/schema";
 import { normalizeBasePath } from "./apps";
+import { normalizePublicOrigin } from "./origin";
 import { handleCliAuthApprovalPage } from "./cli-auth-page";
 import { handlePreviewConsent, readPreviewGrantIds } from "./preview-consent";
 import { createContext } from "./context";
@@ -51,6 +52,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
   readonly $slots?: TOptions extends { slots: infer V } ? V : Record<never, never>;
 } {
   const basePath = normalizeBasePath(options.basePath ?? "/api/tailorkit");
+  const publicOrigin = normalizePublicOrigin(options.publicUrl);
   const scopeSchemas = validateTailorKitScopeSchemas(options.scopes);
   const previewReturnPath = options.preview?.returnPath ?? "/";
   if (
@@ -111,29 +113,34 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
     const url = new URL(request.url);
     const previewPrefix = `${basePath}/preview/`;
     if (url.pathname === `${basePath}/backend/session`) {
-      return handleBackendSession(request, authenticate, async (appId, scopes, subjectId) => {
-        const headers = await (typeof platformHeaders === "function"
-          ? platformHeaders()
-          : platformHeaders);
-        const session = await appsRuntimeSession({
-          client: platform,
-          responseStyle: "fields",
-          throwOnError: false,
-          headers,
-          path: { appId },
-          body: {
-            subjectId,
-            toolUrl: url.origin + basePath + "/tools/execute",
-            scopes: Object.entries(scopes).map(([name, value]) => ({ name, value })),
-          },
-        });
-        if (session.data) {
-          return session.data;
-        }
-        return Response.json(session.error ?? { error: "Unable to authorize the app backend" }, {
-          status: session.response?.status ?? 502,
-        });
-      });
+      return handleBackendSession(
+        request,
+        authenticate,
+        async (appId, scopes, subjectId) => {
+          const headers = await (typeof platformHeaders === "function"
+            ? platformHeaders()
+            : platformHeaders);
+          const session = await appsRuntimeSession({
+            client: platform,
+            responseStyle: "fields",
+            throwOnError: false,
+            headers,
+            path: { appId },
+            body: {
+              subjectId,
+              toolUrl: (publicOrigin ?? url.origin) + basePath + "/tools/execute",
+              scopes: Object.entries(scopes).map(([name, value]) => ({ name, value })),
+            },
+          });
+          if (session.data) {
+            return session.data;
+          }
+          return Response.json(session.error ?? { error: "Unable to authorize the app backend" }, {
+            status: session.response?.status ?? 502,
+          });
+        },
+        publicOrigin ?? url.origin,
+      );
     }
     if (url.pathname === `${basePath}/schema`) {
       return Response.json(schema.serialize(options.schemaSerializer));

@@ -50,6 +50,7 @@ export function createIframeUiHost(
   const fetchImplementation = options.fetch ?? globalThis.fetch;
   const resolvedAppUrl = toUrl(appUrl);
   const sessionCalls = new Set<string>();
+  const toolCalls = new Set<string>();
   const queuedPayloads: HostToIframePayloadType[] = [];
   let appSourcePromise: Promise<string> | null = null;
   let destroyed = false;
@@ -114,8 +115,8 @@ export function createIframeUiHost(
     }
     if (result.output.type === "toolRequest") {
       const { id, kind, path, input } = result.output.data;
-      if (sessionCalls.has(id) || sessionCalls.size >= 32) return;
-      sessionCalls.add(id);
+      if (toolCalls.has(id) || toolCalls.size >= 32) return;
+      toolCalls.add(id);
       const bridge = options.toolBridge;
       void (
         bridge
@@ -131,7 +132,7 @@ export function createIframeUiHost(
           if (!destroyed)
             postToIframe({ type: "toolResult", data: { id, error: "Tool request failed" } });
         })
-        .finally(() => sessionCalls.delete(id));
+        .finally(() => toolCalls.delete(id));
       return;
     }
     if (result.output.type === "backendSessionRequest") {

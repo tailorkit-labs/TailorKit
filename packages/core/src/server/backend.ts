@@ -12,13 +12,14 @@ export async function handleBackendSession(
     scopes: TailorKitScopes,
     subjectId?: string,
   ) => Promise<{ token: string; expiresAt: number; url: string } | Response>,
+  publicOrigin = new URL(request.url).origin,
 ) {
   const headers = { "cache-control": "no-store" };
   const origin = request.headers.get("origin");
   if (
     request.method !== "POST" ||
     !request.headers.get("content-type")?.startsWith("application/json") ||
-    (origin && origin !== new URL(request.url).origin)
+    (origin && origin !== publicOrigin)
   ) {
     return new Response("Invalid request", { status: 400, headers });
   }

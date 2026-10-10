@@ -3,6 +3,7 @@ import { z } from "zod";
 import { defineContract } from "../schema/contract";
 import { tool } from "../schema/tools";
 import { createServer } from "./contract";
+import { createToolVerifier } from "./tool-auth";
 
 const pair = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, [
   "sign",
@@ -70,10 +71,14 @@ const encode = (value: Uint8Array) =>
     .replaceAll("+", "-")
     .replaceAll("/", "_")
     .replaceAll("=", "");
-async function token(overrides: Record<string, unknown> = {}, privateKey = pair.privateKey) {
+async function token(
+  overrides: Record<string, unknown> = {},
+  privateKey = pair.privateKey,
+  kid = "platform",
+) {
   const now = Math.floor(Date.now() / 1000);
   const data = new TextEncoder();
-  const header = encode(data.encode(JSON.stringify({ alg: "ES256", typ: "JWT", kid: "platform" })));
+  const header = encode(data.encode(JSON.stringify({ alg: "ES256", typ: "JWT", kid })));
   const body = encode(
     data.encode(
       JSON.stringify({
@@ -136,8 +141,8 @@ it.each([
   { purpose: "another-purpose" },
   { toolUrl: "https://other.test/tools" },
   { exp: 1 },
-  { exp: Math.floor(Date.now() / 1000) + 601 },
-  { iat: Math.floor(Date.now() / 1000) + 1 },
+  () => ({ exp: Math.floor(Date.now() / 1000) + 601 }),
+  () => ({ iat: Math.floor(Date.now() / 1000) + 1 }),
   { scope: { name: "other", value: {} } },
   { subjectId: 123 },
   { projectId: "other-project" },
@@ -145,7 +150,9 @@ it.each([
   { installationId: "victim" },
 ])("rejects invalid signed claims %j", async (claims) => {
   const before = handler.mock.calls.length;
-  expect((await execute(await token(claims))).status).toBe(401);
+  expect(
+    (await execute(await token(typeof claims === "function" ? claims() : claims))).status,
+  ).toBe(401);
   expect(handler.mock.calls.length).toBe(before);
 });
 it("rejects a signature from an untrusted key", async () => {
@@ -196,4 +203,112 @@ it("accepts the same app session JWT across declared server tools", async () => 
   expect(await (await execute(session, "math.transformed", undefined)).json()).toEqual({
     output: 42,
   });
+});
+
+it("uses the trusted public origin to verify tool destinations behind a proxy", async () => {
+  const proxied = createServer({
+    contract,
+    publicUrl: new URL("https://product.test/"),
+    authenticate: () => null,
+    tools: {
+      math: { increment: handler, broken: () => 0, transformed: () => "42" },
+    },
+    $internal: {
+      platformBaseUrl: issuer,
+      platformFetch: async (url) =>
+        String(url).endsWith("/runtime/keys")
+          ? Response.json({ keys: [{ ...jwk, kid: "platform" }] })
+          : Response.json({
+              id: "app",
+              projectId: "project",
+              currentDeployment: { id: "deployment" },
+            }),
+    },
+  });
+  const internalUrl = "http://internal:3000/api/tailorkit/tools/execute";
+  const request = (credential: string) =>
+    new Request(internalUrl, {
+      method: "POST",
+      headers: { authorization: `Bearer ${credential}`, "content-type": "application/json" },
+      body: JSON.stringify({ path: "math.increment", input: "41", requestId: crypto.randomUUID() }),
+    });
+  expect((await proxied.handler(request(await token()))).status).toBe(200);
+  expect((await proxied.handler(request(await token({ toolUrl: internalUrl })))).status).toBe(401);
+});
+
+it("refreshes once for a rotated key, coalesces requests and throttles unknown key IDs", async () => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  try {
+    const rotated = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, [
+      "sign",
+      "verify",
+    ]);
+    const rotatedJwk = await crypto.subtle.exportKey("jwk", rotated.publicKey);
+    const fetchKeys = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ keys: [{ ...jwk, kid: "platform" }] }))
+      .mockImplementation(async () => Response.json({ keys: [{ ...rotatedJwk, kid: "rotated" }] }));
+    const verify = createToolVerifier({ platformUrl: issuer, fetch: fetchKeys });
+    await verify(await token(), toolUrl);
+    const credential = await token({}, rotated.privateKey, "rotated");
+    await Promise.all([verify(credential, toolUrl), verify(credential, toolUrl)]);
+    expect(fetchKeys).toHaveBeenCalledTimes(2);
+    for (const kid of ["forged-a", "forged-b"]) {
+      await expect(verify(await token({}, pair.privateKey, kid), toolUrl)).rejects.toThrow(
+        "Unknown signing key",
+      );
+    }
+    expect(fetchKeys).toHaveBeenCalledTimes(2);
+    vi.advanceTimersByTime(9_999);
+    await expect(verify(await token({}, pair.privateKey, "forged-c"), toolUrl)).rejects.toThrow(
+      "Unknown signing key",
+    );
+    expect(fetchKeys).toHaveBeenCalledTimes(2);
+    vi.advanceTimersByTime(1);
+    await expect(verify(await token({}, pair.privateKey, "forged-d"), toolUrl)).rejects.toThrow(
+      "Unknown signing key",
+    );
+    expect(fetchKeys).toHaveBeenCalledTimes(3);
+    vi.advanceTimersByTime(60_000);
+    await verify(await token({}, rotated.privateKey, "rotated"), toolUrl);
+    expect(fetchKeys).toHaveBeenCalledTimes(4);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("keeps valid cached keys when a refresh returns invalid keys, and still expires them", async () => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  try {
+    const fetchKeys = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ keys: [{ ...jwk, kid: "platform" }] }))
+      .mockImplementation(async () =>
+        Response.json({ keys: [{ ...jwk, kid: "rotated", d: "private" }] }),
+      );
+    const verify = createToolVerifier({ platformUrl: issuer, fetch: fetchKeys });
+    const credential = await token();
+    await verify(credential, toolUrl);
+    await expect(verify(await token({}, pair.privateKey, "rotated"), toolUrl)).rejects.toThrow(
+      "Invalid signing keys",
+    );
+    await verify(credential, toolUrl);
+    expect(fetchKeys).toHaveBeenCalledTimes(2);
+    vi.advanceTimersByTime(60_000);
+    await expect(verify(credential, toolUrl)).rejects.toThrow("Invalid signing keys");
+    expect(fetchKeys).toHaveBeenCalledTimes(3);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("rejects an unknown key after one fetch when the key cache is empty", async () => {
+  const fetchKeys = vi
+    .fn<typeof fetch>()
+    .mockImplementation(async () => Response.json({ keys: [{ ...jwk, kid: "platform" }] }));
+  const verify = createToolVerifier({ platformUrl: issuer, fetch: fetchKeys });
+  await expect(verify(await token({}, pair.privateKey, "forged"), toolUrl)).rejects.toThrow(
+    "Unknown signing key",
+  );
+  expect(fetchKeys).toHaveBeenCalledTimes(1);
 });

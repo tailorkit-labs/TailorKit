@@ -148,7 +148,8 @@ provider and principal-specific cache. There is no per-tool token or credential
 exchange. Renewing or changing principals replaces the shared session.
 
 The product verifies issuer, audience, purpose, signature, expiry, destination,
-and scope, then checks the installation and deployment using its project key.
+scope, and the requested tool path, then checks the active installation and
+deployment using its project key.
 It authorizes and dispatches only declared server tools and validates both input
 and output. Product handlers should apply operation-specific authorization using
 `context.identity` and `context.scope`. Backend actions cannot invoke client tools

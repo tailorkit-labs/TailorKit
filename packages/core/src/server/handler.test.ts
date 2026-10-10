@@ -48,6 +48,49 @@ describe("createTailorKitServer", () => {
     });
   });
 
+  it("issues the public tool destination and checks the browser origin behind a proxy", async () => {
+    const requests: Request[] = [];
+    const server = createTailorKitServer({
+      publicUrl: "https://host.test/",
+      projectKey: "project-key",
+      scopes: { org: testScopeSchema },
+      components: {},
+      $internal: {
+        platformFetch: async (input, init) => {
+          requests.push(input instanceof Request ? input : new Request(input, init));
+          return Response.json({
+            token: "platform-token",
+            expiresAt: 123,
+            url: "https://runtime.test/rpc",
+          });
+        },
+      },
+    });
+    const request = (origin: string) =>
+      new Request("http://internal:3000/api/tailorkit/backend/session", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          origin,
+          "x-forwarded-host": "attacker.test",
+          "x-forwarded-proto": "https",
+        },
+        body: JSON.stringify({ appId: "app" }),
+      });
+    const authentication = { authenticate: () => ({ scopes: { org: { tenant: "verified" } } }) };
+    expect((await server.handler(request("https://host.test"), authentication)).status).toBe(200);
+    expect(await requests[0]?.json()).toMatchObject({
+      toolUrl: "https://host.test/api/tailorkit/tools/execute",
+    });
+    expect((await server.handler(request("https://attacker.test"), authentication)).status).toBe(
+      400,
+    );
+    expect((await server.handler(request("http://internal:3000"), authentication)).status).toBe(
+      400,
+    );
+    expect(requests).toHaveLength(1);
+  });
+
   it("returns platform scope denials without issuing a backend session", async () => {
     const requests: Request[] = [];
     const server = createTailorKitServer({
