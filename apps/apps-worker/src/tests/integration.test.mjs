@@ -31,7 +31,6 @@ it("runs isolated app backends with persistent SQLite and two-client realtime up
   const signing = {
     issuer: "https://platform.test/api/platform",
     audience: APP_AUDIENCE,
-    purpose: "app",
     keyId: "test",
     privateKey: keys.privateKey,
   };

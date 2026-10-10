@@ -12,7 +12,6 @@ const issuer = "https://platform.test/api/platform";
 const signing = {
   issuer,
   audience: APP_AUDIENCE,
-  purpose: "app" as const,
   keyId: "platform",
   privateKey: pair.privateKey,
 };

@@ -88,7 +88,6 @@ async function token(
         sub: identity.installationId,
         iss: issuer,
         aud: "tailorkit-app",
-        purpose: "app",
         toolUrl,
         iat: now,
         exp: now + 300,
@@ -138,7 +137,6 @@ it("attributes a call without a subject to its installation", async () => {
 it.each([
   { iss: "https://attacker.test" },
   { aud: "another-service" },
-  { purpose: "another-purpose" },
   { toolUrl: "https://other.test/tools" },
   { exp: 1 },
   () => ({ exp: Math.floor(Date.now() / 1000) + 601 }),

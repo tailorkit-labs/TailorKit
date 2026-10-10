@@ -17,7 +17,6 @@ const signing = {
   audience: "tailorkit-app",
   privateKey,
   keyId: "host-key",
-  purpose: "app" as const,
 };
 const identity = {
   publicTeamId: "abc123def45678",
@@ -59,7 +58,6 @@ it("rejects wrong signature, issuer, audience, app, expiry, missing claims and e
   const sign = (claims: Record<string, unknown>) =>
     new SignJWT({
       ...identity,
-      purpose: "app",
       ...claims,
     })
       .setProtectedHeader({ alg: "ES256", kid: "host-key", typ: "JWT" })
@@ -74,13 +72,6 @@ it("rejects wrong signature, issuer, audience, app, expiry, missing claims and e
     { appId: "app", installationId: undefined, iat: now, exp: now + 120 },
     { appId: "app", installationId: "installation", iat: now, exp: now + 1000 },
     { appId: "app", installationId: "installation", iat: now + 60, exp: now + 120 },
-    {
-      appId: "app",
-      installationId: "installation",
-      iat: now,
-      exp: now + 120,
-      purpose: "migrations",
-    },
   ]) {
     await expect(verify(await sign(claims))).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   }
@@ -157,7 +148,7 @@ it.each(["projectId", "deploymentId", "publicTeamId", "appPublicId"])(
   "requires the signed %s claim",
   async (field) => {
     const now = Math.floor(Date.now() / 1000);
-    const claims = { ...identity, purpose: "app", [field]: undefined, iat: now, exp: now + 120 };
+    const claims = { ...identity, [field]: undefined, iat: now, exp: now + 120 };
     const token = await new SignJWT(claims)
       .setProtectedHeader({ alg: "ES256", kid: "host-key", typ: "JWT" })
       .setSubject(identity.installationId)
@@ -177,7 +168,7 @@ it("preserves arbitrary product principals in the shared app session", async () 
   });
   const claims = decodeJwt(session.token);
   expect(claims.sub).toBe(identity.installationId);
-  expect(claims.purpose).toBe("app");
+  expect(claims.aud).toBe(signing.audience);
   expect(claims.exp! - claims.iat!).toBe(300);
   const installation = await issueAppToken(signing, { ...identity, subjectId: undefined });
   expect(await verify(installation.token)).toMatchObject({

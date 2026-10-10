@@ -27,12 +27,10 @@ export interface AppSigningOptions {
   /** ES256 private key. Keep this in the trusted issuing server only. */
   privateKey: CryptoKey | JsonWebKey;
   lifetimeSeconds?: number;
-  purpose: "app";
 }
 export interface AppTokenTrust {
   issuer: string;
   audience: string;
-  purpose: "app";
   appId?: string;
   projectId?: string;
   /** Trusted issuer public keys, provisioned by the operator; never read from JWT headers. */
@@ -47,7 +45,6 @@ const access = z.object({
   subjectId: z.string().min(1).max(256).optional(),
   scope: z.object({ name: z.string().min(1), value: z.record(z.string(), z.unknown()) }),
   toolUrl: z.url(),
-  purpose: z.literal("app"),
   appId: z.string().min(1).max(256),
   installationId: z.string().min(1).max(256),
   exp: z.number().int(),
@@ -96,7 +93,6 @@ export function issueAppTokenEffect(options: AppSigningOptions, identity: AppTok
           subjectId: identity.subjectId,
           scope: identity.scope,
           toolUrl: identity.toolUrl,
-          purpose: options.purpose,
           appId: identity.appId,
           installationId: identity.installationId,
           iat: now,
@@ -120,7 +116,6 @@ export function issueAppTokenEffect(options: AppSigningOptions, identity: AppTok
           deploymentId: identity.deploymentId,
           appId: identity.appId,
           installationId: identity.installationId,
-          purpose: options.purpose,
           subjectId: identity.subjectId,
           scope: identity.scope,
           toolUrl: identity.toolUrl,
@@ -179,7 +174,6 @@ export function appTokenVerifierEffect(trust: AppTokenTrust) {
               "appPublicId",
               "scope",
               "toolUrl",
-              "purpose",
             ],
             maxTokenAge: APP_TOKEN_LIFETIME_SECONDS,
             currentDate: new Date(now),
@@ -189,7 +183,6 @@ export function appTokenVerifierEffect(trust: AppTokenTrust) {
       const claims = yield* Effect.try({ try: () => access.parse(payload), catch: invalidToken });
       const verifiedAt = yield* Clock.currentTimeMillis;
       if (
-        claims.purpose !== trust.purpose ||
         claims.sub !== claims.installationId ||
         (trust.appId !== undefined && claims.appId !== trust.appId) ||
         (trust.projectId !== undefined && claims.projectId !== trust.projectId) ||

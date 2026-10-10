@@ -42,7 +42,6 @@ export function issueAppRuntimeToken(identity: AppTokenIdentity) {
     {
       issuer: appRuntimeIssuer(env.OPENAPI_SERVER_URL ?? "https://tailorkit.dev/api/platform"),
       audience: APP_AUDIENCE,
-      purpose: "app",
       keyId: key.kid,
       privateKey: key,
     },

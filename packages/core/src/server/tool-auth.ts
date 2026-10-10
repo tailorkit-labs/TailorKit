@@ -83,7 +83,6 @@ export function createToolVerifier(options: {
     if (
       claims.iss !== issuer ||
       claims.aud !== audience ||
-      claims.purpose !== "app" ||
       claims.toolUrl !== toolUrl ||
       !Number.isInteger(claims.exp) ||
       !Number.isInteger(claims.iat) ||

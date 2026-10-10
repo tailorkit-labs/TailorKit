@@ -51,7 +51,6 @@ const keys = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256
 const signing = {
   issuer: "https://platform.test/api/platform",
   audience: APP_AUDIENCE,
-  purpose: "app" as const,
   keyId: "host",
   privateKey: keys.privateKey,
 };

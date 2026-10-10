@@ -36,7 +36,6 @@ it("publishes only public keys and issues platform-bound short-lived access", as
   const verify = appTokenVerifier({
     issuer: settings.OPENAPI_SERVER_URL,
     audience: APP_AUDIENCE,
-    purpose: "app",
     publicKeys,
   });
   expect(await verify(session.token)).toMatchObject(identity);
