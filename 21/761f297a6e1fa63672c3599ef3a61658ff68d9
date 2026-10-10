@@ -1,0 +1,89 @@
+examples/nextjs/app/api/tailorkit/[[...path]]/route.ts
+  s_d6b6385c37a4c1::t_a1ea0f4700c8a6 2,4-10
+examples/nextjs/src/env.ts
+  s_d6b6385c37a4c1::t_a1ea0f4700c8a6 7
+examples/nextjs/turbo.json
+  s_d6b6385c37a4c1::t_a1ea0f4700c8a6 5
+examples/tanstack-start/turbo.json
+  s_d6b6385c37a4c1::t_a1ea0f4700c8a6 5
+packages/cli/src/generator/types.test.ts
+  s_d6b6385c37a4c1::t_8cbade639152ae 425
+  s_d6b6385c37a4c1::t_6ef1a4c7cde74f 411
+  s_d6b6385c37a4c1::t_ae68cfa1f8c01f 424
+examples/tanstack-start/README.md
+  s_d6b6385c37a4c1::t_b2171c61e14d1a 48-49
+  s_d6b6385c37a4c1::t_3650f95d825da8 45-47
+packages/core/src/server/agent.test.ts
+  s_d6b6385c37a4c1::t_6ef1a4c7cde74f 45
+examples/tanstack-start/src/lib/tailorkit-server.ts
+  s_d6b6385c37a4c1::t_8cbade639152ae 5-7
+  s_d6b6385c37a4c1::t_a1ea0f4700c8a6 11
+docs/installation.mdx
+  s_d6b6385c37a4c1::t_b2171c61e14d1a 321,329-333,337
+  s_d6b6385c37a4c1::t_c231b22add4d0f 346-347
+packages/core/src/server/handler.ts
+  s_d6b6385c37a4c1::t_d08af458cb18ab 128,139
+  s_d6b6385c37a4c1::t_3650f95d825da8 321
+packages/core/src/server/tools.test.ts
+  s_d6b6385c37a4c1::t_a1ea0f4700c8a6 43,157,222,273,277,283
+  s_d6b6385c37a4c1::t_eb014069e6c1b1 94-95,98-99
+  s_d6b6385c37a4c1::t_1007609dcff890 69-79,82-87,278-282
+  s_d6b6385c37a4c1::t_df484c79b6ea18 80-81,88-93,96-97,100-103
+packages/core/src/server/base-url.ts
+  s_d6b6385c37a4c1::t_d08af458cb18ab 1-2,5,7,19
+  s_d6b6385c37a4c1::t_eb014069e6c1b1 4,6,14,16
+examples/nextjs/lib/tailorkit-server.ts
+  s_d6b6385c37a4c1::t_8cbade639152ae 5-7
+  s_d6b6385c37a4c1::t_a1ea0f4700c8a6 11
+packages/core/src/server/contract.ts
+  s_d6b6385c37a4c1::t_d08af458cb18ab 43,81,120,166
+  s_d6b6385c37a4c1::t_eb014069e6c1b1 83-85
+packages/core/src/schema/tools.test-d.ts
+  s_d6b6385c37a4c1::t_1007609dcff890 31-35,52-54,56-57
+  s_d6b6385c37a4c1::t_b2171c61e14d1a 36,38-49
+  s_d6b6385c37a4c1::t_b5582661355025 55
+  s_d6b6385c37a4c1::t_6ef1a4c7cde74f 51
+  s_d6b6385c37a4c1::t_eb014069e6c1b1 7
+packages/core/src/server/types.test-d.ts
+  s_d6b6385c37a4c1::t_1007609dcff890 32-36
+  s_d6b6385c37a4c1::t_6ef1a4c7cde74f 13,20,42,86
+packages/core/src/server/handler.test.ts
+  s_d6b6385c37a4c1::t_1007609dcff890 7-11,101-104,176-180
+  s_d6b6385c37a4c1::t_3650f95d825da8 286
+  s_d6b6385c37a4c1::t_6ef1a4c7cde74f 18,160-164,187,215,260,293,338,358,382,407,423,440,479,511,542,611,670,718
+  s_d6b6385c37a4c1::t_df484c79b6ea18 158-159,165
+  s_d6b6385c37a4c1::t_02daeea6b708ad 100
+examples/tanstack-start/src/routes/api/tailorkit.$.ts
+  s_d6b6385c37a4c1::t_a1ea0f4700c8a6 3,5-11
+examples/tanstack-start/src/env.ts
+  s_d6b6385c37a4c1::t_a1ea0f4700c8a6 7
+examples/nextjs/README.md
+  s_d6b6385c37a4c1::t_3650f95d825da8 44-45
+  s_d6b6385c37a4c1::t_b2171c61e14d1a 46-47
+examples/nextjs/.env.example
+  s_d6b6385c37a4c1::t_a1ea0f4700c8a6 3
+docs/tools.mdx
+  s_d6b6385c37a4c1::t_b2171c61e14d1a 33,43,61-79,91-94
+packages/core/src/server/preview.test.ts
+  s_d6b6385c37a4c1::t_6ef1a4c7cde74f 15,306
+.changeset/explicit-server-configuration.md
+  s_d6b6385c37a4c1::t_623b3ad96663e0 1-8
+packages/core/src/server/types.ts
+  s_d6b6385c37a4c1::t_d08af458cb18ab 36-37,39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "21761f297a6e1fa63672c3599ef3a61658ff68d9",
+  "prompts": {},
+  "sessions": {
+    "s_d6b6385c37a4c1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1240c-0a82-7a62-bd01-9877a714fcc9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
