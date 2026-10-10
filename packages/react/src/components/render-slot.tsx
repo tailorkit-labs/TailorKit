@@ -59,6 +59,7 @@ function SlotRenderer(options: SlotRuntimeOptions): ReactNode {
           key={snapshot.hostKey}
           appUrl={snapshot.appUrl}
           sourceText={snapshot.sourceText}
+          toolBridge={snapshot.toolBridge}
           getBackendSession={snapshot.getBackendSession}
           components={client.components}
           props={snapshot.props}

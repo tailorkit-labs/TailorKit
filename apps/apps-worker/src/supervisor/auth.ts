@@ -18,6 +18,7 @@ export function createAppRuntimeVerifierEffect(options: RuntimeVerifierOptions) 
     verify = appTokenVerifierEffect({
       issuer: appRuntimeIssuer(options.platformUrl),
       audience: APP_RUNTIME_AUDIENCE,
+      purpose: "runtime",
       publicKeys: parseAppPublicKeys(
         typeof options.publicKeys === "string"
           ? JSON.parse(options.publicKeys)

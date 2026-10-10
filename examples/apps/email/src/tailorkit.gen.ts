@@ -6,42 +6,85 @@
 // Do not make changes to this file directly, as it will be overwritten.
 // Exclude this file from linting and formatting to avoid checking generated code.
 
-import { createRemoteComponent } from "@tailorkit/app";
+import { createRemoteComponent } from "tailorkit/client";
+
+import { callTool } from "tailorkit/client";
 
 export interface ViewPropsByPath {
   "/": {
-    context: Record<string, never>;
+    context: {
+      user: {
+        id: string;
+        name: string;
+      };
+    };
+  };
+  "/customers": {
+    context: {
+      user: {
+        id: string;
+        name: string;
+      };
+    } & {
+      customers: {
+        id: string;
+        name: string;
+      }[];
+    };
+  };
+  "/customers/detail": {
+    context: {
+      user: {
+        id: string;
+        name: string;
+      };
+    } & {
+      customers: {
+        id: string;
+        name: string;
+      }[];
+    } & {
+      customer: {
+        id: string;
+        name: string;
+      };
+    };
   };
 }
 
-declare module "@tailorkit/app" {
+declare module "tailorkit/client" {
   interface TailorKitViews extends ViewPropsByPath {}
   interface TailorKitSlots {
-    panel: { views: "/"; multiple: false };
+    page: { views: "/"; multiple: true };
+    panel: { views: "/" | "/customers" | "/customers/detail"; multiple: false };
     navbar: { views: "/"; multiple: false };
   }
 }
 
 export type ViewPath = keyof ViewPropsByPath & string;
 export type ViewProps<TPath extends ViewPath> = ViewPropsByPath[TPath];
-export type TailorKitActions = {
+export type TailorKitTools = {
+  echo: (input: string) => Promise<string>;
+  navigation: {
+    openCustomer: (input: { customerId: string }) => Promise<string>;
+  };
+};
+export type TailorKitBackendTools = {
   echo: (input: string) => Promise<string>;
 };
-export const actions = {
-  echo: async (input: unknown) => {
-    const response = await fetch("/api/tailorkit/actions/echo", {
-      body: JSON.stringify(input),
-      headers: { "content-type": "application/json" },
-      method: "POST",
-    });
-    if (!response.ok) throw new Error(await response.text());
-    return response.json();
+declare module "tailorkit/client" {
+  interface TailorKitServerTools extends TailorKitBackendTools {}
+}
+export const tools = {
+  echo: (input?: unknown) => callTool("server", "echo", input),
+  navigation: {
+    openCustomer: (input?: unknown) => callTool("client", "navigation.openCustomer", input),
   },
-} as TailorKitActions;
+} as TailorKitTools;
 
 export type Breakpoint = "base" | "sm" | "md" | "lg" | "xl" | "2xl";
 export type Responsive<TValue> = TValue | Partial<Record<Breakpoint, TValue>>;
-export type Background = never;
+export type Background = Responsive<"muted" | "surface">;
 export type Basis = Responsive<
   | "0"
   | "1/2"
@@ -77,7 +120,7 @@ export type Basis = Responsive<
 >;
 export type Border = Responsive<"solid" | "dashed" | "dotted" | "double">;
 export type BorderColor = Responsive<"default">;
-export type Grow = Responsive<string>;
+export type Grow = Responsive<"0" | "1">;
 export type Height = Responsive<
   | "0"
   | "1/2"
@@ -182,7 +225,7 @@ export type Overflow = Responsive<"visible" | "hidden" | "clip" | "scroll" | "au
 export type OverflowWrap = Responsive<"normal" | "breakWord" | "anywhere">;
 export type Padding = Responsive<"none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl">;
 export type Radius = Responsive<"none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl">;
-export type Shrink = Responsive<string>;
+export type Shrink = Responsive<"0" | "1">;
 export type TextAlign = Responsive<"left" | "right" | "start" | "end" | "center" | "justify">;
 export type TextColor = Responsive<"default">;
 export type TextOverflow = Responsive<"clip" | "ellipsis">;
@@ -220,12 +263,12 @@ export type Width = Responsive<
   | "max"
   | "fit"
 >;
-export type Align = Responsive<string>;
-export type Direction = Responsive<string>;
+export type Align = Responsive<"start" | "center" | "end" | "stretch">;
+export type Direction = Responsive<"row" | "column">;
 export type Gap = Responsive<"none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl">;
-export type Justify = Responsive<string>;
-export type Wrap = Responsive<string>;
-export type Columns = Responsive<number>;
+export type Justify = Responsive<"start" | "center" | "end" | "between">;
+export type Wrap = Responsive<"wrap" | "nowrap" | "wrap-reverse">;
+export type Columns = Responsive<1 | 2 | 3 | 4 | 6 | 12>;
 
 export interface BoxProps {
   background?: Background;
@@ -330,7 +373,8 @@ export const Inline = /* @__PURE__ */ createRemoteComponent<InlineProps, true>("
 });
 
 export interface ButtonProps {
-  variant?: "default" | "secondary";
+  size?: "default" | "sm" | "lg" | "icon" | "icon-sm" | "icon-lg";
+  variant?: "default" | "secondary" | "ghost" | "outline" | "destructive";
   onClick?: () => void;
 }
 
@@ -377,6 +421,17 @@ export interface InputProps {
 }
 
 export const Input = /* @__PURE__ */ createRemoteComponent<InputProps, true>("Input", {
+  children: true,
+  callbacks: { onValueChange: 1 },
+});
+
+export interface TextAreaProps {
+  value?: string;
+  size?: "sm" | "default" | "lg" | number;
+  onValueChange?: (input: { value: string }) => void;
+}
+
+export const TextArea = /* @__PURE__ */ createRemoteComponent<TextAreaProps, true>("TextArea", {
   children: true,
   callbacks: { onValueChange: 1 },
 });

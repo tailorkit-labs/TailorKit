@@ -1,10 +1,13 @@
+import type { TailorKitServerTools } from "../client/tools";
 import type { z } from "zod";
 import type { AnyRelations, EmptyRelations } from "drizzle-orm/relations";
 import type { DatabaseDefinition } from "../database/definition";
 import type { QueryDatabase, MutationDatabase } from "../database/types";
 
 export interface Identity {
-  readonly userId: string;
+  readonly subjectId?: string;
+  readonly scope: { name: string; value: Record<string, unknown> };
+  readonly toolUrl: string;
   readonly projectId: string;
   readonly appId: string;
   readonly installationId: string;
@@ -38,8 +41,12 @@ export type FunctionCalls<F, K extends "query" | "mutation"> = {
       ? FunctionCalls<F[N], K>
       : never;
 };
+
 export interface ActionContext<F extends Functions = Record<never, never>> {
   readonly identity: Identity;
+  readonly tools: TailorKitServerTools;
+  readonly requestId: string;
+  readonly scope: Identity["scope"];
   readonly signal: AbortSignal;
   readonly queries: FunctionCalls<F, "query">;
   readonly mutations: FunctionCalls<F, "mutation">;

@@ -5,8 +5,10 @@ import { afterEach } from "vite-plus/test";
 afterEach(() => vi.restoreAllMocks());
 
 const identity = {
-  userId: "user",
+  subjectId: "user",
   projectId: "project",
+  scope: { name: "org", value: { id: "tenant" } },
+  toolUrl: "https://host.test/api/tailorkit/tools/execute",
   appId: "app",
   installationId: "installation",
   deploymentId: "v1",
@@ -15,6 +17,8 @@ const identity = {
 
 const deployment = {
   projectId: "project",
+  scope: { name: "org", value: { id: "tenant" } },
+  toolUrl: "https://host.test/api/tailorkit/tools/execute",
   appId: "app",
   deploymentId: "v1",
   objectKey: "private/server.js",

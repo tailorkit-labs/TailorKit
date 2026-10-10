@@ -75,7 +75,7 @@ export function createExecution(
     }
     z.uuid().parse(input.requestId);
     const fingerprint = JSON.stringify([
-      identity.userId,
+      identity.subjectId ?? null,
       identity.projectId,
       identity.appId,
       identity.installationId,
@@ -120,6 +120,7 @@ export function createExecution(
             identity,
             {
               fetch: services.fetch,
+              tool: services.tool,
               query: (call) => Promise.resolve().then(() => execute(call, identity, "query").value),
               mutate: async (call) => {
                 const result = mutate(call, identity);

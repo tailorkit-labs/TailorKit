@@ -5,7 +5,7 @@ import { env } from "#env";
 
 const authenticate = ({ request }: { request: Request }) => {
   const user = getDemoUserFromRequest(request);
-  return user ? { actionContext: { user }, scopes: { user: { userId: user.id } } } : null;
+  return user ? { subjectId: user.id, scopes: { user: { userId: user.id } } } : null;
 };
 
 export const tailorKit = createServer({
@@ -16,7 +16,7 @@ export const tailorKit = createServer({
     platformBaseUrl: env.TAILORKIT_PLATFORM_BASE_URL,
   },
   authenticate,
-  actions: {
-    echo: ({ input, context }) => `${context.user.name} said '${input}'`,
+  tools: {
+    echo: ({ input, context }) => `${context.identity.subjectId} said '${input}'`,
   },
 });

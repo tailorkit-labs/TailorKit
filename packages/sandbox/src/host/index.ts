@@ -1,3 +1,4 @@
+import type { ToolBridge } from "@tailorkit/app/client";
 import * as v from "valibot";
 import { AppError } from "@tailorkit/app/client/connection";
 import type { Session } from "@tailorkit/app/client/connection";
@@ -31,6 +32,7 @@ export interface IframeUiHostOptions {
   /** Complete source for a committed preview revision. */
   sourceText?: string;
   /** Bound by the host SDK to this app installation; never supplied by the iframe. */
+  toolBridge?: ToolBridge;
   getBackendSession?: (options: { refresh: boolean }) => Promise<Session>;
 }
 
@@ -108,6 +110,28 @@ export function createIframeUiHost(
           `Invalid sandbox message: ${result.issues.map((issue) => issue.message).join("; ")}`,
         ),
       );
+      return;
+    }
+    if (result.output.type === "toolRequest") {
+      const { id, kind, path, input } = result.output.data;
+      if (sessionCalls.has(id) || sessionCalls.size >= 32) return;
+      sessionCalls.add(id);
+      const bridge = options.toolBridge;
+      void (
+        bridge
+          ? kind === "client"
+            ? bridge.client(path, input)
+            : bridge.session(path)
+          : Promise.reject(new Error("Tool bridge unavailable"))
+      )
+        .then((output) => {
+          if (!destroyed) postToIframe({ type: "toolResult", data: { id, output } });
+        })
+        .catch(() => {
+          if (!destroyed)
+            postToIframe({ type: "toolResult", data: { id, error: "Tool request failed" } });
+        })
+        .finally(() => sessionCalls.delete(id));
       return;
     }
     if (result.output.type === "backendSessionRequest") {

@@ -8,11 +8,13 @@ import { inExecutionContext } from "./context";
 /** Host capability passed into each action invocation. */
 export interface ActionCapability {
   fetch(request: Request, cancellation: ReadableStream): Promise<Response>;
+  tool(path: string, input: unknown): Promise<unknown>;
   committed(tables: string[]): Promise<void>;
 }
 
 /** Action helpers call the local execution engine; app authors receive no raw database handle. */
 export interface ActionCalls {
+  tool?: (path: string, input: unknown) => Promise<unknown>;
   fetch?: typeof globalThis.fetch;
   query(input: Invocation): Promise<unknown>;
   mutate(input: Invocation & { requestId: string }): Promise<unknown>;
@@ -93,6 +95,23 @@ export function createActionExecution(app: AppDefinition) {
         throw new AppError("UNAUTHORIZED", "App token expired");
       }
     }
+    const createTools = (parts: string[] = []): unknown =>
+      new Proxy(() => {}, {
+        get(_target, key) {
+          if (typeof key !== "string" || key === "then") return undefined;
+          if (["__proto__", "constructor", "prototype"].includes(key))
+            throw new AppError("BAD_REQUEST", "Invalid tool path");
+          return createTools([...parts, key]);
+        },
+        apply(_target, _this, args) {
+          check();
+          if (!calls.tool) throw new AppError("UNAVAILABLE", "Tool transport unavailable");
+          return calls.tool(parts.join("."), args[0]).then((value) => {
+            check();
+            return value;
+          });
+        },
+      });
     check();
     const { fn, args } = prepareFunction(app, input, identity, "action");
     const binding = bindings.get(fn);
@@ -104,6 +123,9 @@ export function createActionExecution(app: AppDefinition) {
         fn.handler({
           args,
           identity,
+          tools: createTools(),
+          scope: identity.scope,
+          requestId: crypto.randomUUID(),
           signal,
           queries: bind(binding.queries, check, calls),
           mutations: bind(binding.mutations, check, calls),
@@ -118,6 +140,7 @@ export function createActionExecution(app: AppDefinition) {
 }
 
 export interface ActionServices {
+  tool?: (path: string, input: unknown) => Promise<unknown>;
   fetch?: typeof globalThis.fetch;
   committed(tables: string[]): Promise<void>;
 }

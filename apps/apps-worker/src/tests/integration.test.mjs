@@ -8,7 +8,12 @@ import { mkdtemp, rm, readFile, writeFile, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { build } from "vite";
-import { issueAppToken, APP_RUNTIME_AUDIENCE } from "@tailorkit/api-utils/app-auth";
+import {
+  issueAppToken,
+  appTokenVerifier,
+  APP_RUNTIME_AUDIENCE,
+  APP_TOOL_AUDIENCE,
+} from "@tailorkit/api-utils/app-auth";
 
 import { createClient, createApi, reference } from "@tailorkit/app/client";
 
@@ -31,6 +36,7 @@ it("runs isolated app backends with persistent SQLite and two-client realtime up
   const signing = {
     issuer: "https://platform.test/api/platform",
     audience: APP_RUNTIME_AUDIENCE,
+    purpose: "runtime",
     keyId: "test",
     privateKey: keys.privateKey,
   };
@@ -72,6 +78,40 @@ it("runs isolated app backends with persistent SQLite and two-client realtime up
       ASSET_DOMAIN: "tailorkit.app",
     },
     outboundService: async (request) => {
+      if (request.url === "https://platform.test/api/platform/runtime/tools") {
+        const verified = await appTokenVerifier({ ...signing, publicKeys })(
+          request.headers.get("authorization").slice(7),
+        );
+        const { path: toolPath } = await request.json();
+        assert.ok(["product.identity", "echo"].includes(toolPath));
+        return Response.json({
+          ...(await issueAppToken(
+            { ...signing, purpose: "tool", audience: APP_TOOL_AUDIENCE, toolPath },
+            verified,
+          )),
+          url: verified.toolUrl,
+        });
+      }
+      if (request.url === "https://host.test/api/tailorkit/tools/execute") {
+        const { path: toolPath, input, requestId } = await request.json();
+        assert.match(requestId, /^[0-9a-f-]{36}$/u);
+        const verified = await appTokenVerifier({
+          ...signing,
+          purpose: "tool",
+          audience: APP_TOOL_AUDIENCE,
+          toolPath,
+          publicKeys,
+        })(request.headers.get("authorization").slice(7));
+        if (toolPath === "echo") return Response.json({ output: input });
+        return Response.json({
+          output: {
+            subjectId: verified.subjectId,
+            installationId: verified.installationId,
+            scope: verified.scope,
+          },
+        });
+      }
+
       if (request.url.startsWith("https://third-party.test/")) {
         externalCalls++;
         assert.equal(request.headers.get("authorization"), null);
@@ -150,7 +190,9 @@ export default { functions: { probe: {
     const session = await issueAppToken(signing, {
       publicTeamId,
       appPublicId,
-      userId: "user",
+      scope: { name: "org", value: { id: "tenant" } },
+      toolUrl: "https://host.test/api/tailorkit/tools/execute",
+      subjectId: "user",
       projectId,
       appId: "app",
       installationId,
@@ -189,10 +231,11 @@ let globals = 0;
 const migratedTodos = table("todos", { id: text(), priority: integer() });
 const nested = { read: app.functions.list, add: app.functions.add };
 const actionApp = defineServer({ ...app.functions,
+  toolProbe: action({ args: app.functions.list.args, handler: ctx => ctx.tools.product.identity() }),
   nested,
   tasks: { read: action({ functions: { nested }, args: app.functions.list.args, handler: ctx => ctx.queries.nested.read() }) },
   migrationProbe: query({ args: app.functions.list.args, handler: ({ db }) => db.select().from(migratedTodos).all() }),
-  isolation: action({ args: app.functions.list.args, handler: context => ({ bindings: Object.keys(env), db: "db" in context, globals: ++globals, userId: context.identity.userId }) }),
+  isolation: action({ args: app.functions.list.args, handler: context => ({ bindings: Object.keys(env), db: "db" in context, globals: ++globals, subjectId: context.identity.subjectId }) }),
   failAfterWrite: action({ functions: app.functions, args: app.functions.list.args, async handler(ctx) {
     await ctx.mutations.add({ text: "Committed before the action failed" });
     throw new AppError("CONFLICT", "Intentional action failure");
@@ -260,7 +303,9 @@ export const migrations = ${JSON.stringify(history)};`;
               {
                 publicTeamId,
                 appPublicId,
-                userId: "user",
+                scope: { name: "org", value: { id: "tenant" } },
+                toolUrl: "https://host.test/api/tailorkit/tools/execute",
+                subjectId: "user",
                 projectId,
                 appId: "app",
                 installationId,
@@ -312,6 +357,11 @@ export const migrations = ${JSON.stringify(history)};`;
       const nestedApi = createApi();
       assert.deepEqual(await first.query(nestedApi.nested.read), []);
       assert.deepEqual(await first.action(nestedApi.tasks.read), []);
+      assert.deepEqual(await first.action(reference("toolProbe", "action")), {
+        subjectId: "user",
+        installationId: "backend-todos",
+        scope: { name: "org", value: { id: "tenant" } },
+      });
 
       const input = { text: "Both clients see this persisted mutation" };
       const saved = await first.mutate(add, input, {
@@ -383,7 +433,7 @@ export const migrations = ${JSON.stringify(history)};`;
           bindings: [],
           db: false,
           globals: 1,
-          userId: "user",
+          subjectId: "user",
         });
         assert.equal((await second.action(probe)).globals, 2);
 

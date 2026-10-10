@@ -17,12 +17,15 @@ const signing = {
   audience: "tailorkit-apps-worker",
   privateKey,
   keyId: "host-key",
+  purpose: "runtime" as const,
 };
 const identity = {
   publicTeamId: "abc123def45678",
   appPublicId: "app000000001",
-  userId: "user",
+  subjectId: "principal",
   projectId: "project",
+  scope: { name: "org", value: { id: "tenant" } },
+  toolUrl: "https://host.test/api/tailorkit/tools/execute",
   deploymentId: "deployment",
   appId: "app",
   installationId: "installation",
@@ -58,6 +61,8 @@ it("rejects wrong signature, issuer, audience, app, expiry, missing claims and e
       publicTeamId: identity.publicTeamId,
       appPublicId: identity.appPublicId,
       projectId: identity.projectId,
+      scope: { name: "org", value: { id: "tenant" } },
+      toolUrl: "https://host.test/api/tailorkit/tools/execute",
       deploymentId: identity.deploymentId,
       ...claims,
     })
@@ -159,10 +164,42 @@ it.each(["projectId", "deploymentId", "publicTeamId", "appPublicId"])(
     const claims = { ...identity, [field]: undefined, iat: now, exp: now + 120 };
     const token = await new SignJWT(claims)
       .setProtectedHeader({ alg: "ES256", kid: "host-key", typ: "JWT" })
-      .setSubject(identity.userId)
+      .setSubject(identity.installationId)
       .setIssuer(signing.issuer)
       .setAudience(signing.audience)
       .sign(privateKey);
     await expect(verify(token)).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   },
 );
+
+it("preserves arbitrary product principals and separates runtime and tool credentials", async () => {
+  const toolSigning = {
+    ...signing,
+    audience: "tailorkit-product-tools",
+    purpose: "tool" as const,
+    toolPath: "billing.read",
+  };
+  const credential = await issueAppToken(toolSigning, {
+    ...identity,
+    subjectId: "job:invoice-run",
+  });
+  const toolVerify = appTokenVerifier({ ...toolSigning, publicKeys });
+  expect(await toolVerify(credential.token)).toMatchObject({
+    subjectId: "job:invoice-run",
+    scope: identity.scope,
+    installationId: identity.installationId,
+  });
+  expect(decodeJwt(credential.token).sub).toBe(identity.installationId);
+  expect(decodeJwt(credential.token).exp! - decodeJwt(credential.token).iat!).toBe(60);
+  await expect(verify(credential.token)).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  const runtime = await issueAppToken(signing, identity);
+  await expect(toolVerify(runtime.token)).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  await expect(
+    appTokenVerifier({ ...toolSigning, toolPath: "billing.write", publicKeys })(credential.token),
+  ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  const installation = await issueAppToken(signing, { ...identity, subjectId: undefined });
+  expect(await verify(installation.token)).toMatchObject({
+    subjectId: undefined,
+    installationId: identity.installationId,
+  });
+});

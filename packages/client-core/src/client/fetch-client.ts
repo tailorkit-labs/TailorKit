@@ -8,6 +8,11 @@ export interface TailorKitCacheOptions extends FetchCacheOptions {
 }
 
 export interface TailorKitFetchClientOptions {
+  contract?: import("@tailorkit/core/schema").TailorKitContract;
+  tools?: import("@tailorkit/core/schema").ToolImplementations<
+    import("@tailorkit/core/schema").TailorKitContract["tools"],
+    "client"
+  >;
   baseUrl: string | URL;
   fetch?: typeof fetch;
   cache?: TailorKitCacheOptions;

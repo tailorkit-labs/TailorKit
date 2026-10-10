@@ -3,7 +3,7 @@ import { Clock, Effect } from "effect";
 import { z } from "zod";
 import { AppError } from "@tailorkit/app/client";
 import type { Identity } from "@tailorkit/app/server";
-import { APP_TOKEN_LIFETIME_SECONDS } from "./policy";
+import { APP_TOKEN_LIFETIME_SECONDS, APP_TOOL_LIFETIME_SECONDS } from "./policy";
 
 export type AppTokenIdentity = Omit<Identity, "expiresAt"> & {
   publicTeamId: string;
@@ -27,10 +27,14 @@ export interface AppSigningOptions {
   /** ES256 private key. Keep this in the trusted issuing server only. */
   privateKey: CryptoKey | JsonWebKey;
   lifetimeSeconds?: number;
+  purpose: "runtime" | "tool";
+  toolPath?: string;
 }
 export interface AppTokenTrust {
   issuer: string;
   audience: string;
+  purpose: "runtime" | "tool";
+  toolPath?: string;
   appId?: string;
   projectId?: string;
   /** Trusted issuer public keys, provisioned by the operator; never read from JWT headers. */
@@ -42,6 +46,11 @@ const access = z.object({
   projectId: z.string().min(1).max(256),
   deploymentId: z.string().min(1).max(256),
   sub: z.string().min(1).max(256),
+  subjectId: z.string().min(1).max(256).optional(),
+  scope: z.object({ name: z.string().min(1), value: z.record(z.string(), z.unknown()) }),
+  toolUrl: z.url(),
+  purpose: z.enum(["runtime", "tool"]),
+  toolPath: z.string().min(1).optional(),
   appId: z.string().min(1).max(256),
   installationId: z.string().min(1).max(256),
   exp: z.number().int(),
@@ -73,11 +82,16 @@ function signingError(error: unknown): Error {
 /** Compose signing without starting a runtime; Promise callers use issueAppToken. */
 export function issueAppTokenEffect(options: AppSigningOptions, identity: AppTokenIdentity) {
   return Effect.gen(function* issueToken() {
-    const lifetime = options.lifetimeSeconds ?? APP_TOKEN_LIFETIME_SECONDS;
-    if (!Number.isInteger(lifetime) || lifetime < 1 || lifetime > APP_TOKEN_LIFETIME_SECONDS) {
-      return yield* Effect.fail(
-        new Error(`App tokens must last 1–${APP_TOKEN_LIFETIME_SECONDS} seconds`),
-      );
+    const maximum =
+      options.purpose === "tool" ? APP_TOOL_LIFETIME_SECONDS : APP_TOKEN_LIFETIME_SECONDS;
+    const lifetime = options.lifetimeSeconds ?? maximum;
+    if (
+      (options.purpose === "tool" && !options.toolPath) ||
+      !Number.isInteger(lifetime) ||
+      lifetime < 1 ||
+      lifetime > maximum
+    ) {
+      return yield* Effect.fail(new Error(`App tokens must last 1–${maximum} seconds`));
     }
     const now = Math.floor((yield* Clock.currentTimeMillis) / 1000);
     yield* Effect.try({
@@ -87,7 +101,12 @@ export function issueAppTokenEffect(options: AppSigningOptions, identity: AppTok
           appPublicId: identity.appPublicId,
           projectId: identity.projectId,
           deploymentId: identity.deploymentId,
-          sub: identity.userId,
+          sub: identity.installationId,
+          subjectId: identity.subjectId,
+          scope: identity.scope,
+          toolUrl: identity.toolUrl,
+          purpose: options.purpose,
+          toolPath: options.toolPath,
           appId: identity.appId,
           installationId: identity.installationId,
           iat: now,
@@ -111,10 +130,14 @@ export function issueAppTokenEffect(options: AppSigningOptions, identity: AppTok
           deploymentId: identity.deploymentId,
           appId: identity.appId,
           installationId: identity.installationId,
-          purpose: "calls",
+          purpose: options.purpose,
+          toolPath: options.toolPath,
+          subjectId: identity.subjectId,
+          scope: identity.scope,
+          toolUrl: identity.toolUrl,
         })
           .setProtectedHeader({ alg: "ES256", kid: options.keyId, typ: "JWT" })
-          .setSubject(identity.userId)
+          .setSubject(identity.installationId)
           .setIssuer(options.issuer)
           .setAudience(options.audience)
           .setIssuedAt(now)
@@ -165,6 +188,9 @@ export function appTokenVerifierEffect(trust: AppTokenTrust) {
               "deploymentId",
               "publicTeamId",
               "appPublicId",
+              "scope",
+              "toolUrl",
+              "purpose",
             ],
             maxTokenAge: APP_TOKEN_LIFETIME_SECONDS,
             currentDate: new Date(now),
@@ -174,10 +200,14 @@ export function appTokenVerifierEffect(trust: AppTokenTrust) {
       const claims = yield* Effect.try({ try: () => access.parse(payload), catch: invalidToken });
       const verifiedAt = yield* Clock.currentTimeMillis;
       if (
-        (payload.purpose ?? "calls") !== "calls" ||
+        claims.purpose !== trust.purpose ||
+        claims.sub !== claims.installationId ||
+        (trust.purpose === "tool" && (!claims.toolPath || claims.toolPath !== trust.toolPath)) ||
         (trust.appId !== undefined && claims.appId !== trust.appId) ||
         (trust.projectId !== undefined && claims.projectId !== trust.projectId) ||
-        claims.exp - claims.iat > APP_TOKEN_LIFETIME_SECONDS ||
+        claims.exp <= claims.iat ||
+        claims.exp - claims.iat >
+          (trust.purpose === "tool" ? APP_TOOL_LIFETIME_SECONDS : APP_TOKEN_LIFETIME_SECONDS) ||
         claims.iat > Math.floor(verifiedAt / 1000) ||
         claims.exp * 1000 <= verifiedAt
       ) {
@@ -188,7 +218,9 @@ export function appTokenVerifierEffect(trust: AppTokenTrust) {
         appPublicId: claims.appPublicId,
         projectId: claims.projectId,
         deploymentId: claims.deploymentId,
-        userId: claims.sub,
+        subjectId: claims.subjectId,
+        scope: Object.freeze(claims.scope),
+        toolUrl: claims.toolUrl,
         appId: claims.appId,
         installationId: claims.installationId,
         expiresAt: claims.exp * 1000,

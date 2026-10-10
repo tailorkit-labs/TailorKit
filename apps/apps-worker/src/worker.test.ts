@@ -51,6 +51,7 @@ const keys = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256
 const signing = {
   issuer: "https://platform.test/api/platform",
   audience: APP_RUNTIME_AUDIENCE,
+  purpose: "runtime" as const,
   keyId: "host",
   privateKey: keys.privateKey,
 };
@@ -60,8 +61,10 @@ const publicKeys = {
 const identity = {
   publicTeamId: "abc123def45678",
   appPublicId: "app000000001",
-  userId: "user",
+  subjectId: "user",
   projectId: "22222222-2222-4222-8222-222222222222",
+  scope: { name: "org", value: { id: "tenant" } },
+  toolUrl: "https://host.test/api/tailorkit/tools/execute",
   appId: "app",
   installationId: "one",
   deploymentId: "v1",

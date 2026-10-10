@@ -4,13 +4,10 @@ import { appsList, appsRuntimeSession, previewAccepted } from "@tailorkit/client
 import { createClient } from "@tailorkit/client-platform/client/client/index";
 import type {
   NoComponentFieldCallbackConflicts,
-  NoMixedActionContexts,
-  ResolveActionTreeContext,
   ViewContextHierarchy,
   SlotDefinitions,
 } from "../schema/index";
 import { createTailorKitSchema } from "../schema/schema";
-import { flattenActionRouter } from "./actions";
 import { normalizeBasePath } from "./apps";
 import { handleCliAuthApprovalPage } from "./cli-auth-page";
 import { handlePreviewConsent, readPreviewGrantIds } from "./preview-consent";
@@ -22,7 +19,7 @@ import {
 } from "./scope";
 import { tailorkitRouter } from "./router";
 import type {
-  InferTailorKitServerActions,
+  InferTailorKitServerTools,
   InferTailorKitServerComponents,
   InferTailorKitServerViews,
   InferTailorKitServerScopes,
@@ -39,8 +36,7 @@ const previewShareIdPattern = /^[A-Za-z0-9_-]{43}$/u;
 export function createTailorKitServer<const TOptions extends TailorKitServerInputOptions>(
   options: TOptions & {
     slots?: SlotDefinitions<keyof InferTailorKitServerViews<NoInfer<TOptions>> & string>;
-    actions?: InferTailorKitServerActions<TOptions> &
-      NoMixedActionContexts<InferTailorKitServerActions<TOptions>>;
+    tools?: InferTailorKitServerTools<TOptions>;
     components: InferTailorKitServerComponents<TOptions> &
       NoComponentFieldCallbackConflicts<InferTailorKitServerComponents<TOptions>>;
     views?: InferTailorKitServerViews<TOptions> &
@@ -49,8 +45,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
 ): TailorKitServer<
   InferTailorKitServerComponents<TOptions>,
   InferTailorKitServerViews<TOptions>,
-  InferTailorKitServerActions<TOptions>,
-  ResolveActionTreeContext<InferTailorKitServerActions<TOptions>>,
+  InferTailorKitServerTools<TOptions>,
   InferTailorKitServerScopes<TOptions>
 > & {
   readonly $slots?: TOptions extends { slots: infer V } ? V : Record<never, never>;
@@ -69,12 +64,9 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
   const schema = createTailorKitSchema<
     InferTailorKitServerComponents<TOptions>,
     InferTailorKitServerViews<TOptions>,
-    InferTailorKitServerActions<TOptions>
+    InferTailorKitServerTools<TOptions>
   >({
-    actions: options.actions as
-      | (InferTailorKitServerActions<TOptions> &
-          NoMixedActionContexts<InferTailorKitServerActions<TOptions>>)
-      | undefined,
+    tools: options.tools as InferTailorKitServerTools<TOptions> | undefined,
     slots: options.slots,
     scopes: options.scopes,
     components: options.components,
@@ -82,7 +74,6 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
   });
   const platformBaseUrl = options.$internal?.platformBaseUrl ?? defaultPlatformBaseUrl;
   const assetsBaseUrl = options.assetsBaseUrl;
-  const actions = flattenActionRouter(options.actions);
   const platform = createClient({
     baseUrl: platformBaseUrl,
     fetch: options.$internal?.platformFetch,
@@ -97,10 +88,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
   // oxlint-disable-next-line complexity -- request dispatch is intentionally centralized here.
   const handler = async (
     request: Request,
-    handlerOptions: TailorKitHandlerOptions<
-      ResolveActionTreeContext<InferTailorKitServerActions<TOptions>>,
-      InferTailorKitServerScopes<TOptions>
-    >,
+    handlerOptions: TailorKitHandlerOptions<InferTailorKitServerScopes<TOptions>>,
   ) => {
     const authenticate = async ({ request }: { request: Request }) => {
       const hostContext = await handlerOptions.authenticate({ request });
@@ -108,6 +96,13 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
         return null;
       }
 
+      if (
+        hostContext.subjectId !== undefined &&
+        (typeof hostContext.subjectId !== "string" ||
+          !hostContext.subjectId ||
+          hostContext.subjectId.length > 256)
+      )
+        throw new Error("Invalid authenticated subject");
       return {
         ...hostContext,
         scopes: await validateTailorKitScopes(scopeSchemas, hostContext.scopes),
@@ -116,7 +111,7 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
     const url = new URL(request.url);
     const previewPrefix = `${basePath}/preview/`;
     if (url.pathname === `${basePath}/backend/session`) {
-      return handleBackendSession(request, authenticate, async (appId, scopes) => {
+      return handleBackendSession(request, authenticate, async (appId, scopes, subjectId) => {
         const headers = await (typeof platformHeaders === "function"
           ? platformHeaders()
           : platformHeaders);
@@ -127,6 +122,8 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
           headers,
           path: { appId },
           body: {
+            subjectId,
+            toolUrl: url.origin + basePath + "/tools/execute",
             scopes: Object.entries(scopes).map(([name, value]) => ({ name, value })),
           },
         });
@@ -157,7 +154,6 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
       previewShareIdPattern.test(previewShareId)
     ) {
       const context = await createContext({
-        actions,
         platform,
         platformHeaders,
         request,
@@ -179,7 +175,6 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
 
     if (request.method === "GET" && url.pathname === `${basePath}/preview/metadata`) {
       const context = await createContext({
-        actions,
         platform,
         platformHeaders,
         request,
@@ -221,7 +216,6 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
 
     if (request.method === "GET" && url.pathname === `${basePath}/apps`) {
       const context = await createContext({
-        actions,
         platform,
         platformHeaders,
         request,
@@ -284,7 +278,6 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
 
     if (url.pathname === `${basePath}/cli-auth/approve`) {
       const context = await createContext({
-        actions,
         platform,
         platformHeaders,
         request,
@@ -304,7 +297,6 @@ export function createTailorKitServer<const TOptions extends TailorKitServerInpu
 
     const rpcResult = await rpcHandler.handle(request, {
       context: await createContext({
-        actions,
         platform,
         platformHeaders,
         request,

@@ -180,9 +180,19 @@
                       "required": ["name", "value"],
                       "additionalProperties": false
                     }
+                  },
+                  "subjectId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "toolUrl": {
+                    "type": "string",
+                    "format": "uri"
                   }
                 },
-                "required": ["scopes"]
+                "required": ["scopes", "toolUrl"],
+                "additionalProperties": false
               }
             }
           }

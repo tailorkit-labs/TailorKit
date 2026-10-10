@@ -1,3 +1,4 @@
+import type { ToolBridge } from "@tailorkit/app/client";
 import { useStore } from "@nanostores/react";
 import type { Session } from "@tailorkit/app/client";
 /* oxlint-disable react(invariant) */
@@ -52,6 +53,7 @@ class RemoteErrorBoundary extends Component<RemoteErrorBoundaryProps, RemoteErro
 interface RemoteViewHostProps {
   appUrl: string | URL;
   sourceText?: string;
+  toolBridge?: ToolBridge;
   getBackendSession?: (options: { refresh: boolean }) => Promise<Session>;
   components: Record<string, unknown>;
   createIframe?: () => HTMLIFrameElement;
@@ -61,6 +63,7 @@ interface RemoteViewHostProps {
 export function RemoteViewHost({
   appUrl,
   sourceText,
+  toolBridge,
   getBackendSession,
   components,
   createIframe,
@@ -79,8 +82,8 @@ export function RemoteViewHost({
   }, [props, store]);
 
   useEffect(
-    () => store.mount({ appUrl, sourceText, getBackendSession, createIframe }),
-    [appUrl, sourceText, getBackendSession, createIframe, store],
+    () => store.mount({ appUrl, sourceText, toolBridge, getBackendSession, createIframe }),
+    [appUrl, sourceText, toolBridge, getBackendSession, createIframe, store],
   );
 
   if (snapshot.status === "error" && snapshot.error) {

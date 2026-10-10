@@ -309,7 +309,7 @@ describe("JSON Schema type generation", () => {
               callbacks: { onValue: { input: value } },
             },
           },
-          actions: { echo: { input: value, output: value } },
+          tools: { echo: { kind: "server", input: value, output: value } },
         }),
       );
       expect(output).toContain(`value?: ${expected};`);

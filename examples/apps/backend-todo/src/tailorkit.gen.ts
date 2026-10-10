@@ -6,7 +6,9 @@
 // Do not make changes to this file directly, as it will be overwritten.
 // Exclude this file from linting and formatting to avoid checking generated code.
 
-import { createApi, createRemoteComponent } from "tailorkit/client";
+import { createRemoteComponent } from "tailorkit/client";
+
+import { createApi } from "tailorkit/client";
 import type app from "./server";
 type AppServerFunctions = typeof app.functions;
 declare module "tailorkit/client" {
@@ -15,9 +17,47 @@ declare module "tailorkit/client" {
 
 export const api = createApi<typeof app.functions>();
 
+import { callTool } from "tailorkit/client";
+
 export interface ViewPropsByPath {
   "/": {
-    context: Record<string, never>;
+    context: {
+      user: {
+        id: string;
+        name: string;
+      };
+    };
+  };
+  "/customers": {
+    context: {
+      user: {
+        id: string;
+        name: string;
+      };
+    } & {
+      customers: {
+        id: string;
+        name: string;
+      }[];
+    };
+  };
+  "/customers/detail": {
+    context: {
+      user: {
+        id: string;
+        name: string;
+      };
+    } & {
+      customers: {
+        id: string;
+        name: string;
+      }[];
+    } & {
+      customer: {
+        id: string;
+        name: string;
+      };
+    };
   };
 }
 
@@ -25,17 +65,35 @@ declare module "tailorkit/client" {
   interface TailorKitViews extends ViewPropsByPath {}
   interface TailorKitSlots {
     page: { views: "/"; multiple: true };
+    panel: { views: "/" | "/customers" | "/customers/detail"; multiple: false };
+    navbar: { views: "/"; multiple: false };
   }
 }
 
 export type ViewPath = keyof ViewPropsByPath & string;
 export type ViewProps<TPath extends ViewPath> = ViewPropsByPath[TPath];
-export type TailorKitActions = {};
-export const actions = {} as TailorKitActions;
+export type TailorKitTools = {
+  echo: (input: string) => Promise<string>;
+  navigation: {
+    openCustomer: (input: { customerId: string }) => Promise<string>;
+  };
+};
+export type TailorKitBackendTools = {
+  echo: (input: string) => Promise<string>;
+};
+declare module "tailorkit/client" {
+  interface TailorKitServerTools extends TailorKitBackendTools {}
+}
+export const tools = {
+  echo: (input?: unknown) => callTool("server", "echo", input),
+  navigation: {
+    openCustomer: (input?: unknown) => callTool("client", "navigation.openCustomer", input),
+  },
+} as TailorKitTools;
 
 export type Breakpoint = "base" | "sm" | "md" | "lg" | "xl" | "2xl";
 export type Responsive<TValue> = TValue | Partial<Record<Breakpoint, TValue>>;
-export type Background = never;
+export type Background = Responsive<"muted" | "surface">;
 export type Basis = Responsive<
   | "0"
   | "1/2"
@@ -70,7 +128,7 @@ export type Basis = Responsive<
   | "fit"
 >;
 export type Border = Responsive<"solid" | "dashed" | "dotted" | "double">;
-export type BorderColor = never;
+export type BorderColor = Responsive<"default">;
 export type Grow = Responsive<"0" | "1">;
 export type Height = Responsive<
   | "0"
@@ -178,7 +236,7 @@ export type Padding = Responsive<"none" | "2xs" | "xs" | "sm" | "md" | "lg" | "x
 export type Radius = Responsive<"none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl">;
 export type Shrink = Responsive<"0" | "1">;
 export type TextAlign = Responsive<"left" | "right" | "start" | "end" | "center" | "justify">;
-export type TextColor = never;
+export type TextColor = Responsive<"default">;
 export type TextOverflow = Responsive<"clip" | "ellipsis">;
 export type TextTransform = Responsive<"capitalize" | "uppercase" | "lowercase" | "none">;
 export type Width = Responsive<
@@ -324,11 +382,65 @@ export const Inline = /* @__PURE__ */ createRemoteComponent<InlineProps, true>("
 });
 
 export interface ButtonProps {
-  variant?: "default" | "secondary";
+  size?: "default" | "sm" | "lg" | "icon" | "icon-sm" | "icon-lg";
+  variant?: "default" | "secondary" | "ghost" | "outline" | "destructive";
   onClick?: () => void;
 }
 
 export const Button = /* @__PURE__ */ createRemoteComponent<ButtonProps, true>("Button", {
   children: true,
   callbacks: { onClick: 0 },
+});
+
+export interface TabsProps {
+  value?: string;
+  onValueChange?: (input: { value: string }) => void;
+}
+
+export const Tabs = /* @__PURE__ */ createRemoteComponent<TabsProps, true>("Tabs", {
+  children: true,
+  callbacks: { onValueChange: 1 },
+});
+
+export interface TabsListProps {}
+
+export const TabsList = /* @__PURE__ */ createRemoteComponent<TabsListProps, true>("TabsList", {
+  children: true,
+});
+
+export interface TabsTabProps {
+  value?: string;
+}
+
+export const TabsTab = /* @__PURE__ */ createRemoteComponent<TabsTabProps, true>("TabsTab", {
+  children: true,
+});
+
+export interface TabsPanelProps {
+  value?: string;
+}
+
+export const TabsPanel = /* @__PURE__ */ createRemoteComponent<TabsPanelProps, true>("TabsPanel", {
+  children: true,
+});
+
+export interface InputProps {
+  value?: string;
+  onValueChange?: (input: { value: string }) => void;
+}
+
+export const Input = /* @__PURE__ */ createRemoteComponent<InputProps, true>("Input", {
+  children: true,
+  callbacks: { onValueChange: 1 },
+});
+
+export interface TextAreaProps {
+  value?: string;
+  size?: "sm" | "default" | "lg" | number;
+  onValueChange?: (input: { value: string }) => void;
+}
+
+export const TextArea = /* @__PURE__ */ createRemoteComponent<TextAreaProps, true>("TextArea", {
+  children: true,
+  callbacks: { onValueChange: 1 },
 });

@@ -19,7 +19,7 @@ const bundle = z.object({
     z.object({ id: z.string(), hash: z.string(), statements: z.array(z.string()) }),
   ),
 });
-const supportedFeatures = new Set(["database", "actions", "database-relations"]);
+const supportedFeatures = new Set(["database", "actions", "database-relations", "tools"]);
 
 /** Check compatibility before creating tables or applying any application migrations. */
 export function createApplicationExecution(application: unknown, persistence: Persistence) {

@@ -1,0 +1,145 @@
+---
+title: "Tools"
+description: "Expose typed product capabilities to installed apps."
+---
+
+Declare tools in your shared, browser-safe contract. A tool has an execution kind
+and optional Standard Schema input and output validators. Namespaces can be nested.
+Keep database access, secrets, and implementations in separate files.
+
+```ts title="tailorkit.ts"
+import { defineContract, tool } from "tailorkit";
+import { z } from "zod";
+
+export const contract = defineContract({
+  scopes: { workspace: z.object({ workspaceId: z.string() }) },
+  tools: {
+    customers: {
+      read: tool
+        .server()
+        .input(z.object({ customerId: z.string() }))
+        .output(z.object({ name: z.string() })),
+      open: tool
+        .client()
+        .input(z.object({ customerId: z.string() }))
+        .output(z.string()),
+    },
+  },
+});
+```
+
+## Implement server tools
+
+Register server implementations with `createServer({ contract, tools })`. The
+product's authentication function supplies scopes and, optionally, a principal.
+Use the verified installation scope when authorizing access to product data.
+
+```ts title="tailorkit-server.ts"
+import { createServer } from "tailorkit/server";
+import { contract } from "./tailorkit";
+
+export const server = createServer({
+  contract,
+  projectKey: process.env.TAILORKIT_PROJECT_KEY,
+  authenticate: async ({ request }) => {
+    const principal = await authenticateProduct(request);
+    return principal
+      ? {
+          scopes: { workspace: { workspaceId: principal.workspaceId } },
+          subjectId: principal.id,
+        }
+      : null;
+  },
+  tools: {
+    customers: {
+      read: async ({ input, context }) => {
+        const workspaceId = context.scope.value.workspaceId;
+        await authorizeCustomer(context.identity, workspaceId, input.customerId);
+        logger.info({
+          requestId: context.requestId,
+          installationId: context.identity.installationId,
+        });
+        return readCustomer(workspaceId, input.customerId);
+      },
+    },
+  },
+});
+```
+
+`subjectId` can identify a user, service account, agent, or any other
+product-defined principal. It is optional. Without it, use `installationId` for
+attribution. The platform carries the authenticated subject through runtime calls
+and tools automatically; app input cannot supply or override a verified subject.
+
+## Implement client tools
+
+Register client implementations in the product frontend. These run in the product
+page through the trusted sandbox bridge and receive verified installation identity,
+scope, and a request ID. Input and output are validated against the contract.
+
+```tsx title="tailorkit-client.tsx"
+import { createClient, primitives } from "tailorkit/react";
+import { contract } from "./tailorkit";
+
+export const tailor = createClient({
+  contract,
+  baseUrl: new URL("/api/tailorkit/", window.location.origin),
+  components: primitives,
+  tools: {
+    customers: {
+      open: ({ input }) => {
+        const destination = "/customers/" + encodeURIComponent(input.customerId);
+        window.location.assign(destination);
+        return destination;
+      },
+    },
+  },
+});
+```
+
+Pass the current principal ID to the provider so credential caches and mounted app
+views follow principal changes. This value partitions caches; server authentication
+establishes identity. Without a supplied cache principal, runtime credentials are
+requested afresh from the authenticated product server.
+
+```tsx
+<tailor.Provider subjectId={principal?.id}>{children}</tailor.Provider>
+```
+
+## Call tools from apps
+
+Regenerate `tailorkit.gen.ts` with the CLI after changing the contract. App frontend
+callers include both client and server tools:
+
+```ts
+import { tools } from "./tailorkit.gen";
+
+const customer = await tools.customers.read({ customerId: "customer_1" });
+await tools.customers.open({ customerId: "customer_1" });
+```
+
+App backend actions receive typed `ctx.tools` containing server tools. Import the
+generated file's types in the backend module so its module augmentation is included.
+The app's own query, mutation, and action API continues to work independently.
+
+```ts
+import type {} from "./tailorkit.gen";
+import { action } from "tailorkit/server";
+import { z } from "zod";
+
+export const readCustomer = action({
+  args: z.object({ customerId: z.string() }),
+  handler: async (ctx) => {
+    const customer = await ctx.tools.customers.read(ctx.args);
+    return { customer, principal: ctx.identity.subjectId ?? ctx.identity.installationId };
+  },
+});
+```
+
+Server tool calls use authenticated HTTP. The trusted runtime exchanges its verified
+execution credential for a platform-signed tool JWT. Tool credentials last at most
+60 seconds and bind the installation, scope, subject, destination, and tool path.
+Their audience and purpose differ from runtime JWTs. The product verifies issuer,
+audience, signature, expiry, and scope before executing a server tool, then validates
+the output. Backend actions cannot invoke client tools or choose another verified
+principal.

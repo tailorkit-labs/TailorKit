@@ -15,5 +15,5 @@ export interface ApplicationModule {
 /** Emitted by this SDK's builder; breaking interface changes increment apiVersion. */
 export const runtimeManifest = {
   apiVersion: 1,
-  requires: ["database", "actions", "database-relations"],
+  requires: ["database", "actions", "database-relations", "tools"],
 } as const satisfies RuntimeManifest;

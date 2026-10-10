@@ -35,8 +35,10 @@ it("dispatches nested functions and preserves their names, identity, execution a
   expect(api.todos.read.name).toBe("todos.read");
   expect(api.tasks.run.name).toBe("tasks.run");
   const identity = {
-    userId: "u",
+    subjectId: "u",
     projectId: "p",
+    scope: { name: "org", value: { id: "tenant" } },
+    toolUrl: "https://host.test/api/tailorkit/tools/execute",
     appId: "a",
     installationId: "i",
     deploymentId: "d",

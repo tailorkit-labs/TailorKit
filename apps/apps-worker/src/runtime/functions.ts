@@ -27,6 +27,12 @@ export function resolveFunction(
   return isFunction(current) ? current : undefined;
 }
 
+function freezeIdentity(value: unknown): void {
+  if (!value || typeof value !== "object" || Object.isFrozen(value)) return;
+  for (const child of Object.values(value)) freezeIdentity(child);
+  Object.freeze(value);
+}
+
 export function prepareFunction(
   app: AppDefinition,
   input: Invocation,
@@ -36,6 +42,7 @@ export function prepareFunction(
   if (identity.expiresAt <= Date.now()) {
     throw new AppError("UNAUTHORIZED", "App token expired");
   }
+  freezeIdentity(identity);
   const fn = resolveFunction(app.functions, input.name);
   if (!fn || fn.kind !== kind) {
     throw new AppError("NOT_FOUND", "App function not found");

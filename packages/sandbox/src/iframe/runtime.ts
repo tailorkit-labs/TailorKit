@@ -1,3 +1,5 @@
+import { createIframeTools } from "./tools";
+import type { ToolBridge } from "@tailorkit/app/client";
 import { createIframeBackend } from "./backend";
 import type { Session } from "@tailorkit/app/client";
 import { iframeReadyType, sandboxMessageType } from "../bridge";
@@ -39,10 +41,13 @@ export function startIframeRuntime(options: {
       parentWindow.postMessage({ channel, payload, type: sandboxMessageType }, "*");
     }
   };
+  const tools = createIframeTools((data) => send({ type: "toolRequest", data }));
   const backend = createIframeBackend((data) => send({ type: "backendSessionRequest", data }));
   const backendGlobal = globalThis as typeof globalThis & {
+    __tailorkitTools?: ToolBridge;
     __tailorkitBackendSession?: (options: { refresh: boolean }) => Promise<Session>;
   };
+  backendGlobal.__tailorkitTools = tools.bridge;
   backendGlobal.__tailorkitBackendSession = backend.getSession;
   const sendError = (error: unknown) =>
     send({
@@ -153,6 +158,10 @@ export function startIframeRuntime(options: {
       return;
     }
     const payload = event.data.payload as HostToIframePayload;
+    if (payload?.type === "toolResult") {
+      tools.receive(payload.data);
+      return;
+    }
     if (payload?.type === "backendSessionResult") {
       backend.receive(payload.data);
     } else if (payload?.type === "init") {
@@ -177,6 +186,8 @@ export function startIframeRuntime(options: {
   parentWindow.postMessage({ channel, type: iframeReadyType }, "*");
   send({ type: "ready" });
   return () => {
+    tools.close();
+    if (backendGlobal.__tailorkitTools === tools.bridge) delete backendGlobal.__tailorkitTools;
     backend.close();
     if (backendGlobal.__tailorkitBackendSession === backend.getSession)
       delete backendGlobal.__tailorkitBackendSession;

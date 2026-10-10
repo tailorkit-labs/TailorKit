@@ -10,8 +10,13 @@ import {
 import { db } from "@tailorkit/db";
 import z from "zod";
 import { o, protectedRouter, requireAppInScopes } from "../procedures";
-import { appRuntimePublicKeys, issueAppRuntimeToken } from "../runtime/auth";
-import { scopesSchema } from "../scope";
+import {
+  appRuntimePublicKeys,
+  issueAppRuntimeToken,
+  issueAppToolToken,
+  verifyAppRuntimeToken,
+} from "../runtime/auth";
+import { canonicalizeScope, scopesSchema } from "../scope";
 
 /** Public routes must be dispatched before constructing the authenticated platform context. */
 export function handlePublicRuntimeRequest(request: Request): Response | undefined {
@@ -40,8 +45,21 @@ export const runtimeSession = protectedRouter
   .input(
     z.object({
       params: z.object({ appId: z.string().min(1).max(256) }),
-      body: z.object({
+      body: z.strictObject({
         scopes: scopesSchema,
+        subjectId: z.string().min(1).max(256).optional(),
+        toolUrl: z.url().refine((value) => {
+          const url = new URL(value);
+          return (
+            !url.username &&
+            !url.password &&
+            !url.search &&
+            !url.hash &&
+            (url.protocol === "https:" ||
+              (url.protocol === "http:" &&
+                ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)))
+          );
+        }, "Tool URL requires HTTPS"),
       }),
     }),
   )
@@ -49,7 +67,7 @@ export const runtimeSession = protectedRouter
   .use(
     requireAppInScopes.adaptInput(({ params: { appId }, body: { scopes } }) => ({ appId, scopes })),
   )
-  .handler(async ({ context }) => {
+  .handler(async ({ context, input }) => {
     const deployment = context.app.currentDeployment;
     if (!deployment) {
       throw new ORPCError("NOT_FOUND", { message: "App has no published deployment." });
@@ -75,7 +93,9 @@ export const runtimeSession = protectedRouter
     // Each app belongs to one installation scope. Resolve identity from the authorized
     // database record, never from browser input or the ordering of the viewer's scopes.
     const session = await issueAppRuntimeToken({
-      userId: `scope:${context.app.scopeKey}`,
+      subjectId: input.body.subjectId,
+      scope: context.app.scope,
+      toolUrl: input.body.toolUrl,
       installationId: context.app.id,
       projectId: context.project.id,
       appId: context.app.id,
@@ -171,4 +191,40 @@ export function publishRuntimeMetadata(metadata: AppDeploymentMetadata, appPubli
       ),
     ),
   );
+}
+
+/** Exchange a verified runtime execution credential for one product tool credential. */
+export async function handleToolCredentialRequest(request: Request): Promise<Response | undefined> {
+  if (new URL(request.url).pathname !== "/api/platform/runtime/tools") return undefined;
+  const headers = { "cache-control": "no-store" };
+  if (request.method !== "POST")
+    return new Response("Method not allowed", { status: 405, headers });
+  try {
+    const authorization = request.headers.get("authorization");
+    if (!authorization?.startsWith("Bearer ")) throw new Error("Missing token");
+    const identity = await verifyAppRuntimeToken(authorization.slice(7));
+    const input = z
+      .strictObject({
+        path: z
+          .string()
+          .max(512)
+          .regex(/^[a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z][a-zA-Z0-9_]*)*$/u),
+      })
+      .parse(await request.json());
+    const app = await db.query.app.findFirst({
+      where: { id: identity.appId, projectId: identity.projectId },
+      with: { currentDeployment: true },
+    });
+    if (
+      !app ||
+      app.id !== identity.installationId ||
+      app.currentDeployment?.id !== identity.deploymentId ||
+      app.scopeKey !== canonicalizeScope(identity.scope).scopeKey
+    )
+      throw new Error("Installation unavailable");
+    const credential = await issueAppToolToken(identity, input.path);
+    return Response.json({ ...credential, url: identity.toolUrl, identity }, { headers });
+  } catch {
+    return new Response("Unauthorized", { status: 401, headers });
+  }
 }

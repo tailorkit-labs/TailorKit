@@ -22,7 +22,9 @@ it("publishes only public keys and issues platform-bound short-lived access", as
   const identity = {
     publicTeamId: "abc123def45678",
     appPublicId: "app000000001",
-    userId: "user",
+    subjectId: "service-principal",
+    scope: { name: "org", value: { id: "tenant" } },
+    toolUrl: "https://host.test/api/tailorkit/tools/execute",
     projectId: "project",
     appId: "app",
     installationId: "installation",
@@ -34,6 +36,7 @@ it("publishes only public keys and issues platform-bound short-lived access", as
   const verify = appTokenVerifier({
     issuer: settings.OPENAPI_SERVER_URL,
     audience: APP_RUNTIME_AUDIENCE,
+    purpose: "runtime",
     publicKeys,
   });
   expect(await verify(session.token)).toMatchObject(identity);

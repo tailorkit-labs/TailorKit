@@ -94,11 +94,20 @@ export const HostToIframePayload = v.pipe(
   ObjectInput,
   v.variant("type", [
     v.strictObject({
+      type: v.literal("toolResult"),
+      data: strictObject({
+        id: SessionId,
+        output: v.optional(v.unknown()),
+        error: v.optional(v.string()),
+      }),
+    }),
+    v.strictObject({
       type: v.literal("backendSessionResult"),
       data: strictObject({
         id: SessionId,
         session: v.optional(
           strictObject({
+            subjectId: v.optional(v.string()),
             token: v.pipe(v.string(), v.maxLength(8192)),
             expiresAt: FiniteNumber,
             url: SessionUrl,
@@ -218,6 +227,15 @@ const RemotePatchSchema: v.GenericSchema<unknown, RemotePatch> = v.pipe(
 export const IframeToHostPayload = v.pipe(
   ObjectInput,
   v.variant("type", [
+    v.strictObject({
+      type: v.literal("toolRequest"),
+      data: strictObject({
+        id: SessionId,
+        kind: v.picklist(["client", "server"]),
+        path: v.pipe(v.string(), v.maxLength(512)),
+        input: v.optional(v.unknown()),
+      }),
+    }),
     v.strictObject({
       type: v.literal("backendSessionRequest"),
       data: strictObject({ id: SessionId, refresh: v.boolean() }),

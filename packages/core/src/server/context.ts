@@ -1,15 +1,14 @@
 import type { Client as PlatformClient } from "@tailorkit/client-platform/client/client/index";
-import type { ImplementedAction, TailorKitSchema } from "../schema/index";
+import type { TailorKitSchema } from "../schema/index";
 import type { TailorKitScopeSchemas } from "./scope";
 import type { TailorKitPlatformOptions, TailorKitScopes } from "./types";
 
 export interface TailorKitRuntimeContext {
-  actionContext?: unknown;
+  subjectId?: string;
   scopes: TailorKitScopes;
 }
 
 export interface Context {
-  actions: Map<string, ImplementedAction>;
   platform: PlatformClient;
   platformHeaders: Record<string, string>;
   request: Request;
@@ -22,7 +21,6 @@ export interface Context {
 }
 
 export interface CreateContextOptions {
-  actions: Context["actions"];
   platform: PlatformClient;
   platformHeaders?: TailorKitPlatformOptions["headers"];
   request: Request;
@@ -41,7 +39,6 @@ export async function createContext(options: CreateContextOptions): Promise<Cont
   const platformHeaders = Object.fromEntries(new Headers(configuredHeaders));
 
   return {
-    actions: options.actions,
     platform: options.platform,
     platformHeaders,
     request: options.request,

@@ -12,6 +12,7 @@ const issuer = "https://platform.test/api/platform";
 const signing = {
   issuer,
   audience: APP_RUNTIME_AUDIENCE,
+  purpose: "runtime" as const,
   keyId: "platform",
   privateKey: pair.privateKey,
 };
@@ -21,8 +22,10 @@ const publicKeys = {
 const identity = {
   publicTeamId: "abc123def45678",
   appPublicId: "app000000001",
-  userId: "user",
+  subjectId: "user",
   projectId: "project",
+  scope: { name: "org", value: { id: "tenant" } },
+  toolUrl: "https://host.test/api/tailorkit/tools/execute",
   appId: "app",
   installationId: "installation",
   deploymentId: "deployment",

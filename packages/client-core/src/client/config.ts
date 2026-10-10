@@ -1,3 +1,4 @@
+import { flattenTools } from "@tailorkit/core/schema";
 import type {
   TailorKitTheme,
   CallbackMap,
@@ -5,6 +6,7 @@ import type {
   ComponentProps,
   Schema,
   TailorKitContract,
+  ToolImplementations,
 } from "@tailorkit/core/schema";
 import { createTailorKitFetchClient } from "./fetch-client";
 import type { TailorKitFetchClient, TailorKitCacheOptions } from "./fetch-client";
@@ -43,6 +45,7 @@ export const toComponentTagName = (name: string): string =>
     .toLowerCase()}`;
 
 export interface TailorKitClientConfig {
+  readonly tools?: ToolImplementations<TailorKitContract["tools"], "client">;
   readonly baseUrl: string | URL;
   readonly contract: TailorKitContract;
   readonly assetsBaseUrl?: string | URL;
@@ -60,6 +63,7 @@ export type SlotMultiple<TSlot> = TSlot extends { multiple: infer TMultiple exte
 /** Build framework-independent client configuration after an adapter wraps its renderers. */
 export function createTailorKitClientConfig(options: {
   contract: TailorKitContract;
+  tools?: ToolImplementations<TailorKitContract["tools"], "client">;
   assetsBaseUrl?: string | URL;
   baseUrl: string | URL;
   components?: Record<string, unknown>;
@@ -67,7 +71,30 @@ export function createTailorKitClientConfig(options: {
   cache?: TailorKitCacheOptions;
   fetch?: typeof fetch;
 }): TailorKitClientConfig {
+  const declarations = flattenTools(options.contract.tools);
+  const visit = (tree: unknown, prefix = "") => {
+    if (!tree || typeof tree !== "object") return;
+    for (const [name, value] of Object.entries(tree)) {
+      const path = prefix + name;
+      if (typeof value === "function") {
+        if (declarations.get(path)?.kind !== "client")
+          throw new Error(`Undeclared client tool "${path}"`);
+      } else visit(value, path + ".");
+    }
+  };
+  visit(options.tools);
+  for (const [path, leaf] of declarations) {
+    if (leaf.kind !== "client") continue;
+    let value: unknown = options.tools;
+    for (const name of path.split("."))
+      value =
+        value && typeof value === "object" && Object.hasOwn(value, name)
+          ? (value as Record<string, unknown>)[name]
+          : undefined;
+    if (typeof value !== "function") throw new Error(`Missing client tool "${path}"`);
+  }
   return {
+    tools: options.tools,
     baseUrl: options.baseUrl,
     contract: options.contract,
     assetsBaseUrl: options.assetsBaseUrl,

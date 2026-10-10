@@ -1,16 +1,7 @@
-import { createActions, createTailorKitSchema } from "./schema";
-import type { ComponentProps, InferActionInput, InferActionOutput } from "./schema";
+import { createTailorKitSchema } from "./schema";
+import type { ComponentProps } from "./schema";
 import { expectTypeOf } from "vite-plus/test";
 import { z } from "zod";
-
-interface User {
-  id: string;
-}
-interface Org {
-  id: string;
-}
-
-const untypedAction = createActions();
 
 createTailorKitSchema({
   components: {
@@ -44,25 +35,12 @@ const tailor = createTailorKitSchema({
     "/": z.object({}),
     "/customers/:customerId": z.object({ customerId: z.string() }),
   },
-  actions: {
-    noSchemas: untypedAction.handler(() => ({ ok: true })),
-    withInput: untypedAction.input(z.object({ id: z.string() })).handler(({ input }) => input.id),
-    withOutput: untypedAction
-      .output(z.object({ ok: z.literal(true) }))
-      .handler(() => ({ ok: true as const })),
-    invalidOutput: untypedAction
-      .output(z.object({ ok: z.literal(true) }))
-      // @ts-expect-error action handlers must return values matching their output schema
-      .handler(() => ({ ok: false })),
-  },
 });
 
 const component = tailor.components.Button;
 const context = tailor.views["/customers/:customerId"];
-const noSchemaAction = tailor.actions.noSchemas;
 void component;
 void context;
-void noSchemaAction;
 
 const buttonProps: ComponentProps<typeof tailor.components.Button> = { variant: "default" };
 void buttonProps;
@@ -72,10 +50,6 @@ expectTypeOf<ComponentProps<typeof tailor.components.Button>>().toMatchTypeOf<{
 }>();
 expectTypeOf<typeof tailor.components.Button.children>().toEqualTypeOf<true>();
 expectTypeOf<typeof context>().toEqualTypeOf<z.ZodObject<{ customerId: z.ZodString }>>();
-expectTypeOf<InferActionInput<typeof tailor.actions.withInput>>().toEqualTypeOf<{ id: string }>();
-expectTypeOf<InferActionOutput<typeof tailor.actions.withOutput>>().toEqualTypeOf<{ ok: true }>();
-expectTypeOf<InferActionOutput<typeof noSchemaAction>>().toEqualTypeOf<{ ok: boolean }>();
-
 const callbacks = createTailorKitSchema({
   components: {
     Dialog: {
@@ -108,31 +82,6 @@ expectTypeOf<ComponentProps<typeof callbacks.components.Dialog>>().toMatchTypeOf
   onClose: () => void;
   onLoad: () => Promise<{ ready: true }>;
 }>();
-
-const userAction = createActions().context<{ user: User }>();
-const matchingUserAction = createActions().context<{ user: User }>();
-const orgAction = createActions().context<{ org: Org }>();
-
-createTailorKitSchema({
-  components: {},
-  actions: {
-    getUser: userAction.handler(({ context }) => context.user.id),
-    nested: {
-      getNestedUser: matchingUserAction.handler(({ context }) => context.user.id),
-    },
-  },
-});
-
-createTailorKitSchema({
-  components: {},
-  // @ts-expect-error all actions in one TailorKit instance must use the same context type
-  actions: {
-    getUser: userAction.handler(({ context }) => context.user.id),
-    nested: {
-      getOrg: orgAction.handler(({ context }) => context.org.id),
-    },
-  },
-});
 
 createTailorKitSchema({
   components: {

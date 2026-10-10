@@ -536,12 +536,15 @@ describe("platform appRouter", () => {
       params: { appId: created.publicId },
       body: {
         scopes: [productionScope],
+        toolUrl: "https://host.test/api/tailorkit/tools/execute",
       },
     };
     const session = await call(appRouter.runtimeSession, input, { context });
     expect(session.body.token).toBe("platform-token");
     expect(testState.issueToken).toHaveBeenCalledWith({
-      userId: `scope:${created.scopeKey}`,
+      subjectId: undefined,
+      scope: created.scope,
+      toolUrl: input.body.toolUrl,
       installationId: created.id,
       appId: created.id,
       projectId,
@@ -568,7 +571,7 @@ describe("platform appRouter", () => {
       new Request(`https://platform.test/api/platform/apps/${created.publicId}/runtime/session`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ scopes: [productionScope] }),
+        body: JSON.stringify({ scopes: [productionScope], toolUrl: input.body.toolUrl }),
       }),
       { prefix: "/api/platform", context },
     );
@@ -587,21 +590,14 @@ describe("platform appRouter", () => {
         [stagingScope, productionScope],
         [productionScope, stagingScope],
       ]) {
-        await call(appRouter.runtimeSession, { params: { appId }, body: { scopes } }, { context });
+        await call(
+          appRouter.runtimeSession,
+          { params: { appId }, body: { scopes, toolUrl: input.body.toolUrl } },
+          { context },
+        );
         expect(testState.issueToken).toHaveBeenLastCalledWith(identity);
       }
     }
-    // Removed host-selected IDs cannot override the authorized database identity.
-    await call(
-      appRouter.runtimeSession,
-      {
-        ...input,
-        body: { ...input.body, installationId: "victim", userId: "victim" },
-      } as typeof input,
-      { context },
-    );
-    expect(testState.issueToken).toHaveBeenLastCalledWith(identity);
-
     const tokenCalls = testState.issueToken.mock.calls.length;
     for (const runtimeUrl of [
       "http://runtime.test",

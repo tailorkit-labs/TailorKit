@@ -1,6 +1,6 @@
 import type { TailorKitSchemaSpec } from "../spec/index";
-import type { ActionTree, NoMixedActionContexts } from "./actions";
-import { serializeActions } from "./actions";
+import type { ContractTools } from "./tools";
+import { serializeTools } from "./tools";
 import type {
   ComponentDefinitions,
   NoComponentFieldCallbackConflicts,
@@ -16,12 +16,12 @@ import type {
 import { jsonSchemaSerializer, serializeSchema } from "./shared";
 import type { Schema, SchemaSerializer } from "./shared";
 
-type EmptyActionMap = Record<never, never>;
+type EmptyToolMap = Record<never, never>;
 
 export interface TailorKitSchema<
   TComponents extends Record<string, unknown> = ComponentDefinitions,
   TViews extends Record<string, unknown> = ContextDefinitions,
-  TActions extends ActionTree = EmptyActionMap,
+  TTools extends ContractTools = EmptyToolMap,
 > {
   /**
    * Internal TailorKit implementation details.
@@ -34,7 +34,7 @@ export interface TailorKitSchema<
    * @internal
    */
   $internal: {
-    actions: TActions;
+    tools: TTools;
     components: {
       [TName in keyof TComponents]: ResolvedComponentMetadata;
     };
@@ -43,7 +43,7 @@ export interface TailorKitSchema<
     };
   };
   slots: SlotDefinitions;
-  actions: TActions;
+  tools: TTools;
   components: TComponents;
   views: TViews;
   serialize(schemaSerializer?: SchemaSerializer): TailorKitSchemaSpec;
@@ -52,14 +52,14 @@ export interface TailorKitSchema<
 export const createTailorKitSchema = <
   const TComponents extends Record<string, unknown>,
   const TViews extends ContextDefinitions = Record<string, never>,
-  const TActions extends ActionTree = EmptyActionMap,
+  const TTools extends ContractTools = EmptyToolMap,
 >(schema: {
   slots?: SlotDefinitions<keyof NoInfer<TViews> & string>;
   scopes?: Record<string, Schema>;
-  actions?: TActions & NoMixedActionContexts<NoInfer<TActions>>;
+  tools?: TTools;
   components: TComponents & NoComponentFieldCallbackConflicts<NoInfer<TComponents>>;
   views?: TViews & ViewContextHierarchy<NoInfer<TViews>>;
-}): TailorKitSchema<TComponents, TViews, TActions> => {
+}): TailorKitSchema<TComponents, TViews, TTools> => {
   for (const [name, slot] of Object.entries(schema.slots ?? {})) {
     if (slot.multiple !== undefined && typeof slot.multiple !== "boolean") {
       throw new TypeError(`Slot "${name}" multiple must be a boolean.`);
@@ -70,12 +70,8 @@ export const createTailorKitSchema = <
       }
     }
   }
-  const components = {} as TailorKitSchema<
-    TComponents,
-    TViews,
-    TActions
-  >["$internal"]["components"];
-  const views = {} as TailorKitSchema<TComponents, TViews, TActions>["$internal"]["views"];
+  const components = {} as TailorKitSchema<TComponents, TViews, TTools>["$internal"]["components"];
+  const views = {} as TailorKitSchema<TComponents, TViews, TTools>["$internal"]["views"];
 
   for (const [name, definition] of Object.entries(schema.components as ComponentDefinitions)) {
     components[name as keyof TComponents] = resolveComponentMetadata(name, definition);
@@ -121,7 +117,7 @@ export const createTailorKitSchema = <
     }
 
     return {
-      actions: serializeActions(schema.actions ?? {}, schemaSerializer),
+      tools: serializeTools(schema.tools ?? {}, schemaSerializer),
       components: serializedComponents,
       views: serializedViews,
       slots: Object.fromEntries(
@@ -149,12 +145,12 @@ export const createTailorKitSchema = <
 
   return {
     slots: schema.slots ?? {},
-    actions: (schema.actions ?? {}) as TActions,
+    tools: (schema.tools ?? {}) as TTools,
     components: schema.components,
     views: (schema.views ?? {}) as TViews,
     serialize,
     $internal: {
-      actions: (schema.actions ?? {}) as TActions,
+      tools: (schema.tools ?? {}) as TTools,
       components,
       views,
     },
@@ -162,22 +158,17 @@ export const createTailorKitSchema = <
 };
 
 export type { TailorKitTheme } from "../primitives/theme";
-export {
-  createActions,
-  type Action,
-  type ActionDefinition,
-  type ActionDefinitions,
-  type ActionHandler,
-  type Actions,
-  type ActionTree,
-  type HandlerArgs,
-  type ImplementedAction,
-  type InferActionInput,
-  type InferActionOutput,
-  type InferActionTreeContext,
-  type NoMixedActionContexts,
-  type ResolveActionTreeContext,
-} from "./actions";
+export { tool } from "./tools";
+export type {
+  ContractTool,
+  ContractTools,
+  ToolImplementations,
+  ToolCallers,
+  ToolContext,
+  ToolIdentity,
+  InferToolInput,
+  InferToolOutput,
+} from "./tools";
 export {
   type Callback,
   type CallbackDefinition,

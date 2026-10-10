@@ -32,8 +32,10 @@ const viewColumns = () => ({
   done: boolean().notNull(),
 });
 const identity = {
-  userId: "user",
+  subjectId: "user",
   projectId: "project",
+  scope: { name: "org", value: { id: "tenant" } },
+  toolUrl: "https://host.test/api/tailorkit/tools/execute",
   appId: "app",
   installationId: "installation",
   deploymentId: "deployment",
@@ -221,7 +223,9 @@ it("deduplicates accepted writes and rejects reused IDs with different identity 
   expect(() =>
     execution.mutate({ ...input, args: { ...input.args, title: "other" } }, identity),
   ).toThrow("already used");
-  expect(() => execution.mutate(input, { ...identity, userId: "other" })).toThrow("already used");
+  expect(() => execution.mutate(input, { ...identity, subjectId: "other" })).toThrow(
+    "already used",
+  );
   expect((execution.query({ name: "list", args: {} }, identity).value as unknown[]).length).toBe(1);
 });
 it("validates input, function kind and expiry before execution", () => {

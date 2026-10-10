@@ -1,7 +1,7 @@
 # TanStack Start TailorKit Example
 
 This example shows a host product that exposes TailorKit views, slots, components,
-theme tokens, and actions from a TanStack Start application.
+theme tokens, and tools from a TanStack Start application.
 
 ## Run the example
 

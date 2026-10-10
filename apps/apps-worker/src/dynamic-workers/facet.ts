@@ -65,6 +65,7 @@ export class AppFacet extends DurableObject<Record<string, never>> {
               });
               return abortable(capability.fetch(transferable, cancellationStream(signal)), signal);
             },
+            tool: (path, input) => capability.tool(path, input),
             committed: (tables) => capability.committed(tables),
           },
           controller.signal,

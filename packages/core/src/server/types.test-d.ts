@@ -1,47 +1,13 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
-import { expectTypeOf } from "vite-plus/test";
 import { z } from "zod";
 import { createTailorKitServer } from "./handler";
-import type {
-  TailorKitHandlerOptions,
-  TailorKitHostContext,
-  TailorKitServerOptions,
-} from "./types";
-
-interface UserContext {
-  user: { id: string };
-}
-
-expectTypeOf<TailorKitHostContext<UserContext, { org: { orgId: string } }>>().toMatchTypeOf<{
-  actionContext: UserContext;
+import type { TailorKitServerOptions } from "./types";
+import { expectTypeOf } from "vite-plus/test";
+import type { TailorKitHostContext } from "./types";
+expectTypeOf<TailorKitHostContext<{ org: { orgId: string } }>>().toEqualTypeOf<{
   scopes: { org: { orgId: string } };
+  subjectId?: string;
 }>();
-
-expectTypeOf<TailorKitHostContext<never>>().toMatchTypeOf<{
-  actionContext?: never;
-  scopes: Record<string, Record<string, unknown>>;
-}>();
-
-expectTypeOf<TailorKitHandlerOptions<UserContext, { org: { orgId: string } }>>().toMatchTypeOf<{
-  authenticate: (ctx: {
-    request: Request;
-  }) =>
-    | TailorKitHostContext<UserContext, { org: { orgId: string } }>
-    | null
-    | Promise<TailorKitHostContext<UserContext, { org: { orgId: string } }> | null>;
-}>();
-
-const contextlessHandlerContext: TailorKitHostContext<never> = {
-  scopes: { org: { orgId: "org_1" } },
-};
-void contextlessHandlerContext;
-
-const invalidContextlessHandlerContext: TailorKitHostContext<never> = {
-  // @ts-expect-error actionContext cannot be provided when no action context is declared
-  actionContext: {},
-  scopes: { org: { orgId: "org_1" } },
-};
-void invalidContextlessHandlerContext;
 
 createTailorKitServer({
   scopes: { account: z.object({ accountId: z.string() }) },

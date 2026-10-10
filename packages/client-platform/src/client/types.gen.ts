@@ -71,6 +71,8 @@ export type AppsRuntimeSessionData = {
         [key: string]: Schema0;
       };
     }>;
+    subjectId?: string;
+    toolUrl: string;
   };
   path: {
     appId: string;

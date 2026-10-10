@@ -38,17 +38,18 @@ interface SerializedView {
   context?: JsonSchema;
 }
 
-interface SerializedActions {
-  [key: string]: SerializedAction | SerializedActions;
+interface SerializedTools {
+  [key: string]: SerializedTool | SerializedTools;
 }
 
-interface SerializedAction {
+interface SerializedTool {
+  kind: "client" | "server";
   input?: JsonSchema;
   output?: JsonSchema;
 }
 
 export interface TailorKitSchemaFile {
-  actions?: SerializedActions;
+  tools?: SerializedTools;
   components?: Record<string, SerializedComponent>;
   views?: Record<string, SerializedView>;
   slots?: Record<string, { views: readonly string[]; multiple?: boolean }>;
@@ -462,24 +463,28 @@ const renderComponent = (
   return lines.join("\n");
 };
 
-const isSerializedAction = (
-  value: SerializedAction | SerializedActions,
-): value is SerializedAction => "input" in value || "output" in value;
+const isSerializedTool = (value: SerializedTool | SerializedTools): value is SerializedTool =>
+  "kind" in value && (value.kind === "client" || value.kind === "server");
 
-const renderActions = (actions: SerializedActions, depth = 0): string => {
+const hasServerTool = (value: SerializedTool | SerializedTools): boolean =>
+  isSerializedTool(value) ? value.kind === "server" : Object.values(value).some(hasServerTool);
+
+const renderTools = (tools: SerializedTools, depth = 0, serverOnly = false): string => {
   const indent = " ".repeat(depth);
   const propertyIndent = " ".repeat(depth + 2);
   const lines = ["{"];
 
-  for (const [key, value] of Object.entries(actions)) {
-    if (isSerializedAction(value)) {
+  for (const [key, value] of Object.entries(tools)) {
+    if (serverOnly && !hasServerTool(value)) continue;
+    if (isSerializedTool(value)) {
+      if (serverOnly && value.kind !== "server") continue;
       const input = toTypeScriptType(value.input, depth + 2);
       const output = toTypeScriptType(value.output, depth + 2);
       lines.push(
-        `${propertyIndent}${toPropertyKey(key)}: (input: ${input}) => Promise<${output}>;`,
+        `${propertyIndent}${toPropertyKey(key)}: (input${value.input ? "" : "?"}: ${value.input ? input : "undefined"}) => Promise<${value.output ? output : "void"}>;`,
       );
     } else {
-      const nested = renderActions(value, depth + 2).split("\n");
+      const nested = renderTools(value, depth + 2, serverOnly).split("\n");
       lines.push(`${propertyIndent}${toPropertyKey(key)}: ${nested[0]}`);
       lines.push(...nested.slice(1, -1));
       lines.push(`${nested.at(-1)};`);
@@ -490,25 +495,17 @@ const renderActions = (actions: SerializedActions, depth = 0): string => {
   return lines.join("\n");
 };
 
-const renderActionRuntime = (actions: SerializedActions, pathParts: string[] = []): string => {
+const renderToolRuntime = (tools: SerializedTools, pathParts: string[] = []): string => {
   const lines = ["{"];
 
-  for (const [key, value] of Object.entries(actions)) {
+  for (const [key, value] of Object.entries(tools)) {
     const path = [...pathParts, key];
-    if (isSerializedAction(value)) {
-      lines.push(`  ${toPropertyKey(key)}: async (input: unknown) => {`);
+    if (isSerializedTool(value)) {
       lines.push(
-        `    const response = await fetch(${quote(`/api/tailorkit/actions/${path.join(".")}`)}, {`,
+        `  ${toPropertyKey(key)}: (input?: unknown) => callTool(${quote(value.kind)}, ${quote(path.join("."))}, input),`,
       );
-      lines.push(`      body: JSON.stringify(input),`);
-      lines.push(`      headers: { "content-type": "application/json" },`);
-      lines.push(`      method: "POST",`);
-      lines.push(`    });`);
-      lines.push(`    if (!response.ok) throw new Error(await response.text());`);
-      lines.push(`    return response.json();`);
-      lines.push(`  },`);
     } else {
-      const nested = renderActionRuntime(value, path).split("\n");
+      const nested = renderToolRuntime(value, path).split("\n");
       lines.push(`  ${toPropertyKey(key)}: ${nested[0]}`);
       lines.push(...nested.slice(1).map((line) => `  ${line}`));
       lines.push(",");
@@ -523,11 +520,12 @@ export const renderGeneratedTypes = (
   schema: TailorKitSchemaFile,
   options: { serverModule?: string } = {},
 ): string => {
-  const actionsType = renderActions(schema.actions ?? {});
+  const toolsType = renderTools(schema.tools ?? {});
   const components = schema.components ?? {};
   const fieldAliases = collectFieldTypeAliases(components);
   const chunks = [
     generatedHeader,
+    `import { callTool } from "tailorkit/client";`,
     renderViewProps(schema.views ?? {}),
     `declare module "tailorkit/client" {
   interface TailorKitViews extends ViewPropsByPath {}
@@ -541,8 +539,10 @@ export const renderGeneratedTypes = (
 
 export type ViewPath = keyof ViewPropsByPath & string;
 export type ViewProps<TPath extends ViewPath> = ViewPropsByPath[TPath];
-export type TailorKitActions = ${actionsType};
-export const actions = ${renderActionRuntime(schema.actions ?? {})} as TailorKitActions;`,
+export type TailorKitTools = ${toolsType};
+export type TailorKitBackendTools = ${renderTools(schema.tools ?? {}, 0, true)};
+declare module "tailorkit/client" { interface TailorKitServerTools extends TailorKitBackendTools {} }
+export const tools = ${renderToolRuntime(schema.tools ?? {})} as TailorKitTools;`,
     renderTypeAliases(components, fieldAliases),
   ];
 
