@@ -1,0 +1,32 @@
+packages/cli/src/agent.ts
+  s_dea8ad4f8dc71c::t_2cbfd12c1412d8 7-20,86-98,100-101,103-104,106,109-110
+packages/cli/src/index.test.ts
+  s_dea8ad4f8dc71c::t_28f093e43df922 106-108,128-129
+  s_dea8ad4f8dc71c::t_952a6c7c9ebdd8 109-111,113-116,118-127
+packages/cli/AGENT.md
+  s_dea8ad4f8dc71c::t_2cbfd12c1412d8 3,6-13,22
+packages/cli/src/index.ts
+  s_dea8ad4f8dc71c::t_2cbfd12c1412d8 358,365-366,368
+.changeset/optional-agent-base-url.md
+  s_dea8ad4f8dc71c::t_2cbfd12c1412d8 1-5
+packages/cli/src/agent.test.ts
+  s_dea8ad4f8dc71c::t_28f093e43df922 89,100,102-109,111-141,143-145
+  s_dea8ad4f8dc71c::t_40d2e90ed289d3 41,78,80,82,85,96,148-150,165,187,202,210,220,226,236-237,239,244,251
+  s_dea8ad4f8dc71c::t_1a9a825e960584 110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ed8d2510e11dc542bab9be8e042bff68f823a7e6",
+  "prompts": {},
+  "sessions": {
+    "s_dea8ad4f8dc71c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1248b-7f31-70c1-8467-4d6ec792b678",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
