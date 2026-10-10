@@ -1,0 +1,22 @@
+packages/client-core/src/client/endpoints.ts
+  s_64d7f8fdc4ce50::t_7645c643415623 41-45,144,176
+packages/core/src/server/tool-auth.ts
+  s_64d7f8fdc4ce50::t_c0a8fcfdecfe76 7
+  s_64d7f8fdc4ce50::t_7645c643415623 89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9b6e52e9c9d4eb23b7319175cc2061d041d701ec",
+  "prompts": {},
+  "sessions": {
+    "s_64d7f8fdc4ce50": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a12380-c197-7ad2-bf0c-1724de70fcb3",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
