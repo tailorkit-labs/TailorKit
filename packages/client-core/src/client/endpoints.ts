@@ -38,6 +38,11 @@ export function createEndpointClient(options: {
   const toolBridges = new Map<string, { bridge: ToolBridge; app: TailorKitApp }>();
   const declarations = flattenTools(options.contract?.tools ?? {});
   const sessions = new Map<string, SessionEntry>();
+  const clearSessions = () => {
+    generation++;
+    for (const entry of sessions.values()) entry.session = undefined;
+    sessions.clear();
+  };
   const createSessionEntry = (appId: string, key?: string): SessionEntry => ({
     key,
     session: createSessionProvider({ baseUrl, appId, subjectId, fetch: request }),
@@ -136,9 +141,7 @@ export function createEndpointClient(options: {
     setSubject(next?: string) {
       if (subjectId === next) return;
       subjectId = next;
-      generation++;
-      for (const entry of sessions.values()) entry.session = undefined;
-      sessions.clear();
+      clearSessions();
     },
     async apps(signal: AbortSignal): Promise<TailorKitApp[]> {
       const response = await request(new URL("apps", baseUrl), {
@@ -170,11 +173,7 @@ export function createEndpointClient(options: {
       return previewMetadataSchema.parse(await response.json());
     },
     getSessionProvider,
-    clearSessions: () => {
-      generation++;
-      for (const entry of sessions.values()) entry.session = undefined;
-      sessions.clear();
-    },
+    clearSessions,
   };
 }
 

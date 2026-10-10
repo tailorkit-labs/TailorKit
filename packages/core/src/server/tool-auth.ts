@@ -4,11 +4,7 @@ const audience = "tailorkit-app";
 const decode = (part: string) =>
   Uint8Array.from(atob(part.replaceAll("-", "+").replaceAll("_", "/")), (c) => c.charCodeAt(0));
 /** Only configured platform keys are trusted. Never follow URLs from token headers. */
-export function createToolVerifier(options: {
-  platformUrl: string;
-  projectId?: string;
-  fetch: typeof fetch;
-}) {
+export function createToolVerifier(options: { platformUrl: string; fetch: typeof fetch }) {
   const issuer = options.platformUrl.replace(/\/$/u, "");
   let cached: { expiresAt: number; keys: (JsonWebKey & { kid: string })[] } | undefined;
   let refreshing: Promise<void> | undefined;
@@ -90,8 +86,7 @@ export function createToolVerifier(options: {
       claims.iat > now ||
       claims.exp <= claims.iat ||
       claims.exp - claims.iat > 300 ||
-      claims.sub !== claims.installationId ||
-      (options.projectId && claims.projectId !== options.projectId)
+      claims.sub !== claims.installationId
     )
       throw new Error("Invalid tool claims");
     for (const name of [
