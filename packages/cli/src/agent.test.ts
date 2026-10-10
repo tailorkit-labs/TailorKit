@@ -38,7 +38,7 @@ const stdinTty = Object.getOwnPropertyDescriptor(process.stdin, "isTTY");
 const stdoutTty = Object.getOwnPropertyDescriptor(process.stdout, "isTTY");
 let root: string;
 let configPath: string;
-const host = "https://host.test/api/tailorkit";
+const baseUrl = "https://host.test/api/tailorkit";
 
 beforeEach(async () => {
   vi.resetAllMocks();
@@ -75,36 +75,79 @@ afterEach(async () => {
 });
 
 describe("agent command", () => {
-  it("opens an explicit app from an empty directory using normalized host credentials", async () => {
+  it("opens an explicit app from an empty directory using normalized base URL credentials", async () => {
     await rm(path.join(root, "package.json"));
-    await runAgentCommand({ host: `${host}///`, appId: "app-one" });
+    await runAgentCommand({ baseUrl: `${baseUrl}///`, appId: "app-one" });
     expect(mocks.client).toHaveBeenCalledWith({
-      url: host,
+      url: baseUrl,
       headers: { authorization: "Bearer cli-token" },
     });
-    expect(mocks.token).toHaveBeenCalledWith(host);
+    expect(mocks.token).toHaveBeenCalledWith(baseUrl);
     expect(mocks.tui.mock.lastCall![0].appId).toBe("app-one");
     expect(mocks.list).not.toHaveBeenCalled();
     expect(mocks.select).not.toHaveBeenCalled();
+    expect(mocks.text).not.toHaveBeenCalled();
     expect(await readdir(root)).toEqual([]);
   });
   it("ignores an existing config when choosing an app", async () => {
     const source = 'export default { host: "https://other.test", appId: "other-app" };\n';
     await writeFile(configPath, source);
     mocks.select.mockResolvedValueOnce("selected-app");
-    await runAgentCommand({ host });
+    await runAgentCommand({ baseUrl });
     expect(mocks.tui.mock.lastCall![0].appId).toBe("selected-app");
     expect(await readFile(configPath, "utf-8")).toBe(source);
   });
-  it("requires --host even when a config exists", async () => {
+  it("prompts for the base URL first with a localhost default even when a config exists", async () => {
     await writeFile(configPath, 'export default { host: "https://other.test" };\n');
-    await expect(runAgentCommand({})).rejects.toThrow("--host <url>");
+    const defaultBaseUrl = "http://localhost:3000/api/tailorkit";
+    mocks.text.mockImplementationOnce(async ({ initialValue }) => {
+      expect(mocks.whoami).not.toHaveBeenCalled();
+      expect(mocks.list).not.toHaveBeenCalled();
+      expect(mocks.select).not.toHaveBeenCalled();
+      return initialValue;
+    });
+    await runAgentCommand({});
+    const prompt = mocks.text.mock.calls[0]![0];
+    expect(prompt).toEqual({
+      message: "TailorKit API base URL",
+      initialValue: defaultBaseUrl,
+      placeholder: defaultBaseUrl,
+      validate: expect.any(Function),
+    });
+    for (const value of [undefined, "", "   ", "localhost:3000", "ftp://host.test"]) {
+      expect(prompt.validate(value)).toBe("Enter an absolute http:// or https:// base URL.");
+    }
+    expect(prompt.validate(defaultBaseUrl)).toBeUndefined();
+    expect(prompt.validate(baseUrl)).toBeUndefined();
+    expect(mocks.whoami).toHaveBeenCalledWith({ host: defaultBaseUrl });
+    expect(mocks.token).toHaveBeenCalledWith(defaultBaseUrl);
+    expect(mocks.tui).toHaveBeenCalledWith(expect.objectContaining({ hostUrl: defaultBaseUrl }));
+  });
+  it("uses the edited prompt URL for login, credentials, and the agent", async () => {
+    mocks.text.mockResolvedValueOnce(`  ${baseUrl}///  `);
+    mocks.whoami.mockRejectedValueOnce(new NotLoggedInError(baseUrl));
+    const login = vi.fn().mockResolvedValue({});
+    await runAgentCommand({ appId: "app-one", onLoginRequired: login });
+    expect(login).toHaveBeenCalledWith(baseUrl);
+    expect(mocks.whoami).toHaveBeenCalledTimes(2);
+    expect(mocks.whoami).toHaveBeenCalledWith({ host: baseUrl });
+    expect(mocks.token).toHaveBeenCalledWith(baseUrl);
+    expect(mocks.client).toHaveBeenCalledWith(expect.objectContaining({ url: baseUrl }));
+    expect(mocks.tui).toHaveBeenCalledWith(expect.objectContaining({ hostUrl: baseUrl }));
+  });
+  it("cancels at the base URL prompt before authenticating", async () => {
+    mocks.text.mockResolvedValueOnce(Symbol("cancel"));
+    await runAgentCommand({});
+    expect(mocks.cancel).toHaveBeenCalledWith("Agent cancelled.");
     expect(mocks.whoami).not.toHaveBeenCalled();
+    expect(mocks.token).not.toHaveBeenCalled();
+    expect(mocks.list).not.toHaveBeenCalled();
+    expect(mocks.tui).not.toHaveBeenCalled();
   });
   it.each(["", "   ", "localhost:3000", "ftp://host.test"])(
-    "rejects invalid host %s before authenticating",
-    async (invalidHost) => {
-      await expect(runAgentCommand({ host: invalidHost })).rejects.toThrow("host URL");
+    "rejects invalid base URL %s before authenticating",
+    async (invalidBaseUrl) => {
+      await expect(runAgentCommand({ baseUrl: invalidBaseUrl })).rejects.toThrow("base URL");
       expect(mocks.whoami).not.toHaveBeenCalled();
     },
   );
@@ -119,7 +162,7 @@ describe("agent command", () => {
         pagination: { hasMore: false },
       });
     mocks.select.mockResolvedValueOnce("app-two");
-    await runAgentCommand({ host });
+    await runAgentCommand({ baseUrl });
     expect(mocks.whoami).toHaveBeenCalledOnce();
     expect(mocks.list.mock.calls).toEqual([
       [{ page: 1, pageSize: 100 }],
@@ -141,7 +184,7 @@ describe("agent command", () => {
   });
   it("creates a named app when none exist without writing config", async () => {
     mocks.text.mockResolvedValueOnce("  New app  ");
-    await runAgentCommand({ host });
+    await runAgentCommand({ baseUrl });
     expect(mocks.text).toHaveBeenCalledWith(expect.objectContaining({ initialValue: "My app" }));
     const { validate } = mocks.text.mock.lastCall![0];
     expect(validate("  ")).toBe("Enter an app name.");
@@ -156,7 +199,7 @@ describe("agent command", () => {
       items: [{ id: "existing", publicId: "existing-public", name: "Existing app" }],
       pagination: { hasMore: false },
     });
-    await runAgentCommand({ host });
+    await runAgentCommand({ baseUrl });
     expect(mocks.create).toHaveBeenCalledOnce();
     expect(mocks.tui.mock.lastCall![0].appId).toBe("new-app");
   });
@@ -164,7 +207,7 @@ describe("agent command", () => {
     "cancels at the %s prompt without creating an app",
     async (prompt) => {
       mocks[prompt].mockResolvedValueOnce(Symbol("cancel"));
-      await runAgentCommand({ host });
+      await runAgentCommand({ baseUrl });
       expect(mocks.cancel).toHaveBeenCalledWith("Agent cancelled.");
       expect(mocks.create).not.toHaveBeenCalled();
       expect(mocks.tui).not.toHaveBeenCalled();
@@ -174,13 +217,13 @@ describe("agent command", () => {
     "stops on a %s API failure without opening the agent",
     async (endpoint) => {
       mocks[endpoint].mockRejectedValueOnce(new Error("Host unavailable"));
-      await expect(runAgentCommand({ host })).rejects.toThrow("Host unavailable");
+      await expect(runAgentCommand({ baseUrl })).rejects.toThrow("Host unavailable");
       expect(mocks.tui).not.toHaveBeenCalled();
     },
   );
   it("propagates renderer failure", async () => {
     mocks.tui.mockRejectedValueOnce(new Error("Renderer failed"));
-    await expect(runAgentCommand({ host })).rejects.toThrow("Renderer failed");
+    await expect(runAgentCommand({ baseUrl })).rejects.toThrow("Renderer failed");
   });
   it("starts login when necessary and verifies approval before opening the TUI", async () => {
     mocks.whoami.mockRejectedValueOnce(new NotLoggedInError("host"));
@@ -190,22 +233,22 @@ describe("agent command", () => {
       expect(mocks.whoami).toHaveBeenCalledTimes(2);
       return { items: [], pagination: { hasMore: false } };
     });
-    await runAgentCommand({ host, onLoginRequired: login });
-    expect(login).toHaveBeenCalledOnce();
+    await runAgentCommand({ baseUrl, onLoginRequired: login });
+    expect(login).toHaveBeenCalledWith(baseUrl);
     expect(mocks.whoami).toHaveBeenCalledTimes(2);
-    expect(mocks.whoami).toHaveBeenCalledWith(expect.objectContaining({ host }));
+    expect(mocks.whoami).toHaveBeenCalledWith(expect.objectContaining({ host: baseUrl }));
     expect(mocks.tui).toHaveBeenCalledOnce();
   });
   it("does not open a session when authentication fails", async () => {
     mocks.whoami.mockRejectedValueOnce(new Error("Host unavailable"));
-    await expect(runAgentCommand({ host })).rejects.toThrow("Host unavailable");
+    await expect(runAgentCommand({ baseUrl })).rejects.toThrow("Host unavailable");
     expect(mocks.tui).not.toHaveBeenCalled();
     expect(mocks.list).not.toHaveBeenCalled();
     expect(mocks.create).not.toHaveBeenCalled();
   });
   it("rejects non-interactive use before authenticating", async () => {
     Object.defineProperty(process.stdin, "isTTY", { configurable: true, value: false });
-    await expect(runAgentCommand({ host })).rejects.toThrow("interactive terminal");
+    await expect(runAgentCommand({ baseUrl })).rejects.toThrow("interactive terminal");
     expect(mocks.whoami).not.toHaveBeenCalled();
   });
 });

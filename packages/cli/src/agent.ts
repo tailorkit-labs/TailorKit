@@ -4,8 +4,20 @@ import { getDeployToken, NotLoggedInError, resolveHostUrl, runWhoami } from "./a
 
 interface AgentOptions {
   appId?: string;
-  host?: string;
-  onLoginRequired?: () => Promise<unknown>;
+  baseUrl?: string;
+  onLoginRequired?: (baseUrl: string) => Promise<unknown>;
+}
+
+const defaultBaseUrl = "http://localhost:3000/api/tailorkit";
+
+function validateBaseUrl(value: string | undefined): string | undefined {
+  try {
+    const url = new URL(value?.trim() ?? "");
+    if (url.protocol === "http:" || url.protocol === "https:") return;
+  } catch {
+    // Show the same validation message for malformed URLs and unsupported protocols.
+  }
+  return "Enter an absolute http:// or https:// base URL.";
 }
 
 async function chooseApp(client: TailorKitRouterClient): Promise<string | undefined> {
@@ -71,17 +83,31 @@ export async function runAgentCommand(options: AgentOptions) {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
     throw new Error("tailorkit agent requires an interactive terminal.");
   }
-  if (!options.host?.trim()) {
-    throw new Error("Missing TailorKit host URL. Use tailorkit agent --host <url>.");
+  let baseUrl = options.baseUrl;
+  if (baseUrl === undefined) {
+    const value = await text({
+      message: "TailorKit API base URL",
+      initialValue: defaultBaseUrl,
+      placeholder: defaultBaseUrl,
+      validate: validateBaseUrl,
+    });
+    if (isCancel(value)) {
+      cancel("Agent cancelled.");
+      return;
+    }
+    baseUrl = value;
   }
+  const validationError = validateBaseUrl(baseUrl);
+  if (validationError) throw new Error(validationError);
   let appId = options.appId;
-  const hostUrl = await resolveHostUrl(options);
+  const hostUrl = await resolveHostUrl({ host: baseUrl.trim() });
+  const authOptions = { host: hostUrl };
   try {
-    await runWhoami(options);
+    await runWhoami(authOptions);
   } catch (error) {
     if (!(error instanceof NotLoggedInError) || !options.onLoginRequired) throw error;
-    await options.onLoginRequired();
-    await runWhoami(options);
+    await options.onLoginRequired(hostUrl);
+    await runWhoami(authOptions);
   }
   const auth = await getDeployToken(hostUrl);
   if (!auth) throw new NotLoggedInError(hostUrl);
