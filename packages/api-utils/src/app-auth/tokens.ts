@@ -27,12 +27,12 @@ export interface AppSigningOptions {
   /** ES256 private key. Keep this in the trusted issuing server only. */
   privateKey: CryptoKey | JsonWebKey;
   lifetimeSeconds?: number;
-  purpose: "app" | "tool";
+  purpose: "app";
 }
 export interface AppTokenTrust {
   issuer: string;
   audience: string;
-  purpose: "app" | "tool";
+  purpose: "app";
   appId?: string;
   projectId?: string;
   /** Trusted issuer public keys, provisioned by the operator; never read from JWT headers. */
