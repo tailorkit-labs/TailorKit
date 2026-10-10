@@ -666,6 +666,10 @@ Add a page to supply view context and switch between apps available in the `page
 that app views consume. It updates when those values change and unregisters when
 the component unmounts.
 
+Its `error` field accepts a boolean, string, `Error`, or `null`. Only `false`,
+`null`, and `undefined` mean no error; every string, including `""`, marks the view
+as failed. An error takes precedence over `loading` and prevents context publication.
+
 `useViews({ slot: "page" })` returns one `{ app }` item per app for single-view
 slots (`multiple: false` or omitted). It checks enabled, supported app views
 without calling an instance resolver or requiring registered page context. For
