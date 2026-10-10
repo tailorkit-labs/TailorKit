@@ -13,8 +13,10 @@ function actionRunner(app: AppDefinition, calls: ActionCalls) {
 }
 
 const identity = {
-  userId: "user",
+  subjectId: "user",
   projectId: "project",
+  scope: { name: "org", value: { id: "tenant" } },
+  toolUrl: "https://host.test/api/tailorkit/tools/execute",
   appId: "app",
   installationId: "install",
   deploymentId: "v1",
@@ -209,10 +211,10 @@ it("reuses compiled nested bindings while isolating concurrent calls and retaine
   const first = { query: vi.fn().mockResolvedValue("first"), mutate: vi.fn() };
   const second = { query: vi.fn().mockResolvedValue("second"), mutate: vi.fn() };
   const one = run({ name: "run", args: {} }, identity, first);
-  const two = run({ name: "run", args: {} }, { ...identity, userId: "second" }, second);
+  const two = run({ name: "run", args: {} }, { ...identity, subjectId: "second" }, second);
   release();
   expect(await Promise.all([one, two])).toEqual(["first", "second"]);
-  expect(contexts.map((context) => context.identity.userId)).toEqual(["user", "second"]);
+  expect(contexts.map((context) => context.identity.subjectId)).toEqual(["user", "second"]);
   for (const calls of [first, second])
     expect(calls.query).toHaveBeenCalledExactlyOnceWith({ name: "records.read", args: {} });
   for (const context of contexts)
@@ -231,7 +233,7 @@ it("runs generated instance resolvers with all registered queries and no write c
         expect(Object.keys(context).sort()).toEqual(["context", "identity", "queries", "signal"]);
         const queries = context.queries as { reports: { read: (args: object) => Promise<number> } };
         expect(Object.keys(queries.reports)).toEqual(["read"]);
-        expect(context.context).toEqual({ userId: "user" });
+        expect(context.context).toEqual({ subjectId: "user" });
         expect(context.identity).toEqual(identity);
         retainedQuery = () => queries.reports.read({});
         const count = await retainedQuery();
@@ -248,7 +250,7 @@ it("runs generated instance resolvers with all registered queries and no write c
     await run(
       {
         name: "_tailorkit.instances.resolve",
-        args: { slot: "page", path: "/reports/annual.summary", context: { userId: "user" } },
+        args: { slot: "page", path: "/reports/annual.summary", context: { subjectId: "user" } },
       },
       identity,
     ),
@@ -363,4 +365,31 @@ it("dispatches by exact slot/path pairs and validates against the selected data 
   }
   expect(first).toHaveBeenCalledOnce();
   expect(second).toHaveBeenCalledOnce();
+});
+
+it("binds backend tool calls to the active verified execution and closes escaped callers", async () => {
+  let escaped: (() => Promise<unknown>) | undefined;
+  const implementation = defineServer({
+    read: action({
+      args: z.undefined(),
+      handler: async (ctx) => {
+        expect(ctx.identity).toBe(identity);
+        expect(ctx.scope).toBe(identity.scope);
+        escaped = () =>
+          (
+            ctx.tools as unknown as { billing: { read(input: unknown): Promise<unknown> } }
+          ).billing.read({ id: "invoice" });
+        return escaped();
+      },
+    }),
+  });
+  const calls = {
+    query: async () => undefined,
+    mutate: async () => undefined,
+    tool: vi.fn(async () => ({ amount: 42 })),
+  };
+  const execute = createActionExecution(implementation);
+  expect(await execute({ name: "read" }, identity, calls)).toEqual({ amount: 42 });
+  expect(calls.tool).toHaveBeenCalledExactlyOnceWith("billing.read", { id: "invoice" });
+  expect(() => escaped!()).toThrow("Action has ended");
 });

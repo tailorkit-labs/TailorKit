@@ -2,6 +2,7 @@ import {
   createTailorKitClientConfig,
   createComponentRegistry,
   createTailorKitStore,
+  createTailorKitFetchClient,
 } from "@tailorkit/client-core";
 import type {
   AnyComponentDefinition,
@@ -14,7 +15,7 @@ import type {
 } from "@tailorkit/client-core";
 export type { TailorKitClientConfig } from "@tailorkit/client-core";
 import type { TailorKitCacheOptions } from "@tailorkit/client-core";
-import { createElement, useEffect, useMemo, useState } from "react";
+import { createElement, useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 import type {
   TailorKitTheme,
@@ -23,6 +24,7 @@ import type {
   ViewDefinition,
   SlotDefinitions,
   TailorKitContract,
+  ToolImplementations,
 } from "@tailorkit/core/schema";
 import type { primitives } from "./primitives";
 
@@ -44,6 +46,8 @@ export type { TailorKitApp } from "@tailorkit/client-core";
 
 export interface TailorKitProviderProps {
   apps?: TailorKitApp[];
+  /** Cache partition for the authenticated product principal. */
+  subjectId?: string;
   children?: ReactNode;
 }
 
@@ -78,15 +82,20 @@ export function components<TComponents extends Record<string, AnyComponentDefini
   return customComponents as ComponentRenderers<TComponents, ReactNode>;
 }
 
-export function createClient<const TContract extends TailorKitContract>(options: {
-  contract: TContract;
-  baseUrl: string | URL;
-  assetsBaseUrl?: string | URL;
-  components?: CompleteComponentRenderers<NoInfer<TContract["components"]>, ReactNode>;
-  theme?: TailorKitTheme;
-  cache?: TailorKitCacheOptions;
-  fetch?: typeof fetch;
-}): TailorKitInstance<TContract["views"], TContract["slots"], keyof TContract["scopes"] & string> {
+export function createClient<const TContract extends TailorKitContract>(
+  options: {
+    contract: TContract;
+    tools?: ToolImplementations<NoInfer<TContract["tools"]>, "client">;
+    baseUrl: string | URL;
+    assetsBaseUrl?: string | URL;
+    components?: CompleteComponentRenderers<NoInfer<TContract["components"]>, ReactNode>;
+    theme?: TailorKitTheme;
+    cache?: TailorKitCacheOptions;
+    fetch?: typeof fetch;
+  } & (keyof ToolImplementations<TContract["tools"], "client"> extends never
+    ? { tools?: ToolImplementations<TContract["tools"], "client"> }
+    : { tools: ToolImplementations<TContract["tools"], "client"> }),
+): TailorKitInstance<TContract["views"], TContract["slots"], keyof TContract["scopes"] & string> {
   return createReactTailorKitClient<
     TContract["components"],
     TContract["views"],
@@ -102,6 +111,7 @@ function createReactTailorKitClient<
   TScopeNames extends string = string,
 >(options: {
   contract: TailorKitContract;
+  tools?: ToolImplementations<TailorKitContract["tools"], "client">;
   assetsBaseUrl?: string | URL;
   baseUrl: string | URL;
   components?: ComponentRenderers<TComponents, ReactNode>;
@@ -121,24 +131,40 @@ function createReactTailorKitClient<
     };
   });
   const clientConfig = createTailorKitClientConfig({ ...options, components: wrappedComponents });
+  const subjectClients = new Map<
+    string | undefined,
+    ReturnType<typeof createTailorKitFetchClient>
+  >();
+  subjectClients.set(undefined, clientConfig.fetchClient!);
   const client: TailorKitInstance<TViews, TSlots, TScopeNames> = {
     ...clientConfig,
-    Provider: function TailorKitProvider({ children, apps }: TailorKitProviderProps) {
-      const [store] = useState(() =>
-        createTailorKitStore({
+    Provider: function TailorKitProvider({ children, apps, subjectId }: TailorKitProviderProps) {
+      const store = useMemo(() => {
+        let fetchClient = subjectClients.get(subjectId);
+        if (!fetchClient) {
+          fetchClient = createTailorKitFetchClient({ ...options });
+          fetchClient.endpoints.setSubject(subjectId);
+          subjectClients.set(subjectId, fetchClient);
+        }
+        return createTailorKitStore({
           baseUrl: client.baseUrl,
           contract: client.contract,
+          tools: client.tools,
           apps,
-          client: client.fetchClient,
+          client: fetchClient,
           assetsBaseUrl: client.assetsBaseUrl,
-        }),
-      );
+        });
+      }, [subjectId]);
       useEffect(() => {
         store.setProvidedApps(apps);
       }, [store, apps]);
       useEffect(() => () => store.previews.dispose(), [store]);
       const context = useMemo(() => ({ store, client }), [store]);
-      return createElement(TailorkitContext.Provider, { value: context }, children);
+      return createElement(
+        TailorkitContext.Provider,
+        { value: context, key: subjectId ?? "installation" },
+        children,
+      );
     },
     RenderSlot: Object.assign(
       function ClientRenderSlot(props: RenderSlotProps<TSlots>) {

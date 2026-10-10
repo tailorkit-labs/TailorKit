@@ -11,7 +11,7 @@ import { db } from "@tailorkit/db";
 import z from "zod";
 import { o, protectedRouter, requireAppInScopes } from "../procedures";
 import { appRuntimePublicKeys, issueAppRuntimeToken } from "../runtime/auth";
-import { scopesSchema } from "../scope";
+import { scopeSchema, scopesSchema } from "../scope";
 
 /** Public routes must be dispatched before constructing the authenticated platform context. */
 export function handlePublicRuntimeRequest(request: Request): Response | undefined {
@@ -40,16 +40,48 @@ export const runtimeSession = protectedRouter
   .input(
     z.object({
       params: z.object({ appId: z.string().min(1).max(256) }),
-      body: z.object({
+      body: z.strictObject({
         scopes: scopesSchema,
+        subjectId: z.string().min(1).max(256).optional(),
+        toolUrl: z.url().refine((value) => {
+          const url = new URL(value);
+          return (
+            !url.username &&
+            !url.password &&
+            !url.search &&
+            !url.hash &&
+            (url.protocol === "https:" ||
+              (url.protocol === "http:" &&
+                ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)))
+          );
+        }, "Tool URL requires HTTPS"),
       }),
     }),
   )
-  .output(z.object({ body: z.object({ token: z.string(), expiresAt: z.number(), url: z.url() }) }))
+  .output(
+    z.object({
+      body: z.object({
+        token: z.string(),
+        expiresAt: z.number(),
+        url: z.url(),
+        toolUrl: z.url(),
+        identity: z.object({
+          subjectId: z.string().optional(),
+          installationId: z.string(),
+          appId: z.string(),
+          projectId: z.string(),
+          deploymentId: z.string(),
+          scope: scopeSchema,
+          toolUrl: z.url(),
+          expiresAt: z.number(),
+        }),
+      }),
+    }),
+  )
   .use(
     requireAppInScopes.adaptInput(({ params: { appId }, body: { scopes } }) => ({ appId, scopes })),
   )
-  .handler(async ({ context }) => {
+  .handler(async ({ context, input }) => {
     const deployment = context.app.currentDeployment;
     if (!deployment) {
       throw new ORPCError("NOT_FOUND", { message: "App has no published deployment." });
@@ -74,16 +106,26 @@ export const runtimeSession = protectedRouter
     const url = new URL(`/p/${context.project.id}/a/${context.app.publicId}/rpc`, runtime);
     // Each app belongs to one installation scope. Resolve identity from the authorized
     // database record, never from browser input or the ordering of the viewer's scopes.
-    const session = await issueAppRuntimeToken({
-      userId: `scope:${context.app.scopeKey}`,
+    const identity = {
+      subjectId: input.body.subjectId,
+      scope: context.app.scope,
+      toolUrl: input.body.toolUrl,
       installationId: context.app.id,
       projectId: context.project.id,
       appId: context.app.id,
       deploymentId: deployment.id,
       publicTeamId: context.organization.publicId,
       appPublicId: context.app.publicId,
-    });
-    return { body: { ...session, url: url.href } };
+    };
+    const session = await issueAppRuntimeToken(identity);
+    return {
+      body: {
+        ...session,
+        url: url.href,
+        toolUrl: identity.toolUrl,
+        identity: { ...identity, expiresAt: session.expiresAt },
+      },
+    };
   });
 
 // Trusted runtime metadata: return the authorized private R2 key without minting a download URL.

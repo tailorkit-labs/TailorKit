@@ -15,8 +15,10 @@ function actionRunner(app: AppDefinition, calls: ActionCalls) {
 import type { Persistence } from "./database/driver";
 
 const identity = {
-  userId: "u",
+  subjectId: "u",
   projectId: "p",
+  scope: { name: "org", value: { id: "tenant" } },
+  toolUrl: "https://host.test/api/tailorkit/tools/execute",
   appId: "a",
   installationId: "i",
   deploymentId: "d",
@@ -33,7 +35,7 @@ it("validates and transforms fluent inputs and outputs through the real executio
       .input(z.object({ value: z.string().transform(Number) }))
       .output(z.string().transform(Number))
       .handler(({ input, identity: viewer }) => {
-        expect(viewer.userId).toBe("u");
+        expect(viewer.subjectId).toBe("u");
         expect(input.value).toBe(4);
         return String(input.value + 1);
       }),

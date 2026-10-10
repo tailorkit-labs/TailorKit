@@ -1,9 +1,11 @@
-export { action, defineContract } from "@tailorkit/core/schema";
+export { tool, defineContract } from "@tailorkit/core/schema";
 export type {
-  ContractAction,
-  ContractAction as Action,
-  ContractActions,
-  ContractActions as Actions,
+  ContractTool,
+  ContractTools,
+  ToolCallers,
+  ToolImplementations,
+  ToolContext,
+  ToolIdentity,
   TailorKitContract,
 } from "@tailorkit/core/schema";
 export type {

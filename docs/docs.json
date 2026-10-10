@@ -15,7 +15,7 @@
     "pages": [
       {
         "group": "Getting Started",
-        "pages": ["index", "installation"]
+        "pages": ["index", "installation", "tools"]
       }
     ],
     "global": {
@@ -59,7 +59,7 @@
       "github": "https://github.com/tailorkit-labs/tailorkit"
     }
   },
-  "description": "TailorKit lets users, AI, and partners build extensions inside your SaaS. Those extensions run in a sandbox and use the components, data, and actions you choose to expose.",
+  "description": "TailorKit lets users, AI, and partners build extensions inside your SaaS. Those extensions run in a sandbox and use the components, data, and tools you choose to expose.",
   "icons": {
     "library": "fontawesome"
   },

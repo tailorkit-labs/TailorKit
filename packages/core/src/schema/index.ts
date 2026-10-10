@@ -1,19 +1,14 @@
-export {
-  createActions,
-  type ActionDefinition,
-  type Action,
-  type ActionDefinitions,
-  type ActionTree,
-  type Actions,
-  type ActionHandler,
-  type HandlerArgs,
-  type InferActionInput,
-  type InferActionOutput,
-  type InferActionTreeContext,
-  type ImplementedAction,
-  type NoMixedActionContexts,
-  type ResolveActionTreeContext,
-} from "./actions";
+export { tool, flattenTools, validateToolValue } from "./tools";
+export type {
+  ContractTool,
+  ContractTools,
+  ToolImplementations,
+  ToolCallers,
+  ToolContext,
+  ToolIdentity,
+  InferToolInput,
+  InferToolOutput,
+} from "./tools";
 export {
   type CallbackMap,
   type Callback,
@@ -50,5 +45,5 @@ export {
 } from "./shared";
 export { createTailorKitSchema, type TailorKit, type TailorKitSchema } from "./schema";
 export type { TailorKitTheme } from "../primitives/theme";
-export { action, defineContract } from "./contract";
-export type { ContractAction, ContractActions, TailorKitContract } from "./contract";
+export { defineContract } from "./contract";
+export type { TailorKitContract } from "./contract";

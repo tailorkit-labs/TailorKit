@@ -2,21 +2,22 @@ import { z } from "zod";
 import { componentRecord } from "./component";
 import { viewRecord } from "./view";
 
-const actionLeaf = z.object({
+const toolLeaf = z.strictObject({
+  kind: z.enum(["client", "server"]),
   input: z.record(z.string(), z.unknown()).optional(),
   output: z.record(z.string(), z.unknown()).optional(),
 });
 
-interface ActionRecord {
-  [key: string]: z.infer<typeof actionLeaf> | ActionRecord;
+interface ToolRecord {
+  [key: string]: z.infer<typeof toolLeaf> | ToolRecord;
 }
 
-const actionRecord: z.ZodType<ActionRecord> = z.lazy(() =>
-  z.record(z.string(), z.union([actionLeaf, actionRecord])),
+const toolRecord: z.ZodType<ToolRecord> = z.lazy(() =>
+  z.record(z.string(), z.union([toolLeaf, toolRecord])),
 );
 
 export const TailorKitSchemaSpec = z
-  .object({
+  .strictObject({
     version: z.literal(1),
     slots: z
       .record(
@@ -24,7 +25,7 @@ export const TailorKitSchemaSpec = z
         z.object({ views: z.array(z.string().startsWith("/")), multiple: z.boolean().optional() }),
       )
       .default({}),
-    actions: actionRecord.default({}),
+    tools: toolRecord.default({}),
     scopes: z.record(z.string(), z.record(z.string(), z.unknown())).optional(),
     components: componentRecord,
     views: viewRecord.default({}),

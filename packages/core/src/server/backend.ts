@@ -4,18 +4,22 @@ import type { TailorKitScopes } from "./types";
 // eslint-disable-next-line complexity
 export async function handleBackendSession(
   request: Request,
-  authenticate: (input: { request: Request }) => Promise<{ scopes: TailorKitScopes } | null>,
+  authenticate: (input: {
+    request: Request;
+  }) => Promise<{ scopes: TailorKitScopes; subjectId?: string } | null>,
   issueSession: (
     appId: string,
     scopes: TailorKitScopes,
+    subjectId?: string,
   ) => Promise<{ token: string; expiresAt: number; url: string } | Response>,
+  publicOrigin = new URL(request.url).origin,
 ) {
   const headers = { "cache-control": "no-store" };
   const origin = request.headers.get("origin");
   if (
     request.method !== "POST" ||
     !request.headers.get("content-type")?.startsWith("application/json") ||
-    (origin && origin !== new URL(request.url).origin)
+    (origin && origin !== publicOrigin)
   ) {
     return new Response("Invalid request", { status: 400, headers });
   }
@@ -63,11 +67,11 @@ export async function handleBackendSession(
   ) {
     return new Response("Invalid app", { status: 400, headers });
   }
-  const session = await issueSession(input.appId, viewer.scopes);
+  const session = await issueSession(input.appId, viewer.scopes, viewer.subjectId);
   if (session instanceof Response) {
     const responseHeaders = new Headers(session.headers);
     responseHeaders.set("cache-control", "no-store");
     return new Response(session.body, { status: session.status, headers: responseHeaders });
   }
-  return Response.json(session, { headers });
+  return Response.json({ ...session, subjectId: viewer.subjectId }, { headers });
 }

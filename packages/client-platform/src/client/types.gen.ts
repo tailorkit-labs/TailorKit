@@ -71,6 +71,8 @@ export type AppsRuntimeSessionData = {
         [key: string]: Schema0;
       };
     }>;
+    subjectId?: string;
+    toolUrl: string;
   };
   path: {
     appId: string;
@@ -87,6 +89,22 @@ export type AppsRuntimeSessionResponses = {
     token: string;
     expiresAt: number;
     url: string;
+    toolUrl: string;
+    identity: {
+      subjectId?: string;
+      installationId: string;
+      appId: string;
+      projectId: string;
+      deploymentId: string;
+      scope: {
+        name: string;
+        value: {
+          [key: string]: Schema0;
+        };
+      };
+      toolUrl: string;
+      expiresAt: number;
+    };
   };
 };
 

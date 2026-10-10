@@ -112,7 +112,7 @@ it("routes HTTP calls with shared client types, CORS and typed error statuses", 
   expect(await client.actions({ name: "import" })).toBe("action");
   const instances = {
     name: "_tailorkit.instances.resolve",
-    args: { slot: "page.links", path: "/reports/annual.summary", context: { userId: "user" } },
+    args: { slot: "page.links", path: "/reports/annual.summary", context: { subjectId: "user" } },
   };
   expect(await client.actions(instances)).toBe("action");
   expect(operations.action).toHaveBeenCalledWith(instances, expect.any(AbortSignal));

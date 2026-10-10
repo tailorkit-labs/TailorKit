@@ -22,14 +22,14 @@ function setup() {
   };
   const values = { public: 1, private: 2 };
   const query = vi.fn(async (input: Invocation, identity: Identity) => ({
-    value: `${identity.userId}:${values[input.name as keyof typeof values]}`,
+    value: `${identity.subjectId}:${values[input.name as keyof typeof values]}`,
     tables: [input.name],
   }));
   function connection(user = "alice"): SubscriptionConnection {
     records.set(
       user,
       JSON.stringify({
-        identity: { userId: user, expiresAt: Date.now() + 120_000 },
+        identity: { subjectId: user, expiresAt: Date.now() + 120_000 },
         subscriptions: [],
       }),
     );
@@ -47,7 +47,7 @@ function setup() {
   const ctx = {
     getWebSockets: () =>
       sockets.map((socket) => ({
-        deserializeAttachment: () => socket.read()!.identity.userId,
+        deserializeAttachment: () => socket.read()!.identity.subjectId,
         send: (data: string | Uint8Array<ArrayBuffer>) => socket.send(data),
         close: vi.fn(),
       })),
@@ -143,7 +143,7 @@ it("refreshes view subscriptions on table writes after recreation without broade
   const test = setup();
   test.query.mockImplementation((input, identity) =>
     Promise.resolve({
-      value: `${identity.userId}:${test.values[input.name as keyof typeof test.values]}`,
+      value: `${identity.subjectId}:${test.values[input.name as keyof typeof test.values]}`,
       tables: input.name === "public" ? ["*"] : ["private"],
     }),
   );
@@ -253,7 +253,7 @@ it("reruns as each stored identity and isolates failures on different connection
   test.query.mockRejectedValueOnce({ code: "FORBIDDEN", message: "Denied" });
   await test.refresh(["public"]);
   await expect(stream.next()).rejects.toMatchObject({ code: "FORBIDDEN" });
-  expect(test.query.mock.calls.map((call) => call[1].userId)).toEqual(["alice", "bob"]);
+  expect(test.query.mock.calls.map((call) => call[1].subjectId)).toEqual(["alice", "bob"]);
   expect(test.socket.read()!.subscriptions).toHaveLength(0);
   expect(bob.read()!.subscriptions).toHaveLength(1);
 });

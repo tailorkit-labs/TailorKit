@@ -71,7 +71,7 @@ export class AppInstallation extends DurableObject<Env> {
           try: () =>
             this.#http.handle(request, {
               prefix: "/rpc",
-              context: { installation: this.#operations(identity, request.signal) },
+              context: { installation: this.#operations(identity, token, request.signal) },
             }),
           catch: appError,
         });
@@ -86,14 +86,14 @@ export class AppInstallation extends DurableObject<Env> {
     );
   }
 
-  #operations(identity: Identity, signal?: AbortSignal): Installation {
+  #operations(identity: Identity, token: string, signal?: AbortSignal): Installation {
     return {
       query: (input) =>
         this.#query(input, identity).pipe(Effect.flatMap((result) => resultEffect(result.result))),
       mutate: (input) =>
         this.#mutate(input, identity).pipe(Effect.flatMap((result) => resultEffect(result.result))),
       action: (input, callSignal) =>
-        this.#action(input, identity, signal ?? callSignal).pipe(
+        this.#action(input, identity, token, signal ?? callSignal).pipe(
           Effect.flatMap((result) => resultEffect(result.result)),
         ),
     };
@@ -212,7 +212,7 @@ export class AppInstallation extends DurableObject<Env> {
     });
   }
 
-  #action(input: Invocation, identity: Identity, signal?: AbortSignal) {
+  #action(input: Invocation, identity: Identity, token: string, signal?: AbortSignal) {
     const admission = this.#queue.withPermits(1)(
       Effect.gen({ self: this }, function* admission() {
         const facet = yield* this.#facet(identity);
@@ -225,8 +225,11 @@ export class AppInstallation extends DurableObject<Env> {
         Effect.tryPromise({
           try: () => {
             lease.signal.throwIfAborted();
-            const capability = new ActionCapability(lease, (tables) =>
-              Effect.runPromise(this.#queue.withPermits(1)(this.#refresh(tables, facet))),
+            const capability = new ActionCapability(
+              lease,
+              (tables) =>
+                Effect.runPromise(this.#queue.withPermits(1)(this.#refresh(tables, facet))),
+              { url: identity.toolUrl, token },
             );
             return abortable(
               facet.action(input, identity, capability, cancellationStream(lease.signal)),

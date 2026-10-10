@@ -1,5 +1,5 @@
 export { createServer, createTailorKitClient } from "@tailorkit/core/server";
-export type { ActionImplementations, ContractScopes } from "@tailorkit/core/server";
+export type { ToolImplementations, ContractScopes } from "@tailorkit/core/server";
 export type { TailorKitRouter, TailorKitRouterClient } from "@tailorkit/core/server";
 export type {
   TailorKitHandlerContext,

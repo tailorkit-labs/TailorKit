@@ -20,8 +20,10 @@ const deployment = {
 
 const identity = {
   ...deployment,
+  scope: { name: "org", value: { id: "tenant" } },
+  toolUrl: "https://host.test/api/tailorkit/tools/execute",
   installationId: "one",
-  userId: "user",
+  subjectId: "user",
   expiresAt: Date.now() + 120_000,
 };
 

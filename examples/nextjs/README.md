@@ -1,7 +1,7 @@
 # Next.js TailorKit Example
 
 This example shows a CRM host product that exposes TailorKit views, components,
-theme tokens, and actions from a Next.js App Router application.
+theme tokens, and tools from a Next.js App Router application.
 
 ## Run the example
 

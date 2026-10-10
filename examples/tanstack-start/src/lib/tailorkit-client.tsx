@@ -8,6 +8,15 @@ import { Textarea } from "@tailorkit/ui/textarea";
 
 export const tailor = createClient({
   contract,
+  tools: {
+    navigation: {
+      openCustomer: ({ input }) => {
+        const path = "/customers/" + encodeURIComponent(input.customerId);
+        window.location.assign(path);
+        return path;
+      },
+    },
+  },
   baseUrl:
     typeof window === "undefined"
       ? "http://localhost/api/tailorkit/"

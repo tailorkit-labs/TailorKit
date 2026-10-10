@@ -18,29 +18,33 @@ function persistence() {
     },
   };
 }
-it.each([[], ["database"], ["database", "actions"], ["database", "actions", "database-relations"]])(
-  "accepts supported required features %j",
-  (...requires: string[]) => {
-    const db = persistence();
-    const execution = createApplicationExecution(
-      { ...application, runtimeManifest: { apiVersion: 1, requires } },
-      db,
-    );
-    expect(
-      execution.query(
-        { name: "value" },
-        {
-          userId: "u",
-          projectId: "p",
-          appId: "a",
-          installationId: "i",
-          deploymentId: "d",
-          expiresAt: Date.now() + 60_000,
-        },
-      ).value,
-    ).toBe("ready");
-  },
-);
+it.each([
+  [],
+  ["database"],
+  ["database", "actions"],
+  ["database", "actions", "database-relations", "tools"],
+])("accepts supported required features %j", (...requires: string[]) => {
+  const db = persistence();
+  const execution = createApplicationExecution(
+    { ...application, runtimeManifest: { apiVersion: 1, requires } },
+    db,
+  );
+  expect(
+    execution.query(
+      { name: "value" },
+      {
+        subjectId: "u",
+        projectId: "p",
+        scope: { name: "org", value: { id: "tenant" } },
+        toolUrl: "https://host.test/api/tailorkit/tools/execute",
+        appId: "a",
+        installationId: "i",
+        deploymentId: "d",
+        expiresAt: Date.now() + 60_000,
+      },
+    ).value,
+  ).toBe("ready");
+});
 it.each([
   { ...application, runtimeManifest: undefined },
   { ...application, runtimeManifest: { apiVersion: 2, requires: [] } },

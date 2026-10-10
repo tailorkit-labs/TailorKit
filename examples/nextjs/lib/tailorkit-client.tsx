@@ -10,6 +10,15 @@ import { createClient, primitives as reactPrimitives } from "tailorkit/react";
 
 export const tailor = createClient({
   contract,
+  tools: {
+    navigation: {
+      openCustomer: ({ input }) => {
+        const path = "/customers/" + encodeURIComponent(input.customerId);
+        window.location.assign(path);
+        return path;
+      },
+    },
+  },
   baseUrl:
     typeof window === "undefined"
       ? "http://localhost:5020/api/tailorkit/"

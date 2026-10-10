@@ -1,4 +1,4 @@
-import { action, defineContract } from "tailorkit";
+import { tool, defineContract } from "tailorkit";
 import type { Component, ContextDefinitions } from "tailorkit";
 import { primitives } from "tailorkit/zod";
 import { z } from "zod";
@@ -126,5 +126,13 @@ export const contract = defineContract({
     navbar: { views: ["/"] },
   },
   scopes: { user: z.object({ userId: z.string().min(1) }) },
-  actions: { echo: action().input(z.string()).output(z.string()) },
+  tools: {
+    echo: tool.server().input(z.string()).output(z.string()),
+    navigation: {
+      openCustomer: tool
+        .client()
+        .input(z.object({ customerId: z.string() }))
+        .output(z.string()),
+    },
+  },
 });

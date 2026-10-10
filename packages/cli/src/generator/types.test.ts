@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { z } from "zod";
-import { action, defineContract, createTailorKitSchema } from "@tailorkit/core/schema";
+import { tool, defineContract, createTailorKitSchema } from "@tailorkit/core/schema";
 import { createServer } from "@tailorkit/core/server";
 import { TailorKitSchemaSpec } from "@tailorkit/core/spec";
 
@@ -410,15 +410,16 @@ describe("renderGeneratedTypes", () => {
     const server = createServer({
       contract: defineContract({
         scopes: { user: z.object({ userId: z.string() }) },
-        actions: {
+        tools: {
           nested: {
-            increment: action()
+            increment: tool
+              .server()
               .input(z.string().transform(Number).pipe(z.number()))
               .output(z.union([z.string(), z.number()]).transform(Number).pipe(z.number())),
           },
         },
       }),
-      actions: { nested: { increment: ({ input }) => input + 1 } },
+      tools: { nested: { increment: ({ input }) => input + 1 } },
       authenticate: () => null,
     });
     const response = await server.handler(new Request("https://host.test/api/tailorkit/schema"));
@@ -429,9 +430,10 @@ describe("renderGeneratedTypes", () => {
 
   it("generates typed action callers without request context", () => {
     const output = renderGeneratedTypes({
-      actions: {
+      tools: {
         todo: {
           create: {
+            kind: "server",
             input: {
               properties: {
                 title: { type: "string" },
@@ -454,7 +456,7 @@ describe("renderGeneratedTypes", () => {
       views: {},
     });
 
-    expect(output).toContain("export type TailorKitActions = {");
+    expect(output).toContain("export type TailorKitTools = {");
     expect(output).toContain("todo: {");
     expect(output).toContain("create: (input: {");
     expect(output).toContain("title: string;");
@@ -524,4 +526,20 @@ it("preserves optional ancestor fields through schema serialization and generati
   expect(output).toContain(
     "context: (Partial<{\n      workspaceId: string;\n    }>) & ({\n      id: string;\n    });",
   );
+});
+it("generates both frontend kinds and excludes client namespaces from backend callers", () => {
+  const generated = renderGeneratedTypes({
+    tools: {
+      ui: { open: { kind: "client", input: { type: "string" }, output: { type: "boolean" } } },
+      accounts: { nested: { balance: { kind: "server", output: { type: "number" } } } },
+    },
+  });
+  expect(generated).toContain('callTool("client", "ui.open", input)');
+  expect(generated).toContain('callTool("server", "accounts.nested.balance", input)');
+  const backend = generated.slice(
+    generated.indexOf("export type TailorKitBackendTools"),
+    generated.indexOf('declare module "tailorkit/client" { interface TailorKitServerTools'),
+  );
+  expect(backend).not.toContain("ui:");
+  expect(backend).toContain("balance: (input?: undefined) => Promise<number>");
 });

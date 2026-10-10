@@ -259,3 +259,76 @@ describe("backend JWT bridge", () => {
     host.destroy();
   });
 });
+
+it.each(["backend-first", "tools-first"])(
+  "isolates tool and backend request limits and cleanup (%s)",
+  async (order) => {
+    const session = {
+      token: "token",
+      expiresAt: Date.now() + 120_000,
+      url: "https://runtime.test/rpc",
+    };
+    let complete!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      complete = resolve;
+    });
+    const client = vi.fn(async () => {
+      await pending;
+      return "output";
+    });
+    const getBackendSession = vi.fn(async () => {
+      await pending;
+      return session;
+    });
+    const host = createIframeUiHost("https://assets.test/app.js", {
+      fetch: createFetch(),
+      getBackendSession,
+      toolBridge: { client, session: async () => session },
+    });
+    host.mount();
+    const postMessage = vi.spyOn(getContentWindow(host.iframe), "postMessage");
+    const channel = getChannel(host.iframe);
+    const send = (type: "toolRequest" | "backendSessionRequest", id: string) =>
+      emitFromIframe(host.iframe, {
+        channel,
+        type: sandboxMessageType,
+        payload: {
+          type,
+          data:
+            type === "toolRequest"
+              ? { id, kind: "client", path: "ui.open", input: "input" }
+              : { id, refresh: false },
+        },
+      });
+    try {
+      const types =
+        order === "backend-first"
+          ? (["backendSessionRequest", "toolRequest"] as const)
+          : (["toolRequest", "backendSessionRequest"] as const);
+      for (const type of types) {
+        for (let index = 0; index < (type === "toolRequest" ? 32 : 4); index++)
+          send(type, String(index));
+      }
+      expect(client).toHaveBeenCalledTimes(32);
+      expect(getBackendSession).toHaveBeenCalledTimes(4);
+      // Each kind rejects duplicates and over-capacity requests independently.
+      send("toolRequest", "0");
+      send("backendSessionRequest", "0");
+      send("toolRequest", "overflow");
+      send("backendSessionRequest", "overflow");
+      expect(client).toHaveBeenCalledTimes(32);
+      expect(getBackendSession).toHaveBeenCalledTimes(4);
+      complete();
+      await vi.waitFor(() => expect(postMessage).toHaveBeenCalledTimes(36));
+      send("toolRequest", "0");
+      send("backendSessionRequest", "0");
+      expect(client).toHaveBeenCalledTimes(33);
+      expect(getBackendSession).toHaveBeenCalledTimes(5);
+      await vi.waitFor(() => expect(postMessage).toHaveBeenCalledTimes(38));
+    } finally {
+      complete();
+      host.destroy();
+      vi.restoreAllMocks();
+    }
+  },
+);

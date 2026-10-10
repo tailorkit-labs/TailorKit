@@ -67,14 +67,39 @@ function privateIPv4([first = 0, second = 0]: number[]) {
 /** Trusted outbound fetch and committed-write notification; database calls stay in the facet. */
 export class ActionCapability extends RpcTarget {
   private lease: { signal: AbortSignal; deadline: number };
+  private appSession: { url: string; token: string } | undefined;
   private notify: (tables: string[]) => Promise<void>;
   constructor(
     lease: { signal: AbortSignal; deadline: number },
     notify: (tables: string[]) => Promise<void>,
+    appSession?: { url: string; token: string },
   ) {
     super();
     this.lease = lease;
     this.notify = notify;
+    this.appSession = appSession;
+  }
+
+  async tool(path: string, input: unknown): Promise<unknown> {
+    const credential = this.appSession;
+    if (!credential || this.lease.signal.aborted || this.lease.deadline <= Date.now())
+      throw new AppError("UNAVAILABLE", "Action has ended");
+    if (!/^[a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z][a-zA-Z0-9_]*)*$/u.test(path) || path.length > 512)
+      throw new AppError("BAD_REQUEST", "Invalid tool path");
+    actionDestination(new URL(credential.url));
+    const response = await fetch(credential.url, {
+      method: "POST",
+      redirect: "manual",
+      signal: this.lease.signal,
+      headers: { authorization: `Bearer ${credential.token}`, "content-type": "application/json" },
+      body: JSON.stringify({ path, input, requestId: crypto.randomUUID() }),
+    });
+    if (!response.ok)
+      throw new AppError(
+        response.status === 401 ? "UNAUTHORIZED" : "UNAVAILABLE",
+        "Tool call failed",
+      );
+    return ((await response.json()) as { output?: unknown }).output;
   }
 
   // A committed write still needs delivery if its caller cancels before this RPC arrives.

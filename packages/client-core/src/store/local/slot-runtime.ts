@@ -1,3 +1,4 @@
+import type { ToolBridge } from "@tailorkit/app/client";
 import { atom } from "nanostores";
 import type { Session, ViewInstance } from "@tailorkit/app/client";
 import type { ViewStatus } from "@tailorkit/core/views";
@@ -33,6 +34,7 @@ export type SlotRuntimeSnapshot =
       sourceText?: string;
       hostKey: string | number;
       props: Record<string, unknown>;
+      toolBridge: ToolBridge;
       getBackendSession: (options: { refresh: boolean }) => Promise<Session>;
     };
 
@@ -165,6 +167,7 @@ export function createSlotRuntime(store: TailorKitStore, initial: SlotRuntimeOpt
         declaredViews: Object.keys(schema.views),
         supportedViews: schema.slots[slot]?.views ?? [],
       },
+      toolBridge: store.client.endpoints.getToolBridge(app),
       getBackendSession: store.client.endpoints.getSessionProvider(app),
     };
   };

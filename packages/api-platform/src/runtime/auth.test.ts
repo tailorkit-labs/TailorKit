@@ -1,5 +1,5 @@
 import { expect, it, vi } from "vite-plus/test";
-import { APP_RUNTIME_AUDIENCE, appTokenVerifier } from "@tailorkit/api-utils/app-auth";
+import { APP_AUDIENCE, appTokenVerifier } from "@tailorkit/api-utils/app-auth";
 const settings = vi.hoisted(() => ({
   APP_RUNTIME_SIGNING_KEY: "",
   APP_RUNTIME_PREVIOUS_PUBLIC_KEYS: undefined as string | undefined,
@@ -22,7 +22,9 @@ it("publishes only public keys and issues platform-bound short-lived access", as
   const identity = {
     publicTeamId: "abc123def45678",
     appPublicId: "app000000001",
-    userId: "user",
+    subjectId: "service-principal",
+    scope: { name: "org", value: { id: "tenant" } },
+    toolUrl: "https://host.test/api/tailorkit/tools/execute",
     projectId: "project",
     appId: "app",
     installationId: "installation",
@@ -33,7 +35,7 @@ it("publishes only public keys and issues platform-bound short-lived access", as
   const issuedBefore = Math.floor(Date.now() / 1000);
   const verify = appTokenVerifier({
     issuer: settings.OPENAPI_SERVER_URL,
-    audience: APP_RUNTIME_AUDIENCE,
+    audience: APP_AUDIENCE,
     publicKeys,
   });
   expect(await verify(session.token)).toMatchObject(identity);

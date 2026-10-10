@@ -1,7 +1,7 @@
 import type { AppTokenTrust, AppTokenIdentity } from "@tailorkit/api-utils/app-auth";
 import { createPrivateKey, createPublicKey } from "node:crypto";
 import {
-  APP_RUNTIME_AUDIENCE,
+  APP_AUDIENCE,
   appRuntimeIssuer,
   issueAppToken,
   parseAppPublicKeys,
@@ -41,7 +41,7 @@ export function issueAppRuntimeToken(identity: AppTokenIdentity) {
   return issueAppToken(
     {
       issuer: appRuntimeIssuer(env.OPENAPI_SERVER_URL ?? "https://tailorkit.dev/api/platform"),
-      audience: APP_RUNTIME_AUDIENCE,
+      audience: APP_AUDIENCE,
       keyId: key.kid,
       privateKey: key,
     },

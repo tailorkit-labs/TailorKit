@@ -11,8 +11,10 @@ afterEach(() => {
   globalThis.fetch = nativeFetch;
 });
 const identity = {
-  userId: "u",
+  subjectId: "u",
   projectId: "p",
+  scope: { name: "org", value: { id: "tenant" } },
+  toolUrl: "https://host.test/api/tailorkit/tools/execute",
   appId: "a",
   installationId: "i",
   deploymentId: "d",

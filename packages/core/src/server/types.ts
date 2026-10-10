@@ -2,12 +2,9 @@ import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { ClientOptions as PlatformClientOptions } from "@tailorkit/client-platform/client/types.gen";
 import type { TailorKitRouter } from "./router";
 import type {
-  ActionTree,
-  ActionDefinitions,
+  ContractTools,
   ComponentDefinitions,
-  NoMixedActionContexts,
   NoComponentFieldCallbackConflicts,
-  ResolveActionTreeContext,
   ViewContextHierarchy,
   ContextDefinitions,
   SlotDefinitions,
@@ -37,7 +34,11 @@ export interface TailorKitServerBaseOptions<
   assetsBaseUrl?: string;
   /** Convert schemas to JSON Schema for metadata and app type generation. */
   schemaSerializer?: SchemaSerializer;
-  basePath?: string;
+  /**
+   * Public HTTP(S) base URL or root-relative route prefix. Defaults to "/api/tailorkit".
+   * Absolute URLs supply the trusted origin; relative paths use the request origin.
+   */
+  baseUrl?: string | URL;
   /**
    * Configuration for browser-based TailorKit CLI authentication.
    */
@@ -80,9 +81,9 @@ export interface TailorKitServerBaseOptions<
 export interface TailorKitServerSchemaOptions<
   TComponents extends ComponentDefinitions,
   TViews extends ContextDefinitions,
-  TActions extends ActionTree = Record<never, never>,
+  TTools extends ContractTools = Record<never, never>,
 > {
-  actions?: TActions & ActionDefinitions & NoMixedActionContexts<TActions>;
+  tools?: TTools & ContractTools;
   components: TComponents & NoComponentFieldCallbackConflicts<TComponents>;
   views?: TViews & ViewContextHierarchy<TViews>;
   slots?: SlotDefinitions<keyof TViews & string>;
@@ -90,7 +91,7 @@ export interface TailorKitServerSchemaOptions<
 
 export interface TailorKitServerInputOptions extends TailorKitServerBaseOptions {
   slots?: SlotDefinitions;
-  actions?: ActionDefinitions;
+  tools?: ContractTools;
   components: ComponentDefinitions;
   views?: ContextDefinitions;
 }
@@ -105,8 +106,8 @@ export type InferTailorKitServerViews<TOptions extends TailorKitServerInputOptio
 export type InferTailorKitServerContexts<TOptions extends TailorKitServerInputOptions> =
   InferTailorKitServerViews<TOptions>;
 
-export type InferTailorKitServerActions<TOptions extends TailorKitServerInputOptions> =
-  TOptions extends { actions: infer TActions } ? TActions : Record<never, never>;
+export type InferTailorKitServerTools<TOptions extends TailorKitServerInputOptions> =
+  TOptions extends { tools: infer TTools } ? TTools : Record<never, never>;
 
 export type TailorKitJsonValue =
   | string
@@ -142,43 +143,33 @@ export type InferTailorKitServerScopes<TOptions extends TailorKitServerInputOpti
 export interface TailorKitServerOptions<
   TComponents extends ComponentDefinitions,
   TViews extends ContextDefinitions,
-  TActions extends ActionTree = Record<never, never>,
+  TTools extends ContractTools = Record<never, never>,
   TScopes extends Record<string, StandardSchemaV1> = Record<string, StandardSchemaV1>,
 >
   extends
     TailorKitServerBaseOptions<TScopes>,
-    TailorKitServerSchemaOptions<TComponents, TViews, TActions> {}
+    TailorKitServerSchemaOptions<TComponents, TViews, TTools> {}
 
-export type TailorKitHostContext<TActionContext = never, TScopes = TailorKitScopes> = {
+export type TailorKitHostContext<TScopes = TailorKitScopes> = {
   scopes: TScopes;
-} & ([TActionContext] extends [never]
-  ? { actionContext?: never }
-  : { actionContext: TActionContext });
-
-export interface TailorKitHandlerOptions<TActionContext = never, TScopes = TailorKitScopes> {
+  subjectId?: string;
+};
+export interface TailorKitHandlerOptions<TScopes = TailorKitScopes> {
   authenticate: (ctx: {
     request: Request;
-  }) =>
-    | TailorKitHostContext<TActionContext, TScopes>
-    | null
-    | Promise<TailorKitHostContext<TActionContext, TScopes> | null>;
+  }) => TailorKitHostContext<TScopes> | null | Promise<TailorKitHostContext<TScopes> | null>;
 }
-
-export type TailorKitHandlerContext<
-  TActionContext = never,
-  TScopes = TailorKitScopes,
-> = TailorKitHostContext<TActionContext, TScopes>;
+export type TailorKitHandlerContext<TScopes = TailorKitScopes> = TailorKitHostContext<TScopes>;
 
 export interface TailorKitServer<
   TComponents extends ComponentDefinitions,
   TViews extends ContextDefinitions,
-  TActions extends ActionTree = Record<never, never>,
-  TActionContext = ResolveActionTreeContext<TActions>,
+  TTools extends ContractTools = Record<never, never>,
   TScopes = TailorKitScopes,
 > {
   handler: (
     request: Request,
-    options: TailorKitHandlerOptions<TActionContext, TScopes>,
+    options: TailorKitHandlerOptions<TScopes>,
   ) => Response | Promise<Response>;
   /**
    * Internal TailorKit implementation details.
@@ -194,6 +185,6 @@ export interface TailorKitServer<
     assetsBaseUrl?: string;
     platformBaseUrl: string;
     router: TailorKitRouter;
-    schema: TailorKitSchema<TComponents, TViews, TActions>;
+    schema: TailorKitSchema<TComponents, TViews, TTools>;
   };
 }

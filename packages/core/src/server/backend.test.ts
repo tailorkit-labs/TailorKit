@@ -22,9 +22,13 @@ it("uses existing host authentication and passes only verified scopes to the pla
   expect(response.headers.get("cache-control")).toBe("no-store");
   expect(await response.json()).toEqual(session);
   expect(authenticate).toHaveBeenCalledWith({ request: input });
-  expect(issueSession).toHaveBeenCalledExactlyOnceWith("installed-app", {
-    workspace: { id: "authorized-workspace" },
-  });
+  expect(issueSession).toHaveBeenCalledExactlyOnceWith(
+    "installed-app",
+    {
+      workspace: { id: "authorized-workspace" },
+    },
+    undefined,
+  );
 });
 
 it("rejects unauthenticated requests before issuing tokens", async () => {
@@ -39,7 +43,7 @@ it("rejects unauthenticated requests before issuing tokens", async () => {
 
 it.each([
   { appId: "app", installationId: "victim" },
-  { appId: "app", userId: "victim" },
+  { appId: "app", subjectId: "victim" },
   { appId: "app", scopes: { workspace: { id: "victim" } } },
   { appId: "app", url: "https://attacker.test/rpc" },
   { appId: "" },

@@ -14,15 +14,17 @@ const { publicKey, privateKey } = await generateKeyPair("ES256", { extractable: 
 const publicKeys = { keys: [{ ...(await exportJWK(publicKey)), kid: "host-key" }] };
 const signing = {
   issuer: "https://host.test",
-  audience: "tailorkit-apps-worker",
+  audience: "tailorkit-app",
   privateKey,
   keyId: "host-key",
 };
 const identity = {
   publicTeamId: "abc123def45678",
   appPublicId: "app000000001",
-  userId: "user",
+  subjectId: "principal",
   projectId: "project",
+  scope: { name: "org", value: { id: "tenant" } },
+  toolUrl: "https://host.test/api/tailorkit/tools/execute",
   deploymentId: "deployment",
   appId: "app",
   installationId: "installation",
@@ -55,14 +57,11 @@ it("rejects wrong signature, issuer, audience, app, expiry, missing claims and e
   }
   const sign = (claims: Record<string, unknown>) =>
     new SignJWT({
-      publicTeamId: identity.publicTeamId,
-      appPublicId: identity.appPublicId,
-      projectId: identity.projectId,
-      deploymentId: identity.deploymentId,
+      ...identity,
       ...claims,
     })
       .setProtectedHeader({ alg: "ES256", kid: "host-key", typ: "JWT" })
-      .setSubject("user")
+      .setSubject(identity.installationId)
       .setIssuer(signing.issuer)
       .setAudience(signing.audience)
       .sign(privateKey);
@@ -70,16 +69,9 @@ it("rejects wrong signature, issuer, audience, app, expiry, missing claims and e
   for (const claims of [
     { appId: "app", installationId: "installation", iat: now - 100, exp: now - 1 },
     { appId: "app", installationId: "installation", iat: now },
-    { appId: "app", iat: now, exp: now + 120 },
+    { appId: "app", installationId: undefined, iat: now, exp: now + 120 },
     { appId: "app", installationId: "installation", iat: now, exp: now + 1000 },
     { appId: "app", installationId: "installation", iat: now + 60, exp: now + 120 },
-    {
-      appId: "app",
-      installationId: "installation",
-      iat: now,
-      exp: now + 120,
-      purpose: "migrations",
-    },
   ]) {
     await expect(verify(await sign(claims))).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   }
@@ -159,10 +151,28 @@ it.each(["projectId", "deploymentId", "publicTeamId", "appPublicId"])(
     const claims = { ...identity, [field]: undefined, iat: now, exp: now + 120 };
     const token = await new SignJWT(claims)
       .setProtectedHeader({ alg: "ES256", kid: "host-key", typ: "JWT" })
-      .setSubject(identity.userId)
+      .setSubject(identity.installationId)
       .setIssuer(signing.issuer)
       .setAudience(signing.audience)
       .sign(privateKey);
     await expect(verify(token)).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   },
 );
+
+it("preserves arbitrary product principals in the shared app session", async () => {
+  const session = await issueAppToken(signing, { ...identity, subjectId: "job:invoice-run" });
+  expect(await verify(session.token)).toMatchObject({
+    subjectId: "job:invoice-run",
+    scope: identity.scope,
+    installationId: identity.installationId,
+  });
+  const claims = decodeJwt(session.token);
+  expect(claims.sub).toBe(identity.installationId);
+  expect(claims.aud).toBe(signing.audience);
+  expect(claims.exp! - claims.iat!).toBe(300);
+  const installation = await issueAppToken(signing, { ...identity, subjectId: undefined });
+  expect(await verify(installation.token)).toMatchObject({
+    subjectId: undefined,
+    installationId: identity.installationId,
+  });
+});

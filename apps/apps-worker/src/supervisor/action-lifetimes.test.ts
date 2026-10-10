@@ -1,19 +1,24 @@
 import { afterEach, expect, it, vi } from "vite-plus/test";
 
-import { createActionLeases, actionDestination } from "./actions";
+import { createActionLeases, actionDestination, ActionCapability } from "./actions";
 import { abortable } from "../runtime/cancellation";
 vi.mock("cloudflare:workers", () => ({ RpcTarget: function RpcTarget() {} }));
 
 const identity = {
-  userId: "user",
+  subjectId: "user",
   projectId: "project",
+  scope: { name: "org", value: { id: "tenant" } },
+  toolUrl: "https://host.test/api/tailorkit/tools/execute",
   appId: "app",
   installationId: "install",
   deploymentId: "v1",
   expiresAt: Date.now() + 60_000,
 };
 
-afterEach(() => vi.useRealTimers());
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
 
 it("admits actions without an application concurrency limit and revokes them on close", () => {
   const leases = createActionLeases();
@@ -78,4 +83,31 @@ it("cancels all active actions on deployment replacement", () => {
   const next = leases.open(identity);
   expect(next.signal.aborted).toBe(false);
   next.close();
+});
+
+it("sends the verified app session directly to the product and rejects redirects", async () => {
+  const fetch = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      new Response(null, { status: 302, headers: { location: "https://attacker.test" } }),
+    );
+  const lease = createActionLeases().open(identity);
+  const capability = new ActionCapability(lease, async () => {}, {
+    url: identity.toolUrl,
+    token: "verified-app-credential",
+  });
+  try {
+    await expect(capability.tool("customers.read", { id: "customer" })).rejects.toBeDefined();
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(fetch.mock.calls[0]).toMatchObject([
+      identity.toolUrl,
+      { redirect: "manual", headers: { authorization: "Bearer verified-app-credential" } },
+    ]);
+    expect(JSON.parse(String(fetch.mock.calls[0]?.[1]?.body))).toMatchObject({
+      path: "customers.read",
+      input: { id: "customer" },
+    });
+  } finally {
+    lease.close();
+  }
 });
