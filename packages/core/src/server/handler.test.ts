@@ -4,13 +4,18 @@ import { createTailorKitClient } from "./client";
 import { createTailorKitServer } from "./handler";
 
 const testScopeSchema = z.record(z.string(), z.string().min(1));
-const tailor = createTailorKitServer({ scopes: { org: testScopeSchema }, components: {} });
+const tailor = createTailorKitServer({
+  baseUrl: "https://example.com/api/tailorkit",
+  scopes: { org: testScopeSchema },
+  components: {},
+});
 const optionalSchemaTailor = tailor;
 
 describe("createTailorKitServer", () => {
   it("requests app backend tokens from the platform with host credentials and verified scopes", async () => {
     const requests: Request[] = [];
     const server = createTailorKitServer({
+      baseUrl: "https://host.test/api/tailorkit",
       projectKey: "project-key",
       scopes: { org: testScopeSchema },
       components: {},
@@ -92,8 +97,11 @@ describe("createTailorKitServer", () => {
   });
 
   it.each([
-    { baseUrl: undefined, prefix: "/api/tailorkit", origin: "https://request.test" },
-    { baseUrl: "/custom/routes///", prefix: "/custom/routes", origin: "https://request.test" },
+    {
+      baseUrl: "http://localhost:3000/api/tailorkit",
+      prefix: "/api/tailorkit",
+      origin: "http://localhost:3000",
+    },
     {
       baseUrl: "https://public.test/custom/routes///",
       prefix: "/custom/routes",
@@ -105,7 +113,6 @@ describe("createTailorKitServer", () => {
       origin: "https://public.test:8443",
     },
     { baseUrl: "https://public.test/", prefix: "", origin: "https://public.test" },
-    { baseUrl: "/", prefix: "", origin: "https://request.test" },
   ])("routes and issues sessions from baseUrl=$baseUrl", async ({ baseUrl, prefix, origin }) => {
     const bodies: unknown[] = [];
     const server = createTailorKitServer({
@@ -148,6 +155,14 @@ describe("createTailorKitServer", () => {
   });
 
   it.each([
+    undefined,
+    null,
+    "",
+    "/",
+    "/api/tailorkit",
+    "https:host.test/api",
+    "https:/host.test/api",
+    "https:///host.test/api",
     "//attacker.test/api",
     "api/relative",
     "ftp://host.test/api",
@@ -158,13 +173,18 @@ describe("createTailorKitServer", () => {
     " /api",
   ])("rejects an ambiguous or invalid baseUrl=%s", (baseUrl) => {
     expect(() =>
-      createTailorKitServer({ baseUrl, scopes: { org: testScopeSchema }, components: {} }),
+      createTailorKitServer({
+        baseUrl: baseUrl as string,
+        scopes: { org: testScopeSchema },
+        components: {},
+      }),
     ).toThrow();
   });
 
   it("returns platform scope denials without issuing a backend session", async () => {
     const requests: Request[] = [];
     const server = createTailorKitServer({
+      baseUrl: "https://host.test/api/tailorkit",
       projectKey: "project-key",
       scopes: { org: testScopeSchema },
       components: {},
@@ -192,6 +212,7 @@ describe("createTailorKitServer", () => {
   it("selects only requested authenticated scope names for host app reads", async () => {
     const platformBodies: unknown[] = [];
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema, userOrg: testScopeSchema },
       components: {},
       $internal: {
@@ -236,6 +257,7 @@ describe("createTailorKitServer", () => {
   it("treats scopes= as an empty app and preview selection", async () => {
     let platformCalls = 0;
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema },
       components: {},
       $internal: {
@@ -261,13 +283,14 @@ describe("createTailorKitServer", () => {
     expect(platformCalls).toBe(0);
   });
 
-  it("preserves hosted bundle URLs without an assetsBaseUrl override", async () => {
+  it("preserves hosted bundle URLs", async () => {
     const app = {
       id: "app",
       clientPath:
         "https://abc123def4.tailorkit.app/p/22222222-2222-4222-8222-222222222222/a/33333333-3333-4333-8333-333333333333/d/44444444-4444-4444-8444-444444444444/client.js",
     };
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema },
       projectKey: "server-only-key",
       components: {},
@@ -312,6 +335,7 @@ describe("createTailorKitServer", () => {
 
   it("redirects unauthenticated CLI approvals to the host sign-in page", async () => {
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema },
       cliAuth: { signInPath: "/admin/sign-in?source=tailorkit" },
       components: {},
@@ -331,6 +355,7 @@ describe("createTailorKitServer", () => {
 
   it("renders configured CLI approvals for authenticated users", async () => {
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema, userOrg: testScopeSchema },
       cliAuth: { signInPath: "/admin/sign-in" },
       components: {},
@@ -354,6 +379,7 @@ describe("createTailorKitServer", () => {
 
   it("preserves the scope selection when a CLI approval code is missing", async () => {
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema, userOrg: testScopeSchema },
       components: {},
     });
@@ -378,6 +404,7 @@ describe("createTailorKitServer", () => {
 
   it("rejects cross-origin CLI sign-in redirects", async () => {
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema },
       cliAuth: { signInPath: "//evil.example/sign-in" },
       components: {},
@@ -393,6 +420,7 @@ describe("createTailorKitServer", () => {
 
   it("rejects host scopes that fail Standard Schema validation before platform access", async () => {
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       cliAuth: { signInPath: "/sign-in" },
       scopes: { org: z.object({ orgId: z.string().min(1) }) },
       components: {},
@@ -409,6 +437,7 @@ describe("createTailorKitServer", () => {
   it("approves CLI auth from the built-in approval page", async () => {
     const requests: Request[] = [];
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema },
       $internal: {
         platformBaseUrl: "http://localhost:3000/api/platform",
@@ -447,6 +476,7 @@ describe("createTailorKitServer", () => {
   it("uses projectKey as the default platform authorization header", async () => {
     const requests: Request[] = [];
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema },
       $internal: {
         platformBaseUrl: "http://localhost:3000/api/platform",
@@ -478,6 +508,7 @@ describe("createTailorKitServer", () => {
 
   it("surfaces rejected project keys during CLI auth start", async () => {
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema },
       $internal: {
         platformBaseUrl: "http://localhost:3000/api/platform",
@@ -508,6 +539,7 @@ describe("createTailorKitServer", () => {
     const requests: Request[] = [];
     const hostRequests: Request[] = [];
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema },
       $internal: {
         platformBaseUrl: "http://localhost:3000/api/platform",
@@ -576,6 +608,7 @@ describe("createTailorKitServer", () => {
     const requests: Request[] = [];
     const hostRequests: Request[] = [];
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema },
       $internal: {
         platformBaseUrl: "http://localhost:3000/api/platform",
@@ -634,6 +667,7 @@ describe("createTailorKitServer", () => {
   it("preserves instance discovery when the CLI deploys through the host", async () => {
     const requests: Request[] = [];
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: { org: testScopeSchema },
       components: {},
       $internal: {
@@ -681,6 +715,7 @@ describe("createTailorKitServer", () => {
   it("accepts a CLI token containing a transformed scope output", async () => {
     const platformBodies: unknown[] = [];
     const server = createTailorKitServer({
+      baseUrl: "https://example.com/api/tailorkit",
       scopes: {
         org: z.object({ raw: z.string() }).transform(({ raw }) => ({ canonical: raw.trim() })),
       },

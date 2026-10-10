@@ -28,8 +28,6 @@ export function sessionRenewalDelay(session: Session) {
 export function createSessionProvider(options: {
   baseUrl: string | URL;
   appId: string;
-  /** Product principal used solely to partition the host credential cache. */
-  subjectId?: string;
   fetch?: typeof fetch;
 }) {
   const base = new URL(options.baseUrl, globalThis.location?.href);
@@ -39,13 +37,7 @@ export function createSessionProvider(options: {
   let cached: Session | undefined;
   let pending: Promise<Session> | undefined;
   return (input: { refresh: boolean }): Promise<Session> => {
-    if (
-      options.subjectId !== undefined &&
-      !input.refresh &&
-      cached &&
-      cached.subjectId === options.subjectId &&
-      cached.expiresAt > Date.now() + APP_SESSION_RENEWAL_MS
-    ) {
+    if (!input.refresh && cached && cached.expiresAt > Date.now() + APP_SESSION_RENEWAL_MS) {
       return Promise.resolve(cached);
     }
     pending ??= (async () => {
@@ -72,8 +64,6 @@ export function createSessionProvider(options: {
       ) {
         throw new AppError("UNAVAILABLE", "Invalid app session");
       }
-      if (options.subjectId !== undefined && value.subjectId !== options.subjectId)
-        throw new AppError("UNAUTHORIZED", "Authenticated principal changed");
       cached = {
         ...(value.toolUrl !== undefined ? { toolUrl: value.toolUrl } : {}),
         ...(value.identity !== undefined ? { identity: freezeIdentity(value.identity) } : {}),

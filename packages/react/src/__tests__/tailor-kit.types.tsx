@@ -56,6 +56,7 @@ const contract = defineContract({
 });
 
 const tailor = createClient({ contract: contract, baseUrl: "http://runtime.test" });
+tailor.clearCache();
 const { Provider: TailorKitProvider, RenderSlot, useApps, useViews, useViewContext } = tailor;
 const app = { clientPath: "/apps/todo.js", id: "todo" };
 
@@ -63,6 +64,8 @@ const app = { clientPath: "/apps/todo.js", id: "todo" };
   <span>Content</span>
 </TailorKitProvider>;
 <TailorKitProvider apps={[app]} />;
+// @ts-expect-error the provider does not accept a subject cache key
+<TailorKitProvider subjectId="user" />;
 // @ts-expect-error the provider captures its client internally
 <TailorKitProvider client={tailor} />;
 // @ts-expect-error the provider only accepts children and apps
@@ -152,10 +155,14 @@ useViewContext("/user", { context: undefined, loading: true });
 useViewContext("/user", { context: { userId: "u1" }, loading: true });
 declare const queryContext: { userId: string } | undefined;
 declare const queryLoading: boolean;
-declare const queryError: Error | null;
+declare const queryError: boolean | string | Error | null;
 useViewContext("/user", { context: queryContext, loading: queryLoading, error: queryError });
 
 useViewContext("/user", { context: undefined, error: new Error("Failed") });
+useViewContext("/user", { context: undefined, error: true });
+useViewContext("/user", { context: { userId: "u1" }, error: false });
+useViewContext("/user", { context: undefined, error: "Failed" });
+useViewContext("/user", { context: undefined, error: "" });
 useViewContext("/user", { context: { userId: "u1" }, loading: false, error: null });
 
 // @ts-expect-error invalid view name
@@ -175,8 +182,10 @@ useViewContext("/home", { error: new Error("Failed"), context: { page: {} } });
 useViewContext("/user", { loading: true, context: { page: { title: "Home" } } });
 // @ts-expect-error loading must be a boolean
 useViewContext("/user", { context: undefined, loading: "loading" });
-// @ts-expect-error error must be an Error or null
-useViewContext("/user", { context: undefined, error: "Failed" });
+// @ts-expect-error error cannot be a number
+useViewContext("/user", { context: undefined, error: 0 });
+// @ts-expect-error error objects must be Error instances
+useViewContext("/user", { context: undefined, error: { message: "Failed" } });
 // @ts-expect-error the former status API has been removed
 useViewContext("/user", { context: undefined, status: "loading" });
 

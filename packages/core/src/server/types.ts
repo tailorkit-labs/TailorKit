@@ -30,15 +30,13 @@ export interface TailorKitServerBaseOptions<
   projectKey?: string;
   /** Standard Schema validators keyed by the names used to identify app scopes. */
   scopes: TScopes;
-  /** Optional custom asset origin. Hosted apps receive a tenant-viewd clientPath from TailorKit automatically. */
-  assetsBaseUrl?: string;
   /** Convert schemas to JSON Schema for metadata and app type generation. */
   schemaSerializer?: SchemaSerializer;
   /**
-   * Public HTTP(S) base URL or root-relative route prefix. Defaults to "/api/tailorkit".
-   * Absolute URLs supply the trusted origin; relative paths use the request origin.
+   * Required absolute public HTTP(S) URL, including the route prefix.
+   * Supplies the trusted origin for backend sessions and server tool calls.
    */
-  baseUrl?: string | URL;
+  baseUrl: string | URL;
   /**
    * Configuration for browser-based TailorKit CLI authentication.
    */
@@ -182,7 +180,6 @@ export interface TailorKitServer<
    * @internal
    */
   $internal: {
-    assetsBaseUrl?: string;
     platformBaseUrl: string;
     router: TailorKitRouter;
     schema: TailorKitSchema<TComponents, TViews, TTools>;

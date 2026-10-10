@@ -10,12 +10,14 @@ expectTypeOf<TailorKitHostContext<{ org: { orgId: string } }>>().toEqualTypeOf<{
 }>();
 
 createTailorKitServer({
+  baseUrl: "https://example.com/api/tailorkit",
   scopes: { account: z.object({ accountId: z.string() }) },
   components: {},
   views: { "/": z.object({}), "/users": z.object({}) },
   slots: { navbar: { views: ["/"] }, panel: { views: ["/users"] } },
 });
 createTailorKitServer({
+  baseUrl: "https://example.com/api/tailorkit",
   scopes: { account: z.object({ accountId: z.string() }) },
   components: {},
   views: { "/": z.object({}) },
@@ -27,13 +29,17 @@ const namedScopes = {
   org: z.object({ orgId: z.string() }),
   userOrg: z.object({ orgId: z.string(), userId: z.string() }),
 };
-const scopedServer = createTailorKitServer({ scopes: namedScopes, components: {} });
+const scopedServer = createTailorKitServer({
+  baseUrl: "https://example.com/api/tailorkit",
+  scopes: namedScopes,
+  components: {},
+});
 const explicitlyTypedOptions: TailorKitServerOptions<
   Record<never, never>,
   Record<never, never>,
   Record<never, never>,
   typeof namedScopes
-> = { scopes: namedScopes, components: {} };
+> = { baseUrl: "https://example.com/api/tailorkit", scopes: namedScopes, components: {} };
 const explicitlyTypedServer = createTailorKitServer(explicitlyTypedOptions);
 explicitlyTypedServer.handler(new Request("https://example.com/api/tailorkit/apps"), {
   authenticate: () => ({
@@ -77,6 +83,7 @@ const nonJsonSchemaScope = {
 } satisfies StandardSchemaV1<{ accountId: string }, { accountId: string }>;
 
 const standardOnlyServer = createTailorKitServer({
+  baseUrl: "https://example.com/api/tailorkit",
   scopes: { account: nonJsonSchemaScope },
   components: {},
 });

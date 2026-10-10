@@ -17,8 +17,12 @@ export interface ViewContextState<TContext = unknown> {
   context: TContext | undefined;
   /** Defaults to false. Loading views do not publish context. */
   loading?: boolean;
-  /** Takes precedence over loading. Error views do not publish context. */
-  error?: Error | null;
+  /**
+   * True, any string (including ""), or an Error marks the view as failed.
+   * False, null, and undefined mean no error. Errors take precedence over loading
+   * and prevent the view from publishing context.
+   */
+  error?: boolean | string | Error | null;
 }
 
 export type ViewState<
