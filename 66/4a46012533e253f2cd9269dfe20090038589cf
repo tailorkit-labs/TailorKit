@@ -1,0 +1,30 @@
+packages/react/src/__tests__/use-view-context.test.tsx
+  s_d6b6385c37a4c1::t_5b6a18cdf4ba9c 56-57,59-64,94,100
+packages/client-core/src/store/local/view-context.ts
+  s_d6b6385c37a4c1::t_fbd29cac806295 117-122
+packages/client-core/src/store/local/view-context-types.ts
+  s_d6b6385c37a4c1::t_5b6a18cdf4ba9c 20-25
+packages/react/src/__tests__/tailor-kit.types.tsx
+  s_d6b6385c37a4c1::t_5b6a18cdf4ba9c 157,161-164,184-187
+docs/installation.mdx
+  s_d6b6385c37a4c1::t_0fd1fe3fc54430 669-671
+  s_d6b6385c37a4c1::t_76a44a89414e4c 672
+.changeset/flexible-view-errors.md
+  s_d6b6385c37a4c1::t_5b6a18cdf4ba9c 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "664a46012533e253f2cd9269dfe20090038589cf",
+  "prompts": {},
+  "sessions": {
+    "s_d6b6385c37a4c1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1240c-0a82-7a62-bd01-9877a714fcc9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
