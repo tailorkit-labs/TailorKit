@@ -1,0 +1,19 @@
+packages/api-utils/src/app-auth/tokens.ts
+  s_64d7f8fdc4ce50::t_0b5f6b755f495d 30,35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e073bb586ea4b81f1d8197a92d76fbfb903fe9ba",
+  "prompts": {},
+  "sessions": {
+    "s_64d7f8fdc4ce50": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a12380-c197-7ad2-bf0c-1724de70fcb3",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
