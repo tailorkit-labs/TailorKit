@@ -1,4 +1,5 @@
 import { call, asyncIteratorToUnproxiedDataStream } from "@orpc/server";
+import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { readUIMessageStream } from "ai";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { Context } from "../context";
@@ -133,15 +134,20 @@ describe("platform app chat", () => {
   it.each([undefined, "", "ftp://host.test", "localhost:3000"])(
     "rejects missing or invalid host URL %s before starting a workflow",
     async (hostUrl) => {
-      await expect(
-        call(
-          appAgentRouter.chat,
-          {
-            body: { ...input.body, hostUrl: hostUrl as string },
-          },
-          { context },
-        ),
-      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      const handler = new OpenAPIHandler({ appAgent: appAgentRouter });
+      const result = await handler.handle(
+        new Request("https://platform.test/api/platform/app-agent/chat", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ ...input.body, hostUrl }),
+        }),
+        { prefix: "/api/platform", context },
+      );
+      expect(result.response?.status).toBe(400);
+      expect(await result.response?.json()).toMatchObject({
+        code: "BAD_REQUEST",
+        message: "Input validation failed",
+      });
       expect(mocks.start).not.toHaveBeenCalled();
     },
   );

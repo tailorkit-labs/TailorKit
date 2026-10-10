@@ -8,7 +8,32 @@ import { tool, defineContract, createTailorKitSchema } from "@tailorkit/core/sch
 import { createServer } from "@tailorkit/core/server";
 import { TailorKitSchemaSpec } from "@tailorkit/core/spec";
 
-import { generateTypes, renderGeneratedTypes } from "./types";
+import { generateTypes, readSchemaFile, renderGeneratedTypes } from "./types";
+
+it.each([undefined, "{", '{"version":2,"components":{}}'])(
+  "includes the original schema loading error and preserves its cause for %s",
+  async (content) => {
+    const root = await mkdtemp(path.join(tmpdir(), "tailorkit-schema-error-"));
+    const schemaPath = path.join(root, "schema.json");
+    try {
+      if (content !== undefined) await writeFile(schemaPath, content);
+      let failure: unknown;
+      try {
+        await readSchemaFile(schemaPath);
+      } catch (error) {
+        failure = error;
+      }
+      expect(failure).toBeInstanceOf(Error);
+      const error = failure as Error;
+      expect(error.cause).toBeInstanceOf(Error);
+      expect(error.message).toBe(
+        `Unable to read TailorKit schema from ${schemaPath}: ${(error.cause as Error).message}`,
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  },
+);
 
 it("links the app to the configured server entry and never falls back to an unrelated default file", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "tailorkit-configured-server-types-"));

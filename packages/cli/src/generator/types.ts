@@ -576,7 +576,10 @@ export const readSchemaFile = async (schemaPath: string): Promise<TailorKitSchem
   try {
     return TailorKitSchemaSpec.parse(JSON.parse(await readFile(schemaPath, "utf-8")));
   } catch (error) {
-    throw new Error(`Unable to read TailorKit schema from ${schemaPath}`, { cause: error });
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Unable to read TailorKit schema from ${schemaPath}: ${detail}`, {
+      cause: error,
+    });
   }
 };
 
