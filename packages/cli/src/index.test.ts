@@ -103,24 +103,30 @@ it("preserves standalone login timeout and --no-open behavior", async () => {
   expect(mocks.outro).toHaveBeenCalledWith("Authenticated successfully.");
 });
 
-it("passes the explicit host through agent startup and automatic login", async () => {
-  mocks.agent.mockImplementation(async (options: Parameters<typeof runAgentCommand>[0]) => {
-    await options.onLoginRequired?.();
-  });
+it.each(["https://host.example", undefined])(
+  "passes optional baseUrl %s through agent startup and uses the resolved URL for login",
+  async (baseUrl) => {
+    mocks.agent.mockImplementation(async (options: Parameters<typeof runAgentCommand>[0]) => {
+      await options.onLoginRequired?.("https://selected.example/api/tailorkit");
+    });
 
-  await mocks.actions.get("agent")?.({
-    host: "https://host.example",
-    app: "app-one",
-  });
+    await mocks.actions.get("agent")?.({
+      baseUrl,
+      app: "app-one",
+    });
 
-  expect(mocks.agent).toHaveBeenCalledWith({
-    host: "https://host.example",
-    appId: "app-one",
-    onLoginRequired: expect.any(Function),
-  });
-  expect(mocks.login).toHaveBeenCalledWith({ host: "https://host.example" }, expect.any(Function));
-  expect(mocks.open).toHaveBeenCalledOnce();
-});
+    expect(mocks.agent).toHaveBeenCalledWith({
+      baseUrl,
+      appId: "app-one",
+      onLoginRequired: expect.any(Function),
+    });
+    expect(mocks.login).toHaveBeenCalledWith(
+      { host: "https://selected.example/api/tailorkit" },
+      expect.any(Function),
+    );
+    expect(mocks.open).toHaveBeenCalledOnce();
+  },
+);
 
 it("passes --host through standalone authentication commands", async () => {
   mocks.logout.mockResolvedValue({ removed: true, hostUrl: "https://host.example" });

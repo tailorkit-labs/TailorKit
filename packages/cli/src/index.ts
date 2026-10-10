@@ -355,17 +355,17 @@ cli
 
 cli
   .command("agent", "Chat with the TailorKit app agent")
-  .option("--host <url>", "TailorKit host API URL (required)")
+  .option("--baseUrl <url>", "TailorKit API base URL (otherwise prompts with a localhost default)")
   .option("--app <id>", "App ID (otherwise prompts to select or create an app)")
   .action(async (options: Record<string, unknown>) => {
     try {
       const { runAgentCommand } = await import("./agent");
       await runAgentCommand({
         appId: options.app as string | undefined,
-        host: options.host as string | undefined,
-        onLoginRequired: () =>
+        baseUrl: options.baseUrl as string | undefined,
+        onLoginRequired: (baseUrl) =>
           loginWithApproval({
-            host: options.host as string | undefined,
+            host: baseUrl,
           }),
       });
     } catch (error) {
