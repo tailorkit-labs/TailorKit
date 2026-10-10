@@ -17,6 +17,10 @@ export type Schema0 =
 export type AppAgentChatData = {
   body: {
     appId: string;
+    hostUrl: string;
+    schema?: {
+      [key: string]: unknown;
+    };
     messages: Array<{
       id: string;
       role: "user" | "assistant";

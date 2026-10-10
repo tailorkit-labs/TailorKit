@@ -31,6 +31,7 @@ const scope = canonicalizeScope({ name: "org", value: { tenant: "one" } });
 const input = {
   body: {
     deployToken: "token",
+    hostUrl: "http://localhost:3000/api/tailorkit",
     appId: "a3e7568a-c4f7-4ac0-8c35-71ff0f4cd002",
     messages: [{ id: "user-1", role: "user" as const, parts: [{ type: "text", text: "Build" }] }],
   },
@@ -81,6 +82,8 @@ describe("platform app chat", () => {
     expect(events).toContainEqual({ type: "text-delta", id: "text-1", delta: "Hello" });
     expect(events.at(-1)).toEqual({ type: "finish" });
     const first = mocks.start.mock.lastCall![1][0];
+    expect(first.hostUrl).toBe(input.body.hostUrl);
+    expect(first.schema).toBeUndefined();
     expect(first.messages).toEqual([{ role: "user", content: [{ type: "text", text: "Build" }] }]);
     const followup = [
       ...input.body.messages,
@@ -113,6 +116,35 @@ describe("platform app chat", () => {
       messages: expect.arrayContaining([expect.objectContaining({ role: "tool" })]),
     });
   });
+
+  it("passes an optional schema snapshot to the workflow", async () => {
+    const schema = { version: 1, components: {}, views: {}, slots: {}, tools: {} };
+    const stream = await call(
+      appAgentRouter.chat,
+      { body: { ...input.body, schema } },
+      { context },
+    );
+    for await (const _ of stream) {
+      /* consume */
+    }
+    expect(mocks.start.mock.lastCall![1][0]).toMatchObject({ hostUrl: input.body.hostUrl, schema });
+  });
+
+  it.each([undefined, "", "ftp://host.test", "localhost:3000"])(
+    "rejects missing or invalid host URL %s before starting a workflow",
+    async (hostUrl) => {
+      await expect(
+        call(
+          appAgentRouter.chat,
+          {
+            body: { ...input.body, hostUrl: hostUrl as string },
+          },
+          { context },
+        ),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      expect(mocks.start).not.toHaveBeenCalled();
+    },
+  );
 
   it("uses SDK resets without losing completed tool parts", async () => {
     mocks.start.mockResolvedValueOnce(

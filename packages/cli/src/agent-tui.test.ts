@@ -2,8 +2,9 @@ import type { TailorKitRouterClient } from "@tailorkit/core/server";
 import { readUIMessageStream, type UIMessage } from "ai";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const mocks = vi.hoisted(() => ({ tui: vi.fn() }));
+const mocks = vi.hoisted(() => ({ tui: vi.fn(), fetchSchema: vi.fn() }));
 vi.mock("@ai-sdk/tui", () => ({ runAgentTUI: mocks.tui }));
+vi.mock("./generator/types", () => ({ fetchSchemaFromHost: mocks.fetchSchema }));
 const { openAgentTui } = await import("./agent-tui");
 const appId = "a3e7568a-c4f7-4ac0-8c35-71ff0f4cd002";
 const messages: UIMessage[] = [
@@ -24,7 +25,12 @@ const messages: UIMessage[] = [
   },
   { id: "user-2", role: "user", parts: [{ type: "text", text: "Continue" }] },
 ];
-beforeEach(() => vi.clearAllMocks());
+const hostUrl = "http://localhost:3000/api/tailorkit";
+const schema = { version: 1, components: {}, views: {}, slots: {}, tools: {} };
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.fetchSchema.mockResolvedValue(schema);
+});
 
 describe("AI SDK terminal transport", () => {
   it("forwards the SDK's complete history and abort signal to the host client", async () => {
@@ -41,10 +47,10 @@ describe("AI SDK terminal transport", () => {
           yield { type: "finish" as const };
         })(),
     );
-    await openAgentTui({ client: { appAgent: { chat } }, hostUrl: "https://host.test", appId });
+    await openAgentTui({ client: { appAgent: { chat } }, hostUrl, appId });
     const options = mocks.tui.mock.lastCall![0];
     expect(options).toMatchObject({
-      title: "TailorKit Agent · https://host.test",
+      title: `TailorKit Agent · ${hostUrl}`,
       tools: "collapsed",
       reasoning: "hidden",
     });
@@ -60,9 +66,31 @@ describe("AI SDK terminal transport", () => {
     for await (const message of readUIMessageStream({ stream, terminateOnError: true }))
       answer = message;
     expect(answer).toMatchObject({ id: "run-2", parts: [{ type: "text", text: "Continued" }] });
-    expect(chat).toHaveBeenCalledWith({ appId, messages }, { signal: controller.signal });
+    expect(mocks.fetchSchema).toHaveBeenCalledExactlyOnceWith(hostUrl, controller.signal);
+    expect(chat).toHaveBeenCalledWith(
+      { appId, hostUrl, schema, messages },
+      { signal: controller.signal },
+    );
+
+    const updatedSchema = { ...schema, views: { "/detail": {} } };
+    mocks.fetchSchema.mockResolvedValueOnce(updatedSchema);
+    await options.transport.sendMessages({ messages, abortSignal: controller.signal });
+    expect(chat).toHaveBeenLastCalledWith(
+      { appId, hostUrl, schema: updatedSchema, messages },
+      { signal: controller.signal },
+    );
     controller.abort();
     expect(chat.mock.calls[0]![1]?.signal?.aborted).toBe(true);
     expect(await options.transport.reconnectToStream({ chatId: "sdk-chat-id" })).toBeNull();
+  });
+
+  it("does not start a remote run when fetching the local schema fails", async () => {
+    const chat = vi.fn();
+    mocks.fetchSchema.mockRejectedValueOnce(new Error("Local host unavailable"));
+    await openAgentTui({ client: { appAgent: { chat } }, hostUrl, appId });
+    await expect(mocks.tui.mock.lastCall![0].transport.sendMessages({ messages })).rejects.toThrow(
+      "Local host unavailable",
+    );
+    expect(chat).not.toHaveBeenCalled();
   });
 });

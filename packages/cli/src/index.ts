@@ -303,6 +303,7 @@ cli
 
 cli
   .command("generate", "Generate TailorKit app bindings")
+  .option("--schema <path>", "Read the host schema from a JSON file instead of the host")
   .option("--cwd <path>", "Working directory", { default: "." })
   .option("--config <path>", "Path to tailorkit config")
   .option("--out <path>", "Generated TypeScript output file")
@@ -310,6 +311,7 @@ cli
     intro(pc.bold("TailorKit"));
     try {
       const outPath = await generateTypes({
+        schemaPath: options.schema as string | undefined,
         configPath: options.config as string | undefined,
         cwd: String(options.cwd ?? "."),
         outFile: options.out as string | undefined,
@@ -323,6 +325,7 @@ cli
 
 cli
   .command("init [directory]", "Create a new TailorKit app")
+  .option("--schema <path>", "Read the host schema from a JSON file instead of the host")
   .option("--cwd <path>", "Working directory", { default: "." })
   .option("--name <name>", "Package name")
   .option("--host <url>", "TailorKit host URL")
@@ -336,6 +339,7 @@ cli
     try {
       const cwd = String(options.cwd ?? ".");
       const targetDirectory = await runInit({
+        schemaPath: options.schema as string | undefined,
         cwd,
         directory,
         force: options.force as boolean | undefined,

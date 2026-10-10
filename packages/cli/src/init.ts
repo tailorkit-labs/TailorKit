@@ -5,7 +5,7 @@ import path from "node:path";
 import { CANCEL_SYMBOL, cancel, confirm, isCancel, select, spinner, text } from "@clack/prompts";
 import pc from "picocolors";
 import { generateApp, resolveTemplatePackageVersions } from "./generator";
-import { fetchSchemaFromHost } from "./generator/types";
+import { fetchSchemaFromHost, readSchemaFile } from "./generator/types";
 import { normalizeHostUrl } from "./utils/url";
 
 export interface InitOptions {
@@ -18,6 +18,7 @@ export interface InitOptions {
   linting?: boolean;
   name?: string;
   packageManager?: string;
+  schemaPath?: string;
 }
 
 const PACKAGE_MANAGERS = ["pnpm", "yarn", "npm", "bun"] as const;
@@ -189,13 +190,16 @@ export const runInit = async (options: InitOptions): Promise<string> => {
   const install = await promptInstall(options.install);
 
   const s = spinner();
-  s.start("Fetching host schema");
+  s.start(options.schemaPath !== undefined ? "Reading host schema" : "Fetching host schema");
   let schema;
   try {
-    schema = await fetchSchemaFromHost(hostUrl);
-    s.stop("Fetched host schema.");
+    schema =
+      options.schemaPath !== undefined
+        ? await readSchemaFile(path.resolve(options.cwd, options.schemaPath))
+        : await fetchSchemaFromHost(hostUrl);
+    s.stop("Loaded host schema.");
   } catch (error) {
-    s.stop("Unable to fetch host schema.");
+    s.stop("Unable to load host schema.");
     throw error;
   }
   s.start("Resolving package versions");
