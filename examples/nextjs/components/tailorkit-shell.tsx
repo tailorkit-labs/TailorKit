@@ -211,7 +211,7 @@ function TailorKitPageInstances({ app }: { app: TailorKitApp }) {
 
 export function TailorKitShell(props: Parameters<typeof TailorKitShellWithApps>[0]) {
   return (
-    <TailorKitProvider subjectId={props.user.id}>
+    <TailorKitProvider>
       <TailorKitShellWithApps {...props} />
     </TailorKitProvider>
   );

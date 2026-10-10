@@ -33,7 +33,6 @@ export function createEndpointClient(options: {
     session: SessionProvider | undefined;
     provider: SessionProvider;
   }
-  let subjectId: string | undefined;
   let generation = 0;
   const toolBridges = new Map<string, { bridge: ToolBridge; app: TailorKitApp }>();
   const declarations = flattenTools(options.contract?.tools ?? {});
@@ -45,7 +44,7 @@ export function createEndpointClient(options: {
   };
   const createSessionEntry = (appId: string, key?: string): SessionEntry => ({
     key,
-    session: createSessionProvider({ baseUrl, appId, subjectId, fetch: request }),
+    session: createSessionProvider({ baseUrl, appId, fetch: request }),
     // Mounted consumers keep this wrapper, so resolve the current provider on every call.
     provider: async (input) => {
       let current = sessions.get(appId);
@@ -90,8 +89,7 @@ export function createEndpointClient(options: {
         typeof result.toolUrl !== "string" ||
         !Number.isFinite(result.expiresAt) ||
         result.expiresAt <= Date.now() ||
-        result.identity?.installationId !== app.id ||
-        (subjectId !== undefined && result.identity.subjectId !== subjectId)
+        result.identity?.installationId !== app.id
       )
         throw new Error("Invalid tool session");
       return { ...result, identity: result.identity, url: result.toolUrl };
@@ -138,11 +136,6 @@ export function createEndpointClient(options: {
   return {
     baseUrl,
     getToolBridge,
-    setSubject(next?: string) {
-      if (subjectId === next) return;
-      subjectId = next;
-      clearSessions();
-    },
     async apps(signal: AbortSignal): Promise<TailorKitApp[]> {
       const response = await request(new URL("apps", baseUrl), {
         signal,

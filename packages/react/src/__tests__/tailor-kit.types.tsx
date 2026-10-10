@@ -63,6 +63,8 @@ const app = { clientPath: "/apps/todo.js", id: "todo" };
   <span>Content</span>
 </TailorKitProvider>;
 <TailorKitProvider apps={[app]} />;
+// @ts-expect-error the provider does not accept a subject cache key
+<TailorKitProvider subjectId="user" />;
 // @ts-expect-error the provider captures its client internally
 <TailorKitProvider client={tailor} />;
 // @ts-expect-error the provider only accepts children and apps

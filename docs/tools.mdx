@@ -124,15 +124,6 @@ export const tailor = createClient({
 });
 ```
 
-Pass the current principal ID to the provider so credential caches and mounted app
-views follow principal changes. This value partitions caches; server authentication
-establishes identity. Without a supplied cache principal, runtime credentials are
-requested afresh from the authenticated product server.
-
-```tsx
-<tailor.Provider subjectId={principal?.id}>{children}</tailor.Provider>
-```
-
 ## Call tools from apps
 
 Regenerate `tailorkit.gen.ts` with the CLI after changing the contract. App frontend
@@ -171,8 +162,8 @@ product tool destination. It uses the `tailorkit-app` audience.
 Backend actions send their verified execution JWT through the trusted runtime;
 app code never receives that runtime credential. App frontend callers obtain the
 same app session through the trusted sandbox bridge, sharing the backend session
-provider and principal-specific cache. There is no per-tool token or credential
-exchange. Renewing or changing principals replaces the shared session.
+provider and per-app session cache. There is no per-tool token or credential
+exchange. Sessions are reused until renewal or an explicit refresh.
 
 The product verifies issuer, audience, signature, expiry, destination,
 scope, and the requested tool path, then checks the active installation and

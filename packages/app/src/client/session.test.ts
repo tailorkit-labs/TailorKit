@@ -13,7 +13,6 @@ it("deduplicates token requests, caches until renewal and sends only the host-bo
   const session = createSessionProvider({
     baseUrl: "https://host.test/api/tailorkit",
     appId: "allowed",
-    subjectId: "principal",
     fetch,
   });
   const [first, second] = await Promise.all([
@@ -49,7 +48,6 @@ it("renews cached sessions when one minute remains", async () => {
     const session = createSessionProvider({
       baseUrl: "https://host.test/api",
       appId: "allowed",
-      subjectId: "principal",
       fetch,
     });
     await session({ refresh: false });
@@ -79,7 +77,6 @@ it("does not cache failed authorization or malformed sessions", async () => {
   const session = createSessionProvider({
     baseUrl: "https://host.test/api",
     appId: "allowed",
-    subjectId: "principal",
     fetch,
   });
   await expect(session({ refresh: false })).rejects.toMatchObject({ code: "FORBIDDEN" });
@@ -102,34 +99,47 @@ it("reports session network failures as retryable and allows the next request to
   const session = createSessionProvider({
     baseUrl: "https://host.test/api",
     appId: "allowed",
-    subjectId: "principal",
     fetch,
   });
   await expect(session({ refresh: false })).rejects.toMatchObject({ code: "UNAVAILABLE" });
   await expect(session({ refresh: false })).resolves.toMatchObject({ token: "scoped" });
 });
-it("requests credentials afresh without a cache principal and rejects a mismatched authenticated subject", async () => {
-  const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(async () =>
-    Response.json({
-      token: "scoped",
-      expiresAt: Date.now() + 300_000,
-      url: "https://runtime.test/rpc",
-      subjectId: "actual",
-    }),
-  );
-  const anonymousCache = createSessionProvider({
+it("caches server-authenticated sessions without a subject cache key and refreshes their identity", async () => {
+  const fetch = vi
+    .fn<typeof globalThis.fetch>()
+    .mockResolvedValueOnce(
+      Response.json({
+        token: "first",
+        expiresAt: Date.now() + 300_000,
+        url: "https://runtime.test/rpc",
+        subjectId: "first-user",
+      }),
+    )
+    .mockResolvedValueOnce(
+      Response.json({
+        token: "refreshed",
+        expiresAt: Date.now() + 300_000,
+        url: "https://runtime.test/rpc",
+        subjectId: "next-user",
+      }),
+    );
+  const session = createSessionProvider({
     baseUrl: "https://product.test/api/",
     appId: "app",
     fetch,
   });
-  await anonymousCache({ refresh: false });
-  await anonymousCache({ refresh: false });
+  await expect(session({ refresh: false })).resolves.toMatchObject({
+    token: "first",
+    subjectId: "first-user",
+  });
+  await expect(session({ refresh: false })).resolves.toMatchObject({
+    token: "first",
+    subjectId: "first-user",
+  });
+  expect(fetch).toHaveBeenCalledTimes(1);
+  await expect(session({ refresh: true })).resolves.toMatchObject({
+    token: "refreshed",
+    subjectId: "next-user",
+  });
   expect(fetch).toHaveBeenCalledTimes(2);
-  const subjectCache = createSessionProvider({
-    baseUrl: "https://product.test/api/",
-    appId: "app",
-    subjectId: "different",
-    fetch,
-  });
-  await expect(subjectCache({ refresh: false })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
 });

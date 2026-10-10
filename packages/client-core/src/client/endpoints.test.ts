@@ -34,7 +34,6 @@ it.each([
     .mockResolvedValueOnce(session("second"))
     .mockResolvedValueOnce(session("third"));
   const client = createEndpointClient({ baseUrl: "https://host.test/", fetch: request });
-  client.setSubject("principal");
   const held = client.getSessionProvider(deployedApp);
   const other = client.getSessionProvider({ id: "other" });
   await expect(held({ refresh: false })).resolves.toMatchObject({ token: "first" });
@@ -66,7 +65,6 @@ it("clears sessions for held consumers through the public client and shares repl
     .mockResolvedValueOnce(session("after-again"));
   const fetchClient = createTailorKitFetchClient({ baseUrl: "https://host.test/", fetch: request });
   const client = fetchClient.endpoints;
-  client.setSubject("principal");
   const held = client.getSessionProvider(deployedApp);
   await held({ refresh: false });
   fetchClient.clear();
@@ -98,7 +96,6 @@ it.each(["clear", "deployment", "preview"])(
       )
       .mockResolvedValueOnce(session("current"));
     const client = createEndpointClient({ baseUrl: "https://host.test/", fetch: request });
-    client.setSubject("principal");
     const held = client.getSessionProvider(deployedApp);
     const pending = held({ refresh: false });
     const rejected = expect(pending).rejects.toMatchObject({ name: "AbortError" });
