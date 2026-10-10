@@ -16,7 +16,10 @@ export const sandboxIdleTimeoutMs = 15 * 60_000;
 export async function prepareSandbox(driveName: string, sandboxName: string) {
   "use step";
   try {
-    const drive = await Drive.getOrCreate({ name: driveName });
+    const drive = await Drive.getOrCreate({
+      name: driveName,
+      maxSize: 5 * 1024 * 1024 * 1024, // 5 GiB
+    });
     if (drive.currentSandboxName && drive.currentSandboxName !== sandboxName) {
       throw new FatalError(
         "This app is already being edited. Retry after the active run finishes.",
