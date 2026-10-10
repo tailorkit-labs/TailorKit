@@ -1,0 +1,19 @@
+packages/app-agent/src/sandbox.ts
+  s_c10310aebb55f0::t_dd1318c0e89f2d 19-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "465c3ac2cdba3b84331ac648b72a1ffd4df31b45",
+  "prompts": {},
+  "sessions": {
+    "s_c10310aebb55f0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a124a0-9495-78a1-9d9a-5d7e94cf687a",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Alfie Jones <alfie.jones@hotmail.co.uk>"
+    }
+  }
+}
