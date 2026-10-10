@@ -1,10 +1,22 @@
 # App agent terminal
 
-Run `tailor agent` (or `tailorkit agent`) from an app directory with `host` and
-`appId` in `tailorkit.config.ts`. Use `--app <id>` to select another existing app;
-`--config` and `--cwd` also work. Missing credentials start the usual host login
-approval flow. An app must already exist in the platform and belong to the
-approved token's scope.
+Run `tailor agent` (or `tailorkit agent`) with your host's TailorKit API URL:
+
+```sh
+tailorkit agent --host http://localhost:3000/api/tailorkit
+```
+
+The command works from any directory and does not read or write
+`tailorkit.config.ts`. Missing credentials start the host's browser login approval
+flow. After approval, select an existing app or create a new one in the approved
+scope. Use `--app <id>` to open an existing app directly. The command prints the
+app ID so you can use it on your next launch.
+
+`--host <url>` is required and must include your TailorKit API base path. New app
+names default to "My app" and can be changed at the prompt. `--cwd` and `--config`
+are not supported.
+Manage credentials independently with `tailorkit login --host <url>`,
+`tailorkit whoami --host <url>`, and `tailorkit logout --host <url>`.
 
 The terminal uses `@ai-sdk/tui` on Node 24. It owns input, streamed responses,
 tool cards, message history and cancellation. Each launch starts fresh chat

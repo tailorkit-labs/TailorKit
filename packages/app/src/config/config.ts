@@ -30,7 +30,6 @@ export interface TailorKitConfig extends z.input<typeof tailorkitConfigSchema> {
   /**
    * ID of the app on the TailorKit host, used for deployment and remote preview.
    * When omitted, the first deployment creates an app and saves its ID here.
-   * The agent command prompts to select or create an app and saves its ID here.
    * Remote preview requires an existing app ID.
    * @default undefined
    */
