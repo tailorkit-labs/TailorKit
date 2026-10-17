@@ -47,13 +47,17 @@ export default defineConfig(({ mode }) => {
           }),
           devtools(),
           tailwindcss(),
-          tanstackStart(),
+          tanstackStart({}),
           nitro({
             // Nitro's dev server otherwise treats client.js as a Vite static asset.
             // Forward this prefix to Start, which owns the endpoint and its handlers.
             handlers: [
               { env: "dev", handler: "#start-assets", route: "/api/assets/**" },
             ],
+
+            // Split server code into chunks and minify every generated function.
+            inlineDynamicImports: false,
+            minify: true,
 
             routeRules: {
               "/sign-in": {
